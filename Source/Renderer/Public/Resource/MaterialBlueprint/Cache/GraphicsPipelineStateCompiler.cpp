@@ -399,29 +399,28 @@ namespace Renderer
 									{
 										const MaterialBlueprintResource& materialBlueprintResource = materialBlueprintResourceManager.getById(compilerRequest.graphicsPipelineStateCache.getGraphicsPipelineStateSignature().getMaterialBlueprintResourceId());
 										const Rhi::VertexAttributes& vertexAttributes = mRenderer.getVertexAttributesResourceManager().getById(materialBlueprintResource.getVertexAttributesResourceId()).getVertexAttributes();
-										shader = shaderLanguage.createVertexShaderFromSourceCode(vertexAttributes, shaderSourceCode.c_str(), &shaderCache->mShaderBytecode);
+										shader = shaderLanguage.createVertexShaderFromSourceCode(vertexAttributes, shaderSourceCode.c_str(), &shaderCache->mShaderBytecode RHI_RESOURCE_DEBUG_NAME("Pipeline state compiler"));
 										break;
 									}
 
 									case GraphicsShaderType::TessellationControl:
-										shader = shaderLanguage.createTessellationControlShaderFromSourceCode(shaderSourceCode.c_str(), &shaderCache->mShaderBytecode);
+										shader = shaderLanguage.createTessellationControlShaderFromSourceCode(shaderSourceCode.c_str(), &shaderCache->mShaderBytecode RHI_RESOURCE_DEBUG_NAME("Pipeline state compiler"));
 										break;
 
 									case GraphicsShaderType::TessellationEvaluation:
-										shader = shaderLanguage.createTessellationEvaluationShaderFromSourceCode(shaderSourceCode.c_str(), &shaderCache->mShaderBytecode);
+										shader = shaderLanguage.createTessellationEvaluationShaderFromSourceCode(shaderSourceCode.c_str(), &shaderCache->mShaderBytecode RHI_RESOURCE_DEBUG_NAME("Pipeline state compiler"));
 										break;
 
 									case GraphicsShaderType::Geometry:
 										// TODO(co) "Renderer::ShaderCacheManager::getGraphicsShaderCache()" needs to provide additional geometry shader information
-										// shader = shaderLanguage->createGeometryShaderFromSourceCode(shaderSourceCode.c_str(), &shaderCache->mShaderBytecode);
+										// shader = shaderLanguage->createGeometryShaderFromSourceCode(shaderSourceCode.c_str(), &shaderCache->mShaderBytecode RHI_RESOURCE_DEBUG_NAME("Pipeline state compiler"));
 										break;
 
 									case GraphicsShaderType::Fragment:
-										shader = shaderLanguage.createFragmentShaderFromSourceCode(shaderSourceCode.c_str(), &shaderCache->mShaderBytecode);
+										shader = shaderLanguage.createFragmentShaderFromSourceCode(shaderSourceCode.c_str(), &shaderCache->mShaderBytecode RHI_RESOURCE_DEBUG_NAME("Pipeline state compiler"));
 										break;
 								}
 								RHI_ASSERT(mRenderer.getContext(), nullptr != shader, "Invalid shader")	// TODO(co) Error handling
-								RHI_SET_RESOURCE_DEBUG_NAME(shader, "Pipeline state compiler")
 								shaderCache->mShaderPtr = shaders[i] = shader;
 							}
 						}
@@ -442,8 +441,9 @@ namespace Renderer
 							static_cast<Rhi::ITessellationControlShader*>(shaders[static_cast<int>(GraphicsShaderType::TessellationControl)]),
 							static_cast<Rhi::ITessellationEvaluationShader*>(shaders[static_cast<int>(GraphicsShaderType::TessellationEvaluation)]),
 							static_cast<Rhi::IGeometryShader*>(shaders[static_cast<int>(GraphicsShaderType::Geometry)]),
-							static_cast<Rhi::IFragmentShader*>(shaders[static_cast<int>(GraphicsShaderType::Fragment)]));
-						RHI_SET_RESOURCE_DEBUG_NAME(graphicsProgram, "Graphics pipeline state compiler")
+							static_cast<Rhi::IFragmentShader*>(shaders[static_cast<int>(GraphicsShaderType::Fragment)])
+							RHI_RESOURCE_DEBUG_NAME("Graphics pipeline state compiler")
+						);
 
 						// Create the graphics pipeline state object (PSO)
 						compilerRequest.graphicsPipelineStateObject = createGraphicsPipelineState(materialBlueprintResource, graphicsPipelineStateSignature.getSerializedGraphicsPipelineStateHash(), *graphicsProgram);
@@ -497,15 +497,11 @@ namespace Renderer
 
 		{ // TODO(co) Render pass related update, the render pass in here is currently just a dummy so the debug compositor works
 			Rhi::IRhi& rhi = rootSignaturePtr->getRhi();
-			graphicsPipelineState.renderPass = rhi.createRenderPass(1, &rhi.getCapabilities().preferredSwapChainColorTextureFormat, rhi.getCapabilities().preferredSwapChainDepthStencilTextureFormat);
+			graphicsPipelineState.renderPass = rhi.createRenderPass(1, &rhi.getCapabilities().preferredSwapChainColorTextureFormat, rhi.getCapabilities().preferredSwapChainDepthStencilTextureFormat, 1 RHI_RESOURCE_DEBUG_NAME("Graphics pipeline state compiler"));
 		}
 
 		// Create the graphics pipeline state object (PSO)
-		Rhi::IGraphicsPipelineState* graphicsPipelineStateResource = rootSignaturePtr->getRhi().createGraphicsPipelineState(graphicsPipelineState);
-		RHI_SET_RESOURCE_DEBUG_NAME(graphicsPipelineStateResource, "Graphics pipeline state compiler")
-
-		// Done
-		return graphicsPipelineStateResource;
+		return rootSignaturePtr->getRhi().createGraphicsPipelineState(graphicsPipelineState RHI_RESOURCE_DEBUG_NAME("Graphics pipeline state compiler"));
 	}
 
 

@@ -75,7 +75,7 @@ namespace Renderer
 	//[ Public methods                                        ]
 	//[-------------------------------------------------------]
 	public:
-		[[nodiscard]] Rhi::IResourceGroup* createResourceGroup(Rhi::IRootSignature& rootSignature, uint32_t rootParameterIndex, uint32_t numberOfResources, Rhi::IResource** resources, Rhi::ISamplerState** samplerStates = nullptr);
+		[[nodiscard]] Rhi::IResourceGroup* createResourceGroup(Rhi::IRootSignature& rootSignature, uint32_t rootParameterIndex, uint32_t numberOfResources, Rhi::IResource** resources, Rhi::ISamplerState** samplerStates = nullptr RHI_RESOURCE_DEBUG_NAME_PARAMETER);
 		void garbageCollection();
 
 

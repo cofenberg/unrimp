@@ -328,9 +328,8 @@ namespace Renderer
 						else
 						{
 							// Create the shader instance
-							shader = shaderLanguage.createComputeShaderFromSourceCode(shaderSourceCode.c_str(), &shaderCache->mShaderBytecode);
+							shader = shaderLanguage.createComputeShaderFromSourceCode(shaderSourceCode.c_str(), &shaderCache->mShaderBytecode RHI_RESOURCE_DEBUG_NAME("Compute pipeline state compiler"));
 							RHI_ASSERT(mRenderer.getContext(), nullptr != shader, "Invalid shader")	// TODO(co) Error handling
-							RHI_SET_RESOURCE_DEBUG_NAME(shader, "Compute pipeline state compiler")
 							shaderCache->mShaderPtr = shader;
 
 							// Create the compute pipeline state object (PSO)
@@ -359,11 +358,7 @@ namespace Renderer
 		// Create the compute pipeline state object (PSO)
 		const Rhi::IRootSignaturePtr& rootSignaturePtr = materialBlueprintResource.getRootSignaturePtr();
 		RHI_ASSERT(mRenderer.getContext(), shader.getResourceType() == Rhi::ResourceType::COMPUTE_SHADER, "Invalid shader resource type")
-		Rhi::IComputePipelineState* computePipelineStateResource = rootSignaturePtr->getRhi().createComputePipelineState(*rootSignaturePtr, static_cast<Rhi::IComputeShader&>(shader));
-		RHI_SET_RESOURCE_DEBUG_NAME(computePipelineStateResource, "Compute pipeline state compiler")
-
-		// Done
-		return computePipelineStateResource;
+		return rootSignaturePtr->getRhi().createComputePipelineState(*rootSignaturePtr, static_cast<Rhi::IComputeShader&>(shader) RHI_RESOURCE_DEBUG_NAME("Compute pipeline state compiler"));
 	}
 
 

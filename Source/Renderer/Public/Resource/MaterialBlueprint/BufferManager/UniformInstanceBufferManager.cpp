@@ -86,8 +86,7 @@ namespace Renderer
 			if (nullptr == mCurrentInstanceBuffer->resourceGroup)
 			{
 				Rhi::IResource* resources[1] = { mCurrentInstanceBuffer->uniformBuffer };
-				mCurrentInstanceBuffer->resourceGroup = materialBlueprintResource.getRootSignaturePtr()->createResourceGroup(instanceUniformBuffer->rootParameterIndex, static_cast<uint32_t>(GLM_COUNTOF(resources)), resources);
-				RHI_SET_RESOURCE_DEBUG_NAME(mCurrentInstanceBuffer->resourceGroup, "Uniform instance buffer manager")
+				mCurrentInstanceBuffer->resourceGroup = materialBlueprintResource.getRootSignaturePtr()->createResourceGroup(instanceUniformBuffer->rootParameterIndex, static_cast<uint32_t>(GLM_COUNTOF(resources)), resources, nullptr RHI_RESOURCE_DEBUG_NAME("Uniform instance buffer manager"));
 				mCurrentInstanceBuffer->resourceGroup->addReference();
 			}
 
@@ -250,8 +249,7 @@ namespace Renderer
 		if (mCurrentInstanceBufferIndex >= mInstanceBuffers.size())
 		{
 			// Create uniform buffer instance
-			Rhi::IUniformBuffer* uniformBuffer = bufferManager.createUniformBuffer(mMaximumUniformBufferSize, nullptr, Rhi::BufferUsage::DYNAMIC_DRAW);
-			RHI_SET_RESOURCE_DEBUG_NAME(uniformBuffer, "Uniform instance buffer manager")
+			Rhi::IUniformBuffer* uniformBuffer = bufferManager.createUniformBuffer(mMaximumUniformBufferSize, nullptr, Rhi::BufferUsage::DYNAMIC_DRAW RHI_RESOURCE_DEBUG_NAME("Uniform instance buffer manager"));
 			uniformBuffer->addReference();
 
 			// Create instance buffer instance

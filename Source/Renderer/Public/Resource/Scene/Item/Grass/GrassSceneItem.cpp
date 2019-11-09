@@ -95,8 +95,7 @@ namespace Renderer
 			Rhi::IBufferManager& bufferManager = renderer.getBufferManager();
 
 			// Create the structured buffer
-			mStructuredBufferPtr = bufferManager.createStructuredBuffer(sizeof(GrassDataStruct) * mMaximumNumberOfGrass, grassData, Rhi::BufferFlag::SHADER_RESOURCE, Rhi::BufferUsage::STATIC_DRAW, sizeof(GrassDataStruct));
-			RHI_SET_RESOURCE_DEBUG_NAME(mStructuredBufferPtr, "Grass structured buffer")
+			mStructuredBufferPtr = bufferManager.createStructuredBuffer(sizeof(GrassDataStruct) * mMaximumNumberOfGrass, grassData, Rhi::BufferFlag::SHADER_RESOURCE, Rhi::BufferUsage::STATIC_DRAW, sizeof(GrassDataStruct) RHI_RESOURCE_DEBUG_NAME("Grass"));
 
 			{ // Create the indirect buffer: Twelve vertices per grass (two quads), grass index = instance index
 				const Rhi::DrawArguments drawArguments =
@@ -106,8 +105,7 @@ namespace Renderer
 					0,						// startVertexLocation (uint32_t)
 					0						// startInstanceLocation (uint32_t)
 				};
-				mIndirectBufferPtr = bufferManager.createIndirectBuffer(sizeof(Rhi::DrawArguments), &drawArguments, Rhi::IndirectBufferFlag::UNORDERED_ACCESS | Rhi::IndirectBufferFlag::DRAW_ARGUMENTS);
-				RHI_SET_RESOURCE_DEBUG_NAME(mIndirectBufferPtr, "Grass indirect buffer")
+				mIndirectBufferPtr = bufferManager.createIndirectBuffer(sizeof(Rhi::DrawArguments), &drawArguments, Rhi::IndirectBufferFlag::UNORDERED_ACCESS | Rhi::IndirectBufferFlag::DRAW_ARGUMENTS, Rhi::BufferUsage::STATIC_DRAW RHI_RESOURCE_DEBUG_NAME("Grass"));
 			}
 		}
 		else

@@ -185,15 +185,13 @@ namespace Renderer
 				if (nullptr == mVertexBufferPtr || mNumberOfAllocatedVertices < static_cast<uint32_t>(imDrawData->TotalVtxCount))
 				{
 					mNumberOfAllocatedVertices = static_cast<uint32_t>(imDrawData->TotalVtxCount + 5000);	// Add some reserve to reduce reallocations
-					mVertexBufferPtr = bufferManager.createVertexBuffer(mNumberOfAllocatedVertices * sizeof(ImDrawVert), nullptr, 0, Rhi::BufferUsage::DYNAMIC_DRAW);
-					RHI_SET_RESOURCE_DEBUG_NAME(mVertexBufferPtr, "Debug GUI")
+					mVertexBufferPtr = bufferManager.createVertexBuffer(mNumberOfAllocatedVertices * sizeof(ImDrawVert), nullptr, 0, Rhi::BufferUsage::DYNAMIC_DRAW RHI_RESOURCE_DEBUG_NAME("Debug GUI"));
 					mVertexArrayPtr = nullptr;
 				}
 				if (nullptr == mIndexBufferPtr || mNumberOfAllocatedIndices < static_cast<uint32_t>(imDrawData->TotalIdxCount))
 				{
 					mNumberOfAllocatedIndices = static_cast<uint32_t>(imDrawData->TotalIdxCount + 10000);	// Add some reserve to reduce reallocations
-					mIndexBufferPtr = bufferManager.createIndexBuffer(mNumberOfAllocatedIndices * sizeof(ImDrawIdx), nullptr, 0, Rhi::BufferUsage::DYNAMIC_DRAW);
-					RHI_SET_RESOURCE_DEBUG_NAME(mIndexBufferPtr, "Debug GUI")
+					mIndexBufferPtr = bufferManager.createIndexBuffer(mNumberOfAllocatedIndices * sizeof(ImDrawIdx), nullptr, 0, Rhi::BufferUsage::DYNAMIC_DRAW, Rhi::IndexBufferFormat::UNSIGNED_SHORT RHI_RESOURCE_DEBUG_NAME("Debug GUI"));
 					mVertexArrayPtr = nullptr;
 				}
 				if (nullptr == mVertexArrayPtr)
@@ -203,8 +201,7 @@ namespace Renderer
 
 					// Create vertex array object (VAO)
 					const Rhi::VertexArrayVertexBuffer vertexArrayVertexBuffers[] = { mVertexBufferPtr };
-					mVertexArrayPtr = bufferManager.createVertexArray(::detail::VertexAttributes, static_cast<uint32_t>(GLM_COUNTOF(vertexArrayVertexBuffers)), vertexArrayVertexBuffers, mIndexBufferPtr);
-					RHI_SET_RESOURCE_DEBUG_NAME(mVertexArrayPtr, "Debug GUI")
+					mVertexArrayPtr = bufferManager.createVertexArray(::detail::VertexAttributes, static_cast<uint32_t>(GLM_COUNTOF(vertexArrayVertexBuffers)), vertexArrayVertexBuffers, mIndexBufferPtr RHI_RESOURCE_DEBUG_NAME("Debug GUI"));
 				}
 
 				{ // Copy and convert all vertices and indices into a single contiguous buffer
@@ -355,8 +352,7 @@ namespace Renderer
 			ImGui::GetIO().Fonts->GetTexDataAsAlpha8(&pixels, &width, &height);
 
 			// Upload texture to RHI
-			mTexture2D = mRenderer.getTextureManager().createTexture2D(static_cast<uint32_t>(width), static_cast<uint32_t>(height), Rhi::TextureFormat::R8, pixels, Rhi::TextureFlag::GENERATE_MIPMAPS | Rhi::TextureFlag::SHADER_RESOURCE);
-			RHI_SET_RESOURCE_DEBUG_NAME(mTexture2D, "Debug 2D GUI glyph texture atlas")
+			mTexture2D = mRenderer.getTextureManager().createTexture2D(static_cast<uint32_t>(width), static_cast<uint32_t>(height), Rhi::TextureFormat::R8, pixels, Rhi::TextureFlag::GENERATE_MIPMAPS | Rhi::TextureFlag::SHADER_RESOURCE, Rhi::TextureUsage::DEFAULT, 1, nullptr RHI_RESOURCE_DEBUG_NAME("Debug 2D GUI glyph texture atlas"));
 
 			// Tell the texture resource manager about our render target texture so it can be referenced inside e.g. compositor nodes
 			mRenderer.getTextureResourceManager().createTextureResourceByAssetId(ASSET_ID("Unrimp/Texture/DynamicByCode/ImGuiGlyphMap2D"), *mTexture2D);
@@ -428,8 +424,7 @@ namespace Renderer
 			rootSignature.initialize(static_cast<uint32_t>(GLM_COUNTOF(rootParameters)), rootParameters, 0, nullptr, Rhi::RootSignatureFlags::ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT);
 
 			// Create the instance
-			mRootSignature = rhi.createRootSignature(rootSignature);
-			RHI_SET_RESOURCE_DEBUG_NAME(mRootSignature, "Debug GUI")
+			mRootSignature = rhi.createRootSignature(rootSignature RHI_RESOURCE_DEBUG_NAME("Debug GUI"));
 		}
 
 		{ // Create the graphics pipeline state instance
@@ -444,27 +439,21 @@ namespace Renderer
 				#include "Detail/Shader/DebugGui_HLSL_D3D10_D3D11_D3D12.h"
 				#include "Detail/Shader/DebugGui_Null.h"
 
-				// Create the shaders
-				Rhi::IShaderLanguage& shaderLanguage = rhi.getDefaultShaderLanguage();
-				Rhi::IVertexShader* vertexShader = shaderLanguage.createVertexShaderFromSourceCode(::detail::VertexAttributes, vertexShaderSourceCode);
-				RHI_SET_RESOURCE_DEBUG_NAME(vertexShader, "Debug GUI")
-				Rhi::IFragmentShader* fragmentShader = shaderLanguage.createFragmentShaderFromSourceCode(fragmentShaderSourceCode);
-				RHI_SET_RESOURCE_DEBUG_NAME(fragmentShader, "Debug GUI")
-
 				// Create the graphics program
+				Rhi::IShaderLanguage& shaderLanguage = rhi.getDefaultShaderLanguage();
 				mGraphicsProgram = shaderLanguage.createGraphicsProgram(
 					*mRootSignature,
 					::detail::VertexAttributes,
-					vertexShader,
-					fragmentShader);
-				RHI_SET_RESOURCE_DEBUG_NAME(mGraphicsProgram, "Debug GUI")
+					shaderLanguage.createVertexShaderFromSourceCode(::detail::VertexAttributes, vertexShaderSourceCode, nullptr RHI_RESOURCE_DEBUG_NAME("Debug GUI")),
+					shaderLanguage.createFragmentShaderFromSourceCode(fragmentShaderSourceCode, nullptr RHI_RESOURCE_DEBUG_NAME("Debug GUI"))
+					RHI_RESOURCE_DEBUG_NAME("Debug GUI"));
 			}
 
 			// Create the graphics pipeline state object (PSO)
 			if (nullptr != mGraphicsProgram)
 			{
 				// TODO(co) Render pass related update, the render pass in here is currently just a dummy so the debug compositor works
-				Rhi::IRenderPass* renderPass = rhi.createRenderPass(1, &rhi.getCapabilities().preferredSwapChainColorTextureFormat, rhi.getCapabilities().preferredSwapChainDepthStencilTextureFormat);
+				Rhi::IRenderPass* renderPass = rhi.createRenderPass(1, &rhi.getCapabilities().preferredSwapChainColorTextureFormat, rhi.getCapabilities().preferredSwapChainDepthStencilTextureFormat, 1 RHI_RESOURCE_DEBUG_NAME("Debug GUI"));
 
 				Rhi::GraphicsPipelineState graphicsPipelineState = Rhi::GraphicsPipelineStateBuilder(mRootSignature, mGraphicsProgram, ::detail::VertexAttributes, *renderPass);
 				graphicsPipelineState.rasterizerState.cullMode				   = Rhi::CullMode::NONE;
@@ -475,16 +464,14 @@ namespace Renderer
 				graphicsPipelineState.blendState.renderTarget[0].srcBlend	   = Rhi::Blend::SRC_ALPHA;
 				graphicsPipelineState.blendState.renderTarget[0].destBlend	   = Rhi::Blend::INV_SRC_ALPHA;
 				graphicsPipelineState.blendState.renderTarget[0].srcBlendAlpha = Rhi::Blend::INV_SRC_ALPHA;
-				mGraphicsPipelineState = rhi.createGraphicsPipelineState(graphicsPipelineState);
-				RHI_SET_RESOURCE_DEBUG_NAME(mGraphicsPipelineState, "Debug GUI")
+				mGraphicsPipelineState = rhi.createGraphicsPipelineState(graphicsPipelineState RHI_RESOURCE_DEBUG_NAME("Debug GUI"));
 			}
 		}
 
 		// Create vertex uniform buffer instance
 		if (rhi.getCapabilities().maximumUniformBufferSize > 0)
 		{
-			mVertexShaderUniformBuffer = mRenderer.getBufferManager().createUniformBuffer(sizeof(float) * 4 * 4, nullptr, Rhi::BufferUsage::DYNAMIC_DRAW);
-			RHI_SET_RESOURCE_DEBUG_NAME(mVertexShaderUniformBuffer, "Debug GUI")
+			mVertexShaderUniformBuffer = mRenderer.getBufferManager().createUniformBuffer(sizeof(float) * 4 * 4, nullptr, Rhi::BufferUsage::DYNAMIC_DRAW RHI_RESOURCE_DEBUG_NAME("Debug GUI"));
 		}
 		else if (nullptr != mGraphicsProgram)
 		{
@@ -497,15 +484,14 @@ namespace Renderer
 			Rhi::SamplerState samplerState = Rhi::ISamplerState::getDefaultSamplerState();
 			samplerState.addressU = Rhi::TextureAddressMode::WRAP;
 			samplerState.addressV = Rhi::TextureAddressMode::WRAP;
-			samplerStateResource = rhi.createSamplerState(samplerState);
-			RHI_SET_RESOURCE_DEBUG_NAME(samplerStateResource, "Debug GUI")
-			mSamplerStateGroup = mRootSignature->createResourceGroup(1, 1, &samplerStateResource);
+			samplerStateResource = rhi.createSamplerState(samplerState RHI_RESOURCE_DEBUG_NAME("Debug GUI"));
+			mSamplerStateGroup = mRootSignature->createResourceGroup(1, 1, &samplerStateResource, nullptr RHI_RESOURCE_DEBUG_NAME("Debug GUI"));
 		}
 
 		{ // Create resource group
 			Rhi::IResource* resources[2] = { mVertexShaderUniformBuffer, mTexture2D };
 			Rhi::ISamplerState* samplerStates[2] = { nullptr, static_cast<Rhi::ISamplerState*>(samplerStateResource) };
-			mResourceGroup = mRootSignature->createResourceGroup(0, static_cast<uint32_t>(GLM_COUNTOF(resources)), resources, samplerStates);
+			mResourceGroup = mRootSignature->createResourceGroup(0, static_cast<uint32_t>(GLM_COUNTOF(resources)), resources, samplerStates RHI_RESOURCE_DEBUG_NAME("Debug GUI"));
 		}
 	}
 

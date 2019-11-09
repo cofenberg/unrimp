@@ -396,25 +396,22 @@ namespace Renderer
 	//[-------------------------------------------------------]
 	Rhi::ITexture* KtxTextureResourceLoader::createRhiTexture()
 	{
-		Rhi::ITexture* texture = nullptr;
 		const uint32_t flags = (mDataContainsMipmaps ? (Rhi::TextureFlag::DATA_CONTAINS_MIPMAPS | Rhi::TextureFlag::SHADER_RESOURCE) : Rhi::TextureFlag::SHADER_RESOURCE);
 		if (mCubeMap)
 		{
 			// Cube texture
-			texture = mRenderer.getTextureManager().createTextureCube(mWidth, mHeight, static_cast<Rhi::TextureFormat::Enum>(mTextureFormat), mImageData, flags, Rhi::TextureUsage::IMMUTABLE);
+			return mRenderer.getTextureManager().createTextureCube(mWidth, mHeight, static_cast<Rhi::TextureFormat::Enum>(mTextureFormat), mImageData, flags, Rhi::TextureUsage::IMMUTABLE RHI_RESOURCE_DEBUG_NAME(getAsset().virtualFilename));
 		}
 		else if (1 == mWidth || 1 == mHeight)
 		{
 			// 1D texture
-			texture = mRenderer.getTextureManager().createTexture1D((1 == mWidth) ? mHeight : mWidth, static_cast<Rhi::TextureFormat::Enum>(mTextureFormat), mImageData, flags, Rhi::TextureUsage::IMMUTABLE);
+			return mRenderer.getTextureManager().createTexture1D((1 == mWidth) ? mHeight : mWidth, static_cast<Rhi::TextureFormat::Enum>(mTextureFormat), mImageData, flags, Rhi::TextureUsage::IMMUTABLE RHI_RESOURCE_DEBUG_NAME(getAsset().virtualFilename));
 		}
 		else
 		{
 			// 2D texture
-			texture = mRenderer.getTextureManager().createTexture2D(mWidth, mHeight, static_cast<Rhi::TextureFormat::Enum>(mTextureFormat), mImageData, flags, Rhi::TextureUsage::IMMUTABLE);
+			return mRenderer.getTextureManager().createTexture2D(mWidth, mHeight, static_cast<Rhi::TextureFormat::Enum>(mTextureFormat), mImageData, flags, Rhi::TextureUsage::IMMUTABLE, 1, nullptr RHI_RESOURCE_DEBUG_NAME(getAsset().virtualFilename));
 		}
-		RHI_SET_RESOURCE_DEBUG_NAME(texture, getAsset().virtualFilename)
-		return texture;
 	}
 
 

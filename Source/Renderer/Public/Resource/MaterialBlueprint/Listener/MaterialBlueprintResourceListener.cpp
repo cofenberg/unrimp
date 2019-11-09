@@ -165,12 +165,10 @@ namespace
 				}
 			}
 
-			// Create the RHI texture resource
-			Rhi::ITexturePtr texturePtr(renderer.getTextureManager().createTexture3D(SIZE, SIZE, SIZE, Rhi::TextureFormat::R8G8B8A8, data, Rhi::TextureFlag::SHADER_RESOURCE, Rhi::TextureUsage::IMMUTABLE));
-			RHI_SET_RESOURCE_DEBUG_NAME(texturePtr, "3D identity color correction lookup table (LUT) texture")
-
 			// Create dynamic texture asset
-			return renderer.getTextureResourceManager().createTextureResourceByAssetId(ASSET_ID("Unrimp/Texture/DynamicByCode/IdentityColorCorrectionLookupTable3D"), *texturePtr);
+			return renderer.getTextureResourceManager().createTextureResourceByAssetId(
+				ASSET_ID("Unrimp/Texture/DynamicByCode/IdentityColorCorrectionLookupTable3D"),
+				*renderer.getTextureManager().createTexture3D(SIZE, SIZE, SIZE, Rhi::TextureFormat::R8G8B8A8, data, Rhi::TextureFlag::SHADER_RESOURCE, Rhi::TextureUsage::IMMUTABLE RHI_RESOURCE_DEBUG_NAME("Identity color correction lookup table (LUT)")));
 		}
 
 		/**
@@ -213,12 +211,10 @@ namespace
 				}
 			}
 
-			// Create the RHI texture resource
-			Rhi::ITexturePtr texturePtr(renderer.getTextureManager().createTexture1D(KERNEL_SIZE, Rhi::TextureFormat::R32G32B32A32F, kernel, Rhi::TextureFlag::SHADER_RESOURCE, Rhi::TextureUsage::IMMUTABLE));
-			RHI_SET_RESOURCE_DEBUG_NAME(texturePtr, "1D screen space ambient occlusion sample kernel texture")
-
 			// Create dynamic texture asset
-			return renderer.getTextureResourceManager().createTextureResourceByAssetId(ASSET_ID("Unrimp/Texture/DynamicByCode/SsaoSampleKernel"), *texturePtr);
+			return renderer.getTextureResourceManager().createTextureResourceByAssetId(
+				ASSET_ID("Unrimp/Texture/DynamicByCode/SsaoSampleKernel"),
+				*renderer.getTextureManager().createTexture1D(KERNEL_SIZE, Rhi::TextureFormat::R32G32B32A32F, kernel, Rhi::TextureFlag::SHADER_RESOURCE, Rhi::TextureUsage::IMMUTABLE RHI_RESOURCE_DEBUG_NAME("Screen space ambient occlusion sample kernel")));
 		}
 
 		/**
@@ -252,12 +248,10 @@ namespace
 				}
 			}
 
-			// Create the RHI texture resource
-			Rhi::ITexturePtr texturePtr(renderer.getTextureManager().createTexture2D(NOISE_SIZE, NOISE_SIZE, Rhi::TextureFormat::R32G32B32A32F, noise, Rhi::TextureFlag::SHADER_RESOURCE, Rhi::TextureUsage::IMMUTABLE));
-			RHI_SET_RESOURCE_DEBUG_NAME(texturePtr, "2D screen space ambient occlusion 4x4 noise texture")
-
 			// Create dynamic texture asset
-			return renderer.getTextureResourceManager().createTextureResourceByAssetId(ASSET_ID("Unrimp/Texture/DynamicByCode/SsaoNoise4x4"), *texturePtr);
+			return renderer.getTextureResourceManager().createTextureResourceByAssetId(
+				ASSET_ID("Unrimp/Texture/DynamicByCode/SsaoNoise4x4"),
+				*renderer.getTextureManager().createTexture2D(NOISE_SIZE, NOISE_SIZE, Rhi::TextureFormat::R32G32B32A32F, noise, Rhi::TextureFlag::SHADER_RESOURCE, Rhi::TextureUsage::IMMUTABLE, 1, nullptr RHI_RESOURCE_DEBUG_NAME("Screen space ambient occlusion 4x4 noise")));
 		}
 
 		/**

@@ -99,18 +99,13 @@ namespace Renderer
 	{
 		// Create texture buffer instance
 		mTextureScratchBuffer.resize(std::min(mRenderer.getRhi().getCapabilities().maximumTextureBufferSize, ::detail::LIGHT_DEFAULT_TEXTURE_BUFFER_NUMBER_OF_BYTES));
-		mTextureBuffer = mRenderer.getBufferManager().createTextureBuffer(static_cast<uint32_t>(mTextureScratchBuffer.size()), nullptr, Rhi::BufferFlag::SHADER_RESOURCE, Rhi::BufferUsage::DYNAMIC_DRAW);
-		RHI_SET_RESOURCE_DEBUG_NAME(mTextureBuffer, "Light buffer manager")
+		mTextureBuffer = mRenderer.getBufferManager().createTextureBuffer(static_cast<uint32_t>(mTextureScratchBuffer.size()), nullptr, Rhi::BufferFlag::SHADER_RESOURCE, Rhi::BufferUsage::DYNAMIC_DRAW, Rhi::TextureFormat::R32G32B32A32F RHI_RESOURCE_DEBUG_NAME("Light buffer manager"));
 		mTextureBuffer->addReference();
 
-		{ // Create the clusters 3D texture resource
-			// Create the RHI texture resource
-			Rhi::ITexturePtr texturePtr(mRenderer.getTextureManager().createTexture3D(::detail::CLUSTER_X, ::detail::CLUSTER_Y, ::detail::CLUSTER_Z, Rhi::TextureFormat::R32_UINT, nullptr, Rhi::TextureFlag::SHADER_RESOURCE, Rhi::TextureUsage::DYNAMIC));
-			RHI_SET_RESOURCE_DEBUG_NAME(texturePtr, "Clusters 3D texture resource")
-
-			// Create dynamic texture asset
-			mClusters3DTextureResourceId = mRenderer.getTextureResourceManager().createTextureResourceByAssetId(ASSET_ID("Unrimp/Texture/DynamicByCode/LightClustersMap3D"), *texturePtr);
-		}
+		// Create the clusters 3D texture resource
+		mClusters3DTextureResourceId = mRenderer.getTextureResourceManager().createTextureResourceByAssetId(
+			ASSET_ID("Unrimp/Texture/DynamicByCode/LightClustersMap3D"),
+			*mRenderer.getTextureManager().createTexture3D(::detail::CLUSTER_X, ::detail::CLUSTER_Y, ::detail::CLUSTER_Z, Rhi::TextureFormat::R32_UINT, nullptr, Rhi::TextureFlag::SHADER_RESOURCE, Rhi::TextureUsage::DYNAMIC RHI_RESOURCE_DEBUG_NAME("Light clusters")));
 	}
 
 	LightBufferManager::~LightBufferManager()
@@ -145,8 +140,7 @@ namespace Renderer
 				// TODO(co) We probably should put the clusters 3D texture resource into the light buffer manager resource group as well
 				// Rhi::IResource* resources[2] = { mTextureBuffer, mRenderer.getTextureResourceManager().getById(mClusters3DTextureResourceId).getTexturePtr() };
 				Rhi::IResource* resources[1] = { mTextureBuffer };
-				mResourceGroup = materialBlueprintResource.getRootSignaturePtr()->createResourceGroup(lightTextureBuffer->rootParameterIndex, static_cast<uint32_t>(GLM_COUNTOF(resources)), resources);
-				RHI_SET_RESOURCE_DEBUG_NAME(mResourceGroup, "Light buffer manager resource group")
+				mResourceGroup = materialBlueprintResource.getRootSignaturePtr()->createResourceGroup(lightTextureBuffer->rootParameterIndex, static_cast<uint32_t>(GLM_COUNTOF(resources)), resources, nullptr RHI_RESOURCE_DEBUG_NAME("Light buffer manager"));
 				mResourceGroup->addReference();
 			}
 
@@ -171,8 +165,7 @@ namespace Renderer
 				// TODO(co) We probably should put the clusters 3D texture resource into the light buffer manager resource group as well
 				// Rhi::IResource* resources[2] = { mTextureBuffer, mRenderer.getTextureResourceManager().getById(mClusters3DTextureResourceId).getTexturePtr() };
 				Rhi::IResource* resources[1] = { mTextureBuffer };
-				mResourceGroup = materialBlueprintResource.getRootSignaturePtr()->createResourceGroup(lightTextureBuffer->rootParameterIndex, static_cast<uint32_t>(GLM_COUNTOF(resources)), resources);
-				RHI_SET_RESOURCE_DEBUG_NAME(mResourceGroup, "Light buffer manager resource group")
+				mResourceGroup = materialBlueprintResource.getRootSignaturePtr()->createResourceGroup(lightTextureBuffer->rootParameterIndex, static_cast<uint32_t>(GLM_COUNTOF(resources)), resources, nullptr RHI_RESOURCE_DEBUG_NAME("Light buffer manager"));
 				mResourceGroup->addReference();
 			}
 

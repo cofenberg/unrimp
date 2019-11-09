@@ -104,8 +104,7 @@ namespace Renderer
 			if (nullptr == mCurrentInstanceBuffer->resourceGroup)
 			{
 				Rhi::IResource* resources[2] = { mCurrentInstanceBuffer->uniformBuffer, mCurrentInstanceBuffer->textureBuffer };
-				mCurrentInstanceBuffer->resourceGroup = materialBlueprintResource.getRootSignaturePtr()->createResourceGroup(instanceUniformBuffer->rootParameterIndex, static_cast<uint32_t>(GLM_COUNTOF(resources)), resources);
-				RHI_SET_RESOURCE_DEBUG_NAME(mCurrentInstanceBuffer->resourceGroup, "Texture instance buffer manager")
+				mCurrentInstanceBuffer->resourceGroup = materialBlueprintResource.getRootSignaturePtr()->createResourceGroup(instanceUniformBuffer->rootParameterIndex, static_cast<uint32_t>(GLM_COUNTOF(resources)), resources, nullptr RHI_RESOURCE_DEBUG_NAME("Texture instance buffer manager"));
 				mCurrentInstanceBuffer->resourceGroup->addReference();
 			}
 
@@ -313,13 +312,11 @@ namespace Renderer
 		if (mCurrentInstanceBufferIndex >= mInstanceBuffers.size())
 		{
 			// Create uniform buffer instance
-			Rhi::IUniformBuffer* uniformBuffer = bufferManager.createUniformBuffer(mMaximumUniformBufferSize, nullptr, Rhi::BufferUsage::DYNAMIC_DRAW);
-			RHI_SET_RESOURCE_DEBUG_NAME(uniformBuffer, "Texture instance buffer manager")
+			Rhi::IUniformBuffer* uniformBuffer = bufferManager.createUniformBuffer(mMaximumUniformBufferSize, nullptr, Rhi::BufferUsage::DYNAMIC_DRAW RHI_RESOURCE_DEBUG_NAME("Texture instance buffer manager"));
 			uniformBuffer->addReference();
 
 			// Create texture buffer instance
-			Rhi::ITextureBuffer* textureBuffer = bufferManager.createTextureBuffer(mMaximumTextureBufferSize, nullptr, Rhi::BufferFlag::SHADER_RESOURCE, Rhi::BufferUsage::DYNAMIC_DRAW);
-			RHI_SET_RESOURCE_DEBUG_NAME(textureBuffer, "Texture instance buffer manager")
+			Rhi::ITextureBuffer* textureBuffer = bufferManager.createTextureBuffer(mMaximumTextureBufferSize, nullptr, Rhi::BufferFlag::SHADER_RESOURCE, Rhi::BufferUsage::DYNAMIC_DRAW, Rhi::TextureFormat::R32G32B32A32F RHI_RESOURCE_DEBUG_NAME("Texture instance buffer manager"));
 			textureBuffer->addReference();
 
 			// Create instance buffer instance

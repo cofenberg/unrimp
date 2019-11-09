@@ -183,10 +183,8 @@ namespace Renderer
 			if (mCurrentUniformBufferIndex >= static_cast<uint32_t>(mUniformBuffers.size()))
 			{
 				// Don't directly pass along data or the GPU driver might get confused about the usage and might output performance warnings
-				Rhi::IResource* uniformBuffer = mBufferManager.createUniformBuffer(passUniformBuffer->uniformBufferNumberOfBytes, nullptr, Rhi::BufferUsage::DYNAMIC_DRAW);
-				RHI_SET_RESOURCE_DEBUG_NAME(uniformBuffer, "Pass buffer manager")
-				Rhi::IResourceGroup* resourceGroup = mMaterialBlueprintResource.getRootSignaturePtr()->createResourceGroup(passUniformBuffer->rootParameterIndex, 1, &uniformBuffer);
-				RHI_SET_RESOURCE_DEBUG_NAME(resourceGroup, "Pass buffer manager")
+				Rhi::IResource* uniformBuffer = mBufferManager.createUniformBuffer(passUniformBuffer->uniformBufferNumberOfBytes, nullptr, Rhi::BufferUsage::DYNAMIC_DRAW RHI_RESOURCE_DEBUG_NAME("Pass buffer manager"));
+				Rhi::IResourceGroup* resourceGroup = mMaterialBlueprintResource.getRootSignaturePtr()->createResourceGroup(passUniformBuffer->rootParameterIndex, 1, &uniformBuffer, nullptr RHI_RESOURCE_DEBUG_NAME("Pass buffer manager"));
 				mUniformBuffers.emplace_back(static_cast<Rhi::IUniformBuffer*>(uniformBuffer), resourceGroup);
 			}
 

@@ -497,15 +497,53 @@ namespace OpenGLES3Rhi
 //[-------------------------------------------------------]
 //[ Macros & definitions                                  ]
 //[-------------------------------------------------------]
-/*
-*  @brief
-*    Check whether or not the given resource is owned by the given RHI
-*/
 #ifdef RHI_DEBUG
-	#define OPENGLES3RHI_RHIMATCHCHECK_ASSERT(rhiReference, resourceReference) \
+	/*
+	*  @brief
+	*    Check whether or not the given resource is owned by the given RHI
+	*/
+	#define RHI_MATCH_CHECK(rhiReference, resourceReference) \
 		RHI_ASSERT(mContext, &rhiReference == &(resourceReference).getRhi(), "OpenGL ES 3 error: The given resource is owned by another RHI instance")
+
+	/**
+	*  @brief
+	*    Resource name for debugging purposes, ignored when not using "RHI_DEBUG"
+	*
+	*  @param[in] debugName
+	*    ASCII name for debugging purposes, must be valid (there's no internal null pointer test)
+	*/
+	#define RHI_RESOURCE_DEBUG_NAME_PARAMETER_NO_DEFAULT , [[maybe_unused]] const char* debugName
+	#define RHI_RESOURCE_DEBUG_NAME_MAYBE_UNUSED_PARAMETER , [[maybe_unused]] const char* debugName = ""
+	#define RHI_RESOURCE_DEBUG_NAME_MAYBE_UNUSED_PARAMETER_NO_DEFAULT , [[maybe_unused]] const char* debugName
+
+	/**
+	*  @brief
+	*    Pass resource name for debugging purposes, ignored when not using "RHI_DEBUG"
+	*/
+	#define RHI_RESOURCE_DEBUG_PASS_PARAMETER , debugName
 #else
-	#define OPENGLES3RHI_RHIMATCHCHECK_ASSERT(rhiReference, resourceReference)
+	/*
+	*  @brief
+	*    Check whether or not the given resource is owned by the given RHI
+	*/
+	#define RHI_MATCH_CHECK(rhiReference, resourceReference)
+
+	/**
+	*  @brief
+	*    Resource name for debugging purposes, ignored when not using "RHI_DEBUG"
+	*
+	*  @param[in] debugName
+	*    ASCII name for debugging purposes, must be valid (there's no internal null pointer test)
+	*/
+	#define RHI_RESOURCE_DEBUG_NAME_PARAMETER_NO_DEFAULT
+	#define RHI_RESOURCE_DEBUG_NAME_MAYBE_UNUSED_PARAMETER
+	#define RHI_RESOURCE_DEBUG_NAME_MAYBE_UNUSED_PARAMETER_NO_DEFAULT
+
+	/**
+	*  @brief
+	*    Pass resource name for debugging purposes, ignored when not using "RHI_DEBUG"
+	*/
+	#define RHI_RESOURCE_DEBUG_PASS_PARAMETER
 #endif
 
 
@@ -1227,16 +1265,16 @@ namespace OpenGLES3Rhi
 		//[-------------------------------------------------------]
 		//[ Resource creation                                     ]
 		//[-------------------------------------------------------]
-		[[nodiscard]] virtual Rhi::IRenderPass* createRenderPass(uint32_t numberOfColorAttachments, const Rhi::TextureFormat::Enum* colorAttachmentTextureFormats, Rhi::TextureFormat::Enum depthStencilAttachmentTextureFormat = Rhi::TextureFormat::UNKNOWN, uint8_t numberOfMultisamples = 1) override;
-		[[nodiscard]] virtual Rhi::IQueryPool* createQueryPool(Rhi::QueryType queryType, uint32_t numberOfQueries = 1) override;
-		[[nodiscard]] virtual Rhi::ISwapChain* createSwapChain(Rhi::IRenderPass& renderPass, Rhi::WindowHandle windowHandle, bool useExternalContext = false) override;
-		[[nodiscard]] virtual Rhi::IFramebuffer* createFramebuffer(Rhi::IRenderPass& renderPass, const Rhi::FramebufferAttachment* colorFramebufferAttachments, const Rhi::FramebufferAttachment* depthStencilFramebufferAttachment = nullptr) override;
+		[[nodiscard]] virtual Rhi::IRenderPass* createRenderPass(uint32_t numberOfColorAttachments, const Rhi::TextureFormat::Enum* colorAttachmentTextureFormats, Rhi::TextureFormat::Enum depthStencilAttachmentTextureFormat = Rhi::TextureFormat::UNKNOWN, uint8_t numberOfMultisamples = 1 RHI_RESOURCE_DEBUG_NAME_PARAMETER) override;
+		[[nodiscard]] virtual Rhi::IQueryPool* createQueryPool(Rhi::QueryType queryType, uint32_t numberOfQueries = 1 RHI_RESOURCE_DEBUG_NAME_PARAMETER) override;
+		[[nodiscard]] virtual Rhi::ISwapChain* createSwapChain(Rhi::IRenderPass& renderPass, Rhi::WindowHandle windowHandle, bool useExternalContext = false RHI_RESOURCE_DEBUG_NAME_PARAMETER) override;
+		[[nodiscard]] virtual Rhi::IFramebuffer* createFramebuffer(Rhi::IRenderPass& renderPass, const Rhi::FramebufferAttachment* colorFramebufferAttachments, const Rhi::FramebufferAttachment* depthStencilFramebufferAttachment = nullptr RHI_RESOURCE_DEBUG_NAME_PARAMETER) override;
 		[[nodiscard]] virtual Rhi::IBufferManager* createBufferManager() override;
 		[[nodiscard]] virtual Rhi::ITextureManager* createTextureManager() override;
-		[[nodiscard]] virtual Rhi::IRootSignature* createRootSignature(const Rhi::RootSignature& rootSignature) override;
-		[[nodiscard]] virtual Rhi::IGraphicsPipelineState* createGraphicsPipelineState(const Rhi::GraphicsPipelineState& graphicsPipelineState) override;
-		[[nodiscard]] virtual Rhi::IComputePipelineState* createComputePipelineState(Rhi::IRootSignature& rootSignature, Rhi::IComputeShader& computeShader) override;
-		[[nodiscard]] virtual Rhi::ISamplerState* createSamplerState(const Rhi::SamplerState& samplerState) override;
+		[[nodiscard]] virtual Rhi::IRootSignature* createRootSignature(const Rhi::RootSignature& rootSignature RHI_RESOURCE_DEBUG_NAME_PARAMETER) override;
+		[[nodiscard]] virtual Rhi::IGraphicsPipelineState* createGraphicsPipelineState(const Rhi::GraphicsPipelineState& graphicsPipelineState RHI_RESOURCE_DEBUG_NAME_PARAMETER) override;
+		[[nodiscard]] virtual Rhi::IComputePipelineState* createComputePipelineState(Rhi::IRootSignature& rootSignature, Rhi::IComputeShader& computeShader RHI_RESOURCE_DEBUG_NAME_PARAMETER) override;
+		[[nodiscard]] virtual Rhi::ISamplerState* createSamplerState(const Rhi::SamplerState& samplerState RHI_RESOURCE_DEBUG_NAME_PARAMETER) override;
 		//[-------------------------------------------------------]
 		//[ Resource handling                                     ]
 		//[-------------------------------------------------------]
@@ -3992,15 +4030,17 @@ namespace OpenGLES3Rhi
 	//[ Public virtual Rhi::IRootSignature methods            ]
 	//[-------------------------------------------------------]
 	public:
-		[[nodiscard]] inline virtual Rhi::IResourceGroup* createResourceGroup(uint32_t rootParameterIndex, uint32_t numberOfResources, Rhi::IResource** resources, Rhi::ISamplerState** samplerStates = nullptr) override
+		[[nodiscard]] inline virtual Rhi::IResourceGroup* createResourceGroup(uint32_t rootParameterIndex, uint32_t numberOfResources, Rhi::IResource** resources, Rhi::ISamplerState** samplerStates = nullptr RHI_RESOURCE_DEBUG_NAME_MAYBE_UNUSED_PARAMETER) override
 		{
+			OpenGLES3Rhi& openGLES3Rhi = static_cast<OpenGLES3Rhi&>(getRhi());
+
 			// Sanity checks
-			RHI_ASSERT(getRhi().getContext(), rootParameterIndex < mRootSignature.numberOfParameters, "The OpenGL ES 3 root parameter index is out-of-bounds")
-			RHI_ASSERT(getRhi().getContext(), numberOfResources > 0, "The number of OpenGL ES 3 resources must not be zero")
-			RHI_ASSERT(getRhi().getContext(), nullptr != resources, "The OpenGL ES 3 resource pointers must be valid")
+			RHI_ASSERT(openGLES3Rhi.getContext(), rootParameterIndex < mRootSignature.numberOfParameters, "The OpenGL ES 3 root parameter index is out-of-bounds")
+			RHI_ASSERT(openGLES3Rhi.getContext(), numberOfResources > 0, "The number of OpenGL ES 3 resources must not be zero")
+			RHI_ASSERT(openGLES3Rhi.getContext(), nullptr != resources, "The OpenGL ES 3 resource pointers must be valid")
 
 			// Create resource group
-			return RHI_NEW(getRhi().getContext(), ResourceGroup)(static_cast<OpenGLES3Rhi&>(getRhi()), getRootSignature(), rootParameterIndex, numberOfResources, resources, samplerStates);
+			return RHI_NEW(openGLES3Rhi.getContext(), ResourceGroup)(openGLES3Rhi, getRootSignature(), rootParameterIndex, numberOfResources, resources, samplerStates);
 		}
 
 
@@ -4064,7 +4104,7 @@ namespace OpenGLES3Rhi
 		*  @param[in] indexBufferFormat
 		*    Index buffer data format
 		*/
-		IndexBuffer(OpenGLES3Rhi& openGLES3Rhi, uint32_t numberOfBytes, const void* data, Rhi::BufferUsage bufferUsage, Rhi::IndexBufferFormat::Enum indexBufferFormat) :
+		IndexBuffer(OpenGLES3Rhi& openGLES3Rhi, uint32_t numberOfBytes, const void* data, Rhi::BufferUsage bufferUsage, Rhi::IndexBufferFormat::Enum indexBufferFormat RHI_RESOURCE_DEBUG_NAME_PARAMETER) :
 			IIndexBuffer(openGLES3Rhi),
 			mOpenGLES3ElementArrayBuffer(0),
 			mOpenGLES3Type(GL_UNSIGNED_SHORT),
@@ -4093,6 +4133,15 @@ namespace OpenGLES3Rhi
 				#ifdef RHI_OPENGLES3_STATE_CLEANUP
 					// Be polite and restore the previous bound OpenGL ES 3 element array buffer
 					glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, static_cast<GLuint>(openGLES3ElementArrayBufferBackup));
+				#endif
+
+				// Assign a default name to the resource for debugging purposes
+				#ifdef RHI_DEBUG
+					if (openGLES3Rhi.getOpenGLES3Context().getExtensions().isGL_KHR_debug())
+					{
+						RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "IBO", 6);	// 6 = "IBO: " including terminating zero
+						glObjectLabelKHR(GL_BUFFER_KHR, mOpenGLES3ElementArrayBuffer, -1, detailedDebugName);
+					}
 				#endif
 			}
 			else
@@ -4156,22 +4205,6 @@ namespace OpenGLES3Rhi
 
 
 	//[-------------------------------------------------------]
-	//[ Public virtual Rhi::IResource methods                 ]
-	//[-------------------------------------------------------]
-	public:
-		#ifdef RHI_DEBUG
-			virtual void setDebugName(const char* name) override
-			{
-				// Valid OpenGL ES 3 element array buffer and "GL_KHR_debug"-extension available?
-				if (0 != mOpenGLES3ElementArrayBuffer && static_cast<OpenGLES3Rhi&>(getRhi()).getOpenGLES3Context().getExtensions().isGL_KHR_debug())
-				{
-					glObjectLabelKHR(GL_BUFFER_KHR, mOpenGLES3ElementArrayBuffer, -1, name);
-				}
-			}
-		#endif
-
-
-	//[-------------------------------------------------------]
 	//[ Protected virtual Rhi::RefCount methods               ]
 	//[-------------------------------------------------------]
 	protected:
@@ -4232,7 +4265,7 @@ namespace OpenGLES3Rhi
 		*  @param[in] bufferUsage
 		*    Indication of the buffer usage
 		*/
-		VertexBuffer(OpenGLES3Rhi& openGLES3Rhi, uint32_t numberOfBytes, const void* data, Rhi::BufferUsage bufferUsage) :
+		VertexBuffer(OpenGLES3Rhi& openGLES3Rhi, uint32_t numberOfBytes, const void* data, Rhi::BufferUsage bufferUsage RHI_RESOURCE_DEBUG_NAME_PARAMETER) :
 			IVertexBuffer(openGLES3Rhi),
 			mOpenGLES3ArrayBuffer(0),
 			mBufferSize(numberOfBytes)
@@ -4253,6 +4286,15 @@ namespace OpenGLES3Rhi
 			#ifdef RHI_OPENGLES3_STATE_CLEANUP
 				// Be polite and restore the previous bound OpenGL ES 3 array buffer
 				glBindBuffer(GL_ARRAY_BUFFER, static_cast<GLuint>(openGLES3ArrayBufferBackup));
+			#endif
+
+			// Assign a default name to the resource for debugging purposes
+			#ifdef RHI_DEBUG
+				if (openGLES3Rhi.getOpenGLES3Context().getExtensions().isGL_KHR_debug())
+				{
+					RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "VBO", 6);	// 6 = "VBO: " including terminating zero
+					glObjectLabelKHR(GL_BUFFER_KHR, mOpenGLES3ArrayBuffer, -1, detailedDebugName);
+				}
 			#endif
 		}
 
@@ -4283,22 +4325,6 @@ namespace OpenGLES3Rhi
 		{
 			return mBufferSize;
 		}
-
-
-	//[-------------------------------------------------------]
-	//[ Public virtual Rhi::IResource methods                 ]
-	//[-------------------------------------------------------]
-	public:
-		#ifdef RHI_DEBUG
-			virtual void setDebugName(const char* name) override
-			{
-				// Valid OpenGL ES 3 array buffer and "GL_KHR_debug"-extension available?
-				if (0 != mOpenGLES3ArrayBuffer && static_cast<OpenGLES3Rhi&>(getRhi()).getOpenGLES3Context().getExtensions().isGL_KHR_debug())
-				{
-					glObjectLabelKHR(GL_BUFFER_KHR, mOpenGLES3ArrayBuffer, -1, name);
-				}
-			}
-		#endif
 
 
 	//[-------------------------------------------------------]
@@ -4364,7 +4390,7 @@ namespace OpenGLES3Rhi
 		*  @param[in] id
 		*    The unique compact vertex array ID
 		*/
-		VertexArray(OpenGLES3Rhi& openGLES3Rhi, const Rhi::VertexAttributes& vertexAttributes, uint32_t numberOfVertexBuffers, const Rhi::VertexArrayVertexBuffer* vertexBuffers, IndexBuffer* indexBuffer, uint16_t id) :
+		VertexArray(OpenGLES3Rhi& openGLES3Rhi, const Rhi::VertexAttributes& vertexAttributes, uint32_t numberOfVertexBuffers, const Rhi::VertexArrayVertexBuffer* vertexBuffers, IndexBuffer* indexBuffer, uint16_t id RHI_RESOURCE_DEBUG_NAME_PARAMETER) :
 			IVertexArray(openGLES3Rhi, id),
 			mOpenGLES3VertexArray(0),
 			mNumberOfVertexBuffers(numberOfVertexBuffers),
@@ -4466,6 +4492,15 @@ namespace OpenGLES3Rhi
 			{
 				mIndexBuffer->addReference();
 			}
+
+			// Assign a default name to the resource for debugging purposes
+			#ifdef RHI_DEBUG
+				if (openGLES3Rhi.getOpenGLES3Context().getExtensions().isGL_KHR_debug())
+				{
+					RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "VAO", 6);	// 6 = "VAO: " including terminating zero
+					glObjectLabelKHR(GL_VERTEX_ARRAY_KHR, mOpenGLES3VertexArray, -1, detailedDebugName);
+				}
+			#endif
 		}
 
 		/**
@@ -4479,6 +4514,7 @@ namespace OpenGLES3Rhi
 			glDeleteVertexArrays(1, &mOpenGLES3VertexArray);
 
 			// Release the reference to the used vertex buffers
+			OpenGLES3Rhi& openGLES3Rhi = static_cast<OpenGLES3Rhi&>(getRhi());
 			if (nullptr != mVertexBuffers)
 			{
 				// Release references
@@ -4489,7 +4525,7 @@ namespace OpenGLES3Rhi
 				}
 
 				// Cleanup
-				RHI_FREE(getRhi().getContext(), mVertexBuffers);
+				RHI_FREE(openGLES3Rhi.getContext(), mVertexBuffers);
 			}
 
 			// Release the index buffer reference
@@ -4499,7 +4535,7 @@ namespace OpenGLES3Rhi
 			}
 
 			// Free the unique compact vertex array ID
-			static_cast<OpenGLES3Rhi&>(getRhi()).VertexArrayMakeId.DestroyID(getId());
+			openGLES3Rhi.VertexArrayMakeId.DestroyID(getId());
 		}
 
 		/**
@@ -4525,22 +4561,6 @@ namespace OpenGLES3Rhi
 		{
 			return mOpenGLES3VertexArray;
 		}
-
-
-	//[-------------------------------------------------------]
-	//[ Public virtual Rhi::IResource methods                 ]
-	//[-------------------------------------------------------]
-	public:
-		#ifdef RHI_DEBUG
-			virtual void setDebugName(const char* name) override
-			{
-				// Valid OpenGL ES 3 vertex array buffer and "GL_KHR_debug"-extension available?
-				if (0 != mOpenGLES3VertexArray && static_cast<OpenGLES3Rhi&>(getRhi()).getOpenGLES3Context().getExtensions().isGL_KHR_debug())
-				{
-					glObjectLabelKHR(GL_BUFFER_KHR, mOpenGLES3VertexArray, -1, name);
-				}
-			}
-		#endif
 
 
 	//[-------------------------------------------------------]
@@ -4637,29 +4657,6 @@ namespace OpenGLES3Rhi
 
 
 	//[-------------------------------------------------------]
-	//[ Public virtual Rhi::IResource methods                 ]
-	//[-------------------------------------------------------]
-	public:
-		#ifdef RHI_DEBUG
-			virtual void setDebugName(const char* name) override
-			{
-				// "GL_KHR_debug"-extension available?
-				if (static_cast<OpenGLES3Rhi&>(getRhi()).getOpenGLES3Context().getExtensions().isGL_KHR_debug())
-				{
-					if (0 != mOpenGLES3Texture)
-					{
-						glObjectLabelKHR(GL_TEXTURE, mOpenGLES3Texture, -1, name);
-					}
-					if (0 != mOpenGLES3TextureBuffer)
-					{
-						glObjectLabelKHR(GL_BUFFER_KHR, mOpenGLES3TextureBuffer, -1, name);
-					}
-				}
-			}
-		#endif
-
-
-	//[-------------------------------------------------------]
 	//[ Protected methods                                     ]
 	//[-------------------------------------------------------]
 	protected:
@@ -4748,7 +4745,7 @@ namespace OpenGLES3Rhi
 		*  @param[in] textureFormat
 		*    Texture buffer data format
 		*/
-		TextureBufferBind(OpenGLES3Rhi& openGLES3Rhi, uint32_t numberOfBytes, const void* data, Rhi::BufferUsage bufferUsage, Rhi::TextureFormat::Enum textureFormat) :
+		TextureBufferBind(OpenGLES3Rhi& openGLES3Rhi, uint32_t numberOfBytes, const void* data, Rhi::BufferUsage bufferUsage, Rhi::TextureFormat::Enum textureFormat RHI_RESOURCE_DEBUG_NAME_PARAMETER) :
 			TextureBuffer(openGLES3Rhi, numberOfBytes)
 		{
 			{ // Buffer part
@@ -4787,6 +4784,22 @@ namespace OpenGLES3Rhi
 					glBindTexture(GL_TEXTURE_BUFFER_EXT, static_cast<GLuint>(openGLESTextureBackup));
 				#endif
 			}
+
+			// Assign a default name to the resource for debugging purposes
+			#ifdef RHI_DEBUG
+				if (openGLES3Rhi.getOpenGLES3Context().getExtensions().isGL_KHR_debug())
+				{
+					RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "TBO", 6);	// 6 = "TBO: " including terminating zero
+					if (0 != mOpenGLES3Texture)
+					{
+						glObjectLabelKHR(GL_TEXTURE, mOpenGLES3Texture, -1, detailedDebugName);
+					}
+					if (0 != mOpenGLES3TextureBuffer)
+					{
+						glObjectLabelKHR(GL_BUFFER_KHR, mOpenGLES3TextureBuffer, -1, detailedDebugName);
+					}
+				}
+			#endif
 		}
 
 		/**
@@ -4840,7 +4853,7 @@ namespace OpenGLES3Rhi
 		*  @param[in] textureFormat
 		*    Texture buffer data format
 		*/
-		TextureBufferBindEmulation(OpenGLES3Rhi& openGLES3Rhi, uint32_t numberOfBytes, const void* data, Rhi::BufferUsage bufferUsage, [[maybe_unused]] Rhi::TextureFormat::Enum textureFormat) :
+		TextureBufferBindEmulation(OpenGLES3Rhi& openGLES3Rhi, uint32_t numberOfBytes, const void* data, Rhi::BufferUsage bufferUsage, [[maybe_unused]] Rhi::TextureFormat::Enum textureFormat RHI_RESOURCE_DEBUG_NAME_PARAMETER) :
 			TextureBuffer(openGLES3Rhi, numberOfBytes)
 		{
 			#ifdef RHI_OPENGLES3_STATE_CLEANUP
@@ -4859,6 +4872,15 @@ namespace OpenGLES3Rhi
 			#ifdef RHI_OPENGLES3_STATE_CLEANUP
 				// Be polite and restore the previous bound OpenGL ES 3 uniform buffer
 				glBindBuffer(GL_UNIFORM_BUFFER, static_cast<GLuint>(openGLES3UniformBufferBackup));
+			#endif
+
+			// Assign a default name to the resource for debugging purposes
+			#ifdef RHI_DEBUG
+				if (openGLES3Rhi.getOpenGLES3Context().getExtensions().isGL_KHR_debug())
+				{
+					RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "TBO", 6);	// 6 = "TBO: " including terminating zero
+					glObjectLabelKHR(GL_BUFFER_KHR, mOpenGLES3TextureBuffer, -1, detailedDebugName);
+				}
 			#endif
 		}
 
@@ -5028,7 +5050,7 @@ namespace OpenGLES3Rhi
 		*  @param[in] bufferUsage
 		*    Indication of the buffer usage
 		*/
-		UniformBuffer(OpenGLES3Rhi& openGLES3Rhi, uint32_t numberOfBytes, const void* data, Rhi::BufferUsage bufferUsage) :
+		UniformBuffer(OpenGLES3Rhi& openGLES3Rhi, uint32_t numberOfBytes, const void* data, Rhi::BufferUsage bufferUsage RHI_RESOURCE_DEBUG_NAME_PARAMETER) :
 			IUniformBuffer(static_cast<Rhi::IRhi&>(openGLES3Rhi)),
 			mOpenGLES3UniformBuffer(0),
 			mBufferSize(numberOfBytes)
@@ -5052,6 +5074,15 @@ namespace OpenGLES3Rhi
 			#ifdef RHI_OPENGLES3_STATE_CLEANUP
 				// Be polite and restore the previous bound OpenGL ES 3 uniform buffer
 				glBindBuffer(GL_UNIFORM_BUFFER, static_cast<GLuint>(openGLES3UniformBufferBackup));
+			#endif
+
+			// Assign a default name to the resource for debugging purposes
+			#ifdef RHI_DEBUG
+				if (openGLES3Rhi.getOpenGLES3Context().getExtensions().isGL_KHR_debug())
+				{
+					RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "UBO", 6);	// 6 = "UBO: " including terminating zero
+					glObjectLabelKHR(GL_BUFFER_KHR, mOpenGLES3UniformBuffer, -1, detailedDebugName);
+				}
 			#endif
 		}
 
@@ -5082,22 +5113,6 @@ namespace OpenGLES3Rhi
 		{
 			return mBufferSize;
 		}
-
-
-	//[-------------------------------------------------------]
-	//[ Public virtual Rhi::IResource methods                 ]
-	//[-------------------------------------------------------]
-	public:
-		#ifdef RHI_DEBUG
-			virtual void setDebugName(const char* name) override
-			{
-				// Valid OpenGL ES 3 uniform buffer and "GL_KHR_debug"-extension available?
-				if (0 != mOpenGLES3UniformBuffer && static_cast<OpenGLES3Rhi&>(getRhi()).getOpenGLES3Context().getExtensions().isGL_KHR_debug())
-				{
-					glObjectLabelKHR(GL_BUFFER_KHR, mOpenGLES3UniformBuffer, -1, name);
-				}
-			}
-		#endif
 
 
 	//[-------------------------------------------------------]
@@ -5170,35 +5185,39 @@ namespace OpenGLES3Rhi
 	//[ Public virtual Rhi::IBufferManager methods            ]
 	//[-------------------------------------------------------]
 	public:
-		[[nodiscard]] inline virtual Rhi::IVertexBuffer* createVertexBuffer(uint32_t numberOfBytes, const void* data = nullptr, [[maybe_unused]] uint32_t bufferFlags = 0, Rhi::BufferUsage bufferUsage = Rhi::BufferUsage::STATIC_DRAW) override
+		[[nodiscard]] inline virtual Rhi::IVertexBuffer* createVertexBuffer(uint32_t numberOfBytes, const void* data = nullptr, [[maybe_unused]] uint32_t bufferFlags = 0, Rhi::BufferUsage bufferUsage = Rhi::BufferUsage::STATIC_DRAW RHI_RESOURCE_DEBUG_NAME_PARAMETER) override
 		{
-			return RHI_NEW(getRhi().getContext(), VertexBuffer)(static_cast<OpenGLES3Rhi&>(getRhi()), numberOfBytes, data, bufferUsage);
+			OpenGLES3Rhi& openGLES3Rhi = static_cast<OpenGLES3Rhi&>(getRhi());
+			return RHI_NEW(openGLES3Rhi.getContext(), VertexBuffer)(openGLES3Rhi, numberOfBytes, data, bufferUsage RHI_RESOURCE_DEBUG_PASS_PARAMETER);
 		}
 
-		[[nodiscard]] inline virtual Rhi::IIndexBuffer* createIndexBuffer(uint32_t numberOfBytes, const void* data = nullptr, [[maybe_unused]] uint32_t bufferFlags = 0, Rhi::BufferUsage bufferUsage = Rhi::BufferUsage::STATIC_DRAW, Rhi::IndexBufferFormat::Enum indexBufferFormat = Rhi::IndexBufferFormat::UNSIGNED_SHORT) override
+		[[nodiscard]] inline virtual Rhi::IIndexBuffer* createIndexBuffer(uint32_t numberOfBytes, const void* data = nullptr, [[maybe_unused]] uint32_t bufferFlags = 0, Rhi::BufferUsage bufferUsage = Rhi::BufferUsage::STATIC_DRAW, Rhi::IndexBufferFormat::Enum indexBufferFormat = Rhi::IndexBufferFormat::UNSIGNED_SHORT RHI_RESOURCE_DEBUG_NAME_PARAMETER) override
 		{
-			return RHI_NEW(getRhi().getContext(), IndexBuffer)(static_cast<OpenGLES3Rhi&>(getRhi()), numberOfBytes, data, bufferUsage, indexBufferFormat);
+			OpenGLES3Rhi& openGLES3Rhi = static_cast<OpenGLES3Rhi&>(getRhi());
+			return RHI_NEW(openGLES3Rhi.getContext(), IndexBuffer)(openGLES3Rhi, numberOfBytes, data, bufferUsage, indexBufferFormat RHI_RESOURCE_DEBUG_PASS_PARAMETER);
 		}
 
-		[[nodiscard]] inline virtual Rhi::IVertexArray* createVertexArray(const Rhi::VertexAttributes& vertexAttributes, uint32_t numberOfVertexBuffers, const Rhi::VertexArrayVertexBuffer* vertexBuffers, Rhi::IIndexBuffer* indexBuffer = nullptr) override
+		[[nodiscard]] inline virtual Rhi::IVertexArray* createVertexArray(const Rhi::VertexAttributes& vertexAttributes, uint32_t numberOfVertexBuffers, const Rhi::VertexArrayVertexBuffer* vertexBuffers, Rhi::IIndexBuffer* indexBuffer = nullptr RHI_RESOURCE_DEBUG_NAME_PARAMETER) override
 		{
+			OpenGLES3Rhi& openGLES3Rhi = static_cast<OpenGLES3Rhi&>(getRhi());
+
 			// Sanity checks
 			#ifdef RHI_DEBUG
 			{
 				const Rhi::VertexArrayVertexBuffer* vertexBufferEnd = vertexBuffers + numberOfVertexBuffers;
 				for (const Rhi::VertexArrayVertexBuffer* vertexBuffer = vertexBuffers; vertexBuffer < vertexBufferEnd; ++vertexBuffer)
 				{
-					RHI_ASSERT(getRhi().getContext(), &getRhi() == &vertexBuffer->vertexBuffer->getRhi(), "OpenGL ES 3 error: The given vertex buffer resource is owned by another RHI instance")
+					RHI_ASSERT(openGLES3Rhi.getContext(), &openGLES3Rhi == &vertexBuffer->vertexBuffer->getRhi(), "OpenGL ES 3 error: The given vertex buffer resource is owned by another RHI instance")
 				}
 			}
 			#endif
-			RHI_ASSERT(getRhi().getContext(), nullptr == indexBuffer || &getRhi() == &indexBuffer->getRhi(), "OpenGL ES 3 error: The given index buffer resource is owned by another RHI instance")
+			RHI_ASSERT(openGLES3Rhi.getContext(), nullptr == indexBuffer || &openGLES3Rhi == &indexBuffer->getRhi(), "OpenGL ES 3 error: The given index buffer resource is owned by another RHI instance")
 
 			// Create vertex array
 			uint16_t id = 0;
-			if (static_cast<OpenGLES3Rhi&>(getRhi()).VertexArrayMakeId.CreateID(id))
+			if (openGLES3Rhi.VertexArrayMakeId.CreateID(id))
 			{
-				return RHI_NEW(getRhi().getContext(), VertexArray)(static_cast<OpenGLES3Rhi&>(getRhi()), vertexAttributes, numberOfVertexBuffers, vertexBuffers, static_cast<IndexBuffer*>(indexBuffer), id);
+				return RHI_NEW(openGLES3Rhi.getContext(), VertexArray)(openGLES3Rhi, vertexAttributes, numberOfVertexBuffers, vertexBuffers, static_cast<IndexBuffer*>(indexBuffer), id RHI_RESOURCE_DEBUG_PASS_PARAMETER);
 			}
 
 			// Error: Ensure a correct reference counter behaviour
@@ -5216,30 +5235,32 @@ namespace OpenGLES3Rhi
 			return nullptr;
 		}
 
-		[[nodiscard]] virtual Rhi::ITextureBuffer* createTextureBuffer(uint32_t numberOfBytes, const void* data = nullptr, uint32_t = Rhi::BufferFlag::SHADER_RESOURCE, Rhi::BufferUsage bufferUsage = Rhi::BufferUsage::STATIC_DRAW, Rhi::TextureFormat::Enum textureFormat = Rhi::TextureFormat::R32G32B32A32F) override
+		[[nodiscard]] virtual Rhi::ITextureBuffer* createTextureBuffer(uint32_t numberOfBytes, const void* data = nullptr, uint32_t = Rhi::BufferFlag::SHADER_RESOURCE, Rhi::BufferUsage bufferUsage = Rhi::BufferUsage::STATIC_DRAW, Rhi::TextureFormat::Enum textureFormat = Rhi::TextureFormat::R32G32B32A32F RHI_RESOURCE_DEBUG_NAME_PARAMETER) override
 		{
+			OpenGLES3Rhi& openGLES3Rhi = static_cast<OpenGLES3Rhi&>(getRhi());
+
 			// Sanity check
-			RHI_ASSERT(getRhi().getContext(), (numberOfBytes % Rhi::TextureFormat::getNumberOfBytesPerElement(textureFormat)) == 0, "The OpenGL ES 3 texture buffer size must be a multiple of the selected texture format bytes per texel")
+			RHI_ASSERT(openGLES3Rhi.getContext(), (numberOfBytes % Rhi::TextureFormat::getNumberOfBytesPerElement(textureFormat)) == 0, "The OpenGL ES 3 texture buffer size must be a multiple of the selected texture format bytes per texel")
 
 			// Is "GL_EXT_texture_buffer" there?
 			if (mExtensions->isGL_EXT_texture_buffer())
 			{
 				// TODO(co) Add security check: Is the given resource one of the currently used RHI?
-				return RHI_NEW(getRhi().getContext(), TextureBufferBind)(static_cast<OpenGLES3Rhi&>(getRhi()), numberOfBytes, data, bufferUsage, textureFormat);
+				return RHI_NEW(openGLES3Rhi.getContext(), TextureBufferBind)(openGLES3Rhi, numberOfBytes, data, bufferUsage, textureFormat RHI_RESOURCE_DEBUG_PASS_PARAMETER);
 			}
 
 			// We can only emulate the "Rhi::TextureFormat::R32G32B32A32F" texture format using an uniform buffer
 			else if (Rhi::TextureFormat::R32G32B32A32F == textureFormat)
 			{
 				// TODO(co) Add security check: Is the given resource one of the currently used RHI?
-				return RHI_NEW(getRhi().getContext(), TextureBufferBindEmulation)(static_cast<OpenGLES3Rhi&>(getRhi()), numberOfBytes, data, bufferUsage, textureFormat);
+				return RHI_NEW(openGLES3Rhi.getContext(), TextureBufferBindEmulation)(openGLES3Rhi, numberOfBytes, data, bufferUsage, textureFormat RHI_RESOURCE_DEBUG_PASS_PARAMETER);
 			}
 
 			// Error!
 			return nullptr;
 		}
 
-		[[nodiscard]] virtual Rhi::IStructuredBuffer* createStructuredBuffer([[maybe_unused]] uint32_t numberOfBytes, [[maybe_unused]] const void* data, [[maybe_unused]] uint32_t bufferFlags, [[maybe_unused]] Rhi::BufferUsage bufferUsage, [[maybe_unused]] uint32_t numberOfStructureBytes) override
+		[[nodiscard]] virtual Rhi::IStructuredBuffer* createStructuredBuffer([[maybe_unused]] uint32_t numberOfBytes, [[maybe_unused]] const void* data, [[maybe_unused]] uint32_t bufferFlags, [[maybe_unused]] Rhi::BufferUsage bufferUsage, [[maybe_unused]] uint32_t numberOfStructureBytes RHI_RESOURCE_DEBUG_NAME_MAYBE_UNUSED_PARAMETER) override
 		{
 			// Sanity checks
 			RHI_ASSERT(getRhi().getContext(), (numberOfBytes % numberOfStructureBytes) == 0, "The OpenGL ES 3 structured buffer size must be a multiple of the given number of structure bytes")
@@ -5249,21 +5270,24 @@ namespace OpenGLES3Rhi
 			return nullptr;
 		}
 
-		[[nodiscard]] inline virtual Rhi::IIndirectBuffer* createIndirectBuffer(uint32_t numberOfBytes, const void* data = nullptr, uint32_t indirectBufferFlags = 0, [[maybe_unused]] Rhi::BufferUsage bufferUsage = Rhi::BufferUsage::STATIC_DRAW) override
+		[[nodiscard]] inline virtual Rhi::IIndirectBuffer* createIndirectBuffer(uint32_t numberOfBytes, const void* data = nullptr, uint32_t indirectBufferFlags = 0, [[maybe_unused]] Rhi::BufferUsage bufferUsage = Rhi::BufferUsage::STATIC_DRAW RHI_RESOURCE_DEBUG_NAME_MAYBE_UNUSED_PARAMETER) override
 		{
-			return RHI_NEW(getRhi().getContext(), IndirectBuffer)(static_cast<OpenGLES3Rhi&>(getRhi()), numberOfBytes, data, indirectBufferFlags);
+			OpenGLES3Rhi& openGLES3Rhi = static_cast<OpenGLES3Rhi&>(getRhi());
+			return RHI_NEW(openGLES3Rhi.getContext(), IndirectBuffer)(openGLES3Rhi, numberOfBytes, data, indirectBufferFlags);
 		}
 
-		[[nodiscard]] inline virtual Rhi::IUniformBuffer* createUniformBuffer(uint32_t numberOfBytes, const void* data = nullptr, Rhi::BufferUsage bufferUsage = Rhi::BufferUsage::STATIC_DRAW) override
+		[[nodiscard]] inline virtual Rhi::IUniformBuffer* createUniformBuffer(uint32_t numberOfBytes, const void* data = nullptr, Rhi::BufferUsage bufferUsage = Rhi::BufferUsage::STATIC_DRAW RHI_RESOURCE_DEBUG_NAME_PARAMETER) override
 		{
+			OpenGLES3Rhi& openGLES3Rhi = static_cast<OpenGLES3Rhi&>(getRhi());
+
 			// Don't remove this reminder comment block: There are no buffer flags by intent since an uniform buffer can't be used for unordered access and as a consequence an uniform buffer must always used as shader resource to not be pointless
 			// -> Inside GLSL "layout(binding = 0, std140) writeonly uniform OutputUniformBuffer" will result in the GLSL compiler error "Failed to parse the GLSL shader source code: ERROR: 0:85: 'assign' :  l-value required "anon@6" (can't modify a uniform)"
 			// -> Inside GLSL "layout(binding = 0, std430) writeonly buffer  OutputUniformBuffer" will work in OpenGL but will fail in Vulkan with "Vulkan debug report callback: Object type: "VK_DEBUG_REPORT_OBJECT_TYPE_UNKNOWN_EXT" Object: "0" Location: "0" Message code: "13" Layer prefix: "Validation" Message: "Object: VK_NULL_HANDLE (Type = 0) | Type mismatch on descriptor slot 0.0 (used as type `ptr to uniform struct of (vec4 of float32)`) but descriptor of type VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER""
-			// RHI_ASSERT(getRhi().getContext(), (bufferFlags & Rhi::BufferFlag::UNORDERED_ACCESS) == 0, "Invalid OpenGL ES 3 buffer flags, uniform buffer can't be used for unordered access")
-			// RHI_ASSERT(getRhi().getContext(), (bufferFlags & Rhi::BufferFlag::SHADER_RESOURCE) != 0, "Invalid OpenGL ES 3 buffer flags, uniform buffer must be used as shader resource")
+			// RHI_ASSERT(openGLES3Rhi.getContext(), (bufferFlags & Rhi::BufferFlag::UNORDERED_ACCESS) == 0, "Invalid OpenGL ES 3 buffer flags, uniform buffer can't be used for unordered access")
+			// RHI_ASSERT(openGLES3Rhi.getContext(), (bufferFlags & Rhi::BufferFlag::SHADER_RESOURCE) != 0, "Invalid OpenGL ES 3 buffer flags, uniform buffer must be used as shader resource")
 
 			// Create the uniform buffer
-			return RHI_NEW(getRhi().getContext(), UniformBuffer)(static_cast<OpenGLES3Rhi&>(getRhi()), numberOfBytes, data, bufferUsage);
+			return RHI_NEW(openGLES3Rhi.getContext(), UniformBuffer)(openGLES3Rhi, numberOfBytes, data, bufferUsage RHI_RESOURCE_DEBUG_PASS_PARAMETER);
 		}
 
 
@@ -5327,7 +5351,7 @@ namespace OpenGLES3Rhi
 		*  @param[in] textureFlags
 		*    Texture flags, see "Rhi::TextureFlag::Enum"
 		*/
-		Texture1D(OpenGLES3Rhi& openGLES3Rhi, uint32_t width, Rhi::TextureFormat::Enum textureFormat, const void* data, uint32_t textureFlags) :
+		Texture1D(OpenGLES3Rhi& openGLES3Rhi, uint32_t width, Rhi::TextureFormat::Enum textureFormat, const void* data, uint32_t textureFlags RHI_RESOURCE_DEBUG_NAME_PARAMETER) :
 			ITexture1D(openGLES3Rhi, width),
 			mOpenGLES3Texture(0)
 		{
@@ -5434,6 +5458,15 @@ namespace OpenGLES3Rhi
 				// Restore previous alignment
 				glPixelStorei(GL_UNPACK_ALIGNMENT, openGLES3AlignmentBackup);
 			#endif
+
+			// Assign a default name to the resource for debugging purposes
+			#ifdef RHI_DEBUG
+				if (openGLES3Rhi.getOpenGLES3Context().getExtensions().isGL_KHR_debug())
+				{
+					RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "1D texture", 13);	// 13 = "1D texture: " including terminating zero
+					glObjectLabelKHR(GL_TEXTURE, mOpenGLES3Texture, -1, detailedDebugName);
+				}
+			#endif
 		}
 
 		/**
@@ -5464,17 +5497,6 @@ namespace OpenGLES3Rhi
 	//[ Public virtual Rhi::IResource methods                 ]
 	//[-------------------------------------------------------]
 	public:
-		#ifdef RHI_DEBUG
-			virtual void setDebugName(const char* name) override
-			{
-				// Valid OpenGL ES 3 texture and "GL_KHR_debug"-extension available?
-				if (0 != mOpenGLES3Texture && static_cast<OpenGLES3Rhi&>(getRhi()).getOpenGLES3Context().getExtensions().isGL_KHR_debug())
-				{
-					glObjectLabelKHR(GL_TEXTURE, mOpenGLES3Texture, -1, name);
-				}
-			}
-		#endif
-
 		[[nodiscard]] inline virtual void* getInternalResourceHandle() const override
 		{
 			return reinterpret_cast<void*>(static_cast<uintptr_t>(mOpenGLES3Texture));
@@ -5543,7 +5565,7 @@ namespace OpenGLES3Rhi
 		*  @param[in] textureFlags
 		*    Texture flags, see "Rhi::TextureFlag::Enum"
 		*/
-		Texture1DArray(OpenGLES3Rhi& openGLES3Rhi, uint32_t width, uint32_t numberOfSlices, Rhi::TextureFormat::Enum textureFormat, const void* data, uint32_t textureFlags) :
+		Texture1DArray(OpenGLES3Rhi& openGLES3Rhi, uint32_t width, uint32_t numberOfSlices, Rhi::TextureFormat::Enum textureFormat, const void* data, uint32_t textureFlags RHI_RESOURCE_DEBUG_NAME_PARAMETER) :
 			ITexture1DArray(openGLES3Rhi, width, numberOfSlices),
 			mOpenGLES3Texture(0)
 		{
@@ -5596,6 +5618,15 @@ namespace OpenGLES3Rhi
 				// Restore previous alignment
 				glPixelStorei(GL_UNPACK_ALIGNMENT, openGLES3AlignmentBackup);
 			#endif
+
+			// Assign a default name to the resource for debugging purposes
+			#ifdef RHI_DEBUG
+				if (openGLES3Rhi.getOpenGLES3Context().getExtensions().isGL_KHR_debug())
+				{
+					RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "1D texture array", 19);	// 19 = "1D texture array: " including terminating zero
+					glObjectLabelKHR(GL_TEXTURE, mOpenGLES3Texture, -1, detailedDebugName);
+				}
+			#endif
 		}
 
 		/**
@@ -5620,22 +5651,6 @@ namespace OpenGLES3Rhi
 		{
 			return mOpenGLES3Texture;
 		}
-
-
-	//[-------------------------------------------------------]
-	//[ Public virtual Rhi::IResource methods                 ]
-	//[-------------------------------------------------------]
-	public:
-		#ifdef RHI_DEBUG
-			virtual void setDebugName(const char* name) override
-			{
-				// Valid OpenGL ES 3 texture and "GL_KHR_debug"-extension available?
-				if (0 != mOpenGLES3Texture && static_cast<OpenGLES3Rhi&>(getRhi()).getOpenGLES3Context().getExtensions().isGL_KHR_debug())
-				{
-					glObjectLabelKHR(GL_TEXTURE, mOpenGLES3Texture, -1, name);
-				}
-			}
-		#endif
 
 
 	//[-------------------------------------------------------]
@@ -5700,7 +5715,7 @@ namespace OpenGLES3Rhi
 		*  @param[in] textureFlags
 		*    Texture flags, see "Rhi::TextureFlag::Enum"
 		*/
-		Texture2D(OpenGLES3Rhi& openGLES3Rhi, uint32_t width, uint32_t height, Rhi::TextureFormat::Enum textureFormat, const void* data, uint32_t textureFlags) :
+		Texture2D(OpenGLES3Rhi& openGLES3Rhi, uint32_t width, uint32_t height, Rhi::TextureFormat::Enum textureFormat, const void* data, uint32_t textureFlags RHI_RESOURCE_DEBUG_NAME_PARAMETER) :
 			ITexture2D(openGLES3Rhi, width, height),
 			mOpenGLES3Texture(0)
 		{
@@ -5807,6 +5822,15 @@ namespace OpenGLES3Rhi
 				// Restore previous alignment
 				glPixelStorei(GL_UNPACK_ALIGNMENT, openGLES3AlignmentBackup);
 			#endif
+
+			// Assign a default name to the resource for debugging purposes
+			#ifdef RHI_DEBUG
+				if (openGLES3Rhi.getOpenGLES3Context().getExtensions().isGL_KHR_debug())
+				{
+					RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "2D texture", 13);	// 13 = "2D texture: " including terminating zero
+					glObjectLabelKHR(GL_TEXTURE, mOpenGLES3Texture, -1, detailedDebugName);
+				}
+			#endif
 		}
 
 		/**
@@ -5873,17 +5897,6 @@ namespace OpenGLES3Rhi
 	//[ Public virtual Rhi::IResource methods                 ]
 	//[-------------------------------------------------------]
 	public:
-		#ifdef RHI_DEBUG
-			virtual void setDebugName(const char* name) override
-			{
-				// Valid OpenGL ES 3 texture and "GL_KHR_debug"-extension available?
-				if (0 != mOpenGLES3Texture && static_cast<OpenGLES3Rhi&>(getRhi()).getOpenGLES3Context().getExtensions().isGL_KHR_debug())
-				{
-					glObjectLabelKHR(GL_TEXTURE, mOpenGLES3Texture, -1, name);
-				}
-			}
-		#endif
-
 		[[nodiscard]] inline virtual void* getInternalResourceHandle() const override
 		{
 			return reinterpret_cast<void*>(static_cast<uintptr_t>(mOpenGLES3Texture));
@@ -5954,7 +5967,7 @@ namespace OpenGLES3Rhi
 		*  @param[in] textureFlags
 		*    Texture flags, see "Rhi::TextureFlag::Enum"
 		*/
-		Texture2DArray(OpenGLES3Rhi& openGLES3Rhi, uint32_t width, uint32_t height, uint32_t numberOfSlices, Rhi::TextureFormat::Enum textureFormat, const void* data, uint32_t textureFlags) :
+		Texture2DArray(OpenGLES3Rhi& openGLES3Rhi, uint32_t width, uint32_t height, uint32_t numberOfSlices, Rhi::TextureFormat::Enum textureFormat, const void* data, uint32_t textureFlags RHI_RESOURCE_DEBUG_NAME_PARAMETER) :
 			ITexture2DArray(openGLES3Rhi, width, height, numberOfSlices),
 			mOpenGLES3Texture(0)
 		{
@@ -6005,6 +6018,15 @@ namespace OpenGLES3Rhi
 				// Restore previous alignment
 				glPixelStorei(GL_UNPACK_ALIGNMENT, openGLES3AlignmentBackup);
 			#endif
+
+			// Assign a default name to the resource for debugging purposes
+			#ifdef RHI_DEBUG
+				if (openGLES3Rhi.getOpenGLES3Context().getExtensions().isGL_KHR_debug())
+				{
+					RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "2D texture array", 19);	// 19 = "2D texture array: " including terminating zero
+					glObjectLabelKHR(GL_TEXTURE, mOpenGLES3Texture, -1, detailedDebugName);
+				}
+			#endif
 		}
 
 		/**
@@ -6029,22 +6051,6 @@ namespace OpenGLES3Rhi
 		{
 			return mOpenGLES3Texture;
 		}
-
-
-	//[-------------------------------------------------------]
-	//[ Public virtual Rhi::IResource methods                 ]
-	//[-------------------------------------------------------]
-	public:
-		#ifdef RHI_DEBUG
-			virtual void setDebugName(const char* name) override
-			{
-				// Valid OpenGL ES 3 texture and "GL_KHR_debug"-extension available?
-				if (0 != mOpenGLES3Texture && static_cast<OpenGLES3Rhi&>(getRhi()).getOpenGLES3Context().getExtensions().isGL_KHR_debug())
-				{
-					glObjectLabelKHR(GL_TEXTURE, mOpenGLES3Texture, -1, name);
-				}
-			}
-		#endif
 
 
 	//[-------------------------------------------------------]
@@ -6111,7 +6117,7 @@ namespace OpenGLES3Rhi
 		*  @param[in] textureFlags
 		*    Texture flags, see "Rhi::TextureFlag::Enum"
 		*/
-		inline Texture3D(OpenGLES3Rhi& openGLES3Rhi, uint32_t width, uint32_t height, uint32_t depth, Rhi::TextureFormat::Enum textureFormat, const void* data, uint32_t textureFlags) :
+		inline Texture3D(OpenGLES3Rhi& openGLES3Rhi, uint32_t width, uint32_t height, uint32_t depth, Rhi::TextureFormat::Enum textureFormat, const void* data, uint32_t textureFlags RHI_RESOURCE_DEBUG_NAME_PARAMETER) :
 			ITexture3D(openGLES3Rhi, width, height, depth),
 			mTextureFormat(textureFormat),
 			mOpenGLES3Texture(0)
@@ -6231,6 +6237,15 @@ namespace OpenGLES3Rhi
 				// Restore previous alignment
 				glPixelStorei(GL_UNPACK_ALIGNMENT, openGLES3AlignmentBackup);
 			#endif
+
+			// Assign a default name to the resource for debugging purposes
+			#ifdef RHI_DEBUG
+				if (openGLES3Rhi.getOpenGLES3Context().getExtensions().isGL_KHR_debug())
+				{
+					RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "3D texture", 13);	// 13 = "3D texture: " including terminating zero
+					glObjectLabelKHR(GL_TEXTURE, mOpenGLES3Texture, -1, detailedDebugName);
+				}
+			#endif
 		}
 
 		/**
@@ -6261,17 +6276,6 @@ namespace OpenGLES3Rhi
 	//[ Public virtual Rhi::IResource methods                 ]
 	//[-------------------------------------------------------]
 	public:
-		#ifdef RHI_DEBUG
-			virtual void setDebugName(const char* name) override
-			{
-				// Valid OpenGL ES 3 texture and "GL_KHR_debug"-extension available?
-				if (0 != mOpenGLES3Texture && static_cast<OpenGLES3Rhi&>(getRhi()).getOpenGLES3Context().getExtensions().isGL_KHR_debug())
-				{
-					glObjectLabelKHR(GL_TEXTURE, mOpenGLES3Texture, -1, name);
-				}
-			}
-		#endif
-
 		[[nodiscard]] inline virtual void* getInternalResourceHandle() const override
 		{
 			return reinterpret_cast<void*>(static_cast<uintptr_t>(mOpenGLES3Texture));
@@ -6341,7 +6345,7 @@ namespace OpenGLES3Rhi
 		*  @param[in] textureFlags
 		*    Texture flags, see "Rhi::TextureFlag::Enum"
 		*/
-		TextureCube(OpenGLES3Rhi& openGLES3Rhi, uint32_t width, uint32_t height, Rhi::TextureFormat::Enum textureFormat, const void* data, uint32_t textureFlags) :
+		TextureCube(OpenGLES3Rhi& openGLES3Rhi, uint32_t width, uint32_t height, Rhi::TextureFormat::Enum textureFormat, const void* data, uint32_t textureFlags RHI_RESOURCE_DEBUG_NAME_PARAMETER) :
 			ITextureCube(openGLES3Rhi, width, height),
 			mOpenGLES3Texture(0)
 		{
@@ -6482,6 +6486,15 @@ namespace OpenGLES3Rhi
 				// Restore previous alignment
 				glPixelStorei(GL_UNPACK_ALIGNMENT, openGLES3AlignmentBackup);
 			#endif
+
+			// Assign a default name to the resource for debugging purposes
+			#ifdef RHI_DEBUG
+				if (openGLES3Rhi.getOpenGLES3Context().getExtensions().isGL_KHR_debug())
+				{
+					RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "Cube texture", 15);	// 15 = "Cube texture: " including terminating zero
+					glObjectLabelKHR(GL_TEXTURE, mOpenGLES3Texture, -1, detailedDebugName);
+				}
+			#endif
 		}
 
 		/**
@@ -6512,17 +6525,6 @@ namespace OpenGLES3Rhi
 	//[ Public virtual Rhi::IResource methods                 ]
 	//[-------------------------------------------------------]
 	public:
-		#ifdef RHI_DEBUG
-			virtual void setDebugName(const char* name) override
-			{
-				// Valid OpenGL ES 3 texture and "GL_KHR_debug"-extension available?
-				if (0 != mOpenGLES3Texture && static_cast<OpenGLES3Rhi&>(getRhi()).getOpenGLES3Context().getExtensions().isGL_KHR_debug())
-				{
-					glObjectLabelKHR(GL_TEXTURE, mOpenGLES3Texture, -1, name);
-				}
-			}
-		#endif
-
 		[[nodiscard]] inline virtual void* getInternalResourceHandle() const override
 		{
 			return reinterpret_cast<void*>(static_cast<uintptr_t>(mOpenGLES3Texture));
@@ -6598,64 +6600,76 @@ namespace OpenGLES3Rhi
 	//[ Public virtual Rhi::ITextureManager methods           ]
 	//[-------------------------------------------------------]
 	public:
-		[[nodiscard]] virtual Rhi::ITexture1D* createTexture1D(uint32_t width, Rhi::TextureFormat::Enum textureFormat, const void* data = nullptr, uint32_t textureFlags = 0, [[maybe_unused]] Rhi::TextureUsage textureUsage = Rhi::TextureUsage::DEFAULT) override
+		[[nodiscard]] virtual Rhi::ITexture1D* createTexture1D(uint32_t width, Rhi::TextureFormat::Enum textureFormat, const void* data = nullptr, uint32_t textureFlags = 0, [[maybe_unused]] Rhi::TextureUsage textureUsage = Rhi::TextureUsage::DEFAULT RHI_RESOURCE_DEBUG_NAME_PARAMETER) override
 		{
+			OpenGLES3Rhi& openGLES3Rhi = static_cast<OpenGLES3Rhi&>(getRhi());
+
 			// Sanity check
-			RHI_ASSERT(getRhi().getContext(), width > 0, "OpenGL ES 3 create texture 1D was called with invalid parameters")
+			RHI_ASSERT(openGLES3Rhi.getContext(), width > 0, "OpenGL ES 3 create texture 1D was called with invalid parameters")
 
 			// Create 1D texture resource
 			// -> The indication of the texture usage is only relevant for Direct3D, OpenGL ES 3 has no texture usage indication
-			return RHI_NEW(getRhi().getContext(), Texture1D)(static_cast<OpenGLES3Rhi&>(getRhi()), width, textureFormat, data, textureFlags);
+			return RHI_NEW(openGLES3Rhi.getContext(), Texture1D)(openGLES3Rhi, width, textureFormat, data, textureFlags RHI_RESOURCE_DEBUG_PASS_PARAMETER);
 		}
 
-		[[nodiscard]] virtual Rhi::ITexture1DArray* createTexture1DArray(uint32_t width, uint32_t numberOfSlices, Rhi::TextureFormat::Enum textureFormat, const void* data = nullptr, uint32_t textureFlags = 0, [[maybe_unused]] Rhi::TextureUsage textureUsage = Rhi::TextureUsage::DEFAULT) override
+		[[nodiscard]] virtual Rhi::ITexture1DArray* createTexture1DArray(uint32_t width, uint32_t numberOfSlices, Rhi::TextureFormat::Enum textureFormat, const void* data = nullptr, uint32_t textureFlags = 0, [[maybe_unused]] Rhi::TextureUsage textureUsage = Rhi::TextureUsage::DEFAULT RHI_RESOURCE_DEBUG_NAME_PARAMETER) override
 		{
+			OpenGLES3Rhi& openGLES3Rhi = static_cast<OpenGLES3Rhi&>(getRhi());
+
 			// Sanity check
-			RHI_ASSERT(getRhi().getContext(), width > 0 && numberOfSlices > 0, "OpenGL ES 3 create texture 1D array was called with invalid parameters")
+			RHI_ASSERT(openGLES3Rhi.getContext(), width > 0 && numberOfSlices > 0, "OpenGL ES 3 create texture 1D array was called with invalid parameters")
 
 			// Create 1D texture array resource
 			// -> The indication of the texture usage is only relevant for Direct3D, OpenGL ES 3 has no texture usage indication
-			return RHI_NEW(getRhi().getContext(), Texture1DArray)(static_cast<OpenGLES3Rhi&>(getRhi()), width, numberOfSlices, textureFormat, data, textureFlags);
+			return RHI_NEW(openGLES3Rhi.getContext(), Texture1DArray)(openGLES3Rhi, width, numberOfSlices, textureFormat, data, textureFlags RHI_RESOURCE_DEBUG_PASS_PARAMETER);
 		}
 
-		[[nodiscard]] virtual Rhi::ITexture2D* createTexture2D(uint32_t width, uint32_t height, Rhi::TextureFormat::Enum textureFormat, const void* data = nullptr, uint32_t textureFlags = 0, [[maybe_unused]] Rhi::TextureUsage textureUsage = Rhi::TextureUsage::DEFAULT, [[maybe_unused]] uint8_t numberOfMultisamples = 1, [[maybe_unused]] const Rhi::OptimizedTextureClearValue* optimizedTextureClearValue = nullptr) override
+		[[nodiscard]] virtual Rhi::ITexture2D* createTexture2D(uint32_t width, uint32_t height, Rhi::TextureFormat::Enum textureFormat, const void* data = nullptr, uint32_t textureFlags = 0, [[maybe_unused]] Rhi::TextureUsage textureUsage = Rhi::TextureUsage::DEFAULT, [[maybe_unused]] uint8_t numberOfMultisamples = 1, [[maybe_unused]] const Rhi::OptimizedTextureClearValue* optimizedTextureClearValue = nullptr RHI_RESOURCE_DEBUG_NAME_PARAMETER) override
 		{
+			OpenGLES3Rhi& openGLES3Rhi = static_cast<OpenGLES3Rhi&>(getRhi());
+
 			// Sanity check
-			RHI_ASSERT(getRhi().getContext(), width > 0 && height > 0, "OpenGL ES 3 create texture 2D was called with invalid parameters")
+			RHI_ASSERT(openGLES3Rhi.getContext(), width > 0 && height > 0, "OpenGL ES 3 create texture 2D was called with invalid parameters")
 
 			// Create 2D texture resource
 			// -> The indication of the texture usage is only relevant for Direct3D, OpenGL ES 3 has no texture usage indication
-			return RHI_NEW(getRhi().getContext(), Texture2D)(static_cast<OpenGLES3Rhi&>(getRhi()), width, height, textureFormat, data, textureFlags);
+			return RHI_NEW(openGLES3Rhi.getContext(), Texture2D)(openGLES3Rhi, width, height, textureFormat, data, textureFlags RHI_RESOURCE_DEBUG_PASS_PARAMETER);
 		}
 
-		[[nodiscard]] virtual Rhi::ITexture2DArray* createTexture2DArray(uint32_t width, uint32_t height, uint32_t numberOfSlices, Rhi::TextureFormat::Enum textureFormat, const void* data = nullptr, uint32_t textureFlags = 0, [[maybe_unused]] Rhi::TextureUsage textureUsage = Rhi::TextureUsage::DEFAULT) override
+		[[nodiscard]] virtual Rhi::ITexture2DArray* createTexture2DArray(uint32_t width, uint32_t height, uint32_t numberOfSlices, Rhi::TextureFormat::Enum textureFormat, const void* data = nullptr, uint32_t textureFlags = 0, [[maybe_unused]] Rhi::TextureUsage textureUsage = Rhi::TextureUsage::DEFAULT RHI_RESOURCE_DEBUG_NAME_PARAMETER) override
 		{
+			OpenGLES3Rhi& openGLES3Rhi = static_cast<OpenGLES3Rhi&>(getRhi());
+
 			// Sanity check
-			RHI_ASSERT(getRhi().getContext(), width > 0 && height > 0 && numberOfSlices > 0, "OpenGL ES 3 create texture 2D array was called with invalid parameters")
+			RHI_ASSERT(openGLES3Rhi.getContext(), width > 0 && height > 0 && numberOfSlices > 0, "OpenGL ES 3 create texture 2D array was called with invalid parameters")
 
 			// Create 2D texture array resource
 			// -> The indication of the texture usage is only relevant for Direct3D, OpenGL ES 3 has no texture usage indication
-			return RHI_NEW(getRhi().getContext(), Texture2DArray)(static_cast<OpenGLES3Rhi&>(getRhi()), width, height, numberOfSlices, textureFormat, data, textureFlags);
+			return RHI_NEW(openGLES3Rhi.getContext(), Texture2DArray)(openGLES3Rhi, width, height, numberOfSlices, textureFormat, data, textureFlags RHI_RESOURCE_DEBUG_PASS_PARAMETER);
 		}
 
-		[[nodiscard]] virtual Rhi::ITexture3D* createTexture3D(uint32_t width, uint32_t height, uint32_t depth, Rhi::TextureFormat::Enum textureFormat, const void* data = nullptr, uint32_t textureFlags = 0, [[maybe_unused]] Rhi::TextureUsage textureUsage = Rhi::TextureUsage::DEFAULT) override
+		[[nodiscard]] virtual Rhi::ITexture3D* createTexture3D(uint32_t width, uint32_t height, uint32_t depth, Rhi::TextureFormat::Enum textureFormat, const void* data = nullptr, uint32_t textureFlags = 0, [[maybe_unused]] Rhi::TextureUsage textureUsage = Rhi::TextureUsage::DEFAULT RHI_RESOURCE_DEBUG_NAME_PARAMETER) override
 		{
+			OpenGLES3Rhi& openGLES3Rhi = static_cast<OpenGLES3Rhi&>(getRhi());
+
 			// Sanity check
-			RHI_ASSERT(getRhi().getContext(), width > 0 && height > 0 && depth > 0, "OpenGL ES 3 create texture 3D was called with invalid parameters")
+			RHI_ASSERT(openGLES3Rhi.getContext(), width > 0 && height > 0 && depth > 0, "OpenGL ES 3 create texture 3D was called with invalid parameters")
 
 			// Create 3D texture resource
 			// -> The indication of the texture usage is only relevant for Direct3D, OpenGL ES 3 has no texture usage indication
-			return RHI_NEW(getRhi().getContext(), Texture3D)(static_cast<OpenGLES3Rhi&>(getRhi()), width, height, depth, textureFormat, data, textureFlags);
+			return RHI_NEW(openGLES3Rhi.getContext(), Texture3D)(openGLES3Rhi, width, height, depth, textureFormat, data, textureFlags RHI_RESOURCE_DEBUG_PASS_PARAMETER);
 		}
 
-		[[nodiscard]] virtual Rhi::ITextureCube* createTextureCube(uint32_t width, uint32_t height, Rhi::TextureFormat::Enum textureFormat, const void* data = nullptr, uint32_t textureFlags = 0, [[maybe_unused]] Rhi::TextureUsage textureUsage = Rhi::TextureUsage::DEFAULT) override
+		[[nodiscard]] virtual Rhi::ITextureCube* createTextureCube(uint32_t width, uint32_t height, Rhi::TextureFormat::Enum textureFormat, const void* data = nullptr, uint32_t textureFlags = 0, [[maybe_unused]] Rhi::TextureUsage textureUsage = Rhi::TextureUsage::DEFAULT RHI_RESOURCE_DEBUG_NAME_PARAMETER) override
 		{
+			OpenGLES3Rhi& openGLES3Rhi = static_cast<OpenGLES3Rhi&>(getRhi());
+
 			// Sanity check
-			RHI_ASSERT(getRhi().getContext(), width > 0 && height > 0, "OpenGL ES 3 create texture cube was called with invalid parameters")
+			RHI_ASSERT(openGLES3Rhi.getContext(), width > 0 && height > 0, "OpenGL ES 3 create texture cube was called with invalid parameters")
 
 			// Create cube texture resource
 			// -> The indication of the texture usage is only relevant for Direct3D, OpenGL ES 3 has no texture usage indication
-			return RHI_NEW(getRhi().getContext(), TextureCube)(static_cast<OpenGLES3Rhi&>(getRhi()), width, height, textureFormat, data, textureFlags);
+			return RHI_NEW(openGLES3Rhi.getContext(), TextureCube)(openGLES3Rhi, width, height, textureFormat, data, textureFlags RHI_RESOURCE_DEBUG_PASS_PARAMETER);
 		}
 
 
@@ -7565,7 +7579,7 @@ namespace OpenGLES3Rhi
 		*  @note
 		*    - The framebuffer keeps a reference to the provided texture instances
 		*/
-		Framebuffer(Rhi::IRenderPass& renderPass, const Rhi::FramebufferAttachment* colorFramebufferAttachments, const Rhi::FramebufferAttachment* depthStencilFramebufferAttachment) :
+		Framebuffer(Rhi::IRenderPass& renderPass, const Rhi::FramebufferAttachment* colorFramebufferAttachments, const Rhi::FramebufferAttachment* depthStencilFramebufferAttachment RHI_RESOURCE_DEBUG_NAME_PARAMETER) :
 			IFramebuffer(renderPass),
 			mOpenGLES3Framebuffer(0),
 			mDepthRenderbuffer(0),
@@ -7604,7 +7618,7 @@ namespace OpenGLES3Rhi
 				for (GLenum openGLES3Attachment = GL_COLOR_ATTACHMENT0; colorFramebufferAttachment < colorFramebufferAttachmentEnd; ++colorFramebufferAttachment, ++openGLES3Attachment, ++colorTexture)
 				{
 					// Sanity check
-					RHI_ASSERT(renderPass.getRhi().getContext(), nullptr != colorFramebufferAttachments->texture, "Invalid OpenGL ES 3 color framebuffer attachment texture")
+					RHI_ASSERT(openGLES3Rhi.getContext(), nullptr != colorFramebufferAttachments->texture, "Invalid OpenGL ES 3 color framebuffer attachment texture")
 
 					// TODO(co) Add security check: Is the given resource one of the currently used RHI?
 					*colorTexture = colorFramebufferAttachment->texture;
@@ -7630,8 +7644,8 @@ namespace OpenGLES3Rhi
 							const Texture2D* texture2D = static_cast<Texture2D*>(*colorTexture);
 
 							// Sanity checks
-							RHI_ASSERT(renderPass.getRhi().getContext(), colorFramebufferAttachments->mipmapIndex < Texture2D::getNumberOfMipmaps(texture2D->getWidth(), texture2D->getHeight()), "Invalid OpenGL ES 3 color framebuffer attachment mipmap index")
-							RHI_ASSERT(renderPass.getRhi().getContext(), 0 == colorFramebufferAttachment->layerIndex, "Invalid OpenGL ES 3 color framebuffer attachment layer index")
+							RHI_ASSERT(openGLES3Rhi.getContext(), colorFramebufferAttachments->mipmapIndex < Texture2D::getNumberOfMipmaps(texture2D->getWidth(), texture2D->getHeight()), "Invalid OpenGL ES 3 color framebuffer attachment mipmap index")
+							RHI_ASSERT(openGLES3Rhi.getContext(), 0 == colorFramebufferAttachment->layerIndex, "Invalid OpenGL ES 3 color framebuffer attachment layer index")
 
 							// Set the OpenGL ES 3 framebuffer color attachment
 							glFramebufferTexture2D(GL_FRAMEBUFFER, openGLES3Attachment, GL_TEXTURE_2D, texture2D->getOpenGLES3Texture(), static_cast<GLint>(colorFramebufferAttachment->mipmapIndex));
@@ -7690,7 +7704,7 @@ namespace OpenGLES3Rhi
 			if (nullptr != depthStencilFramebufferAttachment)
 			{
 				mDepthStencilTexture = depthStencilFramebufferAttachment->texture;
-				RHI_ASSERT(renderPass.getRhi().getContext(), nullptr != mDepthStencilTexture, "Invalid OpenGL ES 3 depth stencil framebuffer attachment texture")
+				RHI_ASSERT(openGLES3Rhi.getContext(), nullptr != mDepthStencilTexture, "Invalid OpenGL ES 3 depth stencil framebuffer attachment texture")
 				mDepthStencilTexture->addReference();
 
 				// Evaluate the color texture type
@@ -7701,8 +7715,8 @@ namespace OpenGLES3Rhi
 						const Texture2D* texture2D = static_cast<const Texture2D*>(mDepthStencilTexture);
 
 						// Sanity checks
-						RHI_ASSERT(renderPass.getRhi().getContext(), depthStencilFramebufferAttachment->mipmapIndex < Texture2D::getNumberOfMipmaps(texture2D->getWidth(), texture2D->getHeight()), "Invalid OpenGL ES 3 depth stencil framebuffer attachment mipmap index")
-						RHI_ASSERT(renderPass.getRhi().getContext(), 0 == depthStencilFramebufferAttachment->layerIndex, "Invalid OpenGL ES 3 depth stencil framebuffer attachment layer index")
+						RHI_ASSERT(openGLES3Rhi.getContext(), depthStencilFramebufferAttachment->mipmapIndex < Texture2D::getNumberOfMipmaps(texture2D->getWidth(), texture2D->getHeight()), "Invalid OpenGL ES 3 depth stencil framebuffer attachment mipmap index")
+						RHI_ASSERT(openGLES3Rhi.getContext(), 0 == depthStencilFramebufferAttachment->layerIndex, "Invalid OpenGL ES 3 depth stencil framebuffer attachment layer index")
 
 						// Bind the depth stencil texture to framebuffer
 						glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, texture2D->getOpenGLES3Texture(), static_cast<GLint>(depthStencilFramebufferAttachment->mipmapIndex));
@@ -7815,14 +7829,23 @@ namespace OpenGLES3Rhi
 			// Validate the framebuffer width and height
 			if (0 == mWidth || UINT_MAX == mWidth)
 			{
-				RHI_ASSERT(renderPass.getRhi().getContext(), false, "Invalid OpenGL ES 3 framebuffer width")
+				RHI_ASSERT(openGLES3Rhi.getContext(), false, "Invalid OpenGL ES 3 framebuffer width")
 				mWidth = 1;
 			}
 			if (0 == mHeight || UINT_MAX == mHeight)
 			{
-				RHI_ASSERT(renderPass.getRhi().getContext(), false, "Invalid OpenGL ES 3 framebuffer height")
+				RHI_ASSERT(openGLES3Rhi.getContext(), false, "Invalid OpenGL ES 3 framebuffer height")
 				mHeight = 1;
 			}
+
+			// Assign a default name to the resource for debugging purposes
+			#ifdef RHI_DEBUG
+				if (openGLES3Rhi.getOpenGLES3Context().getExtensions().isGL_KHR_debug())
+				{
+					RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "FBO", 6);	// 6 = "FBO: " including terminating zero
+					glObjectLabelKHR(GL_FRAMEBUFFER, mOpenGLES3Framebuffer, -1, detailedDebugName);
+				}
+			#endif
 		}
 
 		/**
@@ -7887,17 +7910,6 @@ namespace OpenGLES3Rhi
 	//[ Public virtual Rhi::IResource methods                 ]
 	//[-------------------------------------------------------]
 	public:
-		#ifdef RHI_DEBUG
-			virtual void setDebugName(const char* name) override
-			{
-				// Valid OpenGL ES 3 framebuffer and "GL_KHR_debug"-extension available?
-				if (0 != mOpenGLES3Framebuffer && static_cast<OpenGLES3Rhi&>(getRhi()).getOpenGLES3Context().getExtensions().isGL_KHR_debug())
-				{
-					glObjectLabelKHR(GL_FRAMEBUFFER, mOpenGLES3Framebuffer, -1, name);
-				}
-			}
-		#endif
-
 		[[nodiscard]] inline virtual void* getInternalResourceHandle() const override
 		{
 			return reinterpret_cast<void*>(static_cast<uintptr_t>(mOpenGLES3Framebuffer));
@@ -7976,10 +7988,19 @@ namespace OpenGLES3Rhi
 		*  @param[in] sourceCode
 		*    Shader ASCII source code, must be valid
 		*/
-		VertexShaderGlsl(OpenGLES3Rhi& openGLES3Rhi, const char* sourceCode) :
+		VertexShaderGlsl(OpenGLES3Rhi& openGLES3Rhi, const char* sourceCode RHI_RESOURCE_DEBUG_NAME_PARAMETER) :
 			IVertexShader(openGLES3Rhi),
 			mOpenGLES3Shader(loadShaderFromSourcecode(openGLES3Rhi, GL_VERTEX_SHADER, sourceCode))
-		{}
+		{
+			// Assign a default name to the resource for debugging purposes
+			#ifdef RHI_DEBUG
+				if (0 != mOpenGLES3Shader && openGLES3Rhi.getOpenGLES3Context().getExtensions().isGL_KHR_debug())
+				{
+					RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "VS", 5);	// 5 = "VS: " including terminating zero
+					glObjectLabelKHR(GL_SHADER_KHR, mOpenGLES3Shader, -1, detailedDebugName);
+				}
+			#endif
+		}
 
 		/**
 		*  @brief
@@ -8003,22 +8024,6 @@ namespace OpenGLES3Rhi
 		{
 			return mOpenGLES3Shader;
 		}
-
-
-	//[-------------------------------------------------------]
-	//[ Public virtual Rhi::IResource methods                 ]
-	//[-------------------------------------------------------]
-	public:
-		#ifdef RHI_DEBUG
-			virtual void setDebugName(const char* name) override
-			{
-				// Valid OpenGL ES 3 shader and "GL_KHR_debug"-extension available?
-				if (0 != mOpenGLES3Shader && static_cast<OpenGLES3Rhi&>(getRhi()).getOpenGLES3Context().getExtensions().isGL_KHR_debug())
-				{
-					glObjectLabelKHR(GL_SHADER_KHR, mOpenGLES3Shader, -1, name);
-				}
-			}
-		#endif
 
 
 	//[-------------------------------------------------------]
@@ -8085,10 +8090,19 @@ namespace OpenGLES3Rhi
 		*  @param[in] sourceCode
 		*    Shader ASCII source code, must be valid
 		*/
-		FragmentShaderGlsl(OpenGLES3Rhi& openGLES3Rhi, const char* sourceCode) :
+		FragmentShaderGlsl(OpenGLES3Rhi& openGLES3Rhi, const char* sourceCode RHI_RESOURCE_DEBUG_NAME_PARAMETER) :
 			IFragmentShader(openGLES3Rhi),
 			mOpenGLES3Shader(loadShaderFromSourcecode(openGLES3Rhi, GL_FRAGMENT_SHADER, sourceCode))
-		{}
+		{
+			// Assign a default name to the resource for debugging purposes
+			#ifdef RHI_DEBUG
+				if (0 != mOpenGLES3Shader && openGLES3Rhi.getOpenGLES3Context().getExtensions().isGL_KHR_debug())
+				{
+					RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "FS", 5);	// 5 = "FS: " including terminating zero
+					glObjectLabelKHR(GL_SHADER_KHR, mOpenGLES3Shader, -1, detailedDebugName);
+				}
+			#endif
+		}
 
 		/**
 		*  @brief
@@ -8112,22 +8126,6 @@ namespace OpenGLES3Rhi
 		{
 			return mOpenGLES3Shader;
 		}
-
-
-	//[-------------------------------------------------------]
-	//[ Public virtual Rhi::IResource methods                 ]
-	//[-------------------------------------------------------]
-	public:
-		#ifdef RHI_DEBUG
-			virtual void setDebugName(const char* name) override
-			{
-				// Valid OpenGL ES 3 shader and "GL_KHR_debug"-extension available?
-				if (0 != mOpenGLES3Shader && static_cast<OpenGLES3Rhi&>(getRhi()).getOpenGLES3Context().getExtensions().isGL_KHR_debug())
-				{
-					glObjectLabelKHR(GL_SHADER_KHR, mOpenGLES3Shader, -1, name);
-				}
-			}
-		#endif
 
 
 	//[-------------------------------------------------------]
@@ -8203,7 +8201,7 @@ namespace OpenGLES3Rhi
 		*  @note
 		*    - The graphics program keeps a reference to the provided shaders and releases it when no longer required
 		*/
-		GraphicsProgramGlsl(OpenGLES3Rhi& openGLES3Rhi, const Rhi::IRootSignature& rootSignature, const Rhi::VertexAttributes& vertexAttributes, VertexShaderGlsl* vertexShaderGlsl, FragmentShaderGlsl* fragmentShaderGlsl) :
+		GraphicsProgramGlsl(OpenGLES3Rhi& openGLES3Rhi, const Rhi::IRootSignature& rootSignature, const Rhi::VertexAttributes& vertexAttributes, VertexShaderGlsl* vertexShaderGlsl, FragmentShaderGlsl* fragmentShaderGlsl RHI_RESOURCE_DEBUG_NAME_PARAMETER) :
 			IGraphicsProgram(openGLES3Rhi),
 			mNumberOfRootSignatureParameters(0),
 			mOpenGLES3Program(glCreateProgram()),
@@ -8360,6 +8358,15 @@ namespace OpenGLES3Rhi
 					RHI_FREE(context, informationLog);
 				}
 			}
+
+			// Assign a default name to the resource for debugging purposes
+			#ifdef RHI_DEBUG
+				if (0 != mOpenGLES3Program && openGLES3Rhi.getOpenGLES3Context().getExtensions().isGL_KHR_debug())
+				{
+					RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "Graphics program", 19);	// 19 = "Graphics program: " including terminating zero
+					glObjectLabelKHR(GL_SHADER_KHR, mOpenGLES3Program, -1, detailedDebugName);
+				}
+			#endif
 		}
 
 		/**
@@ -8396,22 +8403,6 @@ namespace OpenGLES3Rhi
 		{
 			return mDrawIdUniformLocation;
 		}
-
-
-	//[-------------------------------------------------------]
-	//[ Public virtual Rhi::IResource methods                 ]
-	//[-------------------------------------------------------]
-	public:
-		#ifdef RHI_DEBUG
-			virtual void setDebugName(const char* name) override
-			{
-				// Valid OpenGL ES 3 program and "GL_KHR_debug"-extension available?
-				if (0 != mOpenGLES3Program && static_cast<OpenGLES3Rhi&>(getRhi()).getOpenGLES3Context().getExtensions().isGL_KHR_debug())
-				{
-					glObjectLabelKHR(GL_PROGRAM_KHR, mOpenGLES3Program, -1, name);
-				}
-			}
-		#endif
 
 
 	//[-------------------------------------------------------]
@@ -8688,101 +8679,105 @@ namespace OpenGLES3Rhi
 			return ::detail::GLSLES_NAME;
 		}
 
-		[[nodiscard]] inline virtual Rhi::IVertexShader* createVertexShaderFromBytecode(const Rhi::VertexAttributes&, const Rhi::ShaderBytecode&) override
+		[[nodiscard]] inline virtual Rhi::IVertexShader* createVertexShaderFromBytecode(const Rhi::VertexAttributes&, const Rhi::ShaderBytecode& RHI_RESOURCE_DEBUG_NAME_MAYBE_UNUSED_PARAMETER) override
 		{
 			// Error!
 			RHI_ASSERT(getRhi().getContext(), false, "OpenGL ES 3 monolithic shaders have no shader bytecode, only a monolithic program bytecode")
 			return nullptr;
 		}
 
-		[[nodiscard]] inline virtual Rhi::IVertexShader* createVertexShaderFromSourceCode([[maybe_unused]] const Rhi::VertexAttributes& vertexAttributes, const Rhi::ShaderSourceCode& shaderSourceCode, [[maybe_unused]] Rhi::ShaderBytecode* shaderBytecode = nullptr) override
+		[[nodiscard]] inline virtual Rhi::IVertexShader* createVertexShaderFromSourceCode([[maybe_unused]] const Rhi::VertexAttributes& vertexAttributes, const Rhi::ShaderSourceCode& shaderSourceCode, [[maybe_unused]] Rhi::ShaderBytecode* shaderBytecode = nullptr RHI_RESOURCE_DEBUG_NAME_PARAMETER) override
 		{
 			// There's no need to check for "Rhi::Capabilities::vertexShader", we know there's vertex shader support
 			// -> Monolithic shaders have no shader bytecode, only a monolithic program bytecode
-			return RHI_NEW(getRhi().getContext(), VertexShaderGlsl)(static_cast<OpenGLES3Rhi&>(getRhi()), shaderSourceCode.sourceCode);
+			OpenGLES3Rhi& openGLES3Rhi = static_cast<OpenGLES3Rhi&>(getRhi());
+			return RHI_NEW(openGLES3Rhi.getContext(), VertexShaderGlsl)(openGLES3Rhi, shaderSourceCode.sourceCode RHI_RESOURCE_DEBUG_PASS_PARAMETER);
 		}
 
-		[[nodiscard]] inline virtual Rhi::ITessellationControlShader* createTessellationControlShaderFromBytecode(const Rhi::ShaderBytecode&) override
+		[[nodiscard]] inline virtual Rhi::ITessellationControlShader* createTessellationControlShaderFromBytecode(const Rhi::ShaderBytecode& RHI_RESOURCE_DEBUG_NAME_MAYBE_UNUSED_PARAMETER) override
 		{
 			// Error!
 			RHI_ASSERT(getRhi().getContext(), false, "OpenGL ES 3 monolithic shaders have no shader bytecode, only a monolithic program bytecode")
 			return nullptr;
 		}
 
-		[[nodiscard]] inline virtual Rhi::ITessellationControlShader* createTessellationControlShaderFromSourceCode(const Rhi::ShaderSourceCode&, Rhi::ShaderBytecode*) override
+		[[nodiscard]] inline virtual Rhi::ITessellationControlShader* createTessellationControlShaderFromSourceCode(const Rhi::ShaderSourceCode&, Rhi::ShaderBytecode* RHI_RESOURCE_DEBUG_NAME_MAYBE_UNUSED_PARAMETER) override
 		{
 			RHI_ASSERT(getRhi().getContext(), false, "OpenGL ES 3 has no tessellation control shader support")
 			return nullptr;
 		}
 
-		[[nodiscard]] inline virtual Rhi::ITessellationEvaluationShader* createTessellationEvaluationShaderFromBytecode(const Rhi::ShaderBytecode&) override
+		[[nodiscard]] inline virtual Rhi::ITessellationEvaluationShader* createTessellationEvaluationShaderFromBytecode(const Rhi::ShaderBytecode& RHI_RESOURCE_DEBUG_NAME_MAYBE_UNUSED_PARAMETER) override
 		{
 			// Error!
 			RHI_ASSERT(getRhi().getContext(), false, "OpenGL ES 3 monolithic shaders have no shader bytecode, only a monolithic program bytecode")
 			return nullptr;
 		}
 
-		[[nodiscard]] inline virtual Rhi::ITessellationEvaluationShader* createTessellationEvaluationShaderFromSourceCode(const Rhi::ShaderSourceCode&, Rhi::ShaderBytecode*) override
+		[[nodiscard]] inline virtual Rhi::ITessellationEvaluationShader* createTessellationEvaluationShaderFromSourceCode(const Rhi::ShaderSourceCode&, Rhi::ShaderBytecode* RHI_RESOURCE_DEBUG_NAME_MAYBE_UNUSED_PARAMETER) override
 		{
 			RHI_ASSERT(getRhi().getContext(), false, "OpenGL ES 3 has no tessellation evaluation shader support")
 			return nullptr;
 		}
 
-		[[nodiscard]] inline virtual Rhi::IGeometryShader* createGeometryShaderFromBytecode(const Rhi::ShaderBytecode&, Rhi::GsInputPrimitiveTopology, Rhi::GsOutputPrimitiveTopology, uint32_t) override
+		[[nodiscard]] inline virtual Rhi::IGeometryShader* createGeometryShaderFromBytecode(const Rhi::ShaderBytecode&, Rhi::GsInputPrimitiveTopology, Rhi::GsOutputPrimitiveTopology, uint32_t RHI_RESOURCE_DEBUG_NAME_MAYBE_UNUSED_PARAMETER) override
 		{
 			// Error!
 			RHI_ASSERT(getRhi().getContext(), false, "OpenGL ES 3 monolithic shaders have no shader bytecode, only a monolithic program bytecode")
 			return nullptr;
 		}
 
-		[[nodiscard]] inline virtual Rhi::IGeometryShader* createGeometryShaderFromSourceCode(const Rhi::ShaderSourceCode&, Rhi::GsInputPrimitiveTopology, Rhi::GsOutputPrimitiveTopology, uint32_t, Rhi::ShaderBytecode*) override
+		[[nodiscard]] inline virtual Rhi::IGeometryShader* createGeometryShaderFromSourceCode(const Rhi::ShaderSourceCode&, Rhi::GsInputPrimitiveTopology, Rhi::GsOutputPrimitiveTopology, uint32_t, Rhi::ShaderBytecode* RHI_RESOURCE_DEBUG_NAME_MAYBE_UNUSED_PARAMETER) override
 		{
 			RHI_ASSERT(getRhi().getContext(), false, "OpenGL ES 3 has no geometry shader support")
 			return nullptr;
 		}
 
-		[[nodiscard]] inline virtual Rhi::IFragmentShader* createFragmentShaderFromBytecode(const Rhi::ShaderBytecode&) override
+		[[nodiscard]] inline virtual Rhi::IFragmentShader* createFragmentShaderFromBytecode(const Rhi::ShaderBytecode& RHI_RESOURCE_DEBUG_NAME_MAYBE_UNUSED_PARAMETER) override
 		{
 			// Error!
 			RHI_ASSERT(getRhi().getContext(), false, "OpenGL ES 3 monolithic shaders have no shader bytecode, only a monolithic program bytecode")
 			return nullptr;
 		}
 
-		[[nodiscard]] inline virtual Rhi::IFragmentShader* createFragmentShaderFromSourceCode(const Rhi::ShaderSourceCode& shaderSourceCode, [[maybe_unused]] Rhi::ShaderBytecode* shaderBytecode = nullptr) override
+		[[nodiscard]] inline virtual Rhi::IFragmentShader* createFragmentShaderFromSourceCode(const Rhi::ShaderSourceCode& shaderSourceCode, [[maybe_unused]] Rhi::ShaderBytecode* shaderBytecode = nullptr RHI_RESOURCE_DEBUG_NAME_PARAMETER) override
 		{
 			// There's no need to check for "Rhi::Capabilities::fragmentShader", we know there's fragment shader support
 			// -> Monolithic shaders have no shader bytecode, only a monolithic program bytecode
-			return RHI_NEW(getRhi().getContext(), FragmentShaderGlsl)(static_cast<OpenGLES3Rhi&>(getRhi()), shaderSourceCode.sourceCode);
+			OpenGLES3Rhi& openGLES3Rhi = static_cast<OpenGLES3Rhi&>(getRhi());
+			return RHI_NEW(openGLES3Rhi.getContext(), FragmentShaderGlsl)(openGLES3Rhi, shaderSourceCode.sourceCode RHI_RESOURCE_DEBUG_PASS_PARAMETER);
 		}
 
-		[[nodiscard]] inline virtual Rhi::IComputeShader* createComputeShaderFromBytecode(const Rhi::ShaderBytecode&) override
+		[[nodiscard]] inline virtual Rhi::IComputeShader* createComputeShaderFromBytecode(const Rhi::ShaderBytecode& RHI_RESOURCE_DEBUG_NAME_MAYBE_UNUSED_PARAMETER) override
 		{
 			// Error!
 			RHI_ASSERT(getRhi().getContext(), false, "OpenGL ES 3 monolithic shaders have no shader bytecode, only a monolithic program bytecode")
 			return nullptr;
 		}
 
-		[[nodiscard]] inline virtual Rhi::IComputeShader* createComputeShaderFromSourceCode(const Rhi::ShaderSourceCode&, Rhi::ShaderBytecode* = nullptr) override
+		[[nodiscard]] inline virtual Rhi::IComputeShader* createComputeShaderFromSourceCode(const Rhi::ShaderSourceCode&, Rhi::ShaderBytecode* = nullptr RHI_RESOURCE_DEBUG_NAME_MAYBE_UNUSED_PARAMETER) override
 		{
 			RHI_ASSERT(getRhi().getContext(), false, "OpenGL ES 3 has no compute shader support")
 			return nullptr;
 		}
 
-		[[nodiscard]] virtual Rhi::IGraphicsProgram* createGraphicsProgram(const Rhi::IRootSignature& rootSignature, const Rhi::VertexAttributes& vertexAttributes, Rhi::IVertexShader* vertexShader, [[maybe_unused]] Rhi::ITessellationControlShader* tessellationControlShader, [[maybe_unused]] Rhi::ITessellationEvaluationShader* tessellationEvaluationShader, [[maybe_unused]] Rhi::IGeometryShader* geometryShader, Rhi::IFragmentShader* fragmentShader) override
+		[[nodiscard]] virtual Rhi::IGraphicsProgram* createGraphicsProgram(const Rhi::IRootSignature& rootSignature, const Rhi::VertexAttributes& vertexAttributes, Rhi::IVertexShader* vertexShader, [[maybe_unused]] Rhi::ITessellationControlShader* tessellationControlShader, [[maybe_unused]] Rhi::ITessellationEvaluationShader* tessellationEvaluationShader, [[maybe_unused]] Rhi::IGeometryShader* geometryShader, Rhi::IFragmentShader* fragmentShader RHI_RESOURCE_DEBUG_NAME_PARAMETER) override
 		{
+			OpenGLES3Rhi& openGLES3Rhi = static_cast<OpenGLES3Rhi&>(getRhi());
+
 			// Sanity checks
-			// -> A shader can be a null pointer, but if it's not the shader and graphics program language must match!
+			// -> A shader can be a null pointer, but if it's not the shader and graphics program language must match
 			// -> Optimization: Comparing the shader language name by directly comparing the pointer address of
 			//    the name is safe because we know that we always reference to one and the same name address
 			// TODO(co) Add security check: Is the given resource one of the currently used RHI?
-			RHI_ASSERT(getRhi().getContext(), nullptr == vertexShader || vertexShader->getShaderLanguageName() == ::detail::GLSLES_NAME, "OpenGL ES 3 vertex shader language mismatch")
-			RHI_ASSERT(getRhi().getContext(), nullptr == tessellationControlShader, "OpenGL ES 3 has no tessellation control shader support")
-			RHI_ASSERT(getRhi().getContext(), nullptr == tessellationEvaluationShader, "OpenGL ES 3 has no tessellation evaluation shader support")
-			RHI_ASSERT(getRhi().getContext(), nullptr == geometryShader, "OpenGL ES 3 has no geometry shader support")
-			RHI_ASSERT(getRhi().getContext(), nullptr == fragmentShader || fragmentShader->getShaderLanguageName() == ::detail::GLSLES_NAME, "OpenGL ES 3 fragment shader language mismatch")
+			RHI_ASSERT(openGLES3Rhi.getContext(), nullptr == vertexShader || vertexShader->getShaderLanguageName() == ::detail::GLSLES_NAME, "OpenGL ES 3 vertex shader language mismatch")
+			RHI_ASSERT(openGLES3Rhi.getContext(), nullptr == tessellationControlShader, "OpenGL ES 3 has no tessellation control shader support")
+			RHI_ASSERT(openGLES3Rhi.getContext(), nullptr == tessellationEvaluationShader, "OpenGL ES 3 has no tessellation evaluation shader support")
+			RHI_ASSERT(openGLES3Rhi.getContext(), nullptr == geometryShader, "OpenGL ES 3 has no geometry shader support")
+			RHI_ASSERT(openGLES3Rhi.getContext(), nullptr == fragmentShader || fragmentShader->getShaderLanguageName() == ::detail::GLSLES_NAME, "OpenGL ES 3 fragment shader language mismatch")
 
 			// Create the graphics program
-			return RHI_NEW(getRhi().getContext(), GraphicsProgramGlsl)(static_cast<OpenGLES3Rhi&>(getRhi()), rootSignature, vertexAttributes, static_cast<VertexShaderGlsl*>(vertexShader), static_cast<FragmentShaderGlsl*>(fragmentShader));
+			return RHI_NEW(openGLES3Rhi.getContext(), GraphicsProgramGlsl)(openGLES3Rhi, rootSignature, vertexAttributes, static_cast<VertexShaderGlsl*>(vertexShader), static_cast<FragmentShaderGlsl*>(fragmentShader) RHI_RESOURCE_DEBUG_PASS_PARAMETER);
 		}
 
 
@@ -9463,7 +9458,7 @@ namespace OpenGLES3Rhi
 			mGraphicsRootSignature->addReference();
 
 			// Sanity check
-			OPENGLES3RHI_RHIMATCHCHECK_ASSERT(*this, *rootSignature)
+			RHI_MATCH_CHECK(*this, *rootSignature)
 		}
 	}
 
@@ -9474,7 +9469,7 @@ namespace OpenGLES3Rhi
 			if (nullptr != graphicsPipelineState)
 			{
 				// Sanity check
-				OPENGLES3RHI_RHIMATCHCHECK_ASSERT(*this, *graphicsPipelineState)
+				RHI_MATCH_CHECK(*this, *graphicsPipelineState)
 
 				// Set new graphics pipeline state and add a reference to it
 				if (nullptr != mGraphicsPipelineState)
@@ -9530,7 +9525,7 @@ namespace OpenGLES3Rhi
 		if (nullptr != resourceGroup)
 		{
 			// Sanity check
-			OPENGLES3RHI_RHIMATCHCHECK_ASSERT(*this, *resourceGroup)
+			RHI_MATCH_CHECK(*this, *resourceGroup)
 
 			// Set graphics resource group
 			const ResourceGroup* openGLES3ResourceGroup = static_cast<ResourceGroup*>(resourceGroup);
@@ -9720,7 +9715,7 @@ namespace OpenGLES3Rhi
 			if (nullptr != vertexArray)
 			{
 				// Sanity check
-				OPENGLES3RHI_RHIMATCHCHECK_ASSERT(*this, *vertexArray)
+				RHI_MATCH_CHECK(*this, *vertexArray)
 
 				// Release the vertex array reference, in case we have one
 				if (nullptr != mVertexArray)
@@ -9813,7 +9808,7 @@ namespace OpenGLES3Rhi
 			if (nullptr != renderTarget)
 			{
 				// Sanity check
-				OPENGLES3RHI_RHIMATCHCHECK_ASSERT(*this, *renderTarget)
+				RHI_MATCH_CHECK(*this, *renderTarget)
 
 				// Release the render target reference, in case we have one
 				if (nullptr != mRenderTarget)
@@ -10151,8 +10146,8 @@ namespace OpenGLES3Rhi
 	void OpenGLES3Rhi::copyResource(Rhi::IResource& destinationResource, Rhi::IResource& sourceResource)
 	{
 		// Sanity checks
-		OPENGLES3RHI_RHIMATCHCHECK_ASSERT(*this, destinationResource)
-		OPENGLES3RHI_RHIMATCHCHECK_ASSERT(*this, sourceResource)
+		RHI_MATCH_CHECK(*this, destinationResource)
+		RHI_MATCH_CHECK(*this, sourceResource)
 
 		// Evaluate the render target type
 		switch (destinationResource.getResourceType())
@@ -10238,7 +10233,7 @@ namespace OpenGLES3Rhi
 	void OpenGLES3Rhi::generateMipmaps(Rhi::IResource& resource)
 	{
 		// Sanity checks
-		OPENGLES3RHI_RHIMATCHCHECK_ASSERT(*this, resource)
+		RHI_MATCH_CHECK(*this, resource)
 		RHI_ASSERT(mContext, resource.getResourceType() == Rhi::ResourceType::TEXTURE_2D, "TODO(co) Mipmaps can only be generated for OpenGL ES 3 2D texture resources")
 
 		Texture2D& texture2D = static_cast<Texture2D&>(resource);
@@ -10268,7 +10263,7 @@ namespace OpenGLES3Rhi
 	void OpenGLES3Rhi::resetQueryPool([[maybe_unused]] Rhi::IQueryPool& queryPool, [[maybe_unused]] uint32_t firstQueryIndex, [[maybe_unused]] uint32_t numberOfQueries)
 	{
 		// Sanity check
-		OPENGLES3RHI_RHIMATCHCHECK_ASSERT(*this, queryPool)
+		RHI_MATCH_CHECK(*this, queryPool)
 
 		// TODO(co) Implement me
 		NOP;
@@ -10277,7 +10272,7 @@ namespace OpenGLES3Rhi
 	void OpenGLES3Rhi::beginQuery([[maybe_unused]] Rhi::IQueryPool& queryPool, [[maybe_unused]] uint32_t queryIndex, [[maybe_unused]] uint32_t queryControlFlags)
 	{
 		// Sanity check
-		OPENGLES3RHI_RHIMATCHCHECK_ASSERT(*this, queryPool)
+		RHI_MATCH_CHECK(*this, queryPool)
 
 		// TODO(co) Implement me
 		NOP;
@@ -10286,7 +10281,7 @@ namespace OpenGLES3Rhi
 	void OpenGLES3Rhi::endQuery([[maybe_unused]] Rhi::IQueryPool& queryPool, [[maybe_unused]] uint32_t queryIndex)
 	{
 		// Sanity check
-		OPENGLES3RHI_RHIMATCHCHECK_ASSERT(*this, queryPool)
+		RHI_MATCH_CHECK(*this, queryPool)
 
 		// TODO(co) Implement me
 		NOP;
@@ -10295,7 +10290,7 @@ namespace OpenGLES3Rhi
 	void OpenGLES3Rhi::writeTimestampQuery([[maybe_unused]] Rhi::IQueryPool& queryPool, [[maybe_unused]] uint32_t queryIndex)
 	{
 		// Sanity check
-		OPENGLES3RHI_RHIMATCHCHECK_ASSERT(*this, queryPool)
+		RHI_MATCH_CHECK(*this, queryPool)
 
 		// TODO(co) Implement me
 		NOP;
@@ -10405,34 +10400,34 @@ namespace OpenGLES3Rhi
 	//[-------------------------------------------------------]
 	//[ Resource creation                                     ]
 	//[-------------------------------------------------------]
-	Rhi::IRenderPass* OpenGLES3Rhi::createRenderPass(uint32_t numberOfColorAttachments, const Rhi::TextureFormat::Enum* colorAttachmentTextureFormats, Rhi::TextureFormat::Enum depthStencilAttachmentTextureFormat, uint8_t numberOfMultisamples)
+	Rhi::IRenderPass* OpenGLES3Rhi::createRenderPass(uint32_t numberOfColorAttachments, const Rhi::TextureFormat::Enum* colorAttachmentTextureFormats, Rhi::TextureFormat::Enum depthStencilAttachmentTextureFormat, uint8_t numberOfMultisamples RHI_RESOURCE_DEBUG_NAME_MAYBE_UNUSED_PARAMETER_NO_DEFAULT)
 	{
 		return RHI_NEW(mContext, RenderPass)(*this, numberOfColorAttachments, colorAttachmentTextureFormats, depthStencilAttachmentTextureFormat, numberOfMultisamples);
 	}
 
-	Rhi::IQueryPool* OpenGLES3Rhi::createQueryPool([[maybe_unused]] Rhi::QueryType queryType, [[maybe_unused]] uint32_t numberOfQueries)
+	Rhi::IQueryPool* OpenGLES3Rhi::createQueryPool([[maybe_unused]] Rhi::QueryType queryType, [[maybe_unused]] uint32_t numberOfQueries RHI_RESOURCE_DEBUG_NAME_MAYBE_UNUSED_PARAMETER_NO_DEFAULT)
 	{
 		// TODO(co) Implement me
 		return nullptr;
 	}
 
-	Rhi::ISwapChain* OpenGLES3Rhi::createSwapChain(Rhi::IRenderPass& renderPass, Rhi::WindowHandle windowHandle, bool)
+	Rhi::ISwapChain* OpenGLES3Rhi::createSwapChain(Rhi::IRenderPass& renderPass, Rhi::WindowHandle windowHandle, bool RHI_RESOURCE_DEBUG_NAME_MAYBE_UNUSED_PARAMETER_NO_DEFAULT)
 	{
 		// Sanity checks
-		OPENGLES3RHI_RHIMATCHCHECK_ASSERT(*this, renderPass)
+		RHI_MATCH_CHECK(*this, renderPass)
 		RHI_ASSERT(mContext, NULL_HANDLE != windowHandle.nativeWindowHandle || nullptr != windowHandle.renderWindow, "OpenGL ES 3: The provided native window handle or render window must not be a null handle / null pointer")
 
 		// Create the swap chain
 		return RHI_NEW(mContext, SwapChain)(renderPass, windowHandle);
 	}
 
-	Rhi::IFramebuffer* OpenGLES3Rhi::createFramebuffer(Rhi::IRenderPass& renderPass, const Rhi::FramebufferAttachment* colorFramebufferAttachments, const Rhi::FramebufferAttachment* depthStencilFramebufferAttachment)
+	Rhi::IFramebuffer* OpenGLES3Rhi::createFramebuffer(Rhi::IRenderPass& renderPass, const Rhi::FramebufferAttachment* colorFramebufferAttachments, const Rhi::FramebufferAttachment* depthStencilFramebufferAttachment RHI_RESOURCE_DEBUG_NAME_PARAMETER_NO_DEFAULT)
 	{
 		// Sanity check
-		OPENGLES3RHI_RHIMATCHCHECK_ASSERT(*this, renderPass)
+		RHI_MATCH_CHECK(*this, renderPass)
 
 		// Create the framebuffer
-		return RHI_NEW(mContext, Framebuffer)(renderPass, colorFramebufferAttachments, depthStencilFramebufferAttachment);
+		return RHI_NEW(mContext, Framebuffer)(renderPass, colorFramebufferAttachments, depthStencilFramebufferAttachment RHI_RESOURCE_DEBUG_PASS_PARAMETER);
 	}
 
 	Rhi::IBufferManager* OpenGLES3Rhi::createBufferManager()
@@ -10445,12 +10440,12 @@ namespace OpenGLES3Rhi
 		return RHI_NEW(mContext, TextureManager)(*this);
 	}
 
-	Rhi::IRootSignature* OpenGLES3Rhi::createRootSignature(const Rhi::RootSignature& rootSignature)
+	Rhi::IRootSignature* OpenGLES3Rhi::createRootSignature(const Rhi::RootSignature& rootSignature RHI_RESOURCE_DEBUG_NAME_MAYBE_UNUSED_PARAMETER_NO_DEFAULT)
 	{
 		return RHI_NEW(mContext, RootSignature)(*this, rootSignature);
 	}
 
-	Rhi::IGraphicsPipelineState* OpenGLES3Rhi::createGraphicsPipelineState(const Rhi::GraphicsPipelineState& graphicsPipelineState)
+	Rhi::IGraphicsPipelineState* OpenGLES3Rhi::createGraphicsPipelineState(const Rhi::GraphicsPipelineState& graphicsPipelineState RHI_RESOURCE_DEBUG_NAME_MAYBE_UNUSED_PARAMETER_NO_DEFAULT)
 	{
 		// Sanity checks
 		RHI_ASSERT(mContext, nullptr != graphicsPipelineState.rootSignature, "OpenGL ES 3: Invalid graphics pipeline state root signature")
@@ -10474,11 +10469,11 @@ namespace OpenGLES3Rhi
 		return nullptr;
 	}
 
-	Rhi::IComputePipelineState* OpenGLES3Rhi::createComputePipelineState(Rhi::IRootSignature& rootSignature, Rhi::IComputeShader& computeShader)
+	Rhi::IComputePipelineState* OpenGLES3Rhi::createComputePipelineState(Rhi::IRootSignature& rootSignature, Rhi::IComputeShader& computeShader RHI_RESOURCE_DEBUG_NAME_MAYBE_UNUSED_PARAMETER_NO_DEFAULT)
 	{
 		// Sanity checks
-		OPENGLES3RHI_RHIMATCHCHECK_ASSERT(*this, rootSignature)
-		OPENGLES3RHI_RHIMATCHCHECK_ASSERT(*this, computeShader)
+		RHI_MATCH_CHECK(*this, rootSignature)
+		RHI_MATCH_CHECK(*this, computeShader)
 
 		// Error: Ensure a correct reference counter behaviour
 		rootSignature.addReference();
@@ -10490,7 +10485,7 @@ namespace OpenGLES3Rhi
 		return nullptr;
 	}
 
-	Rhi::ISamplerState* OpenGLES3Rhi::createSamplerState(const Rhi::SamplerState& samplerState)
+	Rhi::ISamplerState* OpenGLES3Rhi::createSamplerState(const Rhi::SamplerState& samplerState RHI_RESOURCE_DEBUG_NAME_MAYBE_UNUSED_PARAMETER_NO_DEFAULT)
 	{
 		return RHI_NEW(mContext, SamplerState)(*this, samplerState);
 	}
@@ -10767,7 +10762,7 @@ namespace OpenGLES3Rhi
 	bool OpenGLES3Rhi::getQueryPoolResults([[maybe_unused]] Rhi::IQueryPool& queryPool, [[maybe_unused]] uint32_t numberOfDataBytes, [[maybe_unused]] uint8_t* data, [[maybe_unused]] uint32_t firstQueryIndex, [[maybe_unused]] uint32_t numberOfQueries, [[maybe_unused]] uint32_t strideInBytes, [[maybe_unused]] uint32_t queryResultFlags)
 	{
 		// Sanity check
-		OPENGLES3RHI_RHIMATCHCHECK_ASSERT(*this, queryPool)
+		RHI_MATCH_CHECK(*this, queryPool)
 
 		// TODO(co) Implement me
 		return false;
@@ -11097,7 +11092,7 @@ namespace OpenGLES3Rhi
 		if (nullptr != graphicsProgram)
 		{
 			// Sanity check
-			OPENGLES3RHI_RHIMATCHCHECK_ASSERT(*this, *graphicsProgram)
+			RHI_MATCH_CHECK(*this, *graphicsProgram)
 
 			// Bind the graphics program, if required
 			const GraphicsProgramGlsl* graphicsProgramGlsl = static_cast<GraphicsProgramGlsl*>(graphicsProgram);

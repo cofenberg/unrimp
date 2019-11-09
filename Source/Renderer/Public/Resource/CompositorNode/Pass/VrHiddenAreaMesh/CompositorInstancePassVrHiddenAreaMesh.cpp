@@ -66,7 +66,7 @@
 						rootSignature.initialize(0, nullptr, 0, nullptr, Rhi::RootSignatureFlags::ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT);
 
 						// Create the instance
-						mRootSignature = rhi.createRootSignature(rootSignature);
+						mRootSignature = rhi.createRootSignature(rootSignature RHI_RESOURCE_DEBUG_NAME("Compositor instance pass VR hidden area mesh"));
 					}
 
 					// Vertex input layout
@@ -123,13 +123,11 @@
 						}
 
 						// Create the vertex buffer object (VBO)
-						Rhi::IVertexBufferPtr vertexBuffer(bufferManager.createVertexBuffer(numberOfBytes, temporaryMemory));
-						RHI_SET_RESOURCE_DEBUG_NAME(vertexBuffer, "Compositor instance pass VR hidden area mesh")
+						Rhi::IVertexBufferPtr vertexBuffer(bufferManager.createVertexBuffer(numberOfBytes, temporaryMemory, 0, Rhi::BufferUsage::STATIC_DRAW RHI_RESOURCE_DEBUG_NAME("Compositor instance pass VR hidden area mesh")));
 
 						// Create vertex array object (VAO)
 						const Rhi::VertexArrayVertexBuffer vertexArrayVertexBuffers[] = { vertexBuffer };
-						mVertexArrayPtr = bufferManager.createVertexArray(vertexAttributes, static_cast<uint32_t>(GLM_COUNTOF(vertexArrayVertexBuffers)), vertexArrayVertexBuffers);
-						RHI_SET_RESOURCE_DEBUG_NAME(mVertexArrayPtr, "Compositor instance pass VR hidden area mesh")
+						mVertexArrayPtr = bufferManager.createVertexArray(vertexAttributes, static_cast<uint32_t>(GLM_COUNTOF(vertexArrayVertexBuffers)), vertexArrayVertexBuffers, nullptr RHI_RESOURCE_DEBUG_NAME("Compositor instance pass VR hidden area mesh"));
 
 						// Free allocated temporary vertex buffer memory, if necessary
 						if (temporaryMemory != stackMemory)
@@ -151,30 +149,25 @@
 							#include "Shader/VrHiddenAreaMesh_HLSL_D3D10_D3D11_D3D12.h"
 							#include "Shader/VrHiddenAreaMesh_Null.h"
 
-							// Create the vertex shader
-							Rhi::IShaderLanguage& shaderLanguage = rhi.getDefaultShaderLanguage();
-							Rhi::IVertexShader* vertexShader = shaderLanguage.createVertexShaderFromSourceCode(vertexAttributes, vertexShaderSourceCode);
-							RHI_SET_RESOURCE_DEBUG_NAME(vertexShader, "Compositor instance pass VR hidden area mesh VS")
-
-							// Create the fragment shader
-							Rhi::IFragmentShader* fragmentShader = shaderLanguage.createFragmentShaderFromSourceCode(fragmentShaderSourceCode);
-							RHI_SET_RESOURCE_DEBUG_NAME(fragmentShader, "Compositor instance pass VR hidden area mesh FS")
-
 							// Create the graphics program
-							graphicsProgram = shaderLanguage.createGraphicsProgram(*mRootSignature, vertexAttributes, vertexShader, fragmentShader);
-							RHI_SET_RESOURCE_DEBUG_NAME(graphicsProgram, "Compositor instance pass VR hidden area mesh graphics program")
+							Rhi::IShaderLanguage& shaderLanguage = rhi.getDefaultShaderLanguage();
+							graphicsProgram = shaderLanguage.createGraphicsProgram(
+								*mRootSignature,
+								vertexAttributes,
+								shaderLanguage.createVertexShaderFromSourceCode(vertexAttributes, vertexShaderSourceCode, nullptr RHI_RESOURCE_DEBUG_NAME("Compositor instance pass VR hidden area mesh")),
+								shaderLanguage.createFragmentShaderFromSourceCode(fragmentShaderSourceCode, nullptr RHI_RESOURCE_DEBUG_NAME("Compositor instance pass VR hidden area mesh"))
+								RHI_RESOURCE_DEBUG_NAME("Compositor instance pass VR hidden area mesh"));
 						}
 
 						// Create the graphics pipeline state object (PSO)
 						if (nullptr != graphicsProgram)
 						{
 							// TODO(co) Render pass related update, the render pass in here is currently just a dummy so the debug compositor works
-							Rhi::IRenderPass* renderPass = rhi.createRenderPass(1, &rhi.getCapabilities().preferredSwapChainColorTextureFormat, rhi.getCapabilities().preferredSwapChainDepthStencilTextureFormat);
+							Rhi::IRenderPass* renderPass = rhi.createRenderPass(1, &rhi.getCapabilities().preferredSwapChainColorTextureFormat, rhi.getCapabilities().preferredSwapChainDepthStencilTextureFormat, 1 RHI_RESOURCE_DEBUG_NAME("Compositor instance pass VR hidden area mesh"));
 
 							Rhi::GraphicsPipelineState graphicsPipelineState = Rhi::GraphicsPipelineStateBuilder(mRootSignature, graphicsProgram, vertexAttributes, *renderPass);
 							graphicsPipelineState.rasterizerState.cullMode = Rhi::CullMode::NONE;
-							mGraphicsPipelineState = rhi.createGraphicsPipelineState(graphicsPipelineState);
-							RHI_SET_RESOURCE_DEBUG_NAME(mGraphicsPipelineState, "Compositor instance pass VR hidden area mesh PSO")
+							mGraphicsPipelineState = rhi.createGraphicsPipelineState(graphicsPipelineState RHI_RESOURCE_DEBUG_NAME("Compositor instance pass VR hidden area mesh"));
 						}
 					}
 				}

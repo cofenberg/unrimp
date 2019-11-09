@@ -528,6 +528,7 @@ namespace Renderer
 			mAssetManager(nullptr),
 			mTimeManager(nullptr),
 			// Resource
+			mRendererResourceManager(nullptr),
 			mResourceStreamer(nullptr),
 			mVertexAttributesResourceManager(nullptr),
 			mTextureResourceManager(nullptr),

@@ -207,8 +207,7 @@ namespace Renderer
 					// -> Required for Vulkan, Direct3D 9, Direct3D 10, Direct3D 11 and Direct3D 12
 					// -> Not required for OpenGL and OpenGL ES 3
 					// -> The optimized texture clear value is a Direct3D 12 related option
-					renderTargetTextureElement.texture = mRenderer.getTextureManager().createTexture2D(width, height, renderTargetTextureSignature.getTextureFormat(), nullptr, textureFlags, Rhi::TextureUsage::DEFAULT, ((renderTargetTextureSignature.getFlags() & RenderTargetTextureSignature::Flag::ALLOW_MULTISAMPLE) != 0) ? numberOfMultisamples : 1u);
-					RHI_SET_RESOURCE_DEBUG_NAME(renderTargetTextureElement.texture, "Render target texture manager")
+					renderTargetTextureElement.texture = mRenderer.getTextureManager().createTexture2D(width, height, renderTargetTextureSignature.getTextureFormat(), nullptr, textureFlags, Rhi::TextureUsage::DEFAULT, (((renderTargetTextureSignature.getFlags() & RenderTargetTextureSignature::Flag::ALLOW_MULTISAMPLE) != 0) ? numberOfMultisamples : 1u), nullptr RHI_RESOURCE_DEBUG_NAME("Render target texture manager"));
 					renderTargetTextureElement.texture->addReference();
 
 					{ // Tell the texture resource manager about our render target texture so it can be referenced inside e.g. compositor nodes

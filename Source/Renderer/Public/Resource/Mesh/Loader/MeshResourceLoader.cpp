@@ -259,20 +259,14 @@ namespace Renderer
 	Rhi::IVertexArray* MeshResourceLoader::createVertexArray() const
 	{
 		// Create the vertex buffer object (VBO)
-		Rhi::IVertexBufferPtr vertexBuffer(mBufferManager.createVertexBuffer(mNumberOfUsedVertexBufferDataBytes, mVertexBufferData));
-		RHI_SET_RESOURCE_DEBUG_NAME(vertexBuffer, getAsset().virtualFilename)
+		Rhi::IVertexBufferPtr vertexBuffer(mBufferManager.createVertexBuffer(mNumberOfUsedVertexBufferDataBytes, mVertexBufferData, 0, Rhi::BufferUsage::STATIC_DRAW RHI_RESOURCE_DEBUG_NAME(getAsset().virtualFilename)));
 
 		// Create the index buffer object (IBO)
-		Rhi::IIndexBuffer* indexBuffer = mBufferManager.createIndexBuffer(mNumberOfUsedIndexBufferDataBytes, mIndexBufferData, 0, Rhi::BufferUsage::STATIC_DRAW, static_cast<Rhi::IndexBufferFormat::Enum>(mIndexBufferFormat));
-		RHI_SET_RESOURCE_DEBUG_NAME(indexBuffer, getAsset().virtualFilename)
+		Rhi::IIndexBuffer* indexBuffer = mBufferManager.createIndexBuffer(mNumberOfUsedIndexBufferDataBytes, mIndexBufferData, 0, Rhi::BufferUsage::STATIC_DRAW, static_cast<Rhi::IndexBufferFormat::Enum>(mIndexBufferFormat) RHI_RESOURCE_DEBUG_NAME(getAsset().virtualFilename));
 
 		// Create vertex array object (VAO)
 		const Rhi::VertexArrayVertexBuffer vertexArrayVertexBuffers[] = { vertexBuffer, mRenderer.getMeshResourceManager().getDrawIdVertexBufferPtr() };
-		Rhi::IVertexArray* vertexArray = mBufferManager.createVertexArray(Rhi::VertexAttributes(mNumberOfUsedVertexAttributes, mVertexAttributes), static_cast<uint32_t>(GLM_COUNTOF(vertexArrayVertexBuffers)), vertexArrayVertexBuffers, indexBuffer);
-		RHI_SET_RESOURCE_DEBUG_NAME(vertexArray, getAsset().virtualFilename)
-
-		// Done
-		return vertexArray;
+		return mBufferManager.createVertexArray(Rhi::VertexAttributes(mNumberOfUsedVertexAttributes, mVertexAttributes), static_cast<uint32_t>(GLM_COUNTOF(vertexArrayVertexBuffers)), vertexArrayVertexBuffers, indexBuffer RHI_RESOURCE_DEBUG_NAME(getAsset().virtualFilename));
 	}
 
 

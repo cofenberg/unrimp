@@ -517,8 +517,7 @@ namespace Renderer
 		Rhi::IRhi& rhi = mRenderer.getRhi();
 
 		// Create the root signature
-		mMaterialBlueprintResource->mRootSignaturePtr = rhi.createRootSignature(mRootSignature);
-		RHI_SET_RESOURCE_DEBUG_NAME(mMaterialBlueprintResource->mRootSignaturePtr, getAsset().virtualFilename);
+		mMaterialBlueprintResource->mRootSignaturePtr = rhi.createRootSignature(mRootSignature RHI_RESOURCE_DEBUG_NAME(getAsset().virtualFilename));
 
 		// Create the sampler states
 		const MaterialBlueprintResourceManager& materialBlueprintResourceManager = mMaterialBlueprintResource->getResourceManager<MaterialBlueprintResourceManager>();
@@ -540,8 +539,7 @@ namespace Renderer
 			{
 				materialBlueprintSamplerState->samplerState.maxAnisotropy = defaultMaximumTextureAnisotropy;
 			}
-			samplerState.samplerStatePtr = rhi.createSamplerState(materialBlueprintSamplerState->samplerState);
-			RHI_SET_RESOURCE_DEBUG_NAME(samplerState.samplerStatePtr, getAsset().virtualFilename)
+			samplerState.samplerStatePtr = rhi.createSamplerState(materialBlueprintSamplerState->samplerState RHI_RESOURCE_DEBUG_NAME(getAsset().virtualFilename));
 		}
 		mMaterialBlueprintResource->mSamplerStateGroup = nullptr;
 	}

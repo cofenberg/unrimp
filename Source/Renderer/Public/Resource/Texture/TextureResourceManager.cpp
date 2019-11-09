@@ -58,24 +58,18 @@ namespace
 				255, 255, 255, 255,	// Face 4
 				255, 255, 255, 255	// Face 5
 			};
-			Rhi::ITexturePtr whiteRgba1DTexturePtr(textureManager.createTexture1D(1, Rhi::TextureFormat::R8G8B8A8, whiteRgbaData, Rhi::TextureFlag::SHADER_RESOURCE, Rhi::TextureUsage::IMMUTABLE));
-			RHI_SET_RESOURCE_DEBUG_NAME(whiteRgba1DTexturePtr, "White 1D RGBA texture")
-			Rhi::ITexturePtr whiteRgba2DTexturePtr(textureManager.createTexture2D(1, 1, Rhi::TextureFormat::R8G8B8A8, whiteRgbaData, Rhi::TextureFlag::SHADER_RESOURCE, Rhi::TextureUsage::IMMUTABLE));
-			RHI_SET_RESOURCE_DEBUG_NAME(whiteRgba2DTexturePtr, "White 2D RGBA texture")
-			Rhi::ITexturePtr whiteRgbaCubeTexturePtr(textureManager.createTextureCube(1, 1, Rhi::TextureFormat::R8G8B8A8, whiteRgbaData, Rhi::TextureFlag::SHADER_RESOURCE, Rhi::TextureUsage::IMMUTABLE));
-			RHI_SET_RESOURCE_DEBUG_NAME(whiteRgbaCubeTexturePtr, "White cube RGBA texture")
-			Rhi::ITexturePtr whiteRgba3DTexturePtr(textureManager.createTexture3D(1, 1, 1, Rhi::TextureFormat::R8G8B8A8, whiteRgbaData, Rhi::TextureFlag::SHADER_RESOURCE, Rhi::TextureUsage::IMMUTABLE));
-			RHI_SET_RESOURCE_DEBUG_NAME(whiteRgbaCubeTexturePtr, "White 3D RGBA texture")
+			Rhi::ITexturePtr whiteRgba1DTexturePtr(textureManager.createTexture1D(1, Rhi::TextureFormat::R8G8B8A8, whiteRgbaData, Rhi::TextureFlag::SHADER_RESOURCE, Rhi::TextureUsage::IMMUTABLE RHI_RESOURCE_DEBUG_NAME("White RGBA")));
+			Rhi::ITexturePtr whiteRgba2DTexturePtr(textureManager.createTexture2D(1, 1, Rhi::TextureFormat::R8G8B8A8, whiteRgbaData, Rhi::TextureFlag::SHADER_RESOURCE, Rhi::TextureUsage::IMMUTABLE, 1, nullptr RHI_RESOURCE_DEBUG_NAME("White RGBA")));
+			Rhi::ITexturePtr whiteRgbaCubeTexturePtr(textureManager.createTextureCube(1, 1, Rhi::TextureFormat::R8G8B8A8, whiteRgbaData, Rhi::TextureFlag::SHADER_RESOURCE, Rhi::TextureUsage::IMMUTABLE RHI_RESOURCE_DEBUG_NAME("White RGBA")));
+			Rhi::ITexturePtr whiteRgba3DTexturePtr(textureManager.createTexture3D(1, 1, 1, Rhi::TextureFormat::R8G8B8A8, whiteRgbaData, Rhi::TextureFlag::SHADER_RESOURCE, Rhi::TextureUsage::IMMUTABLE RHI_RESOURCE_DEBUG_NAME("White RGBA")));
 
 			// Normal map identity texture
 			const uint8_t normalMapIdentityData[] = { 128, 128, 255, 255 };
-			Rhi::ITexturePtr normalMapIdentity2DTexturePtr(textureManager.createTexture2D(1, 1, Rhi::TextureFormat::R8G8B8A8, normalMapIdentityData, Rhi::TextureFlag::SHADER_RESOURCE, Rhi::TextureUsage::IMMUTABLE));
-			RHI_SET_RESOURCE_DEBUG_NAME(normalMapIdentity2DTexturePtr, "2D normal map identity texture")
+			Rhi::ITexturePtr normalMapIdentity2DTexturePtr(textureManager.createTexture2D(1, 1, Rhi::TextureFormat::R8G8B8A8, normalMapIdentityData, Rhi::TextureFlag::SHADER_RESOURCE, Rhi::TextureUsage::IMMUTABLE, 1, nullptr RHI_RESOURCE_DEBUG_NAME("Normal map identity")));
 
 			// White alpha texture
 			const uint8_t whiteAData[] = { 255 };
-			Rhi::ITexturePtr whiteA2DTexturePtr(textureManager.createTexture2D(1, 1, Rhi::TextureFormat::R8, whiteAData, Rhi::TextureFlag::SHADER_RESOURCE, Rhi::TextureUsage::IMMUTABLE));
-			RHI_SET_RESOURCE_DEBUG_NAME(whiteA2DTexturePtr, "White 2D alpha texture")
+			Rhi::ITexturePtr whiteA2DTexturePtr(textureManager.createTexture2D(1, 1, Rhi::TextureFormat::R8, whiteAData, Rhi::TextureFlag::SHADER_RESOURCE, Rhi::TextureUsage::IMMUTABLE, 1, nullptr RHI_RESOURCE_DEBUG_NAME("White alpha")));
 
 			// Black RGBA texture
 			const uint8_t blackRgbaData[] = {
@@ -86,30 +80,23 @@ namespace
 				0, 0, 0, 0,	// Face 4
 				0, 0, 0, 0	// Face 5
 			};
-			Rhi::ITexturePtr blackRgba1DTexturePtr(textureManager.createTexture1D(1, Rhi::TextureFormat::R8G8B8A8, blackRgbaData, Rhi::TextureFlag::SHADER_RESOURCE, Rhi::TextureUsage::IMMUTABLE));
-			RHI_SET_RESOURCE_DEBUG_NAME(blackRgba1DTexturePtr, "Black 1D RGBA texture")
-			Rhi::ITexturePtr blackRgba2DTexturePtr(textureManager.createTexture2D(1, 1, Rhi::TextureFormat::R8G8B8A8, blackRgbaData, Rhi::TextureFlag::SHADER_RESOURCE, Rhi::TextureUsage::IMMUTABLE));
-			RHI_SET_RESOURCE_DEBUG_NAME(blackRgba2DTexturePtr, "Black 2D RGBA texture")
-			Rhi::ITexturePtr blackRgbaCubeTexturePtr(textureManager.createTextureCube(1, 1, Rhi::TextureFormat::R8G8B8A8, blackRgbaData, Rhi::TextureFlag::SHADER_RESOURCE, Rhi::TextureUsage::IMMUTABLE));
-			RHI_SET_RESOURCE_DEBUG_NAME(blackRgbaCubeTexturePtr, "Black cube RGBA texture")
-			Rhi::ITexturePtr blackRgba3DTexturePtr(textureManager.createTexture3D(1, 1, 1, Rhi::TextureFormat::R8G8B8A8, blackRgbaData, Rhi::TextureFlag::SHADER_RESOURCE, Rhi::TextureUsage::IMMUTABLE));
-			RHI_SET_RESOURCE_DEBUG_NAME(blackRgba3DTexturePtr, "Black 3D RGBA texture")
+			Rhi::ITexturePtr blackRgba1DTexturePtr(textureManager.createTexture1D(1, Rhi::TextureFormat::R8G8B8A8, blackRgbaData, Rhi::TextureFlag::SHADER_RESOURCE, Rhi::TextureUsage::IMMUTABLE RHI_RESOURCE_DEBUG_NAME("Black RGBA")));
+			Rhi::ITexturePtr blackRgba2DTexturePtr(textureManager.createTexture2D(1, 1, Rhi::TextureFormat::R8G8B8A8, blackRgbaData, Rhi::TextureFlag::SHADER_RESOURCE, Rhi::TextureUsage::IMMUTABLE, 1, nullptr RHI_RESOURCE_DEBUG_NAME("Black RGBA")));
+			Rhi::ITexturePtr blackRgbaCubeTexturePtr(textureManager.createTextureCube(1, 1, Rhi::TextureFormat::R8G8B8A8, blackRgbaData, Rhi::TextureFlag::SHADER_RESOURCE, Rhi::TextureUsage::IMMUTABLE RHI_RESOURCE_DEBUG_NAME("Black RGBA")));
+			Rhi::ITexturePtr blackRgba3DTexturePtr(textureManager.createTexture3D(1, 1, 1, Rhi::TextureFormat::R8G8B8A8, blackRgbaData, Rhi::TextureFlag::SHADER_RESOURCE, Rhi::TextureUsage::IMMUTABLE RHI_RESOURCE_DEBUG_NAME("Black RGBA")));
 
 			// Black alpha texture
 			const uint8_t blackAData[] = { 0 };
-			Rhi::ITexturePtr blackA2DTexturePtr(textureManager.createTexture2D(1, 1, Rhi::TextureFormat::R8, blackAData, Rhi::TextureFlag::SHADER_RESOURCE, Rhi::TextureUsage::IMMUTABLE));
-			RHI_SET_RESOURCE_DEBUG_NAME(blackA2DTexturePtr, "Black 2D alpha texture")
+			Rhi::ITexturePtr blackA2DTexturePtr(textureManager.createTexture2D(1, 1, Rhi::TextureFormat::R8, blackAData, Rhi::TextureFlag::SHADER_RESOURCE, Rhi::TextureUsage::IMMUTABLE, 1, nullptr RHI_RESOURCE_DEBUG_NAME("Black alpha")));
 
 			// "_argb_nxa"-texture
 			// -> Must be white so e.g. albedo color can be multiplied in
 			const uint8_t _argb_nxaIdentityData[] = { 255, 255, 255, 128 };
-			Rhi::ITexturePtr _argb_nxaIdentity2DTexturePtr(textureManager.createTexture2D(1, 1, Rhi::TextureFormat::R8G8B8A8, _argb_nxaIdentityData, Rhi::TextureFlag::SHADER_RESOURCE, Rhi::TextureUsage::IMMUTABLE));
-			RHI_SET_RESOURCE_DEBUG_NAME(_argb_nxaIdentity2DTexturePtr, "2D _argb_nxa identity texture")
+			Rhi::ITexturePtr _argb_nxaIdentity2DTexturePtr(textureManager.createTexture2D(1, 1, Rhi::TextureFormat::R8G8B8A8, _argb_nxaIdentityData, Rhi::TextureFlag::SHADER_RESOURCE, Rhi::TextureUsage::IMMUTABLE, 1, nullptr RHI_RESOURCE_DEBUG_NAME("_argb_nxa identity")));
 
 			// "_hr_rg_mb_nya"-texture
 			const uint8_t _hr_rg_mb_nyaIdentityData[] = { 0, 255, 0, 128 };
-			Rhi::ITexturePtr _hr_rg_mb_nyaIdentity2DTexturePtr(textureManager.createTexture2D(1, 1, Rhi::TextureFormat::R8G8B8A8, _hr_rg_mb_nyaIdentityData, Rhi::TextureFlag::SHADER_RESOURCE, Rhi::TextureUsage::IMMUTABLE));
-			RHI_SET_RESOURCE_DEBUG_NAME(_hr_rg_mb_nyaIdentity2DTexturePtr, "2D _hr_rg_mb_nya identity texture")
+			Rhi::ITexturePtr _hr_rg_mb_nyaIdentity2DTexturePtr(textureManager.createTexture2D(1, 1, Rhi::TextureFormat::R8G8B8A8, _hr_rg_mb_nyaIdentityData, Rhi::TextureFlag::SHADER_RESOURCE, Rhi::TextureUsage::IMMUTABLE, 1, nullptr RHI_RESOURCE_DEBUG_NAME("_hr_rg_mb_nya identity")));
 
 			// Define helper macro
 			#define CREATE_TEXTURE(name, texturePtr) textureResourceManager.createTextureResourceByAssetId(ASSET_ID("Unrimp/Texture/DynamicByCode/"#name), *texturePtr);

@@ -85,12 +85,11 @@ namespace Renderer
 							mRenderTargetHeight = renderTargetHeight;
 							mFramebuffersPtrs.resize(numberOfMipmaps);
 							Rhi::IRhi& rhi = renderer.getRhi();
-							Rhi::IRenderPass* renderPass = rhi.createRenderPass(0, nullptr, Rhi::TextureFormat::D32_FLOAT);	// TODO(co) Make the texture format flexible, custom mipmap generation also makes sense for color textures
+							Rhi::IRenderPass* renderPass = rhi.createRenderPass(0, nullptr, Rhi::TextureFormat::D32_FLOAT, 1 RHI_RESOURCE_DEBUG_NAME("Compositor instance pass generate mipmap"));	// TODO(co) Make the texture format flexible, custom mipmap generation also makes sense for color textures
 							for (uint32_t mipmapIndex = 1; mipmapIndex < numberOfMipmaps; ++mipmapIndex)
 							{
 								const Rhi::FramebufferAttachment depthFramebufferAttachment(texture, mipmapIndex, 0);
-								mFramebuffersPtrs[mipmapIndex] = rhi.createFramebuffer(*renderPass, nullptr, &depthFramebufferAttachment);
-								RHI_SET_RESOURCE_DEBUG_NAME(mFramebuffersPtrs[mipmapIndex], ("Compositor instance pass generate mipmap " + std::to_string(mipmapIndex)).c_str())
+								mFramebuffersPtrs[mipmapIndex] = rhi.createFramebuffer(*renderPass, nullptr, &depthFramebufferAttachment RHI_RESOURCE_DEBUG_NAME(("Compositor instance pass generate mipmap " + std::to_string(mipmapIndex)).c_str()));
 							}
 						}
 

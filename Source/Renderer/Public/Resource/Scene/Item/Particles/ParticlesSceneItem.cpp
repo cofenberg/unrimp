@@ -114,8 +114,7 @@ namespace Renderer
 			};
 
 			// Create the structured buffer
-			mStructuredBufferPtr = renderer.getBufferManager().createStructuredBuffer(sizeof(ParticleDataStruct) * mMaximumNumberOfParticles, particlesData, Rhi::BufferFlag::SHADER_RESOURCE, Rhi::BufferUsage::STATIC_DRAW, sizeof(ParticleDataStruct));
-			RHI_SET_RESOURCE_DEBUG_NAME(mStructuredBufferPtr, "Particles structured buffer")
+			mStructuredBufferPtr = renderer.getBufferManager().createStructuredBuffer(sizeof(ParticleDataStruct) * mMaximumNumberOfParticles, particlesData, Rhi::BufferFlag::SHADER_RESOURCE, Rhi::BufferUsage::STATIC_DRAW, sizeof(ParticleDataStruct) RHI_RESOURCE_DEBUG_NAME("Particles"));
 		}
 		else
 		{

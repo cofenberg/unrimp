@@ -53,7 +53,7 @@ void FirstTriangle::onInitialization()
 			rootSignature.initialize(0, nullptr, 0, nullptr, Rhi::RootSignatureFlags::ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT);
 
 			// Create the instance
-			mRootSignature = rhi->createRootSignature(rootSignature);
+			mRootSignature = rhi->createRootSignature(rootSignature RHI_RESOURCE_DEBUG_NAME("Triangle"));
 		}
 
 		// Vertex input layout
@@ -83,8 +83,7 @@ void FirstTriangle::onInitialization()
 				 1.0f, 0.0f,	// 1			   .   .
 				-0.5f, 0.0f		// 2			  2.......1
 			};
-			Rhi::IVertexBufferPtr vertexBuffer(mBufferManager->createVertexBuffer(sizeof(VERTEX_POSITION), VERTEX_POSITION));
-			RHI_SET_RESOURCE_DEBUG_NAME(vertexBuffer, "Triangle VBO")
+			Rhi::IVertexBufferPtr vertexBuffer(mBufferManager->createVertexBuffer(sizeof(VERTEX_POSITION), VERTEX_POSITION, 0, Rhi::BufferUsage::STATIC_DRAW RHI_RESOURCE_DEBUG_NAME("Triangle")));
 
 			// Create vertex array object (VAO)
 			// -> The vertex array object (VAO) keeps a reference to the used vertex buffer object (VBO)
@@ -93,8 +92,7 @@ void FirstTriangle::onInitialization()
 			//    reference of the used vertex buffer objects (VBO). If the reference counter of a
 			//    vertex buffer object (VBO) reaches zero, it's automatically destroyed.
 			const Rhi::VertexArrayVertexBuffer vertexArrayVertexBuffers[] = { vertexBuffer };
-			mVertexArray = mBufferManager->createVertexArray(vertexAttributes, static_cast<uint32_t>(GLM_COUNTOF(vertexArrayVertexBuffers)), vertexArrayVertexBuffers);
-			RHI_SET_RESOURCE_DEBUG_NAME(mVertexArray, "Triangle VAO")
+			mVertexArray = mBufferManager->createVertexArray(vertexAttributes, static_cast<uint32_t>(GLM_COUNTOF(vertexArrayVertexBuffers)), vertexArrayVertexBuffers, nullptr RHI_RESOURCE_DEBUG_NAME("Triangle"));
 		}
 
 		{
@@ -110,25 +108,20 @@ void FirstTriangle::onInitialization()
 				#include "FirstTriangle_HLSL_D3D9_D3D10_D3D11_D3D12.h"
 				#include "FirstTriangle_Null.h"
 
-				// Create the vertex shader
-				Rhi::IShaderLanguage& shaderLanguage = rhi->getDefaultShaderLanguage();
-				Rhi::IVertexShader* vertexShader = shaderLanguage.createVertexShaderFromSourceCode(vertexAttributes, vertexShaderSourceCode);
-				RHI_SET_RESOURCE_DEBUG_NAME(vertexShader, "Triangle VS")
-
-				// Create the fragment shader
-				Rhi::IFragmentShader* fragmentShader = shaderLanguage.createFragmentShaderFromSourceCode(fragmentShaderSourceCode);
-				RHI_SET_RESOURCE_DEBUG_NAME(fragmentShader, "Triangle FS")
-
 				// Create the graphics program
-				graphicsProgram = shaderLanguage.createGraphicsProgram(*mRootSignature, vertexAttributes, vertexShader, fragmentShader);
-				RHI_SET_RESOURCE_DEBUG_NAME(graphicsProgram, "Triangle graphics program")
+				Rhi::IShaderLanguage& shaderLanguage = rhi->getDefaultShaderLanguage();
+				graphicsProgram = shaderLanguage.createGraphicsProgram(
+					*mRootSignature,
+					vertexAttributes,
+					shaderLanguage.createVertexShaderFromSourceCode(vertexAttributes, vertexShaderSourceCode, nullptr RHI_RESOURCE_DEBUG_NAME("Triangle")),
+					shaderLanguage.createFragmentShaderFromSourceCode(fragmentShaderSourceCode, nullptr RHI_RESOURCE_DEBUG_NAME("Triangle"))
+					RHI_RESOURCE_DEBUG_NAME("Triangle"));
 			}
 
 			// Create the graphics pipeline state object (PSO)
 			if (nullptr != graphicsProgram)
 			{
-				mGraphicsPipelineState = rhi->createGraphicsPipelineState(Rhi::GraphicsPipelineStateBuilder(mRootSignature, graphicsProgram, vertexAttributes, getMainRenderTarget()->getRenderPass()));
-				RHI_SET_RESOURCE_DEBUG_NAME(mGraphicsPipelineState, "Triangle PSO")
+				mGraphicsPipelineState = rhi->createGraphicsPipelineState(Rhi::GraphicsPipelineStateBuilder(mRootSignature, graphicsProgram, vertexAttributes, getMainRenderTarget()->getRenderPass()) RHI_RESOURCE_DEBUG_NAME("Triangle"));
 			}
 		}
 

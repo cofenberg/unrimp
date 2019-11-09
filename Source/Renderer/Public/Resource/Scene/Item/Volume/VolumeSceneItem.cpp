@@ -103,8 +103,7 @@ namespace
 				-0.5f,  0.5f,  0.5f,	// 7
 			};
 			Rhi::IBufferManager& bufferManager = renderer.getBufferManager();
-			Rhi::IVertexBufferPtr vertexBuffer(bufferManager.createVertexBuffer(sizeof(VERTEX_POSITION), VERTEX_POSITION));
-			RHI_SET_RESOURCE_DEBUG_NAME(vertexBuffer, "Volume")
+			Rhi::IVertexBufferPtr vertexBuffer(bufferManager.createVertexBuffer(sizeof(VERTEX_POSITION), VERTEX_POSITION, 0, Rhi::BufferUsage::STATIC_DRAW RHI_RESOURCE_DEBUG_NAME("Volume")));
 
 			// Create the index buffer object (IBO)
 			static constexpr uint16_t INDICES[] =
@@ -128,16 +127,11 @@ namespace
 				0, 4, 5,	// 0
 				5, 1, 0		// 1
 			};
-			Rhi::IIndexBuffer* indexBuffer = bufferManager.createIndexBuffer(sizeof(INDICES), INDICES);
-			RHI_SET_RESOURCE_DEBUG_NAME(indexBuffer, "Volume")
+			Rhi::IIndexBuffer* indexBuffer = bufferManager.createIndexBuffer(sizeof(INDICES), INDICES, 0, Rhi::BufferUsage::STATIC_DRAW, Rhi::IndexBufferFormat::UNSIGNED_SHORT RHI_RESOURCE_DEBUG_NAME("Volume"));
 
 			// Create vertex array object (VAO)
 			const Rhi::VertexArrayVertexBuffer vertexArrayVertexBuffers[] = { vertexBuffer, renderer.getMeshResourceManager().getDrawIdVertexBufferPtr() };
-			Rhi::IVertexArray* vertexArray = bufferManager.createVertexArray(vertexAttributes, static_cast<uint32_t>(GLM_COUNTOF(vertexArrayVertexBuffers)), vertexArrayVertexBuffers, indexBuffer);
-			RHI_SET_RESOURCE_DEBUG_NAME(vertexArray, "Volume")
-
-			// Done
-			return vertexArray;
+			return bufferManager.createVertexArray(vertexAttributes, static_cast<uint32_t>(GLM_COUNTOF(vertexArrayVertexBuffers)), vertexArrayVertexBuffers, indexBuffer RHI_RESOURCE_DEBUG_NAME("Volume"));
 		}
 
 

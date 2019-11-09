@@ -65,7 +65,7 @@ namespace Renderer
 		else
 		{
 			// Create the render pass instance
-			Rhi::IRenderPass* renderPass = mRhi.createRenderPass(numberOfColorAttachments, colorAttachmentTextureFormats, depthStencilAttachmentTextureFormat, numberOfMultisamples);
+			Rhi::IRenderPass* renderPass = mRhi.createRenderPass(numberOfColorAttachments, colorAttachmentTextureFormats, depthStencilAttachmentTextureFormat, numberOfMultisamples RHI_RESOURCE_DEBUG_NAME("Render pass manager"));
 			renderPass->addReference();
 			mRenderPasses.emplace(renderPassSignature, renderPass);
 			return renderPass;

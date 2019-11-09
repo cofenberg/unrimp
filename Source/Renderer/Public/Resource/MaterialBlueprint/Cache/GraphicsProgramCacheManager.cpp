@@ -105,8 +105,9 @@ namespace Renderer
 				static_cast<Rhi::ITessellationControlShader*>(shaders[static_cast<int>(GraphicsShaderType::TessellationControl)]),
 				static_cast<Rhi::ITessellationEvaluationShader*>(shaders[static_cast<int>(GraphicsShaderType::TessellationEvaluation)]),
 				static_cast<Rhi::IGeometryShader*>(shaders[static_cast<int>(GraphicsShaderType::Geometry)]),
-				static_cast<Rhi::IFragmentShader*>(shaders[static_cast<int>(GraphicsShaderType::Fragment)]));
-			RHI_SET_RESOURCE_DEBUG_NAME(graphicsProgram, "Graphics program cache manager")
+				static_cast<Rhi::IFragmentShader*>(shaders[static_cast<int>(GraphicsShaderType::Fragment)])
+				RHI_RESOURCE_DEBUG_NAME("Graphics program cache manager")
+			);
 
 			// Create the new graphics program cache instance
 			if (nullptr != graphicsProgram)

@@ -189,8 +189,7 @@ namespace Renderer
 			drawIds[i] = i;
 		}
 		Rhi::IBufferManager& bufferManager = renderer.getBufferManager();
-		mDrawIdVertexBufferPtr = bufferManager.createVertexBuffer(sizeof(drawIds), drawIds);
-		RHI_SET_RESOURCE_DEBUG_NAME(mDrawIdVertexBufferPtr, "Draw ID VBO")
+		mDrawIdVertexBufferPtr = bufferManager.createVertexBuffer(sizeof(drawIds), drawIds, 0, Rhi::BufferUsage::STATIC_DRAW RHI_RESOURCE_DEBUG_NAME("Draw ID"));
 
 		// Create vertex array object (VAO)
 		// -> The vertex array object (VAO) keeps a reference to the used vertex buffer object (VBO)
@@ -199,8 +198,7 @@ namespace Renderer
 		//    reference of the used vertex buffer objects (VBO). If the reference counter of a
 		//    vertex buffer object (VBO) reaches zero, it's automatically destroyed.
 		const Rhi::VertexArrayVertexBuffer vertexArrayVertexBuffers[] = { mDrawIdVertexBufferPtr };
-		mDrawIdVertexArrayPtr = bufferManager.createVertexArray(DRAW_ID_VERTEX_ATTRIBUTES, static_cast<uint32_t>(GLM_COUNTOF(vertexArrayVertexBuffers)), vertexArrayVertexBuffers);
-		RHI_SET_RESOURCE_DEBUG_NAME(mDrawIdVertexArrayPtr, "Draw ID VAO")
+		mDrawIdVertexArrayPtr = bufferManager.createVertexArray(DRAW_ID_VERTEX_ATTRIBUTES, static_cast<uint32_t>(GLM_COUNTOF(vertexArrayVertexBuffers)), vertexArrayVertexBuffers, nullptr RHI_RESOURCE_DEBUG_NAME("Draw ID"));
 	}
 
 	MeshResourceManager::~MeshResourceManager()

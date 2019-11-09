@@ -198,8 +198,7 @@ namespace Renderer
 		RHI_ASSERT(getContext(), ::detail::NUMBER_OF_INDICES == index, "Invalid index")
 
 		// Create the index buffer object (IBO)
-		mIndexBufferPtr = bufferManager.createIndexBuffer(sizeof(uint16_t) * ::detail::NUMBER_OF_INDICES, indices);
-		RHI_SET_RESOURCE_DEBUG_NAME(mIndexBufferPtr, "Terrain tile ring")
+		mIndexBufferPtr = bufferManager.createIndexBuffer(sizeof(uint16_t) * ::detail::NUMBER_OF_INDICES, indices, 0, Rhi::BufferUsage::STATIC_DRAW, Rhi::IndexBufferFormat::UNSIGNED_SHORT RHI_RESOURCE_DEBUG_NAME("Terrain tile ring"));
 	}
 
 	void TerrainSceneItem::createTerrainTileRing(TerrainTileRing& terrainTileRing, Rhi::IBufferManager& bufferManager, int holeWidth, int outerWidth, float tileSize) const
@@ -298,8 +297,7 @@ namespace Renderer
 			RHI_ASSERT(getContext(), index == numberOfTiles, "Invalid index")
 
 			// Create the vertex buffer object (VBO)
-			vertexBuffer = bufferManager.createVertexBuffer(sizeof(::detail::InstanceData) * numberOfTiles, vertexBufferData);
-			RHI_SET_RESOURCE_DEBUG_NAME(vertexBuffer, "Terrain tile ring")
+			vertexBuffer = bufferManager.createVertexBuffer(sizeof(::detail::InstanceData) * numberOfTiles, vertexBufferData, 0, Rhi::BufferUsage::STATIC_DRAW RHI_RESOURCE_DEBUG_NAME("Terrain tile ring"));
 
 			// Destroy temporary vertex buffer data
 			delete[] vertexBufferData;
@@ -307,8 +305,7 @@ namespace Renderer
 
 		// Create vertex array object (VAO)
 		const Rhi::VertexArrayVertexBuffer vertexArrayVertexBuffers[] = { vertexBuffer };
-		terrainTileRing.vertexArrayPtr = bufferManager.createVertexArray(TerrainSceneItem::VERTEX_ATTRIBUTES, static_cast<uint32_t>(GLM_COUNTOF(vertexArrayVertexBuffers)), vertexArrayVertexBuffers, mIndexBufferPtr);
-		RHI_SET_RESOURCE_DEBUG_NAME(terrainTileRing.vertexArrayPtr, "Terrain tile ring")
+		terrainTileRing.vertexArrayPtr = bufferManager.createVertexArray(TerrainSceneItem::VERTEX_ATTRIBUTES, static_cast<uint32_t>(GLM_COUNTOF(vertexArrayVertexBuffers)), vertexArrayVertexBuffers, mIndexBufferPtr RHI_RESOURCE_DEBUG_NAME("Terrain tile ring"));
 	}
 
 

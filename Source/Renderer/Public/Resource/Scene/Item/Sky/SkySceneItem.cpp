@@ -78,8 +78,7 @@ namespace
 				-1.0f, -1.0f, -1.0f,
 				 1.0f, -1.0f,- 1.0f
 			};
-			Rhi::IVertexBufferPtr vertexBuffer(bufferManager.createVertexBuffer(sizeof(VERTEX_POSITION), VERTEX_POSITION));
-			RHI_SET_RESOURCE_DEBUG_NAME(vertexBuffer, "Sky")
+			Rhi::IVertexBufferPtr vertexBuffer(bufferManager.createVertexBuffer(sizeof(VERTEX_POSITION), VERTEX_POSITION, 0, Rhi::BufferUsage::STATIC_DRAW RHI_RESOURCE_DEBUG_NAME("Sky")));
 
 			// Create the index buffer object (IBO)
 			static constexpr uint16_t INDICES[] =
@@ -91,16 +90,11 @@ namespace
 				5, 4, 1, 1, 0, 5,	// Top
 				3, 2, 7, 7, 6, 3	// Bottom
 			};
-			Rhi::IIndexBuffer* indexBuffer = bufferManager.createIndexBuffer(sizeof(INDICES), INDICES);
-			RHI_SET_RESOURCE_DEBUG_NAME(indexBuffer, "Sky")
+			Rhi::IIndexBuffer* indexBuffer = bufferManager.createIndexBuffer(sizeof(INDICES), INDICES, 0, Rhi::BufferUsage::STATIC_DRAW, Rhi::IndexBufferFormat::UNSIGNED_SHORT RHI_RESOURCE_DEBUG_NAME("Sky"));
 
 			// Create vertex array object (VAO)
 			const Rhi::VertexArrayVertexBuffer vertexArrayVertexBuffers[] = { vertexBuffer };
-			Rhi::IVertexArray* vertexArray = bufferManager.createVertexArray(vertexAttributes, static_cast<uint32_t>(GLM_COUNTOF(vertexArrayVertexBuffers)), vertexArrayVertexBuffers, indexBuffer);
-			RHI_SET_RESOURCE_DEBUG_NAME(vertexArray, "Sky")
-
-			// Done
-			return vertexArray;
+			return bufferManager.createVertexArray(vertexAttributes, static_cast<uint32_t>(GLM_COUNTOF(vertexArrayVertexBuffers)), vertexArrayVertexBuffers, indexBuffer RHI_RESOURCE_DEBUG_NAME("Sky"));
 		}
 
 

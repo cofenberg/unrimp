@@ -276,8 +276,7 @@ namespace Renderer
 					resources[i] = mSamplerStates[i].samplerStatePtr;
 				}
 				// TODO(co) All sampler states need to be inside the same resource group, this needs to be guaranteed by design
-				mSamplerStateGroup = mRootSignaturePtr->createResourceGroup(mSamplerStates[0].rootParameterIndex, static_cast<uint32_t>(numberOfSamplerStates), resources.data());
-				RHI_SET_RESOURCE_DEBUG_NAME(mSamplerStateGroup, "Material blueprint")
+				mSamplerStateGroup = mRootSignaturePtr->createResourceGroup(mSamplerStates[0].rootParameterIndex, static_cast<uint32_t>(numberOfSamplerStates), resources.data(), nullptr RHI_RESOURCE_DEBUG_NAME("Material blueprint"));
 			}
 
 			// Set graphics resource group
@@ -316,8 +315,7 @@ namespace Renderer
 					resources[i] = mSamplerStates[i].samplerStatePtr;
 				}
 				// TODO(co) All sampler states need to be inside the same resource group, this needs to be guaranteed by design
-				mSamplerStateGroup = mRootSignaturePtr->createResourceGroup(mSamplerStates[0].rootParameterIndex, static_cast<uint32_t>(numberOfSamplerStates), resources.data());
-				RHI_SET_RESOURCE_DEBUG_NAME(mSamplerStateGroup, "Material blueprint")
+				mSamplerStateGroup = mRootSignaturePtr->createResourceGroup(mSamplerStates[0].rootParameterIndex, static_cast<uint32_t>(numberOfSamplerStates), resources.data(), nullptr RHI_RESOURCE_DEBUG_NAME("Material blueprint"));
 			}
 
 			// Set compute resource group
@@ -521,8 +519,7 @@ namespace Renderer
 					{
 						rhiSamplerState.maxAnisotropy = maximumDefaultAnisotropy;
 					}
-					samplerState.samplerStatePtr = rhi.createSamplerState(rhiSamplerState);
-					RHI_SET_RESOURCE_DEBUG_NAME(samplerState.samplerStatePtr, asset->virtualFilename)
+					samplerState.samplerStatePtr = rhi.createSamplerState(rhiSamplerState RHI_RESOURCE_DEBUG_NAME(asset->virtualFilename));
 				}
 			}
 		}

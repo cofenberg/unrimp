@@ -500,13 +500,12 @@ namespace Renderer
 
 				{ // Depth shadow map
 					const Rhi::TextureFormat::Enum textureFormat = Rhi::TextureFormat::D32_FLOAT;
-					Rhi::ITexture* texture = renderer.getTextureManager().createTexture2D(mShadowMapSize, mShadowMapSize, textureFormat, nullptr, Rhi::TextureFlag::SHADER_RESOURCE | Rhi::TextureFlag::RENDER_TARGET, Rhi::TextureUsage::DEFAULT, numberOfShadowMultisamples);
-					RHI_SET_RESOURCE_DEBUG_NAME(texture, "Compositor instance pass depth shadow map")
+					Rhi::ITexture* texture = renderer.getTextureManager().createTexture2D(mShadowMapSize, mShadowMapSize, textureFormat, nullptr, Rhi::TextureFlag::SHADER_RESOURCE | Rhi::TextureFlag::RENDER_TARGET, Rhi::TextureUsage::DEFAULT, numberOfShadowMultisamples, nullptr RHI_RESOURCE_DEBUG_NAME("Compositor instance pass depth shadow map"));
 
-					// Create the framebuffer object (FBO) instance
-					const Rhi::FramebufferAttachment depthStencilFramebufferAttachment(texture);
-					mDepthFramebufferPtr = rhi.createFramebuffer(*rhi.createRenderPass(0, nullptr, textureFormat), nullptr, &depthStencilFramebufferAttachment);
-					RHI_SET_RESOURCE_DEBUG_NAME(mDepthFramebufferPtr, "Compositor instance pass depth shadow map")
+					{ // Create the framebuffer object (FBO) instance
+						const Rhi::FramebufferAttachment depthStencilFramebufferAttachment(texture);
+						mDepthFramebufferPtr = rhi.createFramebuffer(*rhi.createRenderPass(0, nullptr, textureFormat, 1 RHI_RESOURCE_DEBUG_NAME("Compositor instance pass depth shadow map")), nullptr, &depthStencilFramebufferAttachment RHI_RESOURCE_DEBUG_NAME("Compositor instance pass depth shadow map"));
+					}
 
 					// Create texture resource
 					mDepthTextureResourceId = textureResourceManager.createTextureResourceByAssetId(::detail::DEPTH_SHADOW_MAP_TEXTURE_ASSET_ID, *texture);
@@ -525,16 +524,14 @@ namespace Renderer
 
 				{ // Variance shadow map
 					const Rhi::TextureFormat::Enum textureFormat = Rhi::TextureFormat::R32G32B32A32F;
-					Rhi::ITexture* texture = renderer.getTextureManager().createTexture2DArray(mShadowMapSize, mShadowMapSize, CompositorResourcePassShadowMap::MAXIMUM_NUMBER_OF_SHADOW_CASCADES, textureFormat, nullptr, Rhi::TextureFlag::SHADER_RESOURCE | Rhi::TextureFlag::RENDER_TARGET);
-					RHI_SET_RESOURCE_DEBUG_NAME(texture, "Compositor instance pass variance shadow map")
+					Rhi::ITexture* texture = renderer.getTextureManager().createTexture2DArray(mShadowMapSize, mShadowMapSize, CompositorResourcePassShadowMap::MAXIMUM_NUMBER_OF_SHADOW_CASCADES, textureFormat, nullptr, Rhi::TextureFlag::SHADER_RESOURCE | Rhi::TextureFlag::RENDER_TARGET, Rhi::TextureUsage::DEFAULT RHI_RESOURCE_DEBUG_NAME("Compositor instance pass variance shadow map"));
 
 					// Create the framebuffer object (FBO) instances
-					Rhi::IRenderPass* renderPass = rhi.createRenderPass(1, &textureFormat);
+					Rhi::IRenderPass* renderPass = rhi.createRenderPass(1, &textureFormat, Rhi::TextureFormat::UNKNOWN, 1 RHI_RESOURCE_DEBUG_NAME("Compositor instance pass variance shadow map"));
 					for (uint8_t cascadeIndex = 0; cascadeIndex < CompositorResourcePassShadowMap::MAXIMUM_NUMBER_OF_SHADOW_CASCADES; ++cascadeIndex)
 					{
 						const Rhi::FramebufferAttachment colorFramebufferAttachment(texture, 0, cascadeIndex);
-						mVarianceFramebufferPtr[cascadeIndex] = rhi.createFramebuffer(*renderPass, &colorFramebufferAttachment);
-						RHI_SET_RESOURCE_DEBUG_NAME(mVarianceFramebufferPtr[cascadeIndex], ("Compositor instance pass variance shadow map " + std::to_string(cascadeIndex)).c_str())
+						mVarianceFramebufferPtr[cascadeIndex] = rhi.createFramebuffer(*renderPass, &colorFramebufferAttachment, nullptr RHI_RESOURCE_DEBUG_NAME(("Compositor instance pass variance shadow map " + std::to_string(cascadeIndex)).c_str()));
 					}
 					for (uint8_t cascadeIndex = CompositorResourcePassShadowMap::MAXIMUM_NUMBER_OF_SHADOW_CASCADES; cascadeIndex < CompositorResourcePassShadowMap::MAXIMUM_NUMBER_OF_SHADOW_CASCADES; ++cascadeIndex)
 					{
@@ -547,13 +544,12 @@ namespace Renderer
 
 				{ // Intermediate depth blur shadow map
 					const Rhi::TextureFormat::Enum textureFormat = Rhi::TextureFormat::R32G32B32A32F;
-					Rhi::ITexture* texture = renderer.getTextureManager().createTexture2D(mShadowMapSize, mShadowMapSize, textureFormat, nullptr, Rhi::TextureFlag::SHADER_RESOURCE | Rhi::TextureFlag::RENDER_TARGET);
-					RHI_SET_RESOURCE_DEBUG_NAME(texture, "Compositor instance pass intermediate depth blur shadow map")
+					Rhi::ITexture* texture = renderer.getTextureManager().createTexture2D(mShadowMapSize, mShadowMapSize, textureFormat, nullptr, Rhi::TextureFlag::SHADER_RESOURCE | Rhi::TextureFlag::RENDER_TARGET, Rhi::TextureUsage::DEFAULT, 1, nullptr RHI_RESOURCE_DEBUG_NAME("Compositor instance pass intermediate depth blur shadow map"));
 
-					// Create the framebuffer object (FBO) instance
-					const Rhi::FramebufferAttachment colorFramebufferAttachment(texture);
-					mIntermediateFramebufferPtr = rhi.createFramebuffer(*rhi.createRenderPass(1, &textureFormat), &colorFramebufferAttachment);
-					RHI_SET_RESOURCE_DEBUG_NAME(mIntermediateFramebufferPtr, "Compositor instance pass intermediate depth blur shadow map")
+					{ // Create the framebuffer object (FBO) instance
+						const Rhi::FramebufferAttachment colorFramebufferAttachment(texture);
+						mIntermediateFramebufferPtr = rhi.createFramebuffer(*rhi.createRenderPass(1, &textureFormat, Rhi::TextureFormat::UNKNOWN, 1 RHI_RESOURCE_DEBUG_NAME("Compositor instance pass intermediate depth blur shadow map")), &colorFramebufferAttachment, nullptr RHI_RESOURCE_DEBUG_NAME("Compositor instance pass intermediate depth blur shadow map"));
+					}
 
 					// Create texture resource
 					mIntermediateDepthBlurTextureResourceId = textureResourceManager.createTextureResourceByAssetId(::detail::INTERMEDIATE_DEPTH_BLUR_SHADOW_MAP_TEXTURE_ASSET_ID, *texture);
@@ -584,13 +580,10 @@ namespace Renderer
 			else
 			{
 				// If shadow is disabled, we still need to create at least a dummy for the resulting main variance shadow map resource
-				const Rhi::TextureFormat::Enum textureFormat = Rhi::TextureFormat::R32G32B32A32F;
 				const float data[] = { 0.0f, 0.0f, 0.0f, 0.0f };
-				Rhi::ITexture* texture = renderer.getTextureManager().createTexture2DArray(1, 1, 1, textureFormat, data, Rhi::TextureFlag::SHADER_RESOURCE);
-				RHI_SET_RESOURCE_DEBUG_NAME(texture, "Compositor instance pass variance shadow map")
-
-				// Create texture resource
-				mVarianceTextureResourceId = textureResourceManager.createTextureResourceByAssetId(assetId, *texture);
+				mVarianceTextureResourceId = textureResourceManager.createTextureResourceByAssetId(
+					assetId,
+					*renderer.getTextureManager().createTexture2DArray(1, 1, 1, Rhi::TextureFormat::R32G32B32A32F, data, Rhi::TextureFlag::SHADER_RESOURCE, Rhi::TextureUsage::DEFAULT RHI_RESOURCE_DEBUG_NAME("Compositor instance pass variance shadow map")));
 			}
 		}
 		else

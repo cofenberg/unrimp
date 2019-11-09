@@ -41,10 +41,11 @@ Features
 			- Efficiency and responsiveness over flexibility (were it isn't useful in practice)
 			- Intended to be controlled by a high-level entity-component system, no unused implementation feature overkill in the basic renderer
 		- Toolkit designed with developer fast iterations in mind: Asset source flexibility, asset background compilation, hot-reloading
-	- Interfaces for log, assert, memory allocator, graphics debugger and profiler so the user has the control over those things
+	- Interfaces for log, assert, memory allocator, graphics debugger, profiler and file so the user has the control over those things
 		- Standard implementations are provided
 		- Standard graphics debugger implementation using [RenderDoc](https://renderdoc.org/) is provided
 		- Standard profiler implementation using [Remotery](https://github.com/Celtoys/Remotery) is provided
+		- Standard file implementation using UTF-8 STD file streams as well as [PhysicsFS](https://icculus.org/physfs/) for shipping packed asset packages are provided
 - Cross-platform
 	- Microsoft Windows x86 and x64
 	- Currently unmaintained
@@ -87,7 +88,7 @@ Rendering hardware interface (RHI) and implementations
 		- Vertex buffer object (VBO, input-assembler (IA) stage)
 		- Index buffer object (IBO, input-assembler (IA) stage)
 	- Texture buffer object (TBO)
-	- Structured buffer object
+	- Structured buffer object (SBO)
 	- Indirect buffer object with optional internal emulation, draw methods always use an indirect buffer to have an unified draw call API
 	- Uniform buffer object (UBO, "constant buffer" in Direct3D terminology)
 	- Command buffer mandatory by design, not just build on top
@@ -101,7 +102,7 @@ Rendering hardware interface (RHI) and implementations
 - Instancing support
 	- Instanced arrays (shader model 3 feature, vertex array element advancing per-instance instead of per-vertex)
 	- Draw instanced (shader model 4 feature, build in shader variable holding the current instance ID)
-- Debug methods
+- Debug methods and RHI debug resource names
 	- When using Direct3D <11.1, those methods map to the Direct3D 9 PIX functions (D3DPERF_* functions, also works directly within VisualStudio 2019 out-of-the-box)
 	- Used inside the RHI implementations for better RHI debugging
 - Supported asynchronous queries: Occlusion, pipeline statistics and timestamp
@@ -143,8 +144,6 @@ Renderer (e.g. "The Game")
 	- Animated controller visualization supported
 	- Single pass stereo rendering via instancing
 	- Hidden area mesh supported
-- Abstract file interface so the Unrimp user has control over the file handling
-	- Optional header-only standard implementations for UTF-8 STD file streams as well as [PhysicsFS](https://icculus.org/physfs/) for shipping packed asset packages are provided
 - Texture top mipmap removal support while loading textures for efficient texture quality reduction
 - Light
 	- Types: Directional, point and spot
@@ -241,6 +240,7 @@ Terminology and Acronyms
 	- Vertex array object (VAO)
 	- Uniform buffer object (UBO), "constant buffer" in Direct3D terminology
 	- Texture buffer object (TBO)
+	- Structured buffer object (SBO)
 	- Sampler state object (SO)
 	- Root signature (Direct3D terminology) = pipeline layout in Vulkan terminology
 	- Pipeline state object (PSO, there's a graphics PSO and a compute PSO)

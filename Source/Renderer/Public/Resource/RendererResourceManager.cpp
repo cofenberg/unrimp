@@ -24,7 +24,41 @@
 #include "Renderer/Public/Resource/RendererResourceManager.h"
 #include "Renderer/Public/Core/Math/Math.h"
 
-#include <Rhi/Public/Rhi.h>
+
+//[-------------------------------------------------------]
+//[ Macros & definitions                                  ]
+//[-------------------------------------------------------]
+#ifdef RHI_DEBUG
+	/**
+	*  @brief
+	*    Resource name for debugging purposes, ignored when not using "RHI_DEBUG"
+	*
+	*  @param[in] debugName
+	*    ASCII name for debugging purposes, must be valid (there's no internal null pointer test)
+	*/
+	#define RHI_RESOURCE_DEBUG_NAME_PARAMETER_NO_DEFAULT , [[maybe_unused]] const char* debugName
+
+	/**
+	*  @brief
+	*    Pass resource name for debugging purposes, ignored when not using "RHI_DEBUG"
+	*/
+	#define RHI_RESOURCE_DEBUG_PASS_PARAMETER , debugName
+#else
+	/**
+	*  @brief
+	*    Resource name for debugging purposes, ignored when not using "RHI_DEBUG"
+	*
+	*  @param[in] debugName
+	*    ASCII name for debugging purposes, must be valid (there's no internal null pointer test)
+	*/
+	#define RHI_RESOURCE_DEBUG_NAME_PARAMETER_NO_DEFAULT
+
+	/**
+	*  @brief
+	*    Pass resource name for debugging purposes, ignored when not using "RHI_DEBUG"
+	*/
+	#define RHI_RESOURCE_DEBUG_PASS_PARAMETER
+#endif
 
 
 //[-------------------------------------------------------]
@@ -37,7 +71,7 @@ namespace Renderer
 	//[-------------------------------------------------------]
 	//[ Public methods                                        ]
 	//[-------------------------------------------------------]
-	Rhi::IResourceGroup* RendererResourceManager::createResourceGroup(Rhi::IRootSignature& rootSignature, uint32_t rootParameterIndex, uint32_t numberOfResources, Rhi::IResource** resources, Rhi::ISamplerState** samplerStates)
+	Rhi::IResourceGroup* RendererResourceManager::createResourceGroup(Rhi::IRootSignature& rootSignature, uint32_t rootParameterIndex, uint32_t numberOfResources, Rhi::IResource** resources, Rhi::ISamplerState** samplerStates RHI_RESOURCE_DEBUG_NAME_PARAMETER_NO_DEFAULT)
 	{
 		// Create hash
 		uint32_t hash = Math::calculateFNV1a32(reinterpret_cast<const uint8_t*>(&rootSignature), sizeof(Rhi::IRootSignature&));
@@ -64,7 +98,7 @@ namespace Renderer
 		else
 		{
 			// Create RHI resource and add the managers reference
-			Rhi::IResourceGroup* resourceGroup = rootSignature.createResourceGroup(rootParameterIndex, numberOfResources, resources, samplerStates);
+			Rhi::IResourceGroup* resourceGroup = rootSignature.createResourceGroup(rootParameterIndex, numberOfResources, resources, samplerStates RHI_RESOURCE_DEBUG_PASS_PARAMETER);
 			resourceGroup->addReference();
 			mResourceGroups.emplace(hash, resourceGroup);
 			return resourceGroup;

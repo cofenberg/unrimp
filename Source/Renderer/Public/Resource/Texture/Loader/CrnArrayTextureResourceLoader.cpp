@@ -332,25 +332,24 @@ namespace Renderer
 	//[-------------------------------------------------------]
 	Rhi::ITexture* CrnArrayTextureResourceLoader::createRhiTexture()
 	{
-		Rhi::ITexture* texture = nullptr;
 		const uint32_t flags = (mDataContainsMipmaps ? (Rhi::TextureFlag::DATA_CONTAINS_MIPMAPS | Rhi::TextureFlag::SHADER_RESOURCE) : Rhi::TextureFlag::SHADER_RESOURCE);
 		if (mCubeMap)
 		{
 			// TODO(co) Cube array texture
 			RHI_ASSERT(mRenderer.getContext(), false, "Renderer CRN array cube texture isn't implemented, yet")
+			return nullptr;
 		}
 		else if (1 == mWidth || 1 == mHeight)
 		{
 			// TODO(co) 1D array texture
 			RHI_ASSERT(mRenderer.getContext(), false, "Renderer CRN array 1D texture isn't implemented, yet")
+			return nullptr;
 		}
 		else
 		{
 			// 2D texture array
-			texture = mRenderer.getTextureManager().createTexture2DArray(mWidth, mHeight, mNumberOfSlices, static_cast<Rhi::TextureFormat::Enum>(mTextureFormat), mImageData, flags, Rhi::TextureUsage::IMMUTABLE);
+			return mRenderer.getTextureManager().createTexture2DArray(mWidth, mHeight, mNumberOfSlices, static_cast<Rhi::TextureFormat::Enum>(mTextureFormat), mImageData, flags, Rhi::TextureUsage::IMMUTABLE RHI_RESOURCE_DEBUG_NAME(getAsset().virtualFilename));
 		}
-		RHI_SET_RESOURCE_DEBUG_NAME(texture, getAsset().virtualFilename)
-		return texture;
 	}
 
 

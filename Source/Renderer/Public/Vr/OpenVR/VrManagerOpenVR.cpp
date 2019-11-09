@@ -463,16 +463,13 @@ namespace Renderer
 				mVrSystem->GetRecommendedRenderTargetSize(&width, &height);
 				width *= 2;	// Twice the width for single pass stereo rendering via instancing as described in "High Performance Stereo Rendering For VR", Timothy Wilson, San Diego, Virtual Reality Meetup
 				const Rhi::TextureFormat::Enum textureFormat = Rhi::TextureFormat::Enum::R8G8B8A8;
-				Rhi::ITexture* colorTexture2D = mColorTexture2D = mRenderer.getTextureManager().createTexture2D(width, height, textureFormat, nullptr, Rhi::TextureFlag::SHADER_RESOURCE | Rhi::TextureFlag::RENDER_TARGET);
-				RHI_SET_RESOURCE_DEBUG_NAME(colorTexture2D, "OpenVR color render target texture")
-				Rhi::ITexture* depthStencilTexture2D = mRenderer.getTextureManager().createTexture2D(width, height, Rhi::TextureFormat::D32_FLOAT, nullptr, Rhi::TextureFlag::SHADER_RESOURCE | Rhi::TextureFlag::RENDER_TARGET);
-				RHI_SET_RESOURCE_DEBUG_NAME(depthStencilTexture2D, "OpenVR depth stencil render target texture")
+				mColorTexture2D = mRenderer.getTextureManager().createTexture2D(width, height, textureFormat, nullptr, Rhi::TextureFlag::SHADER_RESOURCE | Rhi::TextureFlag::RENDER_TARGET, Rhi::TextureUsage::DEFAULT, 1, nullptr RHI_RESOURCE_DEBUG_NAME("OpenVR color render target"));
+				Rhi::ITexture* depthStencilTexture2D = mRenderer.getTextureManager().createTexture2D(width, height, Rhi::TextureFormat::D32_FLOAT, nullptr, Rhi::TextureFlag::SHADER_RESOURCE | Rhi::TextureFlag::RENDER_TARGET, Rhi::TextureUsage::DEFAULT, 1, nullptr RHI_RESOURCE_DEBUG_NAME("OpenVR depth stencil render target"));
 
 				// Create the framebuffer object (FBO) instance
-				const Rhi::FramebufferAttachment colorFramebufferAttachment(colorTexture2D);
+				const Rhi::FramebufferAttachment colorFramebufferAttachment(mColorTexture2D);
 				const Rhi::FramebufferAttachment depthStencilFramebufferAttachment(depthStencilTexture2D);
-				mFramebuffer = rhi.createFramebuffer(*rhi.createRenderPass(1, &textureFormat), &colorFramebufferAttachment, &depthStencilFramebufferAttachment);
-				RHI_SET_RESOURCE_DEBUG_NAME(mFramebuffer, "OpenVR framebuffer")
+				mFramebuffer = rhi.createFramebuffer(*rhi.createRenderPass(1, &textureFormat, Rhi::TextureFormat::UNKNOWN, 1 RHI_RESOURCE_DEBUG_NAME("OpenVR")), &colorFramebufferAttachment, &depthStencilFramebufferAttachment RHI_RESOURCE_DEBUG_NAME("OpenVR"));
 			}
 
 			{ // Add dynamic OpenVR asset package

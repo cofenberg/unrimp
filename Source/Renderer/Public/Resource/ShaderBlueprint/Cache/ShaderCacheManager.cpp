@@ -78,25 +78,25 @@ namespace Renderer
 							case GraphicsShaderType::Vertex:
 							{
 								const Rhi::VertexAttributes& vertexAttributes = mShaderBlueprintResourceManager.getRenderer().getVertexAttributesResourceManager().getById(materialBlueprintResource.getVertexAttributesResourceId()).getVertexAttributes();
-								shaderCache->mShaderPtr = shaderLanguage.createVertexShaderFromBytecode(vertexAttributes, shaderCache->mShaderBytecode);
+								shaderCache->mShaderPtr = shaderLanguage.createVertexShaderFromBytecode(vertexAttributes, shaderCache->mShaderBytecode RHI_RESOURCE_DEBUG_NAME("From bytecode"));
 								break;
 							}
 
 							case GraphicsShaderType::TessellationControl:
-								shaderCache->mShaderPtr = shaderLanguage.createTessellationControlShaderFromBytecode(shaderCache->mShaderBytecode);
+								shaderCache->mShaderPtr = shaderLanguage.createTessellationControlShaderFromBytecode(shaderCache->mShaderBytecode RHI_RESOURCE_DEBUG_NAME("From bytecode"));
 								break;
 
 							case GraphicsShaderType::TessellationEvaluation:
-								shaderCache->mShaderPtr = shaderLanguage.createTessellationEvaluationShaderFromBytecode(shaderCache->mShaderBytecode);
+								shaderCache->mShaderPtr = shaderLanguage.createTessellationEvaluationShaderFromBytecode(shaderCache->mShaderBytecode RHI_RESOURCE_DEBUG_NAME("From bytecode"));
 								break;
 
 							case GraphicsShaderType::Geometry:
 								// TODO(co) "Renderer::ShaderCacheManager::getGraphicsShaderCache()" needs to provide additional geometry shader information
-								// shaderCache->mShaderPtr = shaderLanguage.createGeometryShaderFromBytecode(shaderCache->mShaderBytecode);
+								// shaderCache->mShaderPtr = shaderLanguage.createGeometryShaderFromBytecode(shaderCache->mShaderBytecode RHI_RESOURCE_DEBUG_NAME("From bytecode"));
 								break;
 
 							case GraphicsShaderType::Fragment:
-								shaderCache->mShaderPtr = shaderLanguage.createFragmentShaderFromBytecode(shaderCache->mShaderBytecode);
+								shaderCache->mShaderPtr = shaderLanguage.createFragmentShaderFromBytecode(shaderCache->mShaderBytecode RHI_RESOURCE_DEBUG_NAME("From bytecode"));
 								break;
 						}
 					}
@@ -150,32 +150,31 @@ namespace Renderer
 								case GraphicsShaderType::Vertex:
 								{
 									const Rhi::VertexAttributes& vertexAttributes = mShaderBlueprintResourceManager.getRenderer().getVertexAttributesResourceManager().getById(materialBlueprintResource.getVertexAttributesResourceId()).getVertexAttributes();
-									shader = shaderLanguage.createVertexShaderFromSourceCode(vertexAttributes, sourceCode.c_str(), &shaderCache->mShaderBytecode);
+									shader = shaderLanguage.createVertexShaderFromSourceCode(vertexAttributes, sourceCode.c_str(), &shaderCache->mShaderBytecode RHI_RESOURCE_DEBUG_NAME(shaderBlueprintAsset.virtualFilename));
 									break;
 								}
 
 								case GraphicsShaderType::TessellationControl:
-									shader = shaderLanguage.createTessellationControlShaderFromSourceCode(sourceCode.c_str(), &shaderCache->mShaderBytecode);
+									shader = shaderLanguage.createTessellationControlShaderFromSourceCode(sourceCode.c_str(), &shaderCache->mShaderBytecode RHI_RESOURCE_DEBUG_NAME(shaderBlueprintAsset.virtualFilename));
 									break;
 
 								case GraphicsShaderType::TessellationEvaluation:
-									shader = shaderLanguage.createTessellationEvaluationShaderFromSourceCode(sourceCode.c_str(), &shaderCache->mShaderBytecode);
+									shader = shaderLanguage.createTessellationEvaluationShaderFromSourceCode(sourceCode.c_str(), &shaderCache->mShaderBytecode RHI_RESOURCE_DEBUG_NAME(shaderBlueprintAsset.virtualFilename));
 									break;
 
 								case GraphicsShaderType::Geometry:
 									// TODO(co) "Renderer::ShaderCacheManager::getShaderCache()" needs to provide additional geometry shader information
-									// shader = shaderLanguage.createGeometryShaderFromSourceCode(sourceCode.c_str(), &shaderCache->mShaderBytecode);
+									// shader = shaderLanguage.createGeometryShaderFromSourceCode(sourceCode.c_str(), &shaderCache->mShaderBytecode RHI_RESOURCE_DEBUG_NAME(shaderBlueprintAsset.virtualFilename));
 									break;
 
 								case GraphicsShaderType::Fragment:
-									shader = shaderLanguage.createFragmentShaderFromSourceCode(sourceCode.c_str(), &shaderCache->mShaderBytecode);
+									shader = shaderLanguage.createFragmentShaderFromSourceCode(sourceCode.c_str(), &shaderCache->mShaderBytecode RHI_RESOURCE_DEBUG_NAME(shaderBlueprintAsset.virtualFilename));
 									break;
 							}
 
 							// Create the new shader cache instance
 							if (nullptr != shader)
 							{
-								RHI_SET_RESOURCE_DEBUG_NAME(shader, shaderBlueprintAsset.virtualFilename)
 								ASSERT((!shaderLanguage.getRhi().getCapabilities().shaderBytecode || 0 != shaderCache->mShaderBytecode.getNumberOfBytes()) && "Invalid shader bytecode received from RHI implementation");
 								shaderCache->mShaderPtr = shader;
 								mShaderCacheByShaderCacheId.emplace(shaderCacheId, shaderCache);
@@ -275,12 +274,11 @@ namespace Renderer
 							shaderCache = new ShaderCache(shaderCacheId);
 							shaderCache->mAssetIds = buildShader.assetIds;
 							shaderCache->mCombinedAssetFileHashes = buildShader.combinedAssetFileHashes;
-							Rhi::IShader* shader = shaderLanguage.createComputeShaderFromSourceCode(sourceCode.c_str(), &shaderCache->mShaderBytecode);
+							Rhi::IShader* shader = shaderLanguage.createComputeShaderFromSourceCode(sourceCode.c_str(), &shaderCache->mShaderBytecode RHI_RESOURCE_DEBUG_NAME(shaderBlueprintAsset.virtualFilename));
 
 							// Create the new shader cache instance
 							if (nullptr != shader)
 							{
-								RHI_SET_RESOURCE_DEBUG_NAME(shader, shaderBlueprintAsset.virtualFilename)
 								ASSERT((!shaderLanguage.getRhi().getCapabilities().shaderBytecode || 0 != shaderCache->mShaderBytecode.getNumberOfBytes()) && "Invalid shader bytecode received from RHI implementation");
 								shaderCache->mShaderPtr = shader;
 								mShaderCacheByShaderCacheId.emplace(shaderCacheId, shaderCache);

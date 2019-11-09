@@ -108,9 +108,7 @@ namespace Renderer
 			if (mFreeIndirectBuffers.empty())
 			{
 				// Create new indirect buffer instance
-				Rhi::IIndirectBuffer* rhiIndirectBuffer = mRenderer.getBufferManager().createIndirectBuffer(mMaximumIndirectBufferSize, nullptr, Rhi::IndirectBufferFlag::DRAW_INDEXED_ARGUMENTS, Rhi::BufferUsage::DYNAMIC_DRAW);
-				RHI_SET_RESOURCE_DEBUG_NAME(rhiIndirectBuffer, "Indirect buffer manager")
-				mUsedIndirectBuffers.emplace_back(rhiIndirectBuffer);
+				mUsedIndirectBuffers.emplace_back(mRenderer.getBufferManager().createIndirectBuffer(mMaximumIndirectBufferSize, nullptr, Rhi::IndirectBufferFlag::DRAW_INDEXED_ARGUMENTS, Rhi::BufferUsage::DYNAMIC_DRAW RHI_RESOURCE_DEBUG_NAME("Indirect buffer manager")));
 			}
 			else
 			{

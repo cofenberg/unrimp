@@ -364,8 +364,7 @@ namespace Renderer
 					}
 				}
 				// TODO(co) All resources need to be inside the same resource group, this needs to be guaranteed by design
-				mResourceGroup = renderer.getRendererResourceManager().createResourceGroup(*materialBlueprintResource->getRootSignaturePtr(), textures[0].rootParameterIndex, static_cast<uint32_t>(resources.size()), resources.data(), samplerStates.data());
-				RHI_SET_RESOURCE_DEBUG_NAME(mResourceGroup, "Material technique")
+				mResourceGroup = renderer.getRendererResourceManager().createResourceGroup(*materialBlueprintResource->getRootSignaturePtr(), textures[0].rootParameterIndex, static_cast<uint32_t>(resources.size()), resources.data(), samplerStates.data() RHI_RESOURCE_DEBUG_NAME("Material technique"));
 			}
 
 			// Tell the caller about the resource group

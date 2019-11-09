@@ -2477,8 +2477,25 @@ namespace Direct3D11Rhi
 	*  @brief
 	*    Check whether or not the given resource is owned by the given RHI
 	*/
-	#define DIRECT3D11RHI_RHIMATCHCHECK_ASSERT(rhiReference, resourceReference) \
+	#define RHI_MATCH_CHECK(rhiReference, resourceReference) \
 		RHI_ASSERT(mContext, &rhiReference == &(resourceReference).getRhi(), "Direct3D 11 error: The given resource is owned by another RHI instance")
+
+	/**
+	*  @brief
+	*    Resource name for debugging purposes, ignored when not using "RHI_DEBUG"
+	*
+	*  @param[in] debugName
+	*    ASCII name for debugging purposes, must be valid (there's no internal null pointer test)
+	*/
+	#define RHI_RESOURCE_DEBUG_NAME_PARAMETER_NO_DEFAULT , [[maybe_unused]] const char* debugName
+	#define RHI_RESOURCE_DEBUG_NAME_MAYBE_UNUSED_PARAMETER , [[maybe_unused]] const char* debugName = ""
+	#define RHI_RESOURCE_DEBUG_NAME_MAYBE_UNUSED_PARAMETER_NO_DEFAULT , [[maybe_unused]] const char* debugName
+
+	/**
+	*  @brief
+	*    Pass resource name for debugging purposes, ignored when not using "RHI_DEBUG"
+	*/
+	#define RHI_RESOURCE_DEBUG_PASS_PARAMETER , debugName
 
 	/*
 	*  @brief
@@ -2490,7 +2507,24 @@ namespace Direct3D11Rhi
 	*  @brief
 	*    Check whether or not the given resource is owned by the given RHI
 	*/
-	#define DIRECT3D11RHI_RHIMATCHCHECK_ASSERT(rhiReference, resourceReference)
+	#define RHI_MATCH_CHECK(rhiReference, resourceReference)
+
+	/**
+	*  @brief
+	*    Resource name for debugging purposes, ignored when not using "RHI_DEBUG"
+	*
+	*  @param[in] debugName
+	*    ASCII name for debugging purposes, must be valid (there's no internal null pointer test)
+	*/
+	#define RHI_RESOURCE_DEBUG_NAME_PARAMETER_NO_DEFAULT
+	#define RHI_RESOURCE_DEBUG_NAME_MAYBE_UNUSED_PARAMETER
+	#define RHI_RESOURCE_DEBUG_NAME_MAYBE_UNUSED_PARAMETER_NO_DEFAULT
+
+	/**
+	*  @brief
+	*    Pass resource name for debugging purposes, ignored when not using "RHI_DEBUG"
+	*/
+	#define RHI_RESOURCE_DEBUG_PASS_PARAMETER
 
 	/*
 	*  @brief
@@ -2766,16 +2800,16 @@ namespace Direct3D11Rhi
 		//[-------------------------------------------------------]
 		//[ Resource creation                                     ]
 		//[-------------------------------------------------------]
-		[[nodiscard]] virtual Rhi::IRenderPass* createRenderPass(uint32_t numberOfColorAttachments, const Rhi::TextureFormat::Enum* colorAttachmentTextureFormats, Rhi::TextureFormat::Enum depthStencilAttachmentTextureFormat = Rhi::TextureFormat::UNKNOWN, uint8_t numberOfMultisamples = 1) override;
-		[[nodiscard]] virtual Rhi::IQueryPool* createQueryPool(Rhi::QueryType queryType, uint32_t numberOfQueries = 1) override;
-		[[nodiscard]] virtual Rhi::ISwapChain* createSwapChain(Rhi::IRenderPass& renderPass, Rhi::WindowHandle windowHandle, bool useExternalContext = false) override;
-		[[nodiscard]] virtual Rhi::IFramebuffer* createFramebuffer(Rhi::IRenderPass& renderPass, const Rhi::FramebufferAttachment* colorFramebufferAttachments, const Rhi::FramebufferAttachment* depthStencilFramebufferAttachment = nullptr) override;
+		[[nodiscard]] virtual Rhi::IRenderPass* createRenderPass(uint32_t numberOfColorAttachments, const Rhi::TextureFormat::Enum* colorAttachmentTextureFormats, Rhi::TextureFormat::Enum depthStencilAttachmentTextureFormat = Rhi::TextureFormat::UNKNOWN, uint8_t numberOfMultisamples = 1 RHI_RESOURCE_DEBUG_NAME_PARAMETER) override;
+		[[nodiscard]] virtual Rhi::IQueryPool* createQueryPool(Rhi::QueryType queryType, uint32_t numberOfQueries = 1 RHI_RESOURCE_DEBUG_NAME_PARAMETER) override;
+		[[nodiscard]] virtual Rhi::ISwapChain* createSwapChain(Rhi::IRenderPass& renderPass, Rhi::WindowHandle windowHandle, bool useExternalContext = false RHI_RESOURCE_DEBUG_NAME_PARAMETER) override;
+		[[nodiscard]] virtual Rhi::IFramebuffer* createFramebuffer(Rhi::IRenderPass& renderPass, const Rhi::FramebufferAttachment* colorFramebufferAttachments, const Rhi::FramebufferAttachment* depthStencilFramebufferAttachment = nullptr RHI_RESOURCE_DEBUG_NAME_PARAMETER) override;
 		[[nodiscard]] virtual Rhi::IBufferManager* createBufferManager() override;
 		[[nodiscard]] virtual Rhi::ITextureManager* createTextureManager() override;
-		[[nodiscard]] virtual Rhi::IRootSignature* createRootSignature(const Rhi::RootSignature& rootSignature) override;
-		[[nodiscard]] virtual Rhi::IGraphicsPipelineState* createGraphicsPipelineState(const Rhi::GraphicsPipelineState& graphicsPipelineState) override;
-		[[nodiscard]] virtual Rhi::IComputePipelineState* createComputePipelineState(Rhi::IRootSignature& rootSignature, Rhi::IComputeShader& computeShader) override;
-		[[nodiscard]] virtual Rhi::ISamplerState* createSamplerState(const Rhi::SamplerState& samplerState) override;
+		[[nodiscard]] virtual Rhi::IRootSignature* createRootSignature(const Rhi::RootSignature& rootSignature RHI_RESOURCE_DEBUG_NAME_PARAMETER) override;
+		[[nodiscard]] virtual Rhi::IGraphicsPipelineState* createGraphicsPipelineState(const Rhi::GraphicsPipelineState& graphicsPipelineState RHI_RESOURCE_DEBUG_NAME_PARAMETER) override;
+		[[nodiscard]] virtual Rhi::IComputePipelineState* createComputePipelineState(Rhi::IRootSignature& rootSignature, Rhi::IComputeShader& computeShader RHI_RESOURCE_DEBUG_NAME_PARAMETER) override;
+		[[nodiscard]] virtual Rhi::ISamplerState* createSamplerState(const Rhi::SamplerState& samplerState RHI_RESOURCE_DEBUG_NAME_PARAMETER) override;
 		//[-------------------------------------------------------]
 		//[ Resource handling                                     ]
 		//[-------------------------------------------------------]
@@ -4222,15 +4256,17 @@ namespace Direct3D11Rhi
 	//[ Public virtual Rhi::IRootSignature methods            ]
 	//[-------------------------------------------------------]
 	public:
-		[[nodiscard]] virtual Rhi::IResourceGroup* createResourceGroup(uint32_t rootParameterIndex, uint32_t numberOfResources, Rhi::IResource** resources, Rhi::ISamplerState** samplerStates = nullptr) override
+		[[nodiscard]] virtual Rhi::IResourceGroup* createResourceGroup(uint32_t rootParameterIndex, uint32_t numberOfResources, Rhi::IResource** resources, Rhi::ISamplerState** samplerStates = nullptr RHI_RESOURCE_DEBUG_NAME_MAYBE_UNUSED_PARAMETER) override
 		{
+			Rhi::IRhi& rhi = getRhi();
+
 			// Sanity checks
-			RHI_ASSERT(getRhi().getContext(), rootParameterIndex < mRootSignature.numberOfParameters, "The Direct3D 11 root parameter index is out-of-bounds")
-			RHI_ASSERT(getRhi().getContext(), numberOfResources > 0, "The number of Direct3D 11 resources must not be zero")
-			RHI_ASSERT(getRhi().getContext(), nullptr != resources, "The Direct3D 11 resource pointers must be valid")
+			RHI_ASSERT(rhi.getContext(), rootParameterIndex < mRootSignature.numberOfParameters, "The Direct3D 11 root parameter index is out-of-bounds")
+			RHI_ASSERT(rhi.getContext(), numberOfResources > 0, "The number of Direct3D 11 resources must not be zero")
+			RHI_ASSERT(rhi.getContext(), nullptr != resources, "The Direct3D 11 resource pointers must be valid")
 
 			// Create resource group
-			return RHI_NEW(getRhi().getContext(), ResourceGroup)(getRhi(), rootParameterIndex, numberOfResources, resources, samplerStates);
+			return RHI_NEW(rhi.getContext(), ResourceGroup)(rhi, rootParameterIndex, numberOfResources, resources, samplerStates);
 		}
 
 
@@ -4296,7 +4332,7 @@ namespace Direct3D11Rhi
 		*  @param[in] indexBufferFormat
 		*    Index buffer data format
 		*/
-		IndexBuffer(Direct3D11Rhi& direct3D11Rhi, uint32_t numberOfBytes, const void* data, uint32_t bufferFlags, Rhi::BufferUsage bufferUsage, Rhi::IndexBufferFormat::Enum indexBufferFormat) :
+		IndexBuffer(Direct3D11Rhi& direct3D11Rhi, uint32_t numberOfBytes, const void* data, uint32_t bufferFlags, Rhi::BufferUsage bufferUsage, Rhi::IndexBufferFormat::Enum indexBufferFormat RHI_RESOURCE_DEBUG_NAME_PARAMETER) :
 			IIndexBuffer(direct3D11Rhi),
 			mD3D11Buffer(nullptr),
 			mDXGIFormat(DXGI_FORMAT_UNKNOWN),
@@ -4378,12 +4414,24 @@ namespace Direct3D11Rhi
 					// Create the Direct3D 11 unordered access view instance
 					FAILED_DEBUG_BREAK(direct3D11Rhi.getD3D11Device()->CreateUnorderedAccessView(mD3D11Buffer, &d3d11UnorderedAccessViewDesc, &mD3D11UnorderedAccessView));
 				}
-			}
 
-			// Assign a default name to the resource for debugging purposes
-			#ifdef RHI_DEBUG
-				setDebugName("");
-			#endif
+				// Assign a default name to the resource for debugging purposes
+				#ifdef RHI_DEBUG
+					RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "IBO", 6);	// 6 = "IBO: " including terminating zero
+					if (nullptr != mD3D11Buffer)
+					{
+						FAILED_DEBUG_BREAK(mD3D11Buffer->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(detailedDebugName)), detailedDebugName));
+					}
+					if (nullptr != mD3D11ShaderResourceView)
+					{
+						FAILED_DEBUG_BREAK(mD3D11ShaderResourceView->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(detailedDebugName)), detailedDebugName));
+					}
+					if (nullptr != mD3D11UnorderedAccessView)
+					{
+						FAILED_DEBUG_BREAK(mD3D11UnorderedAccessView->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(detailedDebugName)), detailedDebugName));
+					}
+				#endif
+			}
 		}
 
 		/**
@@ -4462,36 +4510,6 @@ namespace Direct3D11Rhi
 
 
 	//[-------------------------------------------------------]
-	//[ Public virtual Rhi::IResource methods                 ]
-	//[-------------------------------------------------------]
-	public:
-		#ifdef RHI_DEBUG
-			virtual void setDebugName(const char* name) override
-			{
-				RHI_DECORATED_DEBUG_NAME(name, detailedName, "IBO", 6);	// 6 = "IBO: " including terminating zero
-
-				// Set the debug name
-				// -> First: Ensure that there's no previous private data, else we might get slapped with a warning
-				if (nullptr != mD3D11Buffer)
-				{
-					FAILED_DEBUG_BREAK(mD3D11Buffer->SetPrivateData(WKPDID_D3DDebugObjectName, 0, nullptr));
-					FAILED_DEBUG_BREAK(mD3D11Buffer->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(detailedName)), detailedName));
-				}
-				if (nullptr != mD3D11ShaderResourceView)
-				{
-					FAILED_DEBUG_BREAK(mD3D11ShaderResourceView->SetPrivateData(WKPDID_D3DDebugObjectName, 0, nullptr));
-					FAILED_DEBUG_BREAK(mD3D11ShaderResourceView->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(detailedName)), detailedName));
-				}
-				if (nullptr != mD3D11UnorderedAccessView)
-				{
-					FAILED_DEBUG_BREAK(mD3D11UnorderedAccessView->SetPrivateData(WKPDID_D3DDebugObjectName, 0, nullptr));
-					FAILED_DEBUG_BREAK(mD3D11UnorderedAccessView->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(detailedName)), detailedName));
-				}
-			}
-		#endif
-
-
-	//[-------------------------------------------------------]
 	//[ Protected virtual Rhi::RefCount methods               ]
 	//[-------------------------------------------------------]
 	protected:
@@ -4554,7 +4572,7 @@ namespace Direct3D11Rhi
 		*  @param[in] bufferUsage
 		*    Indication of the buffer usage
 		*/
-		VertexBuffer(Direct3D11Rhi& direct3D11Rhi, uint32_t numberOfBytes, const void* data, uint32_t bufferFlags, Rhi::BufferUsage bufferUsage) :
+		VertexBuffer(Direct3D11Rhi& direct3D11Rhi, uint32_t numberOfBytes, const void* data, uint32_t bufferFlags, Rhi::BufferUsage bufferUsage RHI_RESOURCE_DEBUG_NAME_PARAMETER) :
 			IVertexBuffer(direct3D11Rhi),
 			mD3D11Buffer(nullptr),
 			mD3D11ShaderResourceView(nullptr),
@@ -4635,7 +4653,19 @@ namespace Direct3D11Rhi
 
 			// Assign a default name to the resource for debugging purposes
 			#ifdef RHI_DEBUG
-				setDebugName("");
+				RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "VBO", 6);	// 6 = "VBO: " including terminating zero
+				if (nullptr != mD3D11Buffer)
+				{
+					FAILED_DEBUG_BREAK(mD3D11Buffer->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(detailedDebugName)), detailedDebugName));
+				}
+				if (nullptr != mD3D11ShaderResourceView)
+				{
+					FAILED_DEBUG_BREAK(mD3D11ShaderResourceView->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(detailedDebugName)), detailedDebugName));
+				}
+				if (nullptr != mD3D11UnorderedAccessView)
+				{
+					FAILED_DEBUG_BREAK(mD3D11UnorderedAccessView->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(detailedDebugName)), detailedDebugName));
+				}
 			#endif
 		}
 
@@ -4700,36 +4730,6 @@ namespace Direct3D11Rhi
 		{
 			return mD3D11UnorderedAccessView;
 		}
-
-
-	//[-------------------------------------------------------]
-	//[ Public virtual Rhi::IResource methods                 ]
-	//[-------------------------------------------------------]
-	public:
-		#ifdef RHI_DEBUG
-			virtual void setDebugName(const char* name) override
-			{
-				RHI_DECORATED_DEBUG_NAME(name, detailedName, "VBO", 6);	// 6 = "VBO: " including terminating zero
-
-				// Set the debug name
-				// -> First: Ensure that there's no previous private data, else we might get slapped with a warning
-				if (nullptr != mD3D11Buffer)
-				{
-					FAILED_DEBUG_BREAK(mD3D11Buffer->SetPrivateData(WKPDID_D3DDebugObjectName, 0, nullptr));
-					FAILED_DEBUG_BREAK(mD3D11Buffer->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(detailedName)), detailedName));
-				}
-				if (nullptr != mD3D11ShaderResourceView)
-				{
-					FAILED_DEBUG_BREAK(mD3D11ShaderResourceView->SetPrivateData(WKPDID_D3DDebugObjectName, 0, nullptr));
-					FAILED_DEBUG_BREAK(mD3D11ShaderResourceView->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(detailedName)), detailedName));
-				}
-				if (nullptr != mD3D11UnorderedAccessView)
-				{
-					FAILED_DEBUG_BREAK(mD3D11UnorderedAccessView->SetPrivateData(WKPDID_D3DDebugObjectName, 0, nullptr));
-					FAILED_DEBUG_BREAK(mD3D11UnorderedAccessView->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(detailedName)), detailedName));
-				}
-			}
-		#endif
 
 
 	//[-------------------------------------------------------]
@@ -4858,7 +4858,8 @@ namespace Direct3D11Rhi
 			}
 
 			// Cleanup Direct3D 11 input slot data
-			const Rhi::Context& context = getRhi().getContext();
+			Direct3D11Rhi& direct3D11Rhi = static_cast<Direct3D11Rhi&>(getRhi());
+			const Rhi::Context& context = direct3D11Rhi.getContext();
 			if (mNumberOfSlots > 0)
 			{
 				RHI_FREE(context, mD3D11Buffers);
@@ -4881,7 +4882,7 @@ namespace Direct3D11Rhi
 			}
 
 			// Free the unique compact vertex array ID
-			static_cast<Direct3D11Rhi&>(getRhi()).VertexArrayMakeId.DestroyID(getId());
+			direct3D11Rhi.VertexArrayMakeId.DestroyID(getId());
 		}
 
 		/**
@@ -4994,7 +4995,7 @@ namespace Direct3D11Rhi
 		*  @param[in] textureFormat
 		*    Texture buffer data format
 		*/
-		TextureBuffer(Direct3D11Rhi& direct3D11Rhi, uint32_t numberOfBytes, const void* data, uint32_t bufferFlags, Rhi::BufferUsage bufferUsage, Rhi::TextureFormat::Enum textureFormat) :
+		TextureBuffer(Direct3D11Rhi& direct3D11Rhi, uint32_t numberOfBytes, const void* data, uint32_t bufferFlags, Rhi::BufferUsage bufferUsage, Rhi::TextureFormat::Enum textureFormat RHI_RESOURCE_DEBUG_NAME_PARAMETER) :
 			ITextureBuffer(direct3D11Rhi),
 			mD3D11Buffer(nullptr),
 			mD3D11ShaderResourceView(nullptr),
@@ -5072,7 +5073,19 @@ namespace Direct3D11Rhi
 
 			// Assign a default name to the resource for debugging purposes
 			#ifdef RHI_DEBUG
-				setDebugName("");
+				RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "TBO", 6);	// 6 = "TBO: " including terminating zero
+				if (nullptr != mD3D11Buffer)
+				{
+					FAILED_DEBUG_BREAK(mD3D11Buffer->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(detailedDebugName)), detailedDebugName));
+				}
+				if (nullptr != mD3D11ShaderResourceView)
+				{
+					FAILED_DEBUG_BREAK(mD3D11ShaderResourceView->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(detailedDebugName)), detailedDebugName));
+				}
+				if (nullptr != mD3D11UnorderedAccessView)
+				{
+					FAILED_DEBUG_BREAK(mD3D11UnorderedAccessView->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(detailedDebugName)), detailedDebugName));
+				}
 			#endif
 		}
 
@@ -5142,36 +5155,6 @@ namespace Direct3D11Rhi
 
 
 	//[-------------------------------------------------------]
-	//[ Public virtual Rhi::IResource methods                 ]
-	//[-------------------------------------------------------]
-	public:
-		#ifdef RHI_DEBUG
-			virtual void setDebugName(const char* name) override
-			{
-				RHI_DECORATED_DEBUG_NAME(name, detailedName, "TBO", 6);	// 6 = "TBO: " including terminating zero
-
-				// Set the debug name
-				// -> First: Ensure that there's no previous private data, else we might get slapped with a warning
-				if (nullptr != mD3D11Buffer)
-				{
-					FAILED_DEBUG_BREAK(mD3D11Buffer->SetPrivateData(WKPDID_D3DDebugObjectName, 0, nullptr));
-					FAILED_DEBUG_BREAK(mD3D11Buffer->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(detailedName)), detailedName));
-				}
-				if (nullptr != mD3D11ShaderResourceView)
-				{
-					FAILED_DEBUG_BREAK(mD3D11ShaderResourceView->SetPrivateData(WKPDID_D3DDebugObjectName, 0, nullptr));
-					FAILED_DEBUG_BREAK(mD3D11ShaderResourceView->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(detailedName)), detailedName));
-				}
-				if (nullptr != mD3D11UnorderedAccessView)
-				{
-					FAILED_DEBUG_BREAK(mD3D11UnorderedAccessView->SetPrivateData(WKPDID_D3DDebugObjectName, 0, nullptr));
-					FAILED_DEBUG_BREAK(mD3D11UnorderedAccessView->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(detailedName)), detailedName));
-				}
-			}
-		#endif
-
-
-	//[-------------------------------------------------------]
 	//[ Protected virtual Rhi::RefCount methods               ]
 	//[-------------------------------------------------------]
 	protected:
@@ -5235,7 +5218,7 @@ namespace Direct3D11Rhi
 		*  @param[in] numberOfStructureBytes
 		*    Number of structure bytes
 		*/
-		StructuredBuffer(Direct3D11Rhi& direct3D11Rhi, uint32_t numberOfBytes, const void* data, uint32_t bufferFlags, Rhi::BufferUsage bufferUsage, uint32_t numberOfStructureBytes) :
+		StructuredBuffer(Direct3D11Rhi& direct3D11Rhi, uint32_t numberOfBytes, const void* data, uint32_t bufferFlags, Rhi::BufferUsage bufferUsage, uint32_t numberOfStructureBytes RHI_RESOURCE_DEBUG_NAME_PARAMETER) :
 			IStructuredBuffer(direct3D11Rhi),
 			mD3D11Buffer(nullptr),
 			mD3D11ShaderResourceView(nullptr),
@@ -5315,7 +5298,19 @@ namespace Direct3D11Rhi
 
 			// Assign a default name to the resource for debugging purposes
 			#ifdef RHI_DEBUG
-				setDebugName("");
+				RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "SBO", 6);	// 6 = "SBO: " including terminating zero
+				if (nullptr != mD3D11Buffer)
+				{
+					FAILED_DEBUG_BREAK(mD3D11Buffer->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(detailedDebugName)), detailedDebugName));
+				}
+				if (nullptr != mD3D11ShaderResourceView)
+				{
+					FAILED_DEBUG_BREAK(mD3D11ShaderResourceView->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(detailedDebugName)), detailedDebugName));
+				}
+				if (nullptr != mD3D11UnorderedAccessView)
+				{
+					FAILED_DEBUG_BREAK(mD3D11UnorderedAccessView->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(detailedDebugName)), detailedDebugName));
+				}
 			#endif
 		}
 
@@ -5385,36 +5380,6 @@ namespace Direct3D11Rhi
 
 
 	//[-------------------------------------------------------]
-	//[ Public virtual Rhi::IResource methods                 ]
-	//[-------------------------------------------------------]
-	public:
-		#ifdef RHI_DEBUG
-			virtual void setDebugName(const char* name) override
-			{
-				RHI_DECORATED_DEBUG_NAME(name, detailedName, "StructuredBufferObject", 25);	// 25 = "StructuredBufferObject: " including terminating zero
-
-				// Set the debug name
-				// -> First: Ensure that there's no previous private data, else we might get slapped with a warning
-				if (nullptr != mD3D11Buffer)
-				{
-					FAILED_DEBUG_BREAK(mD3D11Buffer->SetPrivateData(WKPDID_D3DDebugObjectName, 0, nullptr));
-					FAILED_DEBUG_BREAK(mD3D11Buffer->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(detailedName)), detailedName));
-				}
-				if (nullptr != mD3D11ShaderResourceView)
-				{
-					FAILED_DEBUG_BREAK(mD3D11ShaderResourceView->SetPrivateData(WKPDID_D3DDebugObjectName, 0, nullptr));
-					FAILED_DEBUG_BREAK(mD3D11ShaderResourceView->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(detailedName)), detailedName));
-				}
-				if (nullptr != mD3D11UnorderedAccessView)
-				{
-					FAILED_DEBUG_BREAK(mD3D11UnorderedAccessView->SetPrivateData(WKPDID_D3DDebugObjectName, 0, nullptr));
-					FAILED_DEBUG_BREAK(mD3D11UnorderedAccessView->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(detailedName)), detailedName));
-				}
-			}
-		#endif
-
-
-	//[-------------------------------------------------------]
 	//[ Protected virtual Rhi::RefCount methods               ]
 	//[-------------------------------------------------------]
 	protected:
@@ -5476,7 +5441,7 @@ namespace Direct3D11Rhi
 		*  @param[in] bufferUsage
 		*    Indication of the buffer usage
 		*/
-		IndirectBuffer(Direct3D11Rhi& direct3D11Rhi, uint32_t numberOfBytes, const void* data, uint32_t indirectBufferFlags, Rhi::BufferUsage bufferUsage) :
+		IndirectBuffer(Direct3D11Rhi& direct3D11Rhi, uint32_t numberOfBytes, const void* data, uint32_t indirectBufferFlags, Rhi::BufferUsage bufferUsage RHI_RESOURCE_DEBUG_NAME_PARAMETER) :
 			IIndirectBuffer(direct3D11Rhi),
 			mD3D11Buffer(nullptr),
 			mStagingD3D11Buffer(nullptr),
@@ -5591,7 +5556,23 @@ namespace Direct3D11Rhi
 
 			// Assign a default name to the resource for debugging purposes
 			#ifdef RHI_DEBUG
-				setDebugName("");
+				RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "IndirectBufferObject", 23);	// 23 = "IndirectBufferObject: " including terminating zero
+				if (nullptr != mD3D11Buffer)
+				{
+					FAILED_DEBUG_BREAK(mD3D11Buffer->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(detailedDebugName)), detailedDebugName));
+				}
+				if (nullptr != mStagingD3D11Buffer)
+				{
+					FAILED_DEBUG_BREAK(mStagingD3D11Buffer->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(detailedDebugName)), detailedDebugName));
+				}
+				if (nullptr != mD3D11ShaderResourceView)
+				{
+					FAILED_DEBUG_BREAK(mD3D11ShaderResourceView->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(detailedDebugName)), detailedDebugName));
+				}
+				if (nullptr != mD3D11UnorderedAccessView)
+				{
+					FAILED_DEBUG_BREAK(mD3D11UnorderedAccessView->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(detailedDebugName)), detailedDebugName));
+				}
 			#endif
 		}
 
@@ -5671,41 +5652,6 @@ namespace Direct3D11Rhi
 
 
 	//[-------------------------------------------------------]
-	//[ Public virtual Rhi::IResource methods                 ]
-	//[-------------------------------------------------------]
-	public:
-		#ifdef RHI_DEBUG
-			virtual void setDebugName(const char* name) override
-			{
-				RHI_DECORATED_DEBUG_NAME(name, detailedName, "IndirectBufferObject", 23);	// 23 = "IndirectBufferObject: " including terminating zero
-
-				// Set the debug name
-				// -> First: Ensure that there's no previous private data, else we might get slapped with a warning
-				if (nullptr != mD3D11Buffer)
-				{
-					FAILED_DEBUG_BREAK(mD3D11Buffer->SetPrivateData(WKPDID_D3DDebugObjectName, 0, nullptr));
-					FAILED_DEBUG_BREAK(mD3D11Buffer->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(detailedName)), detailedName));
-				}
-				if (nullptr != mStagingD3D11Buffer)
-				{
-					FAILED_DEBUG_BREAK(mStagingD3D11Buffer->SetPrivateData(WKPDID_D3DDebugObjectName, 0, nullptr));
-					FAILED_DEBUG_BREAK(mStagingD3D11Buffer->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(detailedName)), detailedName));
-				}
-				if (nullptr != mD3D11ShaderResourceView)
-				{
-					FAILED_DEBUG_BREAK(mD3D11ShaderResourceView->SetPrivateData(WKPDID_D3DDebugObjectName, 0, nullptr));
-					FAILED_DEBUG_BREAK(mD3D11ShaderResourceView->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(detailedName)), detailedName));
-				}
-				if (nullptr != mD3D11UnorderedAccessView)
-				{
-					FAILED_DEBUG_BREAK(mD3D11UnorderedAccessView->SetPrivateData(WKPDID_D3DDebugObjectName, 0, nullptr));
-					FAILED_DEBUG_BREAK(mD3D11UnorderedAccessView->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(detailedName)), detailedName));
-				}
-			}
-		#endif
-
-
-	//[-------------------------------------------------------]
 	//[ Protected virtual Rhi::RefCount methods               ]
 	//[-------------------------------------------------------]
 	protected:
@@ -5776,7 +5722,7 @@ namespace Direct3D11Rhi
 		*  @param[in] bufferUsage
 		*    Indication of the buffer usage
 		*/
-		UniformBuffer(Direct3D11Rhi& direct3D11Rhi, uint32_t numberOfBytes, const void* data, Rhi::BufferUsage bufferUsage) :
+		UniformBuffer(Direct3D11Rhi& direct3D11Rhi, uint32_t numberOfBytes, const void* data, Rhi::BufferUsage bufferUsage RHI_RESOURCE_DEBUG_NAME_PARAMETER) :
 			Rhi::IUniformBuffer(direct3D11Rhi),
 			mD3D11Buffer(nullptr)
 		{
@@ -5821,7 +5767,11 @@ namespace Direct3D11Rhi
 
 			// Assign a default name to the resource for debugging purposes
 			#ifdef RHI_DEBUG
-				setDebugName("");
+				if (nullptr != mD3D11Buffer)
+				{
+					RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "UBO", 6);	// 6 = "UBO: " including terminating zero
+					FAILED_DEBUG_BREAK(mD3D11Buffer->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(detailedDebugName)), detailedDebugName));
+				}
 			#endif
 		}
 
@@ -5849,25 +5799,6 @@ namespace Direct3D11Rhi
 		{
 			return mD3D11Buffer;
 		}
-
-
-	//[-------------------------------------------------------]
-	//[ Public virtual Rhi::IResource methods                 ]
-	//[-------------------------------------------------------]
-	public:
-		#ifdef RHI_DEBUG
-			virtual void setDebugName(const char* name) override
-			{
-				// Set the debug name
-				// -> First: Ensure that there's no previous private data, else we might get slapped with a warning
-				if (nullptr != mD3D11Buffer)
-				{
-					RHI_DECORATED_DEBUG_NAME(name, detailedName, "UBO", 6);	// 6 = "UBO: " including terminating zero
-					FAILED_DEBUG_BREAK(mD3D11Buffer->SetPrivateData(WKPDID_D3DDebugObjectName, 0, nullptr));
-					FAILED_DEBUG_BREAK(mD3D11Buffer->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(detailedName)), detailedName));
-				}
-			}
-		#endif
 
 
 	//[-------------------------------------------------------]
@@ -5938,35 +5869,39 @@ namespace Direct3D11Rhi
 	//[ Public virtual Rhi::IBufferManager methods            ]
 	//[-------------------------------------------------------]
 	public:
-		[[nodiscard]] inline virtual Rhi::IVertexBuffer* createVertexBuffer(uint32_t numberOfBytes, const void* data = nullptr, uint32_t bufferFlags = 0, Rhi::BufferUsage bufferUsage = Rhi::BufferUsage::STATIC_DRAW) override
+		[[nodiscard]] inline virtual Rhi::IVertexBuffer* createVertexBuffer(uint32_t numberOfBytes, const void* data = nullptr, uint32_t bufferFlags = 0, Rhi::BufferUsage bufferUsage = Rhi::BufferUsage::STATIC_DRAW RHI_RESOURCE_DEBUG_NAME_PARAMETER) override
 		{
-			return RHI_NEW(getRhi().getContext(), VertexBuffer)(static_cast<Direct3D11Rhi&>(getRhi()), numberOfBytes, data, bufferFlags, bufferUsage);
+			Direct3D11Rhi& direct3D11Rhi = static_cast<Direct3D11Rhi&>(getRhi());
+			return RHI_NEW(direct3D11Rhi.getContext(), VertexBuffer)(direct3D11Rhi, numberOfBytes, data, bufferFlags, bufferUsage RHI_RESOURCE_DEBUG_PASS_PARAMETER);
 		}
 
-		[[nodiscard]] inline virtual Rhi::IIndexBuffer* createIndexBuffer(uint32_t numberOfBytes, const void* data = nullptr, uint32_t bufferFlags = 0, Rhi::BufferUsage bufferUsage = Rhi::BufferUsage::STATIC_DRAW, Rhi::IndexBufferFormat::Enum indexBufferFormat = Rhi::IndexBufferFormat::UNSIGNED_SHORT) override
+		[[nodiscard]] inline virtual Rhi::IIndexBuffer* createIndexBuffer(uint32_t numberOfBytes, const void* data = nullptr, uint32_t bufferFlags = 0, Rhi::BufferUsage bufferUsage = Rhi::BufferUsage::STATIC_DRAW, Rhi::IndexBufferFormat::Enum indexBufferFormat = Rhi::IndexBufferFormat::UNSIGNED_SHORT RHI_RESOURCE_DEBUG_NAME_PARAMETER) override
 		{
-			return RHI_NEW(getRhi().getContext(), IndexBuffer)(static_cast<Direct3D11Rhi&>(getRhi()), numberOfBytes, data, bufferFlags, bufferUsage, indexBufferFormat);
+			Direct3D11Rhi& direct3D11Rhi = static_cast<Direct3D11Rhi&>(getRhi());
+			return RHI_NEW(direct3D11Rhi.getContext(), IndexBuffer)(direct3D11Rhi, numberOfBytes, data, bufferFlags, bufferUsage, indexBufferFormat RHI_RESOURCE_DEBUG_PASS_PARAMETER);
 		}
 
-		[[nodiscard]] inline virtual Rhi::IVertexArray* createVertexArray(const Rhi::VertexAttributes& vertexAttributes, uint32_t numberOfVertexBuffers, const Rhi::VertexArrayVertexBuffer* vertexBuffers, Rhi::IIndexBuffer* indexBuffer = nullptr) override
+		[[nodiscard]] inline virtual Rhi::IVertexArray* createVertexArray(const Rhi::VertexAttributes& vertexAttributes, uint32_t numberOfVertexBuffers, const Rhi::VertexArrayVertexBuffer* vertexBuffers, Rhi::IIndexBuffer* indexBuffer = nullptr RHI_RESOURCE_DEBUG_NAME_MAYBE_UNUSED_PARAMETER) override
 		{
+			Direct3D11Rhi& direct3D11Rhi = static_cast<Direct3D11Rhi&>(getRhi());
+
 			// Sanity checks
 			#ifdef RHI_DEBUG
 			{
 				const Rhi::VertexArrayVertexBuffer* vertexBufferEnd = vertexBuffers + numberOfVertexBuffers;
 				for (const Rhi::VertexArrayVertexBuffer* vertexBuffer = vertexBuffers; vertexBuffer < vertexBufferEnd; ++vertexBuffer)
 				{
-					RHI_ASSERT(getRhi().getContext(), &getRhi() == &vertexBuffer->vertexBuffer->getRhi(), "Direct3D 11 error: The given vertex buffer resource is owned by another RHI instance")
+					RHI_ASSERT(direct3D11Rhi.getContext(), &direct3D11Rhi == &vertexBuffer->vertexBuffer->getRhi(), "Direct3D 11 error: The given vertex buffer resource is owned by another RHI instance")
 				}
 			}
 			#endif
-			RHI_ASSERT(getRhi().getContext(), nullptr == indexBuffer || &getRhi() == &indexBuffer->getRhi(), "Direct3D 11 error: The given index buffer resource is owned by another RHI instance")
+			RHI_ASSERT(direct3D11Rhi.getContext(), nullptr == indexBuffer || &direct3D11Rhi == &indexBuffer->getRhi(), "Direct3D 11 error: The given index buffer resource is owned by another RHI instance")
 
 			// Create vertex array
 			uint16_t id = 0;
-			if (static_cast<Direct3D11Rhi&>(getRhi()).VertexArrayMakeId.CreateID(id))
+			if (direct3D11Rhi.VertexArrayMakeId.CreateID(id))
 			{
-				return RHI_NEW(getRhi().getContext(), VertexArray)(static_cast<Direct3D11Rhi&>(getRhi()), vertexAttributes, numberOfVertexBuffers, vertexBuffers, static_cast<IndexBuffer*>(indexBuffer), id);
+				return RHI_NEW(direct3D11Rhi.getContext(), VertexArray)(direct3D11Rhi, vertexAttributes, numberOfVertexBuffers, vertexBuffers, static_cast<IndexBuffer*>(indexBuffer), id);
 			}
 
 			// Error: Ensure a correct reference counter behaviour
@@ -5984,30 +5919,35 @@ namespace Direct3D11Rhi
 			return nullptr;
 		}
 
-		[[nodiscard]] inline virtual Rhi::ITextureBuffer* createTextureBuffer(uint32_t numberOfBytes, const void* data = nullptr, uint32_t bufferFlags = Rhi::BufferFlag::SHADER_RESOURCE, Rhi::BufferUsage bufferUsage = Rhi::BufferUsage::STATIC_DRAW, Rhi::TextureFormat::Enum textureFormat = Rhi::TextureFormat::R32G32B32A32F) override
+		[[nodiscard]] inline virtual Rhi::ITextureBuffer* createTextureBuffer(uint32_t numberOfBytes, const void* data = nullptr, uint32_t bufferFlags = Rhi::BufferFlag::SHADER_RESOURCE, Rhi::BufferUsage bufferUsage = Rhi::BufferUsage::STATIC_DRAW, Rhi::TextureFormat::Enum textureFormat = Rhi::TextureFormat::R32G32B32A32F RHI_RESOURCE_DEBUG_NAME_PARAMETER) override
 		{
-			return RHI_NEW(getRhi().getContext(), TextureBuffer)(static_cast<Direct3D11Rhi&>(getRhi()), numberOfBytes, data, bufferFlags, bufferUsage, textureFormat);
+			Direct3D11Rhi& direct3D11Rhi = static_cast<Direct3D11Rhi&>(getRhi());
+			return RHI_NEW(direct3D11Rhi.getContext(), TextureBuffer)(direct3D11Rhi, numberOfBytes, data, bufferFlags, bufferUsage, textureFormat RHI_RESOURCE_DEBUG_PASS_PARAMETER);
 		}
 
-		[[nodiscard]] inline virtual Rhi::IStructuredBuffer* createStructuredBuffer(uint32_t numberOfBytes, const void* data, uint32_t bufferFlags, Rhi::BufferUsage bufferUsage, uint32_t numberOfStructureBytes) override
+		[[nodiscard]] inline virtual Rhi::IStructuredBuffer* createStructuredBuffer(uint32_t numberOfBytes, const void* data, uint32_t bufferFlags, Rhi::BufferUsage bufferUsage, uint32_t numberOfStructureBytes RHI_RESOURCE_DEBUG_NAME_PARAMETER) override
 		{
-			return RHI_NEW(getRhi().getContext(), StructuredBuffer)(static_cast<Direct3D11Rhi&>(getRhi()), numberOfBytes, data, bufferFlags, bufferUsage, numberOfStructureBytes);
+			Direct3D11Rhi& direct3D11Rhi = static_cast<Direct3D11Rhi&>(getRhi());
+			return RHI_NEW(direct3D11Rhi.getContext(), StructuredBuffer)(direct3D11Rhi, numberOfBytes, data, bufferFlags, bufferUsage, numberOfStructureBytes RHI_RESOURCE_DEBUG_PASS_PARAMETER);
 		}
 
-		[[nodiscard]] inline virtual Rhi::IIndirectBuffer* createIndirectBuffer(uint32_t numberOfBytes, const void* data = nullptr, uint32_t indirectBufferFlags = 0, Rhi::BufferUsage bufferUsage = Rhi::BufferUsage::STATIC_DRAW) override
+		[[nodiscard]] inline virtual Rhi::IIndirectBuffer* createIndirectBuffer(uint32_t numberOfBytes, const void* data = nullptr, uint32_t indirectBufferFlags = 0, Rhi::BufferUsage bufferUsage = Rhi::BufferUsage::STATIC_DRAW RHI_RESOURCE_DEBUG_NAME_PARAMETER) override
 		{
-			return RHI_NEW(getRhi().getContext(), IndirectBuffer)(static_cast<Direct3D11Rhi&>(getRhi()), numberOfBytes, data, indirectBufferFlags, bufferUsage);
+			Direct3D11Rhi& direct3D11Rhi = static_cast<Direct3D11Rhi&>(getRhi());
+			return RHI_NEW(direct3D11Rhi.getContext(), IndirectBuffer)(direct3D11Rhi, numberOfBytes, data, indirectBufferFlags, bufferUsage RHI_RESOURCE_DEBUG_PASS_PARAMETER);
 		}
 
-		[[nodiscard]] inline virtual Rhi::IUniformBuffer* createUniformBuffer(uint32_t numberOfBytes, const void* data = nullptr, Rhi::BufferUsage bufferUsage = Rhi::BufferUsage::STATIC_DRAW) override
+		[[nodiscard]] inline virtual Rhi::IUniformBuffer* createUniformBuffer(uint32_t numberOfBytes, const void* data = nullptr, Rhi::BufferUsage bufferUsage = Rhi::BufferUsage::STATIC_DRAW RHI_RESOURCE_DEBUG_NAME_PARAMETER) override
 		{
+			Direct3D11Rhi& direct3D11Rhi = static_cast<Direct3D11Rhi&>(getRhi());
+
 			// Don't remove this reminder comment block: There are no buffer flags by intent since an uniform buffer can't be used for unordered access and as a consequence an uniform buffer must always used as shader resource to not be pointless
 			// -> "Bind a buffer as a constant buffer to a shader stage; this flag may NOT be combined with any other bind flag." - https://docs.microsoft.com/en-us/windows/desktop/api/d3d11/ne-d3d11-d3d11_bind_flag
-			// RHI_ASSERT(getRhi().getContext(), (bufferFlags & Rhi::BufferFlag::UNORDERED_ACCESS) == 0, "Invalid Direct3D 11 buffer flags, uniform buffer can't be used for unordered access")
-			// RHI_ASSERT(getRhi().getContext(), (bufferFlags & Rhi::BufferFlag::SHADER_RESOURCE) != 0, "Invalid Direct3D 11 buffer flags, uniform buffer must be used as shader resource")
+			// RHI_ASSERT(direct3D11Rhi.getContext(), (bufferFlags & Rhi::BufferFlag::UNORDERED_ACCESS) == 0, "Invalid Direct3D 11 buffer flags, uniform buffer can't be used for unordered access")
+			// RHI_ASSERT(direct3D11Rhi.getContext(), (bufferFlags & Rhi::BufferFlag::SHADER_RESOURCE) != 0, "Invalid Direct3D 11 buffer flags, uniform buffer must be used as shader resource")
 
 			// Create the uniform buffer
-			return RHI_NEW(getRhi().getContext(), UniformBuffer)(static_cast<Direct3D11Rhi&>(getRhi()), numberOfBytes, data, bufferUsage);
+			return RHI_NEW(direct3D11Rhi.getContext(), UniformBuffer)(direct3D11Rhi, numberOfBytes, data, bufferUsage RHI_RESOURCE_DEBUG_PASS_PARAMETER);
 		}
 
 
@@ -6066,7 +6006,7 @@ namespace Direct3D11Rhi
 		*  @param[in] textureUsage
 		*    Indication of the texture usage
 		*/
-		Texture1D(Direct3D11Rhi& direct3D11Rhi, uint32_t width, Rhi::TextureFormat::Enum textureFormat, const void* data, uint32_t textureFlags, Rhi::TextureUsage textureUsage) :
+		Texture1D(Direct3D11Rhi& direct3D11Rhi, uint32_t width, Rhi::TextureFormat::Enum textureFormat, const void* data, uint32_t textureFlags, Rhi::TextureUsage textureUsage RHI_RESOURCE_DEBUG_NAME_PARAMETER) :
 			ITexture1D(direct3D11Rhi, width),
 			mTextureFormat(textureFormat),
 			mD3D11Texture1D(nullptr),
@@ -6121,7 +6061,7 @@ namespace Direct3D11Rhi
 			{
 				// We don't want dynamic allocations, so we limit the maximum number of mipmaps and hence are able to use the efficient C runtime stack
 				static constexpr uint32_t MAXIMUM_NUMBER_OF_MIPMAPS = 15;	// A 16384x16384 texture has 15 mipmaps
-				RHI_ASSERT(getRhi().getContext(), numberOfMipmaps <= MAXIMUM_NUMBER_OF_MIPMAPS, "Invalid Direct3D 11 number of mipmaps")
+				RHI_ASSERT(direct3D11Rhi.getContext(), numberOfMipmaps <= MAXIMUM_NUMBER_OF_MIPMAPS, "Invalid Direct3D 11 number of mipmaps")
 				D3D11_SUBRESOURCE_DATA d3d11SubresourceData[MAXIMUM_NUMBER_OF_MIPMAPS];
 
 				// Did the user provided data containing mipmaps from 0-n down to 1x1 linearly in memory?
@@ -6202,7 +6142,19 @@ namespace Direct3D11Rhi
 
 			// Assign a default name to the resource for debugging purposes
 			#ifdef RHI_DEBUG
-				setDebugName("1D texture");
+				RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "1D texture", 13);	// 13 = "1D texture: " including terminating zero
+				if (nullptr != mD3D11Texture1D)
+				{
+					FAILED_DEBUG_BREAK(mD3D11Texture1D->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(detailedDebugName)), detailedDebugName));
+				}
+				if (nullptr != mD3D11ShaderResourceView)
+				{
+					FAILED_DEBUG_BREAK(mD3D11ShaderResourceView->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(detailedDebugName)), detailedDebugName));
+				}
+				if (nullptr != mD3D11UnorderedAccessView)
+				{
+					FAILED_DEBUG_BREAK(mD3D11UnorderedAccessView->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(detailedDebugName)), detailedDebugName));
+				}
 			#endif
 		}
 
@@ -6287,29 +6239,6 @@ namespace Direct3D11Rhi
 	//[ Public virtual Rhi::IResource methods                 ]
 	//[-------------------------------------------------------]
 	public:
-		#ifdef RHI_DEBUG
-			virtual void setDebugName(const char* name) override
-			{
-				// Set the debug name
-				// -> First: Ensure that there's no previous private data, else we might get slapped with a warning
-				if (nullptr != mD3D11Texture1D)
-				{
-					FAILED_DEBUG_BREAK(mD3D11Texture1D->SetPrivateData(WKPDID_D3DDebugObjectName, 0, nullptr));
-					FAILED_DEBUG_BREAK(mD3D11Texture1D->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(name)), name));
-				}
-				if (nullptr != mD3D11ShaderResourceView)
-				{
-					FAILED_DEBUG_BREAK(mD3D11ShaderResourceView->SetPrivateData(WKPDID_D3DDebugObjectName, 0, nullptr));
-					FAILED_DEBUG_BREAK(mD3D11ShaderResourceView->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(name)), name));
-				}
-				if (nullptr != mD3D11UnorderedAccessView)
-				{
-					FAILED_DEBUG_BREAK(mD3D11UnorderedAccessView->SetPrivateData(WKPDID_D3DDebugObjectName, 0, nullptr));
-					FAILED_DEBUG_BREAK(mD3D11UnorderedAccessView->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(name)), name));
-				}
-			}
-		#endif
-
 		[[nodiscard]] inline virtual void* getInternalResourceHandle() const override
 		{
 			return mD3D11Texture1D;
@@ -6383,7 +6312,7 @@ namespace Direct3D11Rhi
 		*  @param[in] textureUsage
 		*    Indication of the texture usage
 		*/
-		Texture1DArray(Direct3D11Rhi& direct3D11Rhi, uint32_t width, uint32_t numberOfSlices, Rhi::TextureFormat::Enum textureFormat, const void* data, uint32_t textureFlags, Rhi::TextureUsage textureUsage = Rhi::TextureUsage::DEFAULT) :
+		Texture1DArray(Direct3D11Rhi& direct3D11Rhi, uint32_t width, uint32_t numberOfSlices, Rhi::TextureFormat::Enum textureFormat, const void* data, uint32_t textureFlags, Rhi::TextureUsage textureUsage RHI_RESOURCE_DEBUG_NAME_PARAMETER) :
 			ITexture1DArray(direct3D11Rhi, width, numberOfSlices),
 			mTextureFormat(textureFormat),
 			mD3D11Texture1D(nullptr),
@@ -6550,7 +6479,19 @@ namespace Direct3D11Rhi
 
 			// Assign a default name to the resource for debugging purposes
 			#ifdef RHI_DEBUG
-				setDebugName("1D texture array");
+				RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "1D texture array", 19);	// 19 = "1D texture array: " including terminating zero
+				if (nullptr != mD3D11Texture1D)
+				{
+					FAILED_DEBUG_BREAK(mD3D11Texture1D->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(detailedDebugName)), detailedDebugName));
+				}
+				if (nullptr != mD3D11ShaderResourceView)
+				{
+					FAILED_DEBUG_BREAK(mD3D11ShaderResourceView->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(detailedDebugName)), detailedDebugName));
+				}
+				if (nullptr != mD3D11UnorderedAccessView)
+				{
+					FAILED_DEBUG_BREAK(mD3D11UnorderedAccessView->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(detailedDebugName)), detailedDebugName));
+				}
 			#endif
 		}
 
@@ -6632,34 +6573,6 @@ namespace Direct3D11Rhi
 
 
 	//[-------------------------------------------------------]
-	//[ Public virtual Rhi::IResource methods                 ]
-	//[-------------------------------------------------------]
-	public:
-		#ifdef RHI_DEBUG
-			virtual void setDebugName(const char* name) override
-			{
-				// Set the debug name
-				// -> First: Ensure that there's no previous private data, else we might get slapped with a warning
-				if (nullptr != mD3D11Texture1D)
-				{
-					FAILED_DEBUG_BREAK(mD3D11Texture1D->SetPrivateData(WKPDID_D3DDebugObjectName, 0, nullptr));
-					FAILED_DEBUG_BREAK(mD3D11Texture1D->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(name)), name));
-				}
-				if (nullptr != mD3D11ShaderResourceView)
-				{
-					FAILED_DEBUG_BREAK(mD3D11ShaderResourceView->SetPrivateData(WKPDID_D3DDebugObjectName, 0, nullptr));
-					FAILED_DEBUG_BREAK(mD3D11ShaderResourceView->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(name)), name));
-				}
-				if (nullptr != mD3D11UnorderedAccessView)
-				{
-					FAILED_DEBUG_BREAK(mD3D11UnorderedAccessView->SetPrivateData(WKPDID_D3DDebugObjectName, 0, nullptr));
-					FAILED_DEBUG_BREAK(mD3D11UnorderedAccessView->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(name)), name));
-				}
-			}
-		#endif
-
-
-	//[-------------------------------------------------------]
 	//[ Protected virtual Rhi::RefCount methods               ]
 	//[-------------------------------------------------------]
 	protected:
@@ -6728,7 +6641,7 @@ namespace Direct3D11Rhi
 		*  @param[in] numberOfMultisamples
 		*    The number of multisamples per pixel (valid values: 1, 2, 4, 6, 8)
 		*/
-		Texture2D(Direct3D11Rhi& direct3D11Rhi, uint32_t width, uint32_t height, Rhi::TextureFormat::Enum textureFormat, const void* data, uint32_t textureFlags, Rhi::TextureUsage textureUsage, uint8_t numberOfMultisamples) :
+		Texture2D(Direct3D11Rhi& direct3D11Rhi, uint32_t width, uint32_t height, Rhi::TextureFormat::Enum textureFormat, const void* data, uint32_t textureFlags, Rhi::TextureUsage textureUsage, uint8_t numberOfMultisamples RHI_RESOURCE_DEBUG_NAME_PARAMETER) :
 			ITexture2D(direct3D11Rhi, width, height),
 			mTextureFormat(textureFormat),
 			mNumberOfMultisamples(numberOfMultisamples),
@@ -6874,7 +6787,19 @@ namespace Direct3D11Rhi
 
 			// Assign a default name to the resource for debugging purposes
 			#ifdef RHI_DEBUG
-				setDebugName("2D texture");
+				RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "2D texture", 13);	// 13 = "2D texture: " including terminating zero
+				if (nullptr != mD3D11Texture2D)
+				{
+					FAILED_DEBUG_BREAK(mD3D11Texture2D->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(detailedDebugName)), detailedDebugName));
+				}
+				if (nullptr != mD3D11ShaderResourceView)
+				{
+					FAILED_DEBUG_BREAK(mD3D11ShaderResourceView->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(detailedDebugName)), detailedDebugName));
+				}
+				if (nullptr != mD3D11UnorderedAccessView)
+				{
+					FAILED_DEBUG_BREAK(mD3D11UnorderedAccessView->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(detailedDebugName)), detailedDebugName));
+				}
 			#endif
 		}
 
@@ -7001,29 +6926,6 @@ namespace Direct3D11Rhi
 	//[ Public virtual Rhi::IResource methods                 ]
 	//[-------------------------------------------------------]
 	public:
-		#ifdef RHI_DEBUG
-			virtual void setDebugName(const char* name) override
-			{
-				// Set the debug name
-				// -> First: Ensure that there's no previous private data, else we might get slapped with a warning
-				if (nullptr != mD3D11Texture2D)
-				{
-					FAILED_DEBUG_BREAK(mD3D11Texture2D->SetPrivateData(WKPDID_D3DDebugObjectName, 0, nullptr));
-					FAILED_DEBUG_BREAK(mD3D11Texture2D->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(name)), name));
-				}
-				if (nullptr != mD3D11ShaderResourceView)
-				{
-					FAILED_DEBUG_BREAK(mD3D11ShaderResourceView->SetPrivateData(WKPDID_D3DDebugObjectName, 0, nullptr));
-					FAILED_DEBUG_BREAK(mD3D11ShaderResourceView->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(name)), name));
-				}
-				if (nullptr != mD3D11UnorderedAccessView)
-				{
-					FAILED_DEBUG_BREAK(mD3D11UnorderedAccessView->SetPrivateData(WKPDID_D3DDebugObjectName, 0, nullptr));
-					FAILED_DEBUG_BREAK(mD3D11UnorderedAccessView->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(name)), name));
-				}
-			}
-		#endif
-
 		[[nodiscard]] inline virtual void* getInternalResourceHandle() const override
 		{
 			return mD3D11Texture2D;
@@ -7100,7 +7002,7 @@ namespace Direct3D11Rhi
 		*  @param[in] textureUsage
 		*    Indication of the texture usage
 		*/
-		Texture2DArray(Direct3D11Rhi& direct3D11Rhi, uint32_t width, uint32_t height, uint32_t numberOfSlices, Rhi::TextureFormat::Enum textureFormat, const void* data, uint32_t textureFlags, Rhi::TextureUsage textureUsage = Rhi::TextureUsage::DEFAULT) :
+		Texture2DArray(Direct3D11Rhi& direct3D11Rhi, uint32_t width, uint32_t height, uint32_t numberOfSlices, Rhi::TextureFormat::Enum textureFormat, const void* data, uint32_t textureFlags, Rhi::TextureUsage textureUsage RHI_RESOURCE_DEBUG_NAME_PARAMETER) :
 			ITexture2DArray(direct3D11Rhi, width, height, numberOfSlices),
 			mTextureFormat(textureFormat),
 			mNumberOfMultisamples(1),	// TODO(co) Currently no MSAA support for 2D array textures
@@ -7276,7 +7178,19 @@ namespace Direct3D11Rhi
 
 			// Assign a default name to the resource for debugging purposes
 			#ifdef RHI_DEBUG
-				setDebugName("2D texture array");
+				RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "2D texture array", 19);	// 19 = "2D texture array: " including terminating zero
+				if (nullptr != mD3D11Texture2D)
+				{
+					FAILED_DEBUG_BREAK(mD3D11Texture2D->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(detailedDebugName)), detailedDebugName));
+				}
+				if (nullptr != mD3D11ShaderResourceView)
+				{
+					FAILED_DEBUG_BREAK(mD3D11ShaderResourceView->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(detailedDebugName)), detailedDebugName));
+				}
+				if (nullptr != mD3D11UnorderedAccessView)
+				{
+					FAILED_DEBUG_BREAK(mD3D11UnorderedAccessView->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(detailedDebugName)), detailedDebugName));
+				}
 			#endif
 		}
 
@@ -7370,34 +7284,6 @@ namespace Direct3D11Rhi
 
 
 	//[-------------------------------------------------------]
-	//[ Public virtual Rhi::IResource methods                 ]
-	//[-------------------------------------------------------]
-	public:
-		#ifdef RHI_DEBUG
-			virtual void setDebugName(const char* name) override
-			{
-				// Set the debug name
-				// -> First: Ensure that there's no previous private data, else we might get slapped with a warning
-				if (nullptr != mD3D11Texture2D)
-				{
-					FAILED_DEBUG_BREAK(mD3D11Texture2D->SetPrivateData(WKPDID_D3DDebugObjectName, 0, nullptr));
-					FAILED_DEBUG_BREAK(mD3D11Texture2D->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(name)), name));
-				}
-				if (nullptr != mD3D11ShaderResourceView)
-				{
-					FAILED_DEBUG_BREAK(mD3D11ShaderResourceView->SetPrivateData(WKPDID_D3DDebugObjectName, 0, nullptr));
-					FAILED_DEBUG_BREAK(mD3D11ShaderResourceView->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(name)), name));
-				}
-				if (nullptr != mD3D11UnorderedAccessView)
-				{
-					FAILED_DEBUG_BREAK(mD3D11UnorderedAccessView->SetPrivateData(WKPDID_D3DDebugObjectName, 0, nullptr));
-					FAILED_DEBUG_BREAK(mD3D11UnorderedAccessView->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(name)), name));
-				}
-			}
-		#endif
-
-
-	//[-------------------------------------------------------]
 	//[ Protected virtual Rhi::RefCount methods               ]
 	//[-------------------------------------------------------]
 	protected:
@@ -7467,7 +7353,7 @@ namespace Direct3D11Rhi
 		*  @param[in] textureUsage
 		*    Indication of the texture usage
 		*/
-		Texture3D(Direct3D11Rhi& direct3D11Rhi, uint32_t width, uint32_t height, uint32_t depth, Rhi::TextureFormat::Enum textureFormat, const void* data, uint32_t textureFlags, Rhi::TextureUsage textureUsage) :
+		Texture3D(Direct3D11Rhi& direct3D11Rhi, uint32_t width, uint32_t height, uint32_t depth, Rhi::TextureFormat::Enum textureFormat, const void* data, uint32_t textureFlags, Rhi::TextureUsage textureUsage RHI_RESOURCE_DEBUG_NAME_PARAMETER) :
 			ITexture3D(direct3D11Rhi, width, height, depth),
 			mTextureFormat(textureFormat),
 			mD3D11Texture3D(nullptr),
@@ -7523,7 +7409,7 @@ namespace Direct3D11Rhi
 			{
 				// We don't want dynamic allocations, so we limit the maximum number of mipmaps and hence are able to use the efficient C runtime stack
 				static constexpr uint32_t MAXIMUM_NUMBER_OF_MIPMAPS = 15;	// A 16384x16384 texture has 15 mipmaps
-				RHI_ASSERT(getRhi().getContext(), numberOfMipmaps <= MAXIMUM_NUMBER_OF_MIPMAPS, "Invalid Direct3D 11 number of mipmaps")
+				RHI_ASSERT(direct3D11Rhi.getContext(), numberOfMipmaps <= MAXIMUM_NUMBER_OF_MIPMAPS, "Invalid Direct3D 11 number of mipmaps")
 				D3D11_SUBRESOURCE_DATA d3d11SubresourceData[MAXIMUM_NUMBER_OF_MIPMAPS];
 
 				// Did the user provided data containing mipmaps from 0-n down to 1x1 linearly in memory?
@@ -7613,7 +7499,19 @@ namespace Direct3D11Rhi
 
 			// Assign a default name to the resource for debugging purposes
 			#ifdef RHI_DEBUG
-				setDebugName("3D texture");
+				RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "3D texture", 13);	// 13 = "3D texture: " including terminating zero
+				if (nullptr != mD3D11Texture3D)
+				{
+					FAILED_DEBUG_BREAK(mD3D11Texture3D->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(detailedDebugName)), detailedDebugName));
+				}
+				if (nullptr != mD3D11ShaderResourceView)
+				{
+					FAILED_DEBUG_BREAK(mD3D11ShaderResourceView->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(detailedDebugName)), detailedDebugName));
+				}
+				if (nullptr != mD3D11UnorderedAccessView)
+				{
+					FAILED_DEBUG_BREAK(mD3D11UnorderedAccessView->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(detailedDebugName)), detailedDebugName));
+				}
 			#endif
 		}
 
@@ -7698,29 +7596,6 @@ namespace Direct3D11Rhi
 	//[ Public virtual Rhi::IResource methods                 ]
 	//[-------------------------------------------------------]
 	public:
-		#ifdef RHI_DEBUG
-			virtual void setDebugName(const char* name) override
-			{
-				// Set the debug name
-				// -> First: Ensure that there's no previous private data, else we might get slapped with a warning
-				if (nullptr != mD3D11Texture3D)
-				{
-					FAILED_DEBUG_BREAK(mD3D11Texture3D->SetPrivateData(WKPDID_D3DDebugObjectName, 0, nullptr));
-					FAILED_DEBUG_BREAK(mD3D11Texture3D->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(name)), name));
-				}
-				if (nullptr != mD3D11ShaderResourceView)
-				{
-					FAILED_DEBUG_BREAK(mD3D11ShaderResourceView->SetPrivateData(WKPDID_D3DDebugObjectName, 0, nullptr));
-					FAILED_DEBUG_BREAK(mD3D11ShaderResourceView->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(name)), name));
-				}
-				if (nullptr != mD3D11UnorderedAccessView)
-				{
-					FAILED_DEBUG_BREAK(mD3D11UnorderedAccessView->SetPrivateData(WKPDID_D3DDebugObjectName, 0, nullptr));
-					FAILED_DEBUG_BREAK(mD3D11UnorderedAccessView->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(name)), name));
-				}
-			}
-		#endif
-
 		[[nodiscard]] inline virtual void* getInternalResourceHandle() const override
 		{
 			return mD3D11Texture3D;
@@ -7794,7 +7669,7 @@ namespace Direct3D11Rhi
 		*  @param[in] textureUsage
 		*    Indication of the texture usage
 		*/
-		TextureCube(Direct3D11Rhi& direct3D11Rhi, uint32_t width, uint32_t height, Rhi::TextureFormat::Enum textureFormat, const void* data, uint32_t textureFlags, Rhi::TextureUsage textureUsage) :
+		TextureCube(Direct3D11Rhi& direct3D11Rhi, uint32_t width, uint32_t height, Rhi::TextureFormat::Enum textureFormat, const void* data, uint32_t textureFlags, Rhi::TextureUsage textureUsage RHI_RESOURCE_DEBUG_NAME_PARAMETER) :
 			ITextureCube(direct3D11Rhi, width, height),
 			mTextureFormat(textureFormat),
 			mD3D11TextureCube(nullptr),
@@ -7956,7 +7831,19 @@ namespace Direct3D11Rhi
 
 			// Assign a default name to the resource for debugging purposes
 			#ifdef RHI_DEBUG
-				setDebugName("Cube texture");
+				RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "Cube texture", 15);	// 15 = "Cube texture: " including terminating zero
+				if (nullptr != mD3D11TextureCube)
+				{
+					FAILED_DEBUG_BREAK(mD3D11TextureCube->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(detailedDebugName)), detailedDebugName));
+				}
+				if (nullptr != mD3D11ShaderResourceView)
+				{
+					FAILED_DEBUG_BREAK(mD3D11ShaderResourceView->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(detailedDebugName)), detailedDebugName));
+				}
+				if (nullptr != mD3D11UnorderedAccessView)
+				{
+					FAILED_DEBUG_BREAK(mD3D11UnorderedAccessView->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(detailedDebugName)), detailedDebugName));
+				}
 			#endif
 		}
 
@@ -8041,29 +7928,6 @@ namespace Direct3D11Rhi
 	//[ Public virtual Rhi::IResource methods                 ]
 	//[-------------------------------------------------------]
 	public:
-		#ifdef RHI_DEBUG
-			virtual void setDebugName(const char* name) override
-			{
-				// Set the debug name
-				// -> First: Ensure that there's no previous private data, else we might get slapped with a warning
-				if (nullptr != mD3D11TextureCube)
-				{
-					FAILED_DEBUG_BREAK(mD3D11TextureCube->SetPrivateData(WKPDID_D3DDebugObjectName, 0, nullptr));
-					FAILED_DEBUG_BREAK(mD3D11TextureCube->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(name)), name));
-				}
-				if (nullptr != mD3D11ShaderResourceView)
-				{
-					FAILED_DEBUG_BREAK(mD3D11ShaderResourceView->SetPrivateData(WKPDID_D3DDebugObjectName, 0, nullptr));
-					FAILED_DEBUG_BREAK(mD3D11ShaderResourceView->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(name)), name));
-				}
-				if (nullptr != mD3D11UnorderedAccessView)
-				{
-					FAILED_DEBUG_BREAK(mD3D11UnorderedAccessView->SetPrivateData(WKPDID_D3DDebugObjectName, 0, nullptr));
-					FAILED_DEBUG_BREAK(mD3D11UnorderedAccessView->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(name)), name));
-				}
-			}
-		#endif
-
 		[[nodiscard]] inline virtual void* getInternalResourceHandle() const override
 		{
 			return mD3D11TextureCube;
@@ -8141,58 +8005,70 @@ namespace Direct3D11Rhi
 	//[ Public virtual Rhi::ITextureManager methods           ]
 	//[-------------------------------------------------------]
 	public:
-		[[nodiscard]] virtual Rhi::ITexture1D* createTexture1D(uint32_t width, Rhi::TextureFormat::Enum textureFormat, const void* data = nullptr, uint32_t textureFlags = 0, Rhi::TextureUsage textureUsage = Rhi::TextureUsage::DEFAULT) override
+		[[nodiscard]] virtual Rhi::ITexture1D* createTexture1D(uint32_t width, Rhi::TextureFormat::Enum textureFormat, const void* data = nullptr, uint32_t textureFlags = 0, Rhi::TextureUsage textureUsage = Rhi::TextureUsage::DEFAULT RHI_RESOURCE_DEBUG_NAME_PARAMETER) override
 		{
+			Direct3D11Rhi& direct3D11Rhi = static_cast<Direct3D11Rhi&>(getRhi());
+
 			// Sanity check
-			RHI_ASSERT(getRhi().getContext(), width > 0, "Direct3D 11 create texture 1D was called with invalid parameters")
+			RHI_ASSERT(direct3D11Rhi.getContext(), width > 0, "Direct3D 11 create texture 1D was called with invalid parameters")
 
 			// Create 1D texture resource
-			return RHI_NEW(getRhi().getContext(), Texture1D)(static_cast<Direct3D11Rhi&>(getRhi()), width, textureFormat, data, textureFlags, textureUsage);
+			return RHI_NEW(direct3D11Rhi.getContext(), Texture1D)(direct3D11Rhi, width, textureFormat, data, textureFlags, textureUsage RHI_RESOURCE_DEBUG_PASS_PARAMETER);
 		}
 
-		[[nodiscard]] virtual Rhi::ITexture1DArray* createTexture1DArray(uint32_t width, uint32_t numberOfSlices, Rhi::TextureFormat::Enum textureFormat, const void* data = nullptr, uint32_t textureFlags = 0, Rhi::TextureUsage textureUsage = Rhi::TextureUsage::DEFAULT) override
+		[[nodiscard]] virtual Rhi::ITexture1DArray* createTexture1DArray(uint32_t width, uint32_t numberOfSlices, Rhi::TextureFormat::Enum textureFormat, const void* data = nullptr, uint32_t textureFlags = 0, Rhi::TextureUsage textureUsage = Rhi::TextureUsage::DEFAULT RHI_RESOURCE_DEBUG_NAME_PARAMETER) override
 		{
+			Direct3D11Rhi& direct3D11Rhi = static_cast<Direct3D11Rhi&>(getRhi());
+
 			// Sanity check
-			RHI_ASSERT(getRhi().getContext(), width > 0 && numberOfSlices > 0, "Direct3D 11 create texture 1D array was called with invalid parameters")
+			RHI_ASSERT(direct3D11Rhi.getContext(), width > 0 && numberOfSlices > 0, "Direct3D 11 create texture 1D array was called with invalid parameters")
 
 			// Create 1D texture array resource
-			return RHI_NEW(getRhi().getContext(), Texture1DArray)(static_cast<Direct3D11Rhi&>(getRhi()), width, numberOfSlices, textureFormat, data, textureFlags, textureUsage);
+			return RHI_NEW(direct3D11Rhi.getContext(), Texture1DArray)(direct3D11Rhi, width, numberOfSlices, textureFormat, data, textureFlags, textureUsage RHI_RESOURCE_DEBUG_PASS_PARAMETER);
 		}
 
-		[[nodiscard]] virtual Rhi::ITexture2D* createTexture2D(uint32_t width, uint32_t height, Rhi::TextureFormat::Enum textureFormat, const void* data = nullptr, uint32_t textureFlags = 0, Rhi::TextureUsage textureUsage = Rhi::TextureUsage::DEFAULT, uint8_t numberOfMultisamples = 1, [[maybe_unused]] const Rhi::OptimizedTextureClearValue* optimizedTextureClearValue = nullptr) override
+		[[nodiscard]] virtual Rhi::ITexture2D* createTexture2D(uint32_t width, uint32_t height, Rhi::TextureFormat::Enum textureFormat, const void* data = nullptr, uint32_t textureFlags = 0, Rhi::TextureUsage textureUsage = Rhi::TextureUsage::DEFAULT, uint8_t numberOfMultisamples = 1, [[maybe_unused]] const Rhi::OptimizedTextureClearValue* optimizedTextureClearValue = nullptr RHI_RESOURCE_DEBUG_NAME_PARAMETER) override
 		{
+			Direct3D11Rhi& direct3D11Rhi = static_cast<Direct3D11Rhi&>(getRhi());
+
 			// Sanity check
-			RHI_ASSERT(getRhi().getContext(), width > 0 && height > 0, "Direct3D 11 create texture 2D was called with invalid parameters")
+			RHI_ASSERT(direct3D11Rhi.getContext(), width > 0 && height > 0, "Direct3D 11 create texture 2D was called with invalid parameters")
 
 			// Create 2D texture resource
-			return RHI_NEW(getRhi().getContext(), Texture2D)(static_cast<Direct3D11Rhi&>(getRhi()), width, height, textureFormat, data, textureFlags, textureUsage, numberOfMultisamples);
+			return RHI_NEW(direct3D11Rhi.getContext(), Texture2D)(direct3D11Rhi, width, height, textureFormat, data, textureFlags, textureUsage, numberOfMultisamples RHI_RESOURCE_DEBUG_PASS_PARAMETER);
 		}
 
-		[[nodiscard]] virtual Rhi::ITexture2DArray* createTexture2DArray(uint32_t width, uint32_t height, uint32_t numberOfSlices, Rhi::TextureFormat::Enum textureFormat, const void* data = nullptr, uint32_t textureFlags = 0, Rhi::TextureUsage textureUsage = Rhi::TextureUsage::DEFAULT) override
+		[[nodiscard]] virtual Rhi::ITexture2DArray* createTexture2DArray(uint32_t width, uint32_t height, uint32_t numberOfSlices, Rhi::TextureFormat::Enum textureFormat, const void* data = nullptr, uint32_t textureFlags = 0, Rhi::TextureUsage textureUsage = Rhi::TextureUsage::DEFAULT RHI_RESOURCE_DEBUG_NAME_PARAMETER) override
 		{
+			Direct3D11Rhi& direct3D11Rhi = static_cast<Direct3D11Rhi&>(getRhi());
+
 			// Sanity check
-			RHI_ASSERT(getRhi().getContext(), width > 0 && height > 0 && numberOfSlices > 0, "Direct3D 11 create texture 2D array was called with invalid parameters")
+			RHI_ASSERT(direct3D11Rhi.getContext(), width > 0 && height > 0 && numberOfSlices > 0, "Direct3D 11 create texture 2D array was called with invalid parameters")
 
 			// Create 2D texture array resource
-			return RHI_NEW(getRhi().getContext(), Texture2DArray)(static_cast<Direct3D11Rhi&>(getRhi()), width, height, numberOfSlices, textureFormat, data, textureFlags, textureUsage);
+			return RHI_NEW(direct3D11Rhi.getContext(), Texture2DArray)(direct3D11Rhi, width, height, numberOfSlices, textureFormat, data, textureFlags, textureUsage RHI_RESOURCE_DEBUG_PASS_PARAMETER);
 		}
 
-		[[nodiscard]] virtual Rhi::ITexture3D* createTexture3D(uint32_t width, uint32_t height, uint32_t depth, Rhi::TextureFormat::Enum textureFormat, const void* data = nullptr, uint32_t textureFlags = 0, Rhi::TextureUsage textureUsage = Rhi::TextureUsage::DEFAULT) override
+		[[nodiscard]] virtual Rhi::ITexture3D* createTexture3D(uint32_t width, uint32_t height, uint32_t depth, Rhi::TextureFormat::Enum textureFormat, const void* data = nullptr, uint32_t textureFlags = 0, Rhi::TextureUsage textureUsage = Rhi::TextureUsage::DEFAULT RHI_RESOURCE_DEBUG_NAME_PARAMETER) override
 		{
+			Direct3D11Rhi& direct3D11Rhi = static_cast<Direct3D11Rhi&>(getRhi());
+
 			// Sanity check
-			RHI_ASSERT(getRhi().getContext(), width > 0 && height > 0 && depth > 0, "Direct3D 11 create texture 3D was called with invalid parameters")
+			RHI_ASSERT(direct3D11Rhi.getContext(), width > 0 && height > 0 && depth > 0, "Direct3D 11 create texture 3D was called with invalid parameters")
 
 			// Create 3D texture resource
-			return RHI_NEW(getRhi().getContext(), Texture3D)(static_cast<Direct3D11Rhi&>(getRhi()), width, height, depth, textureFormat, data, textureFlags, textureUsage);
+			return RHI_NEW(direct3D11Rhi.getContext(), Texture3D)(direct3D11Rhi, width, height, depth, textureFormat, data, textureFlags, textureUsage RHI_RESOURCE_DEBUG_PASS_PARAMETER);
 		}
 
-		[[nodiscard]] virtual Rhi::ITextureCube* createTextureCube(uint32_t width, uint32_t height, Rhi::TextureFormat::Enum textureFormat, const void* data = nullptr, uint32_t textureFlags = 0, Rhi::TextureUsage textureUsage = Rhi::TextureUsage::DEFAULT) override
+		[[nodiscard]] virtual Rhi::ITextureCube* createTextureCube(uint32_t width, uint32_t height, Rhi::TextureFormat::Enum textureFormat, const void* data = nullptr, uint32_t textureFlags = 0, Rhi::TextureUsage textureUsage = Rhi::TextureUsage::DEFAULT RHI_RESOURCE_DEBUG_NAME_PARAMETER) override
 		{
+			Direct3D11Rhi& direct3D11Rhi = static_cast<Direct3D11Rhi&>(getRhi());
+
 			// Sanity check
-			RHI_ASSERT(getRhi().getContext(), width > 0 && height > 0, "Direct3D 11 create texture cube was called with invalid parameters")
+			RHI_ASSERT(direct3D11Rhi.getContext(), width > 0 && height > 0, "Direct3D 11 create texture cube was called with invalid parameters")
 
 			// Create cube texture resource
-			return RHI_NEW(getRhi().getContext(), TextureCube)(static_cast<Direct3D11Rhi&>(getRhi()), width, height, textureFormat, data, textureFlags, textureUsage);
+			return RHI_NEW(direct3D11Rhi.getContext(), TextureCube)(direct3D11Rhi, width, height, textureFormat, data, textureFlags, textureUsage RHI_RESOURCE_DEBUG_PASS_PARAMETER);
 		}
 
 
@@ -8243,12 +8119,12 @@ namespace Direct3D11Rhi
 		*  @param[in] samplerState
 		*    Sampler state to use
 		*/
-		SamplerState(Direct3D11Rhi& direct3D11Rhi, const Rhi::SamplerState& samplerState) :
+		SamplerState(Direct3D11Rhi& direct3D11Rhi, const Rhi::SamplerState& samplerState RHI_RESOURCE_DEBUG_NAME_PARAMETER) :
 			ISamplerState(direct3D11Rhi),
 			mD3D11SamplerState(nullptr)
 		{
 			// Sanity checks
-			RHI_ASSERT(direct3D11Rhi.getContext(), samplerState.filter != Rhi::FilterMode::UNKNOWN, "Direct3D 11 filter mode must not be unknown")
+			RHI_ASSERT(direct3D11Rhi.getContext(), Rhi::FilterMode::UNKNOWN != samplerState.filter, "Direct3D 11 filter mode must not be unknown")
 			RHI_ASSERT(direct3D11Rhi.getContext(), samplerState.maxAnisotropy <= direct3D11Rhi.getCapabilities().maximumAnisotropy, "Maximum Direct3D 11 anisotropy value violated")
 
 			// Create the Direct3D 11 sampler state
@@ -8258,7 +8134,19 @@ namespace Direct3D11Rhi
 
 			// Assign a default name to the resource for debugging purposes
 			#ifdef RHI_DEBUG
-				setDebugName("Sampler state");
+				if (nullptr != mD3D11SamplerState)
+				{
+					// Avoid "D3D11 WARNING: ID3D11SamplerState::SetPrivateData: Existing private data of same name with different size found! [ STATE_SETTING WARNING #55: SETPRIVATEDATA_CHANGINGPARAMS]" messages by checking whether or not a debug name is already set (first wins)
+					// -> This can happen since Direct3D 11 internally automatically checks if a sampler state instance with the requested configuration already exists
+					// -> The result of "ID3D11DeviceChild::GetPrivateData()" is not checked by intent since this probably means that no debug name has been set, yet
+					UINT existingDataSize = 0;
+					mD3D11SamplerState->GetPrivateData(WKPDID_D3DDebugObjectName, &existingDataSize, nullptr);
+					if (0 == existingDataSize)
+					{
+						RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "Sampler state", 16);	// 16 = "Sampler state: " including terminating zero
+						FAILED_DEBUG_BREAK(mD3D11SamplerState->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(detailedDebugName)), detailedDebugName));
+					}
+				}
 			#endif
 		}
 
@@ -8286,24 +8174,6 @@ namespace Direct3D11Rhi
 		{
 			return mD3D11SamplerState;
 		}
-
-
-	//[-------------------------------------------------------]
-	//[ Public virtual Rhi::IResource methods                 ]
-	//[-------------------------------------------------------]
-	public:
-		#ifdef RHI_DEBUG
-			virtual void setDebugName(const char* name) override
-			{
-				// Set the debug name
-				// -> First: Ensure that there's no previous private data, else we might get slapped with a warning
-				if (nullptr != mD3D11SamplerState)
-				{
-					FAILED_DEBUG_BREAK(mD3D11SamplerState->SetPrivateData(WKPDID_D3DDebugObjectName, 0, nullptr));
-					FAILED_DEBUG_BREAK(mD3D11SamplerState->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(name)), name));
-				}
-			}
-		#endif
 
 
 	//[-------------------------------------------------------]
@@ -8416,7 +8286,11 @@ namespace Direct3D11Rhi
 
 			// Assign a default name to the resource for debugging purposes
 			#ifdef RHI_DEBUG
-				setDebugName("Rasterizer state");
+				if (nullptr != mD3D11RasterizerState)
+				{
+					static constexpr char* NAME = "Rasterizer state";
+					FAILED_DEBUG_BREAK(mD3D11RasterizerState->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(NAME)), NAME));
+				}
 			#endif
 		}
 
@@ -8444,29 +8318,6 @@ namespace Direct3D11Rhi
 		{
 			return mD3D11RasterizerState;
 		}
-
-		#ifdef RHI_DEBUG
-			/**
-			*  @brief
-			*    Assign a name to the state for debugging purposes
-			*
-			*  @param[in] name
-			*    ASCII name for debugging purposes, must be valid (there's no internal null pointer test)
-			*
-			*  @see
-			*    - "Rhi::IRhi::isDebugEnabled()"
-			*/
-			void setDebugName(const char* name)
-			{
-				// Set the debug name
-				// -> First: Ensure that there's no previous private data, else we might get slapped with a warning
-				if (nullptr != mD3D11RasterizerState)
-				{
-					FAILED_DEBUG_BREAK(mD3D11RasterizerState->SetPrivateData(WKPDID_D3DDebugObjectName, 0, nullptr));
-					FAILED_DEBUG_BREAK(mD3D11RasterizerState->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(name)), name));
-				}
-			}
-		#endif
 
 
 	//[-------------------------------------------------------]
@@ -8515,7 +8366,11 @@ namespace Direct3D11Rhi
 
 			// Assign a default name to the resource for debugging purposes
 			#ifdef RHI_DEBUG
-				setDebugName("Depth stencil state");
+				if (nullptr != mD3D11DepthStencilState)
+				{
+					static constexpr char* NAME = "Depth stencil state";
+					FAILED_DEBUG_BREAK(mD3D11DepthStencilState->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(NAME)), NAME));
+				}
 			#endif
 		}
 
@@ -8543,29 +8398,6 @@ namespace Direct3D11Rhi
 		{
 			return mD3D11DepthStencilState;
 		}
-
-		#ifdef RHI_DEBUG
-			/**
-			*  @brief
-			*    Assign a name to the state for debugging purposes
-			*
-			*  @param[in] name
-			*    ASCII name for debugging purposes, must be valid (there's no internal null pointer test)
-			*
-			*  @see
-			*    - "Rhi::IRhi::isDebugEnabled()"
-			*/
-			void setDebugName(const char* name)
-			{
-				// Set the debug name
-				// -> First: Ensure that there's no previous private data, else we might get slapped with a warning
-				if (nullptr != mD3D11DepthStencilState)
-				{
-					FAILED_DEBUG_BREAK(mD3D11DepthStencilState->SetPrivateData(WKPDID_D3DDebugObjectName, 0, nullptr));
-					FAILED_DEBUG_BREAK(mD3D11DepthStencilState->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(name)), name));
-				}
-			}
-		#endif
 
 
 	//[-------------------------------------------------------]
@@ -8615,7 +8447,11 @@ namespace Direct3D11Rhi
 
 			// Assign a default name to the resource for debugging purposes
 			#ifdef RHI_DEBUG
-				setDebugName("Blend state");
+				if (nullptr != mD3D11BlendState)
+				{
+					static constexpr char* NAME = "Blend state";
+					FAILED_DEBUG_BREAK(mD3D11BlendState->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(NAME)), NAME));
+				}
 			#endif
 		}
 
@@ -8643,29 +8479,6 @@ namespace Direct3D11Rhi
 		{
 			return mD3D11BlendState;
 		}
-
-		#ifdef RHI_DEBUG
-			/**
-			*  @brief
-			*    Assign a name to the state for debugging purposes
-			*
-			*  @param[in] name
-			*    ASCII name for debugging purposes, must be valid (there's no internal null pointer test)
-			*
-			*  @see
-			*    - "Rhi::IRhi::isDebugEnabled()"
-			*/
-			void setDebugName(const char* name)
-			{
-				// Set the debug name
-				// -> First: Ensure that there's no previous private data, else we might get slapped with a warning
-				if (nullptr != mD3D11BlendState)
-				{
-					FAILED_DEBUG_BREAK(mD3D11BlendState->SetPrivateData(WKPDID_D3DDebugObjectName, 0, nullptr));
-					FAILED_DEBUG_BREAK(mD3D11BlendState->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(name)), name));
-				}
-			}
-		#endif
 
 
 	//[-------------------------------------------------------]
@@ -8852,7 +8665,7 @@ namespace Direct3D11Rhi
 		*  @param[in] numberOfQueries
 		*    Number of queries
 		*/
-		QueryPool(Direct3D11Rhi& direct3D11Rhi, Rhi::QueryType queryType, uint32_t numberOfQueries) :
+		QueryPool(Direct3D11Rhi& direct3D11Rhi, Rhi::QueryType queryType, uint32_t numberOfQueries RHI_RESOURCE_DEBUG_NAME_PARAMETER) :
 			IQueryPool(direct3D11Rhi),
 			mQueryType(queryType),
 			mNumberOfQueries(numberOfQueries),
@@ -8888,16 +8701,49 @@ namespace Direct3D11Rhi
 				switch (queryType)
 				{
 					case Rhi::QueryType::OCCLUSION:
-						setDebugName("Occlusion query");
+					{
+						RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "Occlusion query", 18);	// 18 = "Occlusion query: " including terminating zero
+						const UINT detailedDebugNameLength = static_cast<UINT>(strlen(detailedDebugName));
+						for (uint32_t i = 0; i < mNumberOfQueries; ++i)
+						{
+							ID3D11Query* d3d11Query = mD3D11Queries[i];
+							if (nullptr != d3d11Query)
+							{
+								FAILED_DEBUG_BREAK(d3d11Query->SetPrivateData(WKPDID_D3DDebugObjectName, detailedDebugNameLength, detailedDebugName));
+							}
+						}
 						break;
+					}
 
 					case Rhi::QueryType::PIPELINE_STATISTICS:
-						setDebugName("Pipeline statistics query");
+					{
+						RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "Pipeline statistics query", 28);	// 28 = "Pipeline statistics query: " including terminating zero
+						const UINT detailedDebugNameLength = static_cast<UINT>(strlen(detailedDebugName));
+						for (uint32_t i = 0; i < mNumberOfQueries; ++i)
+						{
+							ID3D11Query* d3d11Query = mD3D11Queries[i];
+							if (nullptr != d3d11Query)
+							{
+								FAILED_DEBUG_BREAK(d3d11Query->SetPrivateData(WKPDID_D3DDebugObjectName, detailedDebugNameLength, detailedDebugName));
+							}
+						}
 						break;
+					}
 
 					case Rhi::QueryType::TIMESTAMP:
-						setDebugName("Timestamp query");
+					{
+						RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "Timestamp query", 18);	// 18 = "Timestamp query: " including terminating zero
+						const UINT detailedDebugNameLength = static_cast<UINT>(strlen(detailedDebugName));
+						for (uint32_t i = 0; i < mNumberOfQueries; ++i)
+						{
+							ID3D11Query* d3d11Query = mD3D11Queries[i];
+							if (nullptr != d3d11Query)
+							{
+								FAILED_DEBUG_BREAK(d3d11Query->SetPrivateData(WKPDID_D3DDebugObjectName, detailedDebugNameLength, detailedDebugName));
+							}
+						}
 						break;
+					}
 				}
 			#endif
 		}
@@ -8944,32 +8790,12 @@ namespace Direct3D11Rhi
 		*    Return the Direct3D 11 queries
 		*
 		*  @return
-		*    The Direct3D 11 queries
+		*    The Direct3D 11 queries, considered to be always valid
 		*/
 		[[nodiscard]] inline ID3D11Query** getD3D11Queries() const
 		{
 			return mD3D11Queries;
 		}
-
-
-	//[-------------------------------------------------------]
-	//[ Public virtual Rhi::IResource methods                 ]
-	//[-------------------------------------------------------]
-	public:
-		#ifdef RHI_DEBUG
-			virtual void setDebugName(const char* name) override
-			{
-				// Set the debug name
-				// -> First: Ensure that there's no previous private data, else we might get slapped with a warning
-				const UINT nameLength = static_cast<UINT>(strlen(name));
-				for (uint32_t i = 0; i < mNumberOfQueries; ++i)
-				{
-					ID3D11Query* d3d11Query = mD3D11Queries[i];
-					FAILED_DEBUG_BREAK(d3d11Query->SetPrivateData(WKPDID_D3DDebugObjectName, 0, nullptr));
-					FAILED_DEBUG_BREAK(d3d11Query->SetPrivateData(WKPDID_D3DDebugObjectName, nameLength, name));
-				}
-			}
-		#endif
 
 
 	//[-------------------------------------------------------]
@@ -8996,7 +8822,7 @@ namespace Direct3D11Rhi
 	private:
 		Rhi::QueryType mQueryType;
 		uint32_t	   mNumberOfQueries;
-		ID3D11Query**  mD3D11Queries;
+		ID3D11Query**  mD3D11Queries;	// The Direct3D 11 queries, considered to be always valid
 
 
 	};
@@ -9028,7 +8854,7 @@ namespace Direct3D11Rhi
 		*  @param[in] windowHandle
 		*    Information about the window to render into
 		*/
-		SwapChain(Rhi::IRenderPass& renderPass, Rhi::WindowHandle windowHandle) :
+		SwapChain(Rhi::IRenderPass& renderPass, Rhi::WindowHandle windowHandle RHI_RESOURCE_DEBUG_NAME_PARAMETER) :
 			ISwapChain(renderPass),
 			mD3D11DeviceContext1(nullptr),
 			mDxgiSwapChain(nullptr),
@@ -9187,12 +9013,21 @@ namespace Direct3D11Rhi
 			if (nullptr != mDxgiSwapChain)
 			{
 				createDirect3D11Views();
-			}
 
-			// Assign a default name to the resource for debugging purposes
-			#ifdef RHI_DEBUG
-				setDebugName("Swap chain");
-			#endif
+				// Assign a default name to the resource for debugging purposes
+				#ifdef RHI_DEBUG
+					RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "Swap chain", 13);	// 13 = "Swap chain: " including terminating zero
+					FAILED_DEBUG_BREAK(mDxgiSwapChain->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(detailedDebugName)), detailedDebugName));
+					if (nullptr != mD3D11RenderTargetView)
+					{
+						FAILED_DEBUG_BREAK(mD3D11RenderTargetView->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(detailedDebugName)), detailedDebugName));
+					}
+					if (nullptr != mD3D11DepthStencilView)
+					{
+						FAILED_DEBUG_BREAK(mD3D11DepthStencilView->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(detailedDebugName)), detailedDebugName));
+					}
+				#endif
+			}
 		}
 
 		/**
@@ -9273,34 +9108,6 @@ namespace Direct3D11Rhi
 		{
 			return mD3D11DepthStencilView;
 		}
-
-
-	//[-------------------------------------------------------]
-	//[ Public virtual Rhi::IResource methods                 ]
-	//[-------------------------------------------------------]
-	public:
-		#ifdef RHI_DEBUG
-			virtual void setDebugName(const char* name) override
-			{
-				// Set the debug name
-				// -> First: Ensure that there's no previous private data, else we might get slapped with a warning
-				if (nullptr != mDxgiSwapChain)
-				{
-					FAILED_DEBUG_BREAK(mDxgiSwapChain->SetPrivateData(WKPDID_D3DDebugObjectName, 0, nullptr));
-					FAILED_DEBUG_BREAK(mDxgiSwapChain->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(name)), name));
-				}
-				if (nullptr != mD3D11RenderTargetView)
-				{
-					FAILED_DEBUG_BREAK(mD3D11RenderTargetView->SetPrivateData(WKPDID_D3DDebugObjectName, 0, nullptr));
-					FAILED_DEBUG_BREAK(mD3D11RenderTargetView->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(name)), name));
-				}
-				if (nullptr != mD3D11DepthStencilView)
-				{
-					FAILED_DEBUG_BREAK(mD3D11DepthStencilView->SetPrivateData(WKPDID_D3DDebugObjectName, 0, nullptr));
-					FAILED_DEBUG_BREAK(mD3D11DepthStencilView->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(name)), name));
-				}
-			}
-		#endif
 
 
 	//[-------------------------------------------------------]
@@ -9447,6 +9254,7 @@ namespace Direct3D11Rhi
 				if (SUCCEEDED(result))
 				{
 					// Create the Direct3D 11 views
+					// TODO(co) Rescue and reassign the resource debug name
 					createDirect3D11Views();
 
 					// If required, restore the previously set render target
@@ -9660,7 +9468,7 @@ namespace Direct3D11Rhi
 		*  @note
 		*    - The framebuffer keeps a reference to the provided texture instances
 		*/
-		Framebuffer(Rhi::IRenderPass& renderPass, const Rhi::FramebufferAttachment* colorFramebufferAttachments, const Rhi::FramebufferAttachment* depthStencilFramebufferAttachment) :
+		Framebuffer(Rhi::IRenderPass& renderPass, const Rhi::FramebufferAttachment* colorFramebufferAttachments, const Rhi::FramebufferAttachment* depthStencilFramebufferAttachment RHI_RESOURCE_DEBUG_NAME_PARAMETER) :
 			IFramebuffer(renderPass),
 			mNumberOfColorTextures(static_cast<RenderPass&>(renderPass).getNumberOfColorAttachments()),
 			mColorTextures(nullptr),	// Set below
@@ -9676,10 +9484,10 @@ namespace Direct3D11Rhi
 			// So, in here I use the smallest width and height as the size of the framebuffer and let Direct3D 11 handle the rest regarding errors.
 
 			// Add a reference to the used color textures
-			Direct3D11Rhi& direct3D11Rhi = static_cast<Direct3D11Rhi&>(renderPass.getRhi());
+			const Direct3D11Rhi& direct3D11Rhi = static_cast<Direct3D11Rhi&>(renderPass.getRhi());
+			const Rhi::Context& context = direct3D11Rhi.getContext();
 			if (mNumberOfColorTextures > 0)
 			{
-				const Rhi::Context& context = getRhi().getContext();
 				mColorTextures = RHI_MALLOC_TYPED(context, Rhi::ITexture*, mNumberOfColorTextures);
 				mD3D11RenderTargetViews = RHI_MALLOC_TYPED(context, ID3D11RenderTargetView*, mNumberOfColorTextures);
 
@@ -9689,7 +9497,7 @@ namespace Direct3D11Rhi
 				for (Rhi::ITexture** colorTexture = mColorTextures; colorTexture < colorTexturesEnd; ++colorTexture, ++colorFramebufferAttachments, ++d3d11RenderTargetView)
 				{
 					// Sanity check
-					RHI_ASSERT(renderPass.getRhi().getContext(), nullptr != colorFramebufferAttachments->texture, "Invalid Direct3D 11 color framebuffer attachment texture")
+					RHI_ASSERT(context, nullptr != colorFramebufferAttachments->texture, "Invalid Direct3D 11 color framebuffer attachment texture")
 
 					// TODO(co) Add security check: Is the given resource one of the currently used RHI?
 					*colorTexture = colorFramebufferAttachments->texture;
@@ -9703,8 +9511,8 @@ namespace Direct3D11Rhi
 							const Texture2D* texture2D = static_cast<Texture2D*>(*colorTexture);
 
 							// Sanity checks
-							RHI_ASSERT(renderPass.getRhi().getContext(), colorFramebufferAttachments->mipmapIndex < Texture2D::getNumberOfMipmaps(texture2D->getWidth(), texture2D->getHeight()), "Invalid Direct3D 11 color framebuffer attachment mipmap index")
-							RHI_ASSERT(renderPass.getRhi().getContext(), 0 == colorFramebufferAttachments->layerIndex, "Invalid Direct3D 11 color framebuffer attachment layer index")
+							RHI_ASSERT(context, colorFramebufferAttachments->mipmapIndex < Texture2D::getNumberOfMipmaps(texture2D->getWidth(), texture2D->getHeight()), "Invalid Direct3D 11 color framebuffer attachment mipmap index")
+							RHI_ASSERT(context, 0 == colorFramebufferAttachments->layerIndex, "Invalid Direct3D 11 color framebuffer attachment layer index")
 
 							// Update the framebuffer width and height if required
 							::detail::updateWidthHeight(colorFramebufferAttachments->mipmapIndex, texture2D->getWidth(), texture2D->getHeight(), mWidth, mHeight);
@@ -9774,7 +9582,7 @@ namespace Direct3D11Rhi
 			if (nullptr != depthStencilFramebufferAttachment)
 			{
 				mDepthStencilTexture = depthStencilFramebufferAttachment->texture;
-				RHI_ASSERT(renderPass.getRhi().getContext(), nullptr != mDepthStencilTexture, "Invalid Direct3D 11 depth stencil framebuffer attachment texture")
+				RHI_ASSERT(context, nullptr != mDepthStencilTexture, "Invalid Direct3D 11 depth stencil framebuffer attachment texture")
 				mDepthStencilTexture->addReference();
 
 				// Evaluate the depth stencil texture type
@@ -9785,8 +9593,8 @@ namespace Direct3D11Rhi
 						const Texture2D* texture2D = static_cast<Texture2D*>(mDepthStencilTexture);
 
 						// Sanity checks
-						RHI_ASSERT(renderPass.getRhi().getContext(), depthStencilFramebufferAttachment->mipmapIndex < Texture2D::getNumberOfMipmaps(texture2D->getWidth(), texture2D->getHeight()), "Invalid Direct3D 11 depth stencil framebuffer attachment mipmap index")
-						RHI_ASSERT(renderPass.getRhi().getContext(), 0 == depthStencilFramebufferAttachment->layerIndex, "Invalid Direct3D 11 depth stencil framebuffer attachment layer index")
+						RHI_ASSERT(context, depthStencilFramebufferAttachment->mipmapIndex < Texture2D::getNumberOfMipmaps(texture2D->getWidth(), texture2D->getHeight()), "Invalid Direct3D 11 depth stencil framebuffer attachment mipmap index")
+						RHI_ASSERT(context, 0 == depthStencilFramebufferAttachment->layerIndex, "Invalid Direct3D 11 depth stencil framebuffer attachment layer index")
 
 						// Update the framebuffer width and height if required
 						::detail::updateWidthHeight(depthStencilFramebufferAttachment->mipmapIndex, texture2D->getWidth(), texture2D->getHeight(), mWidth, mHeight);
@@ -9853,18 +9661,37 @@ namespace Direct3D11Rhi
 			// Validate the framebuffer width and height
 			if (0 == mWidth || UINT_MAX == mWidth)
 			{
-				RHI_ASSERT(renderPass.getRhi().getContext(), false, "Invalid Direct3D 11 framebuffer width")
+				RHI_ASSERT(context, false, "Invalid Direct3D 11 framebuffer width")
 				mWidth = 1;
 			}
 			if (0 == mHeight || UINT_MAX == mHeight)
 			{
-				RHI_ASSERT(renderPass.getRhi().getContext(), false, "Invalid Direct3D 11 framebuffer height")
+				RHI_ASSERT(context, false, "Invalid Direct3D 11 framebuffer height")
 				mHeight = 1;
 			}
 
 			// Assign a default name to the resource for debugging purposes
 			#ifdef RHI_DEBUG
-				setDebugName("FBO");
+				RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "FBO", 6);	// 6 = "FBO: " including terminating zero
+				const size_t detailedDebugNameLength = strlen(detailedDebugName);
+
+				{ // Assign a debug name to the Direct3D 11 render target view, do also add the index to the name
+					const size_t adjustedDetailedDebugNameLength = detailedDebugNameLength + 5;	// Direct3D 11 supports 8 render targets ("D3D11_SIMULTANEOUS_RENDER_TARGET_COUNT", so: One digit + one [ + one ] + one space + terminating zero = 5 characters)
+					char* nameWithIndex = RHI_MALLOC_TYPED(context, char, adjustedDetailedDebugNameLength);
+					ID3D11RenderTargetView** d3d11RenderTargetViewsEnd = mD3D11RenderTargetViews + mNumberOfColorTextures;
+					for (ID3D11RenderTargetView** d3d11RenderTargetView = mD3D11RenderTargetViews; d3d11RenderTargetView < d3d11RenderTargetViewsEnd; ++d3d11RenderTargetView)
+					{
+						sprintf_s(nameWithIndex, adjustedDetailedDebugNameLength, "%s [%u]", detailedDebugName, static_cast<uint32_t>(d3d11RenderTargetView - mD3D11RenderTargetViews));
+						FAILED_DEBUG_BREAK((*d3d11RenderTargetView)->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(adjustedDetailedDebugNameLength), nameWithIndex));
+					}
+					RHI_FREE(context, nameWithIndex);
+				}
+
+				// Assign a debug name to the Direct3D 11 depth stencil view
+				if (nullptr != mD3D11DepthStencilView)
+				{
+					FAILED_DEBUG_BREAK(mD3D11DepthStencilView->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(detailedDebugNameLength), detailedDebugName));
+				}
 			#endif
 		}
 
@@ -9976,41 +9803,6 @@ namespace Direct3D11Rhi
 
 
 	//[-------------------------------------------------------]
-	//[ Public virtual Rhi::IResource methods                 ]
-	//[-------------------------------------------------------]
-	public:
-		#ifdef RHI_DEBUG
-			virtual void setDebugName(const char* name) override
-			{
-				{ // Assign a debug name to the Direct3D 11 render target view, do also add the index to the name
-					const size_t nameLength = strlen(name) + 5;	// Direct3D 11 supports 8 render targets ("D3D11_SIMULTANEOUS_RENDER_TARGET_COUNT", so: One digit + one [ + one ] + one space + terminating zero = 5 characters)
-					const Rhi::Context& context = getRhi().getContext();
-					char* nameWithIndex = RHI_MALLOC_TYPED(context, char, nameLength);
-					ID3D11RenderTargetView** d3d11RenderTargetViewsEnd = mD3D11RenderTargetViews + mNumberOfColorTextures;
-					for (ID3D11RenderTargetView** d3d11RenderTargetView = mD3D11RenderTargetViews; d3d11RenderTargetView < d3d11RenderTargetViewsEnd; ++d3d11RenderTargetView)
-					{
-						// Set the debug name
-						// -> First: Ensure that there's no previous private data, else we might get slapped with a warning
-						sprintf_s(nameWithIndex, nameLength, "%s [%u]", name, static_cast<uint32_t>(d3d11RenderTargetView - mD3D11RenderTargetViews));
-						FAILED_DEBUG_BREAK((*d3d11RenderTargetView)->SetPrivateData(WKPDID_D3DDebugObjectName, 0, nullptr));
-						FAILED_DEBUG_BREAK((*d3d11RenderTargetView)->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(nameLength), nameWithIndex));
-					}
-					RHI_FREE(context, nameWithIndex);
-				}
-
-				// Assign a debug name to the Direct3D 11 depth stencil view
-				if (nullptr != mD3D11DepthStencilView)
-				{
-					// Set the debug name
-					// -> First: Ensure that there's no previous private data, else we might get slapped with a warning
-					FAILED_DEBUG_BREAK(mD3D11DepthStencilView->SetPrivateData(WKPDID_D3DDebugObjectName, 0, nullptr));
-					FAILED_DEBUG_BREAK(mD3D11DepthStencilView->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(name)), name));
-				}
-			}
-		#endif
-
-
-	//[-------------------------------------------------------]
 	//[ Public virtual Rhi::IRenderTarget methods             ]
 	//[-------------------------------------------------------]
 	public:
@@ -10084,7 +9876,7 @@ namespace Direct3D11Rhi
 		*  @param[in] shaderBytecode
 		*    Shader bytecode
 		*/
-		VertexShaderHlsl(Direct3D11Rhi& direct3D11Rhi, const Rhi::ShaderBytecode& shaderBytecode) :
+		VertexShaderHlsl(Direct3D11Rhi& direct3D11Rhi, const Rhi::ShaderBytecode& shaderBytecode RHI_RESOURCE_DEBUG_NAME_PARAMETER) :
 			IVertexShader(direct3D11Rhi),
 			mD3DBlobVertexShader(nullptr),
 			mD3D11VertexShader(nullptr)
@@ -10096,7 +9888,14 @@ namespace Direct3D11Rhi
 			// Create the Direct3D 11 vertex shader
 			FAILED_DEBUG_BREAK(direct3D11Rhi.getD3D11Device()->CreateVertexShader(shaderBytecode.getBytecode(), shaderBytecode.getNumberOfBytes(), nullptr, &mD3D11VertexShader));
 
-			// Don't assign a default name to the resource for debugging purposes, Direct3D 11 automatically sets a decent default name
+			// Assign a default name to the resource for debugging purposes
+			#ifdef RHI_DEBUG
+				if (nullptr != mD3D11VertexShader)
+				{
+					RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "VS", 5);	// 5 = "VS: " including terminating zero
+					FAILED_DEBUG_BREAK(mD3D11VertexShader->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(detailedDebugName)), detailedDebugName));
+				}
+			#endif
 		}
 
 		/**
@@ -10108,7 +9907,7 @@ namespace Direct3D11Rhi
 		*  @param[in] sourceCode
 		*    Shader ASCII source code, must be valid
 		*/
-		VertexShaderHlsl(Direct3D11Rhi& direct3D11Rhi, const char* sourceCode, Rhi::IShaderLanguage::OptimizationLevel optimizationLevel, Rhi::ShaderBytecode* shaderBytecode = nullptr) :
+		VertexShaderHlsl(Direct3D11Rhi& direct3D11Rhi, const char* sourceCode, Rhi::IShaderLanguage::OptimizationLevel optimizationLevel, Rhi::ShaderBytecode* shaderBytecode RHI_RESOURCE_DEBUG_NAME_PARAMETER) :
 			IVertexShader(direct3D11Rhi),
 			mD3DBlobVertexShader(nullptr),
 			mD3D11VertexShader(nullptr)
@@ -10125,9 +9924,16 @@ namespace Direct3D11Rhi
 				{
 					shaderBytecode->setBytecodeCopy(static_cast<uint32_t>(mD3DBlobVertexShader->GetBufferSize()), static_cast<uint8_t*>(mD3DBlobVertexShader->GetBufferPointer()));
 				}
-			}
 
-			// Don't assign a default name to the resource for debugging purposes, Direct3D 11 automatically sets a decent default name
+				// Assign a default name to the resource for debugging purposes
+				#ifdef RHI_DEBUG
+					if (nullptr != mD3D11VertexShader)
+					{
+						RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "VS", 5);	// 5 = "VS: " including terminating zero
+						FAILED_DEBUG_BREAK(mD3D11VertexShader->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(detailedDebugName)), detailedDebugName));
+					}
+				#endif
+			}
 		}
 
 		/**
@@ -10172,24 +9978,6 @@ namespace Direct3D11Rhi
 		{
 			return mD3D11VertexShader;
 		}
-
-
-	//[-------------------------------------------------------]
-	//[ Public virtual Rhi::IResource methods                 ]
-	//[-------------------------------------------------------]
-	public:
-		#ifdef RHI_DEBUG
-			virtual void setDebugName(const char* name) override
-			{
-				// Set the debug name
-				// -> First: Ensure that there's no previous private data, else we might get slapped with a warning
-				if (nullptr != mD3D11VertexShader)
-				{
-					FAILED_DEBUG_BREAK(mD3D11VertexShader->SetPrivateData(WKPDID_D3DDebugObjectName, 0, nullptr));
-					FAILED_DEBUG_BREAK(mD3D11VertexShader->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(name)), name));
-				}
-			}
-		#endif
 
 
 	//[-------------------------------------------------------]
@@ -10257,14 +10045,21 @@ namespace Direct3D11Rhi
 		*  @param[in] shaderBytecode
 		*    Shader bytecode
 		*/
-		TessellationControlShaderHlsl(Direct3D11Rhi& direct3D11Rhi, const Rhi::ShaderBytecode& shaderBytecode) :
+		TessellationControlShaderHlsl(Direct3D11Rhi& direct3D11Rhi, const Rhi::ShaderBytecode& shaderBytecode RHI_RESOURCE_DEBUG_NAME_PARAMETER) :
 			ITessellationControlShader(direct3D11Rhi),
 			mD3D11HullShader(nullptr)
 		{
 			// Create the Direct3D 11 hull shader
 			FAILED_DEBUG_BREAK(direct3D11Rhi.getD3D11Device()->CreateHullShader(shaderBytecode.getBytecode(), shaderBytecode.getNumberOfBytes(), nullptr, &mD3D11HullShader));
 
-			// Don't assign a default name to the resource for debugging purposes, Direct3D 11 automatically sets a decent default name
+			// Assign a default name to the resource for debugging purposes
+			#ifdef RHI_DEBUG
+				if (nullptr != mD3D11HullShader)
+				{
+					RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "TCS", 6);	// 6 = "TCS: " including terminating zero
+					FAILED_DEBUG_BREAK(mD3D11HullShader->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(detailedDebugName)), detailedDebugName));
+				}
+			#endif
 		}
 
 		/**
@@ -10276,7 +10071,7 @@ namespace Direct3D11Rhi
 		*  @param[in] sourceCode
 		*    Shader ASCII source code, must be valid
 		*/
-		TessellationControlShaderHlsl(Direct3D11Rhi& direct3D11Rhi, const char* sourceCode, Rhi::IShaderLanguage::OptimizationLevel optimizationLevel, Rhi::ShaderBytecode* shaderBytecode = nullptr) :
+		TessellationControlShaderHlsl(Direct3D11Rhi& direct3D11Rhi, const char* sourceCode, Rhi::IShaderLanguage::OptimizationLevel optimizationLevel, Rhi::ShaderBytecode* shaderBytecode RHI_RESOURCE_DEBUG_NAME_PARAMETER) :
 			ITessellationControlShader(direct3D11Rhi),
 			mD3D11HullShader(nullptr)
 		{
@@ -10295,9 +10090,16 @@ namespace Direct3D11Rhi
 
 				// Release the Direct3D 11 shader binary large object
 				d3dBlob->Release();
-			}
 
-			// Don't assign a default name to the resource for debugging purposes, Direct3D 11 automatically sets a decent default name
+				// Assign a default name to the resource for debugging purposes
+				#ifdef RHI_DEBUG
+					if (nullptr != mD3D11HullShader)
+					{
+						RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "TCS", 6);	// 6 = "TCS: " including terminating zero
+						FAILED_DEBUG_BREAK(mD3D11HullShader->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(detailedDebugName)), detailedDebugName));
+					}
+				#endif
+			}
 		}
 
 		/**
@@ -10324,24 +10126,6 @@ namespace Direct3D11Rhi
 		{
 			return mD3D11HullShader;
 		}
-
-
-	//[-------------------------------------------------------]
-	//[ Public virtual Rhi::IResource methods                 ]
-	//[-------------------------------------------------------]
-	public:
-		#ifdef RHI_DEBUG
-			virtual void setDebugName(const char* name) override
-			{
-				// Set the debug name
-				// -> First: Ensure that there's no previous private data, else we might get slapped with a warning
-				if (nullptr != mD3D11HullShader)
-				{
-					FAILED_DEBUG_BREAK(mD3D11HullShader->SetPrivateData(WKPDID_D3DDebugObjectName, 0, nullptr));
-					FAILED_DEBUG_BREAK(mD3D11HullShader->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(name)), name));
-				}
-			}
-		#endif
 
 
 	//[-------------------------------------------------------]
@@ -10408,14 +10192,21 @@ namespace Direct3D11Rhi
 		*  @param[in] shaderBytecode
 		*    Shader bytecode
 		*/
-		TessellationEvaluationShaderHlsl(Direct3D11Rhi& direct3D11Rhi, const Rhi::ShaderBytecode& shaderBytecode) :
+		TessellationEvaluationShaderHlsl(Direct3D11Rhi& direct3D11Rhi, const Rhi::ShaderBytecode& shaderBytecode RHI_RESOURCE_DEBUG_NAME_PARAMETER) :
 			ITessellationEvaluationShader(direct3D11Rhi),
 			mD3D11DomainShader(nullptr)
 		{
 			// Create the Direct3D 11 domain shader
 			FAILED_DEBUG_BREAK(direct3D11Rhi.getD3D11Device()->CreateDomainShader(shaderBytecode.getBytecode(), shaderBytecode.getNumberOfBytes(), nullptr, &mD3D11DomainShader));
 
-			// Don't assign a default name to the resource for debugging purposes, Direct3D 11 automatically sets a decent default name
+			// Assign a default name to the resource for debugging purposes
+			#ifdef RHI_DEBUG
+				if (nullptr != mD3D11DomainShader)
+				{
+					RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "TES", 6);	// 6 = "TES: " including terminating zero
+					FAILED_DEBUG_BREAK(mD3D11DomainShader->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(detailedDebugName)), detailedDebugName));
+				}
+			#endif
 		}
 
 		/**
@@ -10427,7 +10218,7 @@ namespace Direct3D11Rhi
 		*  @param[in] sourceCode
 		*    Shader ASCII source code, must be valid
 		*/
-		TessellationEvaluationShaderHlsl(Direct3D11Rhi& direct3D11Rhi, const char* sourceCode, Rhi::IShaderLanguage::OptimizationLevel optimizationLevel, Rhi::ShaderBytecode* shaderBytecode = nullptr) :
+		TessellationEvaluationShaderHlsl(Direct3D11Rhi& direct3D11Rhi, const char* sourceCode, Rhi::IShaderLanguage::OptimizationLevel optimizationLevel, Rhi::ShaderBytecode* shaderBytecode RHI_RESOURCE_DEBUG_NAME_PARAMETER) :
 			ITessellationEvaluationShader(direct3D11Rhi),
 			mD3D11DomainShader(nullptr)
 		{
@@ -10446,9 +10237,16 @@ namespace Direct3D11Rhi
 
 				// Release the Direct3D 11 shader binary large object
 				d3dBlob->Release();
-			}
 
-			// Don't assign a default name to the resource for debugging purposes, Direct3D 11 automatically sets a decent default name
+				// Assign a default name to the resource for debugging purposes
+				#ifdef RHI_DEBUG
+					if (nullptr != mD3D11DomainShader)
+					{
+						RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "TES", 6);	// 6 = "TES: " including terminating zero
+						FAILED_DEBUG_BREAK(mD3D11DomainShader->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(detailedDebugName)), detailedDebugName));
+					}
+				#endif
+			}
 		}
 
 		/**
@@ -10475,24 +10273,6 @@ namespace Direct3D11Rhi
 		{
 			return mD3D11DomainShader;
 		}
-
-
-	//[-------------------------------------------------------]
-	//[ Public virtual Rhi::IResource methods                 ]
-	//[-------------------------------------------------------]
-	public:
-		#ifdef RHI_DEBUG
-			virtual void setDebugName(const char* name) override
-			{
-				// Set the debug name
-				// -> First: Ensure that there's no previous private data, else we might get slapped with a warning
-				if (nullptr != mD3D11DomainShader)
-				{
-					FAILED_DEBUG_BREAK(mD3D11DomainShader->SetPrivateData(WKPDID_D3DDebugObjectName, 0, nullptr));
-					FAILED_DEBUG_BREAK(mD3D11DomainShader->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(name)), name));
-				}
-			}
-		#endif
 
 
 	//[-------------------------------------------------------]
@@ -10559,14 +10339,21 @@ namespace Direct3D11Rhi
 		*  @param[in] shaderBytecode
 		*    Shader bytecode
 		*/
-		GeometryShaderHlsl(Direct3D11Rhi& direct3D11Rhi, const Rhi::ShaderBytecode& shaderBytecode) :
+		GeometryShaderHlsl(Direct3D11Rhi& direct3D11Rhi, const Rhi::ShaderBytecode& shaderBytecode RHI_RESOURCE_DEBUG_NAME_PARAMETER) :
 			IGeometryShader(direct3D11Rhi),
 			mD3D11GeometryShader(nullptr)
 		{
 			// Create the Direct3D 11 geometry shader
 			FAILED_DEBUG_BREAK(direct3D11Rhi.getD3D11Device()->CreateGeometryShader(shaderBytecode.getBytecode(), shaderBytecode.getNumberOfBytes(), nullptr, &mD3D11GeometryShader));
 
-			// Don't assign a default name to the resource for debugging purposes, Direct3D 11 automatically sets a decent default name
+			// Assign a default name to the resource for debugging purposes
+			#ifdef RHI_DEBUG
+				if (nullptr != mD3D11GeometryShader)
+				{
+					RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "GS", 5);	// 5 = "GS: " including terminating zero
+					FAILED_DEBUG_BREAK(mD3D11GeometryShader->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(detailedDebugName)), detailedDebugName));
+				}
+			#endif
 		}
 
 		/**
@@ -10578,7 +10365,7 @@ namespace Direct3D11Rhi
 		*  @param[in] sourceCode
 		*    Shader ASCII source code, must be valid
 		*/
-		GeometryShaderHlsl(Direct3D11Rhi& direct3D11Rhi, const char* sourceCode, Rhi::IShaderLanguage::OptimizationLevel optimizationLevel, Rhi::ShaderBytecode* shaderBytecode = nullptr) :
+		GeometryShaderHlsl(Direct3D11Rhi& direct3D11Rhi, const char* sourceCode, Rhi::IShaderLanguage::OptimizationLevel optimizationLevel, Rhi::ShaderBytecode* shaderBytecode RHI_RESOURCE_DEBUG_NAME_PARAMETER) :
 			IGeometryShader(direct3D11Rhi),
 			mD3D11GeometryShader(nullptr)
 		{
@@ -10597,9 +10384,16 @@ namespace Direct3D11Rhi
 
 				// Release the Direct3D 11 shader binary large object
 				d3dBlob->Release();
-			}
 
-			// Don't assign a default name to the resource for debugging purposes, Direct3D 11 automatically sets a decent default name
+				// Assign a default name to the resource for debugging purposes
+				#ifdef RHI_DEBUG
+					if (nullptr != mD3D11GeometryShader)
+					{
+						RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "GS", 5);	// 5 = "GS: " including terminating zero
+						FAILED_DEBUG_BREAK(mD3D11GeometryShader->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(detailedDebugName)), detailedDebugName));
+					}
+				#endif
+			}
 		}
 
 		/**
@@ -10626,24 +10420,6 @@ namespace Direct3D11Rhi
 		{
 			return mD3D11GeometryShader;
 		}
-
-
-	//[-------------------------------------------------------]
-	//[ Public virtual Rhi::IResource methods                 ]
-	//[-------------------------------------------------------]
-	public:
-		#ifdef RHI_DEBUG
-			virtual void setDebugName(const char* name) override
-			{
-				// Set the debug name
-				// -> First: Ensure that there's no previous private data, else we might get slapped with a warning
-				if (nullptr != mD3D11GeometryShader)
-				{
-					FAILED_DEBUG_BREAK(mD3D11GeometryShader->SetPrivateData(WKPDID_D3DDebugObjectName, 0, nullptr));
-					FAILED_DEBUG_BREAK(mD3D11GeometryShader->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(name)), name));
-				}
-			}
-		#endif
 
 
 	//[-------------------------------------------------------]
@@ -10710,14 +10486,21 @@ namespace Direct3D11Rhi
 		*  @param[in] shaderBytecode
 		*    Shader bytecode
 		*/
-		FragmentShaderHlsl(Direct3D11Rhi& direct3D11Rhi, const Rhi::ShaderBytecode& shaderBytecode) :
+		FragmentShaderHlsl(Direct3D11Rhi& direct3D11Rhi, const Rhi::ShaderBytecode& shaderBytecode RHI_RESOURCE_DEBUG_NAME_PARAMETER) :
 			IFragmentShader(direct3D11Rhi),
 			mD3D11PixelShader(nullptr)
 		{
 			// Create the Direct3D 11 pixel shader
 			FAILED_DEBUG_BREAK(direct3D11Rhi.getD3D11Device()->CreatePixelShader(shaderBytecode.getBytecode(), shaderBytecode.getNumberOfBytes(), nullptr, &mD3D11PixelShader));
 
-			// Don't assign a default name to the resource for debugging purposes, Direct3D 11 automatically sets a decent default name
+			// Assign a default name to the resource for debugging purposes
+			#ifdef RHI_DEBUG
+				if (nullptr != mD3D11PixelShader)
+				{
+					RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "FS", 5);	// 5 = "FS: " including terminating zero
+					FAILED_DEBUG_BREAK(mD3D11PixelShader->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(detailedDebugName)), detailedDebugName));
+				}
+			#endif
 		}
 
 		/**
@@ -10729,7 +10512,7 @@ namespace Direct3D11Rhi
 		*  @param[in] sourceCode
 		*    Shader ASCII source code, must be valid
 		*/
-		FragmentShaderHlsl(Direct3D11Rhi& direct3D11Rhi, const char* sourceCode, Rhi::IShaderLanguage::OptimizationLevel optimizationLevel, Rhi::ShaderBytecode* shaderBytecode = nullptr) :
+		FragmentShaderHlsl(Direct3D11Rhi& direct3D11Rhi, const char* sourceCode, Rhi::IShaderLanguage::OptimizationLevel optimizationLevel, Rhi::ShaderBytecode* shaderBytecode RHI_RESOURCE_DEBUG_NAME_PARAMETER) :
 			IFragmentShader(direct3D11Rhi),
 			mD3D11PixelShader(nullptr)
 		{
@@ -10748,9 +10531,16 @@ namespace Direct3D11Rhi
 
 				// Release the Direct3D 11 shader binary large object
 				d3dBlob->Release();
-			}
 
-			// Don't assign a default name to the resource for debugging purposes, Direct3D 11 automatically sets a decent default name
+				// Assign a default name to the resource for debugging purposes
+				#ifdef RHI_DEBUG
+					if (nullptr != mD3D11PixelShader)
+					{
+						RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "FS", 5);	// 5 = "FS: " including terminating zero
+						FAILED_DEBUG_BREAK(mD3D11PixelShader->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(detailedDebugName)), detailedDebugName));
+					}
+				#endif
+			}
 		}
 
 		/**
@@ -10777,24 +10567,6 @@ namespace Direct3D11Rhi
 		{
 			return mD3D11PixelShader;
 		}
-
-
-	//[-------------------------------------------------------]
-	//[ Public virtual Rhi::IResource methods                 ]
-	//[-------------------------------------------------------]
-	public:
-		#ifdef RHI_DEBUG
-			virtual void setDebugName(const char* name) override
-			{
-				// Set the debug name
-				// -> First: Ensure that there's no previous private data, else we might get slapped with a warning
-				if (nullptr != mD3D11PixelShader)
-				{
-					FAILED_DEBUG_BREAK(mD3D11PixelShader->SetPrivateData(WKPDID_D3DDebugObjectName, 0, nullptr));
-					FAILED_DEBUG_BREAK(mD3D11PixelShader->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(name)), name));
-				}
-			}
-		#endif
 
 
 	//[-------------------------------------------------------]
@@ -10861,14 +10633,21 @@ namespace Direct3D11Rhi
 		*  @param[in] shaderBytecode
 		*    Shader bytecode
 		*/
-		ComputeShaderHlsl(Direct3D11Rhi& direct3D11Rhi, const Rhi::ShaderBytecode& shaderBytecode) :
+		ComputeShaderHlsl(Direct3D11Rhi& direct3D11Rhi, const Rhi::ShaderBytecode& shaderBytecode RHI_RESOURCE_DEBUG_NAME_PARAMETER) :
 			IComputeShader(direct3D11Rhi),
 			mD3D11ComputeShader(nullptr)
 		{
 			// Create the Direct3D 11 compute shader
 			FAILED_DEBUG_BREAK(direct3D11Rhi.getD3D11Device()->CreateComputeShader(shaderBytecode.getBytecode(), shaderBytecode.getNumberOfBytes(), nullptr, &mD3D11ComputeShader));
 
-			// Don't assign a default name to the resource for debugging purposes, Direct3D 11 automatically sets a decent default name
+			// Assign a default name to the resource for debugging purposes
+			#ifdef RHI_DEBUG
+				if (nullptr != mD3D11ComputeShader)
+				{
+					RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "CS", 5);	// 5 = "CS: " including terminating zero
+					FAILED_DEBUG_BREAK(mD3D11ComputeShader->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(detailedDebugName)), detailedDebugName));
+				}
+			#endif
 		}
 
 		/**
@@ -10880,7 +10659,7 @@ namespace Direct3D11Rhi
 		*  @param[in] sourceCode
 		*    Shader ASCII source code, must be valid
 		*/
-		ComputeShaderHlsl(Direct3D11Rhi& direct3D11Rhi, const char* sourceCode, Rhi::IShaderLanguage::OptimizationLevel optimizationLevel, Rhi::ShaderBytecode* shaderBytecode = nullptr) :
+		ComputeShaderHlsl(Direct3D11Rhi& direct3D11Rhi, const char* sourceCode, Rhi::IShaderLanguage::OptimizationLevel optimizationLevel, Rhi::ShaderBytecode* shaderBytecode RHI_RESOURCE_DEBUG_NAME_PARAMETER) :
 			IComputeShader(direct3D11Rhi),
 			mD3D11ComputeShader(nullptr)
 		{
@@ -10899,9 +10678,16 @@ namespace Direct3D11Rhi
 
 				// Release the Direct3D 11 shader binary large object
 				d3dBlob->Release();
-			}
 
-			// Don't assign a default name to the resource for debugging purposes, Direct3D 11 automatically sets a decent default name
+				// Assign a default name to the resource for debugging purposes
+				#ifdef RHI_DEBUG
+					if (nullptr != mD3D11ComputeShader)
+					{
+						RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "CS", 5);	// 5 = "CS: " including terminating zero
+						FAILED_DEBUG_BREAK(mD3D11ComputeShader->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(detailedDebugName)), detailedDebugName));
+					}
+				#endif
+			}
 		}
 
 		/**
@@ -10928,24 +10714,6 @@ namespace Direct3D11Rhi
 		{
 			return mD3D11ComputeShader;
 		}
-
-
-	//[-------------------------------------------------------]
-	//[ Public virtual Rhi::IResource methods                 ]
-	//[-------------------------------------------------------]
-	public:
-		#ifdef RHI_DEBUG
-			virtual void setDebugName(const char* name) override
-			{
-				// Set the debug name
-				// -> First: Ensure that there's no previous private data, else we might get slapped with a warning
-				if (nullptr != mD3D11ComputeShader)
-				{
-					FAILED_DEBUG_BREAK(mD3D11ComputeShader->SetPrivateData(WKPDID_D3DDebugObjectName, 0, nullptr));
-					FAILED_DEBUG_BREAK(mD3D11ComputeShader->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(name)), name));
-				}
-			}
-		#endif
 
 
 	//[-------------------------------------------------------]
@@ -11145,20 +10913,6 @@ namespace Direct3D11Rhi
 
 
 	//[-------------------------------------------------------]
-	//[ Public virtual Rhi::IResource methods                 ]
-	//[-------------------------------------------------------]
-	public:
-		#ifdef RHI_DEBUG
-			inline virtual void setDebugName(const char*) override
-			{
-				// In here we could assign the given debug name to all shaders assigned to the graphics program,
-				// but this might end up within a naming chaos due to overwriting possible already set
-				// names... don't do this...
-			}
-		#endif
-
-
-	//[-------------------------------------------------------]
 	//[ Protected virtual Rhi::RefCount methods               ]
 	//[-------------------------------------------------------]
 	protected:
@@ -11235,125 +10989,143 @@ namespace Direct3D11Rhi
 			return ::detail::HLSL_NAME;
 		}
 
-		[[nodiscard]] inline virtual Rhi::IVertexShader* createVertexShaderFromBytecode([[maybe_unused]] const Rhi::VertexAttributes& vertexAttributes, const Rhi::ShaderBytecode& shaderBytecode) override
+		[[nodiscard]] inline virtual Rhi::IVertexShader* createVertexShaderFromBytecode([[maybe_unused]] const Rhi::VertexAttributes& vertexAttributes, const Rhi::ShaderBytecode& shaderBytecode RHI_RESOURCE_DEBUG_NAME_PARAMETER) override
 		{
+			Direct3D11Rhi& direct3D11Rhi = static_cast<Direct3D11Rhi&>(getRhi());
+
 			// Sanity check
-			RHI_ASSERT(getRhi().getContext(), shaderBytecode.getNumberOfBytes() > 0 && nullptr != shaderBytecode.getBytecode(), "Direct3D 11 vertex shader bytecode is invalid")
+			RHI_ASSERT(direct3D11Rhi.getContext(), shaderBytecode.getNumberOfBytes() > 0 && nullptr != shaderBytecode.getBytecode(), "Direct3D 11 vertex shader bytecode is invalid")
 
 			// There's no need to check for "Rhi::Capabilities::vertexShader", we know there's vertex shader support
-			return RHI_NEW(getRhi().getContext(), VertexShaderHlsl)(static_cast<Direct3D11Rhi&>(getRhi()), shaderBytecode);
+			return RHI_NEW(direct3D11Rhi.getContext(), VertexShaderHlsl)(direct3D11Rhi, shaderBytecode RHI_RESOURCE_DEBUG_PASS_PARAMETER);
 		}
 
-		[[nodiscard]] inline virtual Rhi::IVertexShader* createVertexShaderFromSourceCode([[maybe_unused]] const Rhi::VertexAttributes& vertexAttributes, const Rhi::ShaderSourceCode& shaderSourceCode, Rhi::ShaderBytecode* shaderBytecode = nullptr) override
+		[[nodiscard]] inline virtual Rhi::IVertexShader* createVertexShaderFromSourceCode([[maybe_unused]] const Rhi::VertexAttributes& vertexAttributes, const Rhi::ShaderSourceCode& shaderSourceCode, Rhi::ShaderBytecode* shaderBytecode = nullptr RHI_RESOURCE_DEBUG_NAME_PARAMETER) override
 		{
 			// There's no need to check for "Rhi::Capabilities::vertexShader", we know there's vertex shader support
-			return RHI_NEW(getRhi().getContext(), VertexShaderHlsl)(static_cast<Direct3D11Rhi&>(getRhi()), shaderSourceCode.sourceCode, getOptimizationLevel(), shaderBytecode);
+			Direct3D11Rhi& direct3D11Rhi = static_cast<Direct3D11Rhi&>(getRhi());
+			return RHI_NEW(direct3D11Rhi.getContext(), VertexShaderHlsl)(direct3D11Rhi, shaderSourceCode.sourceCode, getOptimizationLevel(), shaderBytecode RHI_RESOURCE_DEBUG_PASS_PARAMETER);
 		}
 
-		[[nodiscard]] inline virtual Rhi::ITessellationControlShader* createTessellationControlShaderFromBytecode(const Rhi::ShaderBytecode& shaderBytecode) override
+		[[nodiscard]] inline virtual Rhi::ITessellationControlShader* createTessellationControlShaderFromBytecode(const Rhi::ShaderBytecode& shaderBytecode RHI_RESOURCE_DEBUG_NAME_PARAMETER) override
+		{
+			// "hull shader" in Direct3D terminology
+			Direct3D11Rhi& direct3D11Rhi = static_cast<Direct3D11Rhi&>(getRhi());
+
+			// Sanity check
+			RHI_ASSERT(direct3D11Rhi.getContext(), shaderBytecode.getNumberOfBytes() > 0 && nullptr != shaderBytecode.getBytecode(), "Direct3D 11 tessellation control shader bytecode is invalid")
+
+			// There's no need to check for "Rhi::Capabilities::maximumNumberOfPatchVertices", we know there's tessellation control shader support
+			return RHI_NEW(direct3D11Rhi.getContext(), TessellationControlShaderHlsl)(direct3D11Rhi, shaderBytecode RHI_RESOURCE_DEBUG_PASS_PARAMETER);
+		}
+
+		[[nodiscard]] inline virtual Rhi::ITessellationControlShader* createTessellationControlShaderFromSourceCode(const Rhi::ShaderSourceCode& shaderSourceCode, Rhi::ShaderBytecode* shaderBytecode = nullptr RHI_RESOURCE_DEBUG_NAME_PARAMETER) override
 		{
 			// "hull shader" in Direct3D terminology
 
-			// Sanity check
-			RHI_ASSERT(getRhi().getContext(), shaderBytecode.getNumberOfBytes() > 0 && nullptr != shaderBytecode.getBytecode(), "Direct3D 11 tessellation control shader bytecode is invalid")
-
 			// There's no need to check for "Rhi::Capabilities::maximumNumberOfPatchVertices", we know there's tessellation control shader support
-			return RHI_NEW(getRhi().getContext(), TessellationControlShaderHlsl)(static_cast<Direct3D11Rhi&>(getRhi()), shaderBytecode);
+			Direct3D11Rhi& direct3D11Rhi = static_cast<Direct3D11Rhi&>(getRhi());
+			return RHI_NEW(direct3D11Rhi.getContext(), TessellationControlShaderHlsl)(direct3D11Rhi, shaderSourceCode.sourceCode, getOptimizationLevel(), shaderBytecode RHI_RESOURCE_DEBUG_PASS_PARAMETER);
 		}
 
-		[[nodiscard]] inline virtual Rhi::ITessellationControlShader* createTessellationControlShaderFromSourceCode(const Rhi::ShaderSourceCode& shaderSourceCode, Rhi::ShaderBytecode* shaderBytecode = nullptr) override
-		{
-			// "hull shader" in Direct3D terminology
-
-			// There's no need to check for "Rhi::Capabilities::maximumNumberOfPatchVertices", we know there's tessellation control shader support
-			return RHI_NEW(getRhi().getContext(), TessellationControlShaderHlsl)(static_cast<Direct3D11Rhi&>(getRhi()), shaderSourceCode.sourceCode, getOptimizationLevel(), shaderBytecode);
-		}
-
-		[[nodiscard]] inline virtual Rhi::ITessellationEvaluationShader* createTessellationEvaluationShaderFromBytecode(const Rhi::ShaderBytecode& shaderBytecode) override
+		[[nodiscard]] inline virtual Rhi::ITessellationEvaluationShader* createTessellationEvaluationShaderFromBytecode(const Rhi::ShaderBytecode& shaderBytecode RHI_RESOURCE_DEBUG_NAME_PARAMETER) override
 		{
 			// "domain shader" in Direct3D terminology
+			Direct3D11Rhi& direct3D11Rhi = static_cast<Direct3D11Rhi&>(getRhi());
 
 			// Sanity check
-			RHI_ASSERT(getRhi().getContext(), shaderBytecode.getNumberOfBytes() > 0 && nullptr != shaderBytecode.getBytecode(), "Direct3D 11 tessellation evaluation shader bytecode is invalid")
+			RHI_ASSERT(direct3D11Rhi.getContext(), shaderBytecode.getNumberOfBytes() > 0 && nullptr != shaderBytecode.getBytecode(), "Direct3D 11 tessellation evaluation shader bytecode is invalid")
 
 			// There's no need to check for "Rhi::Capabilities::maximumNumberOfPatchVertices", we know there's tessellation evaluation shader support
-			return RHI_NEW(getRhi().getContext(), TessellationEvaluationShaderHlsl)(static_cast<Direct3D11Rhi&>(getRhi()), shaderBytecode);
+			return RHI_NEW(direct3D11Rhi.getContext(), TessellationEvaluationShaderHlsl)(direct3D11Rhi, shaderBytecode RHI_RESOURCE_DEBUG_PASS_PARAMETER);
 		}
 
-		[[nodiscard]] inline virtual Rhi::ITessellationEvaluationShader* createTessellationEvaluationShaderFromSourceCode(const Rhi::ShaderSourceCode& shaderSourceCode, Rhi::ShaderBytecode* shaderBytecode = nullptr) override
+		[[nodiscard]] inline virtual Rhi::ITessellationEvaluationShader* createTessellationEvaluationShaderFromSourceCode(const Rhi::ShaderSourceCode& shaderSourceCode, Rhi::ShaderBytecode* shaderBytecode = nullptr RHI_RESOURCE_DEBUG_NAME_PARAMETER) override
 		{
 			// "domain shader" in Direct3D terminology
 
 			// There's no need to check for "Rhi::Capabilities::maximumNumberOfPatchVertices", we know there's tessellation evaluation shader support
-			return RHI_NEW(getRhi().getContext(), TessellationEvaluationShaderHlsl)(static_cast<Direct3D11Rhi&>(getRhi()), shaderSourceCode.sourceCode, getOptimizationLevel(), shaderBytecode);
+			Direct3D11Rhi& direct3D11Rhi = static_cast<Direct3D11Rhi&>(getRhi());
+			return RHI_NEW(direct3D11Rhi.getContext(), TessellationEvaluationShaderHlsl)(direct3D11Rhi, shaderSourceCode.sourceCode, getOptimizationLevel(), shaderBytecode RHI_RESOURCE_DEBUG_PASS_PARAMETER);
 		}
 
-		[[nodiscard]] inline virtual Rhi::IGeometryShader* createGeometryShaderFromBytecode(const Rhi::ShaderBytecode& shaderBytecode, [[maybe_unused]] Rhi::GsInputPrimitiveTopology gsInputPrimitiveTopology, [[maybe_unused]] Rhi::GsOutputPrimitiveTopology gsOutputPrimitiveTopology, [[maybe_unused]] uint32_t numberOfOutputVertices) override
+		[[nodiscard]] inline virtual Rhi::IGeometryShader* createGeometryShaderFromBytecode(const Rhi::ShaderBytecode& shaderBytecode, [[maybe_unused]] Rhi::GsInputPrimitiveTopology gsInputPrimitiveTopology, [[maybe_unused]] Rhi::GsOutputPrimitiveTopology gsOutputPrimitiveTopology, [[maybe_unused]] uint32_t numberOfOutputVertices RHI_RESOURCE_DEBUG_NAME_PARAMETER) override
 		{
+			Direct3D11Rhi& direct3D11Rhi = static_cast<Direct3D11Rhi&>(getRhi());
+
 			// Sanity check
-			RHI_ASSERT(getRhi().getContext(), shaderBytecode.getNumberOfBytes() > 0 && nullptr != shaderBytecode.getBytecode(), "Direct3D 11 geometry shader bytecode is invalid")
+			RHI_ASSERT(direct3D11Rhi.getContext(), shaderBytecode.getNumberOfBytes() > 0 && nullptr != shaderBytecode.getBytecode(), "Direct3D 11 geometry shader bytecode is invalid")
 
 			// There's no need to check for "Rhi::Capabilities::maximumNumberOfGsOutputVertices", we know there's geometry shader support
 			// Ignore "gsInputPrimitiveTopology", it's directly set within HLSL
 			// Ignore "gsOutputPrimitiveTopology", it's directly set within HLSL
 			// Ignore "numberOfOutputVertices", it's directly set within HLSL
-			return RHI_NEW(getRhi().getContext(), GeometryShaderHlsl)(static_cast<Direct3D11Rhi&>(getRhi()), shaderBytecode);
+			return RHI_NEW(direct3D11Rhi.getContext(), GeometryShaderHlsl)(direct3D11Rhi, shaderBytecode RHI_RESOURCE_DEBUG_PASS_PARAMETER);
 		}
 
-		[[nodiscard]] inline virtual Rhi::IGeometryShader* createGeometryShaderFromSourceCode(const Rhi::ShaderSourceCode& shaderSourceCode, [[maybe_unused]] Rhi::GsInputPrimitiveTopology gsInputPrimitiveTopology, [[maybe_unused]] Rhi::GsOutputPrimitiveTopology gsOutputPrimitiveTopology, [[maybe_unused]] uint32_t numberOfOutputVertices, Rhi::ShaderBytecode* shaderBytecode = nullptr) override
+		[[nodiscard]] inline virtual Rhi::IGeometryShader* createGeometryShaderFromSourceCode(const Rhi::ShaderSourceCode& shaderSourceCode, [[maybe_unused]] Rhi::GsInputPrimitiveTopology gsInputPrimitiveTopology, [[maybe_unused]] Rhi::GsOutputPrimitiveTopology gsOutputPrimitiveTopology, [[maybe_unused]] uint32_t numberOfOutputVertices, Rhi::ShaderBytecode* shaderBytecode = nullptr RHI_RESOURCE_DEBUG_NAME_PARAMETER) override
 		{
 			// There's no need to check for "Rhi::Capabilities::maximumNumberOfGsOutputVertices", we know there's geometry shader support
 			// Ignore "gsInputPrimitiveTopology", it's directly set within HLSL
 			// Ignore "gsOutputPrimitiveTopology", it's directly set within HLSL
 			// Ignore "numberOfOutputVertices", it's directly set within HLSL
-			return RHI_NEW(getRhi().getContext(), GeometryShaderHlsl)(static_cast<Direct3D11Rhi&>(getRhi()), shaderSourceCode.sourceCode, getOptimizationLevel(), shaderBytecode);
+			Direct3D11Rhi& direct3D11Rhi = static_cast<Direct3D11Rhi&>(getRhi());
+			return RHI_NEW(direct3D11Rhi.getContext(), GeometryShaderHlsl)(direct3D11Rhi, shaderSourceCode.sourceCode, getOptimizationLevel(), shaderBytecode RHI_RESOURCE_DEBUG_PASS_PARAMETER);
 		}
 
-		[[nodiscard]] inline virtual Rhi::IFragmentShader* createFragmentShaderFromBytecode(const Rhi::ShaderBytecode& shaderBytecode) override
+		[[nodiscard]] inline virtual Rhi::IFragmentShader* createFragmentShaderFromBytecode(const Rhi::ShaderBytecode& shaderBytecode RHI_RESOURCE_DEBUG_NAME_PARAMETER) override
 		{
+			Direct3D11Rhi& direct3D11Rhi = static_cast<Direct3D11Rhi&>(getRhi());
+
 			// Sanity check
-			RHI_ASSERT(getRhi().getContext(), shaderBytecode.getNumberOfBytes() > 0 && nullptr != shaderBytecode.getBytecode(), "Direct3D 11 fragment shader bytecode is invalid")
+			RHI_ASSERT(direct3D11Rhi.getContext(), shaderBytecode.getNumberOfBytes() > 0 && nullptr != shaderBytecode.getBytecode(), "Direct3D 11 fragment shader bytecode is invalid")
 
 			// There's no need to check for "Rhi::Capabilities::fragmentShader", we know there's fragment shader support
-			return RHI_NEW(getRhi().getContext(), FragmentShaderHlsl)(static_cast<Direct3D11Rhi&>(getRhi()), shaderBytecode);
+			return RHI_NEW(direct3D11Rhi.getContext(), FragmentShaderHlsl)(direct3D11Rhi, shaderBytecode RHI_RESOURCE_DEBUG_PASS_PARAMETER);
 		}
 
-		[[nodiscard]] inline virtual Rhi::IFragmentShader* createFragmentShaderFromSourceCode(const Rhi::ShaderSourceCode& shaderSourceCode, Rhi::ShaderBytecode* shaderBytecode = nullptr) override
+		[[nodiscard]] inline virtual Rhi::IFragmentShader* createFragmentShaderFromSourceCode(const Rhi::ShaderSourceCode& shaderSourceCode, Rhi::ShaderBytecode* shaderBytecode = nullptr RHI_RESOURCE_DEBUG_NAME_PARAMETER) override
 		{
 			// There's no need to check for "Rhi::Capabilities::fragmentShader", we know there's fragment shader support
-			return RHI_NEW(getRhi().getContext(), FragmentShaderHlsl)(static_cast<Direct3D11Rhi&>(getRhi()), shaderSourceCode.sourceCode, getOptimizationLevel(), shaderBytecode);
+			Direct3D11Rhi& direct3D11Rhi = static_cast<Direct3D11Rhi&>(getRhi());
+			return RHI_NEW(direct3D11Rhi.getContext(), FragmentShaderHlsl)(direct3D11Rhi, shaderSourceCode.sourceCode, getOptimizationLevel(), shaderBytecode RHI_RESOURCE_DEBUG_PASS_PARAMETER);
 		}
 
-		[[nodiscard]] inline virtual Rhi::IComputeShader* createComputeShaderFromBytecode(const Rhi::ShaderBytecode& shaderBytecode) override
+		[[nodiscard]] inline virtual Rhi::IComputeShader* createComputeShaderFromBytecode(const Rhi::ShaderBytecode& shaderBytecode RHI_RESOURCE_DEBUG_NAME_PARAMETER) override
 		{
+			Direct3D11Rhi& direct3D11Rhi = static_cast<Direct3D11Rhi&>(getRhi());
+
 			// Sanity check
-			RHI_ASSERT(getRhi().getContext(), shaderBytecode.getNumberOfBytes() > 0 && nullptr != shaderBytecode.getBytecode(), "Direct3D 11 compute shader bytecode is invalid")
+			RHI_ASSERT(direct3D11Rhi.getContext(), shaderBytecode.getNumberOfBytes() > 0 && nullptr != shaderBytecode.getBytecode(), "Direct3D 11 compute shader bytecode is invalid")
 
 			// There's no need to check for "Rhi::Capabilities::computeShader", we know there's compute shader support
-			return RHI_NEW(getRhi().getContext(), ComputeShaderHlsl)(static_cast<Direct3D11Rhi&>(getRhi()), shaderBytecode);
+			return RHI_NEW(direct3D11Rhi.getContext(), ComputeShaderHlsl)(direct3D11Rhi, shaderBytecode RHI_RESOURCE_DEBUG_PASS_PARAMETER);
 		}
 
-		[[nodiscard]] inline virtual Rhi::IComputeShader* createComputeShaderFromSourceCode(const Rhi::ShaderSourceCode& shaderSourceCode, Rhi::ShaderBytecode* shaderBytecode = nullptr) override
+		[[nodiscard]] inline virtual Rhi::IComputeShader* createComputeShaderFromSourceCode(const Rhi::ShaderSourceCode& shaderSourceCode, Rhi::ShaderBytecode* shaderBytecode = nullptr RHI_RESOURCE_DEBUG_NAME_PARAMETER) override
 		{
 			// There's no need to check for "Rhi::Capabilities::computeShader", we know there's compute shader support
-			return RHI_NEW(getRhi().getContext(), ComputeShaderHlsl)(static_cast<Direct3D11Rhi&>(getRhi()), shaderSourceCode.sourceCode, getOptimizationLevel(), shaderBytecode);
+			Direct3D11Rhi& direct3D11Rhi = static_cast<Direct3D11Rhi&>(getRhi());
+			return RHI_NEW(direct3D11Rhi.getContext(), ComputeShaderHlsl)(direct3D11Rhi, shaderSourceCode.sourceCode, getOptimizationLevel(), shaderBytecode RHI_RESOURCE_DEBUG_PASS_PARAMETER);
 		}
 
-		[[nodiscard]] virtual Rhi::IGraphicsProgram* createGraphicsProgram([[maybe_unused]] const Rhi::IRootSignature& rootSignature, [[maybe_unused]] const Rhi::VertexAttributes& vertexAttributes, Rhi::IVertexShader* vertexShader, Rhi::ITessellationControlShader* tessellationControlShader, Rhi::ITessellationEvaluationShader* tessellationEvaluationShader, Rhi::IGeometryShader* geometryShader, Rhi::IFragmentShader* fragmentShader) override
+		[[nodiscard]] virtual Rhi::IGraphicsProgram* createGraphicsProgram([[maybe_unused]] const Rhi::IRootSignature& rootSignature, [[maybe_unused]] const Rhi::VertexAttributes& vertexAttributes, Rhi::IVertexShader* vertexShader, Rhi::ITessellationControlShader* tessellationControlShader, Rhi::ITessellationEvaluationShader* tessellationEvaluationShader, Rhi::IGeometryShader* geometryShader, Rhi::IFragmentShader* fragmentShader RHI_RESOURCE_DEBUG_NAME_MAYBE_UNUSED_PARAMETER) override
 		{
+			Direct3D11Rhi& direct3D11Rhi = static_cast<Direct3D11Rhi&>(getRhi());
+
 			// Sanity checks
-			// -> A shader can be a null pointer, but if it's not the shader and graphics program language must match!
+			// -> A shader can be a null pointer, but if it's not the shader and graphics program language must match
 			// -> Optimization: Comparing the shader language name by directly comparing the pointer address of
 			//    the name is safe because we know that we always reference to one and the same name address
 			// TODO(co) Add security check: Is the given resource one of the currently used RHI?
-			RHI_ASSERT(getRhi().getContext(), nullptr == vertexShader || vertexShader->getShaderLanguageName() == ::detail::HLSL_NAME, "Direct3D 11 vertex shader language mismatch")
-			RHI_ASSERT(getRhi().getContext(), nullptr == tessellationControlShader || tessellationControlShader->getShaderLanguageName() == ::detail::HLSL_NAME, "Direct3D 11 tessellation control shader language mismatch")
-			RHI_ASSERT(getRhi().getContext(), nullptr == tessellationEvaluationShader || tessellationEvaluationShader->getShaderLanguageName() == ::detail::HLSL_NAME, "Direct3D 11 tessellation evaluation shader language mismatch")
-			RHI_ASSERT(getRhi().getContext(), nullptr == geometryShader || geometryShader->getShaderLanguageName() == ::detail::HLSL_NAME, "Direct3D 11 geometry shader language mismatch")
-			RHI_ASSERT(getRhi().getContext(), nullptr == fragmentShader || fragmentShader->getShaderLanguageName() == ::detail::HLSL_NAME, "Direct3D 11 fragment shader language mismatch")
+			RHI_ASSERT(direct3D11Rhi.getContext(), nullptr == vertexShader || vertexShader->getShaderLanguageName() == ::detail::HLSL_NAME, "Direct3D 11 vertex shader language mismatch")
+			RHI_ASSERT(direct3D11Rhi.getContext(), nullptr == tessellationControlShader || tessellationControlShader->getShaderLanguageName() == ::detail::HLSL_NAME, "Direct3D 11 tessellation control shader language mismatch")
+			RHI_ASSERT(direct3D11Rhi.getContext(), nullptr == tessellationEvaluationShader || tessellationEvaluationShader->getShaderLanguageName() == ::detail::HLSL_NAME, "Direct3D 11 tessellation evaluation shader language mismatch")
+			RHI_ASSERT(direct3D11Rhi.getContext(), nullptr == geometryShader || geometryShader->getShaderLanguageName() == ::detail::HLSL_NAME, "Direct3D 11 geometry shader language mismatch")
+			RHI_ASSERT(direct3D11Rhi.getContext(), nullptr == fragmentShader || fragmentShader->getShaderLanguageName() == ::detail::HLSL_NAME, "Direct3D 11 fragment shader language mismatch")
 
 			// Create the graphics program
-			return RHI_NEW(getRhi().getContext(), GraphicsProgramHlsl)(static_cast<Direct3D11Rhi&>(getRhi()), static_cast<VertexShaderHlsl*>(vertexShader), static_cast<TessellationControlShaderHlsl*>(tessellationControlShader), static_cast<TessellationEvaluationShaderHlsl*>(tessellationEvaluationShader), static_cast<GeometryShaderHlsl*>(geometryShader), static_cast<FragmentShaderHlsl*>(fragmentShader));
+			return RHI_NEW(direct3D11Rhi.getContext(), GraphicsProgramHlsl)(direct3D11Rhi, static_cast<VertexShaderHlsl*>(vertexShader), static_cast<TessellationControlShaderHlsl*>(tessellationControlShader), static_cast<TessellationEvaluationShaderHlsl*>(tessellationEvaluationShader), static_cast<GeometryShaderHlsl*>(geometryShader), static_cast<FragmentShaderHlsl*>(fragmentShader));
 		}
 
 
@@ -11406,7 +11178,7 @@ namespace Direct3D11Rhi
 		*  @param[in] id
 		*    The unique compact graphics pipeline state ID
 		*/
-		GraphicsPipelineState(Direct3D11Rhi& direct3D11Rhi, const Rhi::GraphicsPipelineState& graphicsPipelineState, uint16_t id) :
+		GraphicsPipelineState(Direct3D11Rhi& direct3D11Rhi, const Rhi::GraphicsPipelineState& graphicsPipelineState, uint16_t id RHI_RESOURCE_DEBUG_NAME_PARAMETER) :
 			IGraphicsPipelineState(direct3D11Rhi, id),
 			mGraphicsProgram(graphicsPipelineState.graphicsProgram),
 			mRenderPass(graphicsPipelineState.renderPass),
@@ -11468,6 +11240,15 @@ namespace Direct3D11Rhi
 
 						// Destroy Direct3D 11 input element descriptions
 						RHI_FREE(context, d3d11InputElementDescs);
+
+						// Assign a default name to the resource for debugging purposes
+						#ifdef RHI_DEBUG
+							if (nullptr != mD3D11InputLayout)
+							{
+								RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "Graphics PSO", 15);	// 15 = "Graphics PSO: " including terminating zero
+								FAILED_DEBUG_BREAK(mD3D11InputLayout->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(detailedDebugName)), detailedDebugName));
+							}
+						#endif
 					}
 				}
 				else
@@ -11475,11 +11256,6 @@ namespace Direct3D11Rhi
 					RHI_LOG(direct3D11Rhi.getContext(), CRITICAL, "Failed to create the Direct3D 11 graphics pipeline stage input layout because there's no vertex shader")
 				}
 			}
-
-			// Assign a default name to the resource for debugging purposes
-			#ifdef RHI_DEBUG
-				setDebugName("Graphics pipeline state");
-			#endif
 		}
 
 		/**
@@ -11570,24 +11346,6 @@ namespace Direct3D11Rhi
 				d3d11DeviceContext.OMSetBlendState(currentGraphicsPipelineState.d3d11BlendState, 0, 0xffffffff);
 			}
 		}
-
-
-	//[-------------------------------------------------------]
-	//[ Public virtual Rhi::IResource methods                 ]
-	//[-------------------------------------------------------]
-	public:
-		#ifdef RHI_DEBUG
-			virtual void setDebugName(const char* name) override
-			{
-				// Set the debug name
-				// -> First: Ensure that there's no previous private data, else we might get slapped with a warning
-				if (nullptr != mD3D11InputLayout)
-				{
-					FAILED_DEBUG_BREAK(mD3D11InputLayout->SetPrivateData(WKPDID_D3DDebugObjectName, 0, nullptr));
-					FAILED_DEBUG_BREAK(mD3D11InputLayout->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(name)), name));
-				}
-			}
-		#endif
 
 
 	//[-------------------------------------------------------]
@@ -12395,7 +12153,7 @@ namespace Direct3D11Rhi
 			mGraphicsRootSignature->addReference();
 
 			// Sanity check
-			DIRECT3D11RHI_RHIMATCHCHECK_ASSERT(*this, *rootSignature)
+			RHI_MATCH_CHECK(*this, *rootSignature)
 		}
 	}
 
@@ -12404,7 +12162,7 @@ namespace Direct3D11Rhi
 		if (nullptr != graphicsPipelineState)
 		{
 			// Sanity check
-			DIRECT3D11RHI_RHIMATCHCHECK_ASSERT(*this, *graphicsPipelineState)
+			RHI_MATCH_CHECK(*this, *graphicsPipelineState)
 
 			// Set primitive topology
 			// -> The "Rhi::PrimitiveTopology" values directly map to Direct3D 9 & 10 & 11 constants, do not change them
@@ -12457,7 +12215,7 @@ namespace Direct3D11Rhi
 		if (nullptr != resourceGroup)
 		{
 			// Sanity check
-			DIRECT3D11RHI_RHIMATCHCHECK_ASSERT(*this, *resourceGroup)
+			RHI_MATCH_CHECK(*this, *resourceGroup)
 
 			// Set graphics resource group
 			const ResourceGroup* d3d11ResourceGroup = static_cast<ResourceGroup*>(resourceGroup);
@@ -12732,7 +12490,7 @@ namespace Direct3D11Rhi
 		if (nullptr != vertexArray)
 		{
 			// Sanity check
-			DIRECT3D11RHI_RHIMATCHCHECK_ASSERT(*this, *vertexArray)
+			RHI_MATCH_CHECK(*this, *vertexArray)
 
 			// Begin debug event
 			RHI_BEGIN_DEBUG_EVENT_FUNCTION(this)
@@ -12789,7 +12547,7 @@ namespace Direct3D11Rhi
 			if (nullptr != renderTarget)
 			{
 				// Sanity check
-				DIRECT3D11RHI_RHIMATCHCHECK_ASSERT(*this, *renderTarget)
+				RHI_MATCH_CHECK(*this, *renderTarget)
 
 				// Release the render target reference, in case we have one
 				if (nullptr != mRenderTarget)
@@ -13000,7 +12758,7 @@ namespace Direct3D11Rhi
 	void Direct3D11Rhi::drawGraphics(const Rhi::IIndirectBuffer& indirectBuffer, uint32_t indirectBufferOffset, uint32_t numberOfDraws)
 	{
 		// Sanity checks
-		DIRECT3D11RHI_RHIMATCHCHECK_ASSERT(*this, indirectBuffer)
+		RHI_MATCH_CHECK(*this, indirectBuffer)
 		RHI_ASSERT(mContext, numberOfDraws > 0, "Number of Direct3D 11 draws must not be zero")
 
 		// Draw indirect
@@ -13029,7 +12787,7 @@ namespace Direct3D11Rhi
 	void Direct3D11Rhi::drawGraphicsAgs(const Rhi::IIndirectBuffer& indirectBuffer, uint32_t indirectBufferOffset, uint32_t numberOfDraws)
 	{
 		// Sanity checks
-		DIRECT3D11RHI_RHIMATCHCHECK_ASSERT(*this, indirectBuffer)
+		RHI_MATCH_CHECK(*this, indirectBuffer)
 		RHI_ASSERT(mContext, numberOfDraws > 0, "Number of Direct3D 11 draws must not be zero")
 		RHI_ASSERT(mContext, nullptr != agsDriverExtensionsDX11_MultiDrawInstancedIndirect, "Direct3D 11: AMD AGS function \"agsDriverExtensionsDX11_MultiDrawInstancedIndirect()\" not found")
 
@@ -13049,7 +12807,7 @@ namespace Direct3D11Rhi
 	void Direct3D11Rhi::drawGraphicsNvApi(const Rhi::IIndirectBuffer& indirectBuffer, uint32_t indirectBufferOffset, uint32_t numberOfDraws)
 	{
 		// Sanity checks
-		DIRECT3D11RHI_RHIMATCHCHECK_ASSERT(*this, indirectBuffer)
+		RHI_MATCH_CHECK(*this, indirectBuffer)
 		RHI_ASSERT(mContext, numberOfDraws > 0, "Number of Direct3D 11 draws must not be zero")
 		RHI_ASSERT(mContext, nullptr != NvAPI_D3D11_MultiDrawInstancedIndirect, "Direct3D 11: NvAPI function \"NvAPI_D3D11_MultiDrawInstancedIndirect()\" not found")
 
@@ -13120,7 +12878,7 @@ namespace Direct3D11Rhi
 	void Direct3D11Rhi::drawIndexedGraphics(const Rhi::IIndirectBuffer& indirectBuffer, uint32_t indirectBufferOffset, uint32_t numberOfDraws)
 	{
 		// Sanity checks
-		DIRECT3D11RHI_RHIMATCHCHECK_ASSERT(*this, indirectBuffer)
+		RHI_MATCH_CHECK(*this, indirectBuffer)
 		RHI_ASSERT(mContext, numberOfDraws > 0, "Number of Direct3D 11 draws must not be zero")
 
 		// Draw indirect
@@ -13149,7 +12907,7 @@ namespace Direct3D11Rhi
 	void Direct3D11Rhi::drawIndexedGraphicsAgs(const Rhi::IIndirectBuffer& indirectBuffer, uint32_t indirectBufferOffset, uint32_t numberOfDraws)
 	{
 		// Sanity checks
-		DIRECT3D11RHI_RHIMATCHCHECK_ASSERT(*this, indirectBuffer)
+		RHI_MATCH_CHECK(*this, indirectBuffer)
 		RHI_ASSERT(mContext, numberOfDraws > 0, "Number of Direct3D 11 draws must not be zero")
 		RHI_ASSERT(mContext, nullptr != agsDriverExtensionsDX11_MultiDrawIndexedInstancedIndirect, "Direct3D 11: NvAPI function \"agsDriverExtensionsDX11_MultiDrawIndexedInstancedIndirect()\" not found")
 
@@ -13169,7 +12927,7 @@ namespace Direct3D11Rhi
 	void Direct3D11Rhi::drawIndexedGraphicsNvApi(const Rhi::IIndirectBuffer& indirectBuffer, uint32_t indirectBufferOffset, uint32_t numberOfDraws)
 	{
 		// Sanity checks
-		DIRECT3D11RHI_RHIMATCHCHECK_ASSERT(*this, indirectBuffer)
+		RHI_MATCH_CHECK(*this, indirectBuffer)
 		RHI_ASSERT(mContext, numberOfDraws > 0, "Number of Direct3D 11 draws must not be zero")
 		RHI_ASSERT(mContext, nullptr != NvAPI_D3D11_MultiDrawIndexedInstancedIndirect, "Direct3D 11: NvAPI function \"NvAPI_D3D11_MultiDrawIndexedInstancedIndirect()\" not found")
 
@@ -13255,7 +13013,7 @@ namespace Direct3D11Rhi
 			mComputeRootSignature->addReference();
 
 			// Sanity check
-			DIRECT3D11RHI_RHIMATCHCHECK_ASSERT(*this, *rootSignature)
+			RHI_MATCH_CHECK(*this, *rootSignature)
 		}
 	}
 
@@ -13264,7 +13022,7 @@ namespace Direct3D11Rhi
 		if (nullptr != computePipelineState)
 		{
 			// Sanity check
-			DIRECT3D11RHI_RHIMATCHCHECK_ASSERT(*this, *computePipelineState)
+			RHI_MATCH_CHECK(*this, *computePipelineState)
 
 			// Set compute pipeline state
 			ID3D11ComputeShader* d3d11ComputeShader = static_cast<const ComputePipelineState*>(computePipelineState)->getD3D11ComputeShader();
@@ -13313,7 +13071,7 @@ namespace Direct3D11Rhi
 		if (nullptr != resourceGroup)
 		{
 			// Sanity check
-			DIRECT3D11RHI_RHIMATCHCHECK_ASSERT(*this, *resourceGroup)
+			RHI_MATCH_CHECK(*this, *resourceGroup)
 
 			// Set compute resource group
 			const ResourceGroup* d3d11ResourceGroup = static_cast<ResourceGroup*>(resourceGroup);
@@ -13717,8 +13475,8 @@ namespace Direct3D11Rhi
 	void Direct3D11Rhi::resolveMultisampleFramebuffer(Rhi::IRenderTarget& destinationRenderTarget, Rhi::IFramebuffer& sourceMultisampleFramebuffer)
 	{
 		// Sanity checks
-		DIRECT3D11RHI_RHIMATCHCHECK_ASSERT(*this, destinationRenderTarget)
-		DIRECT3D11RHI_RHIMATCHCHECK_ASSERT(*this, sourceMultisampleFramebuffer)
+		RHI_MATCH_CHECK(*this, destinationRenderTarget)
+		RHI_MATCH_CHECK(*this, sourceMultisampleFramebuffer)
 
 		// Evaluate the render target type
 		switch (destinationRenderTarget.getResourceType())
@@ -13802,8 +13560,8 @@ namespace Direct3D11Rhi
 	void Direct3D11Rhi::copyResource(Rhi::IResource& destinationResource, Rhi::IResource& sourceResource)
 	{
 		// Sanity checks
-		DIRECT3D11RHI_RHIMATCHCHECK_ASSERT(*this, destinationResource)
-		DIRECT3D11RHI_RHIMATCHCHECK_ASSERT(*this, sourceResource)
+		RHI_MATCH_CHECK(*this, destinationResource)
+		RHI_MATCH_CHECK(*this, sourceResource)
 
 		// Evaluate the render target type
 		switch (destinationResource.getResourceType())
@@ -13862,7 +13620,7 @@ namespace Direct3D11Rhi
 	void Direct3D11Rhi::generateMipmaps(Rhi::IResource& resource)
 	{
 		// Sanity checks
-		DIRECT3D11RHI_RHIMATCHCHECK_ASSERT(*this, resource)
+		RHI_MATCH_CHECK(*this, resource)
 		RHI_ASSERT(mContext, resource.getResourceType() == Rhi::ResourceType::TEXTURE_2D, "TODO(co) Mipmaps can only be generated for Direct3D 11 2D texture resources")
 
 		// Generate mipmaps
@@ -13890,7 +13648,7 @@ namespace Direct3D11Rhi
 	void Direct3D11Rhi::resetQueryPool([[maybe_unused]] Rhi::IQueryPool& queryPool, [[maybe_unused]] uint32_t firstQueryIndex, [[maybe_unused]] uint32_t numberOfQueries)
 	{
 		// Sanity checks
-		DIRECT3D11RHI_RHIMATCHCHECK_ASSERT(*this, queryPool)
+		RHI_MATCH_CHECK(*this, queryPool)
 		RHI_ASSERT(mContext, firstQueryIndex < static_cast<const QueryPool&>(queryPool).getNumberOfQueries(), "Direct3D 11 out-of-bounds query index")
 		RHI_ASSERT(mContext, (firstQueryIndex + numberOfQueries) <= static_cast<const QueryPool&>(queryPool).getNumberOfQueries(), "Direct3D 11 out-of-bounds query index")
 
@@ -13900,7 +13658,7 @@ namespace Direct3D11Rhi
 	void Direct3D11Rhi::beginQuery(Rhi::IQueryPool& queryPool, uint32_t queryIndex, uint32_t)
 	{
 		// Sanity check
-		DIRECT3D11RHI_RHIMATCHCHECK_ASSERT(*this, queryPool)
+		RHI_MATCH_CHECK(*this, queryPool)
 
 		// Query pool type dependent processing
 		const QueryPool& d3d11QueryPool = static_cast<const QueryPool&>(queryPool);
@@ -13921,7 +13679,7 @@ namespace Direct3D11Rhi
 	void Direct3D11Rhi::endQuery(Rhi::IQueryPool& queryPool, uint32_t queryIndex)
 	{
 		// Sanity check
-		DIRECT3D11RHI_RHIMATCHCHECK_ASSERT(*this, queryPool)
+		RHI_MATCH_CHECK(*this, queryPool)
 
 		// Query pool type dependent processing
 		const QueryPool& d3d11QueryPool = static_cast<const QueryPool&>(queryPool);
@@ -13942,7 +13700,7 @@ namespace Direct3D11Rhi
 	void Direct3D11Rhi::writeTimestampQuery(Rhi::IQueryPool& queryPool, uint32_t queryIndex)
 	{
 		// Sanity check
-		DIRECT3D11RHI_RHIMATCHCHECK_ASSERT(*this, queryPool)
+		RHI_MATCH_CHECK(*this, queryPool)
 
 		// Query pool type dependent processing
 		const QueryPool& d3d11QueryPool = static_cast<const QueryPool&>(queryPool);
@@ -14064,34 +13822,34 @@ namespace Direct3D11Rhi
 	//[-------------------------------------------------------]
 	//[ Resource creation                                     ]
 	//[-------------------------------------------------------]
-	Rhi::IRenderPass* Direct3D11Rhi::createRenderPass(uint32_t numberOfColorAttachments, const Rhi::TextureFormat::Enum* colorAttachmentTextureFormats, Rhi::TextureFormat::Enum depthStencilAttachmentTextureFormat, uint8_t numberOfMultisamples)
+	Rhi::IRenderPass* Direct3D11Rhi::createRenderPass(uint32_t numberOfColorAttachments, const Rhi::TextureFormat::Enum* colorAttachmentTextureFormats, Rhi::TextureFormat::Enum depthStencilAttachmentTextureFormat, uint8_t numberOfMultisamples RHI_RESOURCE_DEBUG_NAME_MAYBE_UNUSED_PARAMETER_NO_DEFAULT)
 	{
 		return RHI_NEW(mContext, RenderPass)(*this, numberOfColorAttachments, colorAttachmentTextureFormats, depthStencilAttachmentTextureFormat, numberOfMultisamples);
 	}
 
-	Rhi::IQueryPool* Direct3D11Rhi::createQueryPool(Rhi::QueryType queryType, uint32_t numberOfQueries)
+	Rhi::IQueryPool* Direct3D11Rhi::createQueryPool(Rhi::QueryType queryType, uint32_t numberOfQueries RHI_RESOURCE_DEBUG_NAME_PARAMETER_NO_DEFAULT)
 	{
 		RHI_ASSERT(mContext, numberOfQueries > 0, "Direct3D 11: Number of queries mustn't be zero")
-		return RHI_NEW(mContext, QueryPool)(*this, queryType, numberOfQueries);
+		return RHI_NEW(mContext, QueryPool)(*this, queryType, numberOfQueries RHI_RESOURCE_DEBUG_PASS_PARAMETER);
 	}
 
-	Rhi::ISwapChain* Direct3D11Rhi::createSwapChain(Rhi::IRenderPass& renderPass, Rhi::WindowHandle windowHandle, bool)
+	Rhi::ISwapChain* Direct3D11Rhi::createSwapChain(Rhi::IRenderPass& renderPass, Rhi::WindowHandle windowHandle, bool RHI_RESOURCE_DEBUG_NAME_PARAMETER_NO_DEFAULT)
 	{
 		// Sanity checks
-		DIRECT3D11RHI_RHIMATCHCHECK_ASSERT(*this, renderPass)
+		RHI_MATCH_CHECK(*this, renderPass)
 		RHI_ASSERT(mContext, NULL_HANDLE != windowHandle.nativeWindowHandle, "Direct3D 11: The provided native window handle must not be a null handle")
 
 		// Create the swap chain
-		return RHI_NEW(mContext, SwapChain)(renderPass, windowHandle);
+		return RHI_NEW(mContext, SwapChain)(renderPass, windowHandle RHI_RESOURCE_DEBUG_PASS_PARAMETER);
 	}
 
-	Rhi::IFramebuffer* Direct3D11Rhi::createFramebuffer(Rhi::IRenderPass& renderPass, const Rhi::FramebufferAttachment* colorFramebufferAttachments, const Rhi::FramebufferAttachment* depthStencilFramebufferAttachment)
+	Rhi::IFramebuffer* Direct3D11Rhi::createFramebuffer(Rhi::IRenderPass& renderPass, const Rhi::FramebufferAttachment* colorFramebufferAttachments, const Rhi::FramebufferAttachment* depthStencilFramebufferAttachment RHI_RESOURCE_DEBUG_NAME_PARAMETER_NO_DEFAULT)
 	{
 		// Sanity check
-		DIRECT3D11RHI_RHIMATCHCHECK_ASSERT(*this, renderPass)
+		RHI_MATCH_CHECK(*this, renderPass)
 
 		// Create the framebuffer
-		return RHI_NEW(mContext, Framebuffer)(renderPass, colorFramebufferAttachments, depthStencilFramebufferAttachment);
+		return RHI_NEW(mContext, Framebuffer)(renderPass, colorFramebufferAttachments, depthStencilFramebufferAttachment RHI_RESOURCE_DEBUG_PASS_PARAMETER);
 	}
 
 	Rhi::IBufferManager* Direct3D11Rhi::createBufferManager()
@@ -14104,12 +13862,12 @@ namespace Direct3D11Rhi
 		return RHI_NEW(mContext, TextureManager)(*this);
 	}
 
-	Rhi::IRootSignature* Direct3D11Rhi::createRootSignature(const Rhi::RootSignature& rootSignature)
+	Rhi::IRootSignature* Direct3D11Rhi::createRootSignature(const Rhi::RootSignature& rootSignature RHI_RESOURCE_DEBUG_NAME_MAYBE_UNUSED_PARAMETER_NO_DEFAULT)
 	{
 		return RHI_NEW(mContext, RootSignature)(*this, rootSignature);
 	}
 
-	Rhi::IGraphicsPipelineState* Direct3D11Rhi::createGraphicsPipelineState(const Rhi::GraphicsPipelineState& graphicsPipelineState)
+	Rhi::IGraphicsPipelineState* Direct3D11Rhi::createGraphicsPipelineState(const Rhi::GraphicsPipelineState& graphicsPipelineState RHI_RESOURCE_DEBUG_NAME_PARAMETER_NO_DEFAULT)
 	{
 		// Sanity checks
 		RHI_ASSERT(mContext, nullptr != graphicsPipelineState.rootSignature, "Direct3D 11: Invalid graphics pipeline state root signature")
@@ -14120,7 +13878,7 @@ namespace Direct3D11Rhi
 		uint16_t id = 0;
 		if (GraphicsPipelineStateMakeId.CreateID(id))
 		{
-			return RHI_NEW(mContext, GraphicsPipelineState)(*this, graphicsPipelineState, id);
+			return RHI_NEW(mContext, GraphicsPipelineState)(*this, graphicsPipelineState, id RHI_RESOURCE_DEBUG_PASS_PARAMETER);
 		}
 
 		// Error: Ensure a correct reference counter behaviour
@@ -14133,11 +13891,11 @@ namespace Direct3D11Rhi
 		return nullptr;
 	}
 
-	Rhi::IComputePipelineState* Direct3D11Rhi::createComputePipelineState(Rhi::IRootSignature& rootSignature, Rhi::IComputeShader& computeShader)
+	Rhi::IComputePipelineState* Direct3D11Rhi::createComputePipelineState(Rhi::IRootSignature& rootSignature, Rhi::IComputeShader& computeShader RHI_RESOURCE_DEBUG_NAME_MAYBE_UNUSED_PARAMETER_NO_DEFAULT)
 	{
 		// Sanity checks
-		DIRECT3D11RHI_RHIMATCHCHECK_ASSERT(*this, rootSignature)
-		DIRECT3D11RHI_RHIMATCHCHECK_ASSERT(*this, computeShader)
+		RHI_MATCH_CHECK(*this, rootSignature)
+		RHI_MATCH_CHECK(*this, computeShader)
 
 		// Ensure a correct reference counter behaviour
 		rootSignature.addReference();
@@ -14156,9 +13914,9 @@ namespace Direct3D11Rhi
 		return nullptr;
 	}
 
-	Rhi::ISamplerState* Direct3D11Rhi::createSamplerState(const Rhi::SamplerState& samplerState)
+	Rhi::ISamplerState* Direct3D11Rhi::createSamplerState(const Rhi::SamplerState& samplerState RHI_RESOURCE_DEBUG_NAME_PARAMETER_NO_DEFAULT)
 	{
-		return RHI_NEW(mContext, SamplerState)(*this, samplerState);
+		return RHI_NEW(mContext, SamplerState)(*this, samplerState RHI_RESOURCE_DEBUG_PASS_PARAMETER);
 	}
 
 
@@ -14330,7 +14088,7 @@ namespace Direct3D11Rhi
 	bool Direct3D11Rhi::getQueryPoolResults(Rhi::IQueryPool& queryPool, [[maybe_unused]] uint32_t numberOfDataBytes, uint8_t* data, uint32_t firstQueryIndex, uint32_t numberOfQueries, uint32_t strideInBytes, uint32_t queryResultFlags)
 	{
 		// Sanity checks
-		DIRECT3D11RHI_RHIMATCHCHECK_ASSERT(*this, queryPool)
+		RHI_MATCH_CHECK(*this, queryPool)
 		RHI_ASSERT(mContext, numberOfDataBytes >= sizeof(UINT64), "Direct3D 11 out-of-memory query access")
 		RHI_ASSERT(mContext, 1 == numberOfQueries || strideInBytes > 0, "Direct3D 11 invalid stride in bytes")
 		RHI_ASSERT(mContext, numberOfDataBytes >= strideInBytes * numberOfQueries, "Direct3D 11 out-of-memory query access")
@@ -14891,7 +14649,7 @@ namespace Direct3D11Rhi
 		if (nullptr != graphicsProgram)
 		{
 			// Sanity check
-			DIRECT3D11RHI_RHIMATCHCHECK_ASSERT(*this, *graphicsProgram)
+			RHI_MATCH_CHECK(*this, *graphicsProgram)
 
 			// Get shaders
 			const GraphicsProgramHlsl*			    graphicsProgramHlsl				 = static_cast<GraphicsProgramHlsl*>(graphicsProgram);

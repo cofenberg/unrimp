@@ -228,11 +228,10 @@ void IApplicationRhi::createRhi()
 	{
 		// Create render pass using the preferred swap chain texture format
 		const Rhi::Capabilities& capabilities = mRhi->getCapabilities();
-		Rhi::IRenderPass* renderPass = mRhi->createRenderPass(1, &capabilities.preferredSwapChainColorTextureFormat, capabilities.preferredSwapChainDepthStencilTextureFormat);
+		Rhi::IRenderPass* renderPass = mRhi->createRenderPass(1, &capabilities.preferredSwapChainColorTextureFormat, capabilities.preferredSwapChainDepthStencilTextureFormat, 1 RHI_RESOURCE_DEBUG_NAME("Main"));
 
 		// Create a main swap chain instance
-		mMainSwapChain = mRhi->createSwapChain(*renderPass, Rhi::WindowHandle{getNativeWindowHandle(), nullptr, nullptr}, mRhi->getContext().isUsingExternalContext());
-		RHI_SET_RESOURCE_DEBUG_NAME(mMainSwapChain, "Main swap chain")
+		mMainSwapChain = mRhi->createSwapChain(*renderPass, Rhi::WindowHandle{getNativeWindowHandle(), nullptr, nullptr}, mRhi->getContext().isUsingExternalContext() RHI_RESOURCE_DEBUG_NAME("Main"));
 		mMainSwapChain->addReference();	// Internal RHI reference
 	}
 }

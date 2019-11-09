@@ -249,8 +249,26 @@ PRAGMA_WARNING_POP
 #ifdef RHI_DEBUG
 	#include <cassert>
 	#define ASSERT assert	// TODO(co) "RHI_ASSERT()" should be used everywhere
+
+	/**
+	*  @brief
+	*    Resource name for debugging purposes, ignored when not using "RHI_DEBUG"
+	*
+	*  @param[in] debugName
+	*    ASCII name for debugging purposes, must be valid (there's no internal null pointer test)
+	*/
+	#define RHI_RESOURCE_DEBUG_NAME_PARAMETER , const char* debugName = ""
 #else
 	#define ASSERT(x)	// TODO(co) "RHI_ASSERT()" should be used everywhere
+
+	/**
+	*  @brief
+	*    Resource name for debugging purposes, ignored when not using "RHI_DEBUG"
+	*
+	*  @param[in] debugName
+	*    ASCII name for debugging purposes, must be valid (there's no internal null pointer test)
+	*/
+	#define RHI_RESOURCE_DEBUG_NAME_PARAMETER
 #endif
 #ifdef RHI_STATISTICS
 	// Disable warnings in external headers, we can't fix them
@@ -4333,7 +4351,7 @@ namespace Rhi
 		*  @return
 		*    The created render pass instance, null pointer on error. Release the returned instance if you no longer need it.
 		*/
-		[[nodiscard]] virtual IRenderPass* createRenderPass(uint32_t numberOfColorAttachments, const TextureFormat::Enum* colorAttachmentTextureFormats, TextureFormat::Enum depthStencilAttachmentTextureFormat = TextureFormat::UNKNOWN, uint8_t numberOfMultisamples = 1) = 0;
+		[[nodiscard]] virtual IRenderPass* createRenderPass(uint32_t numberOfColorAttachments, const TextureFormat::Enum* colorAttachmentTextureFormats, TextureFormat::Enum depthStencilAttachmentTextureFormat = TextureFormat::UNKNOWN, uint8_t numberOfMultisamples = 1 RHI_RESOURCE_DEBUG_NAME_PARAMETER) = 0;
 
 		/**
 		*  @brief
@@ -4347,7 +4365,7 @@ namespace Rhi
 		*  @return
 		*    The created query pool instance, null pointer on error. Release the returned instance if you no longer need it.
 		*/
-		[[nodiscard]] virtual IQueryPool* createQueryPool(QueryType queryType, uint32_t numberOfQueries = 1) = 0;
+		[[nodiscard]] virtual IQueryPool* createQueryPool(QueryType queryType, uint32_t numberOfQueries = 1 RHI_RESOURCE_DEBUG_NAME_PARAMETER) = 0;
 
 		/**
 		*  @brief
@@ -4363,7 +4381,7 @@ namespace Rhi
 		*  @return
 		*    The created swap chain instance, null pointer on error. Release the returned instance if you no longer need it.
 		*/
-		[[nodiscard]] virtual ISwapChain* createSwapChain(IRenderPass& renderPass, WindowHandle windowHandle, bool useExternalContext = false) = 0;
+		[[nodiscard]] virtual ISwapChain* createSwapChain(IRenderPass& renderPass, WindowHandle windowHandle, bool useExternalContext = false RHI_RESOURCE_DEBUG_NAME_PARAMETER) = 0;
 
 		/**
 		*  @brief
@@ -4387,7 +4405,7 @@ namespace Rhi
 		*    - Depending on the used RHI implementation and feature set, there might be the requirement that all provided textures have the same size
 		*      (in order to be on the save side, ensure that all provided textures have the same size and same MSAA sample count)
 		*/
-		[[nodiscard]] virtual IFramebuffer* createFramebuffer(IRenderPass& renderPass, const FramebufferAttachment* colorFramebufferAttachments, const FramebufferAttachment* depthStencilFramebufferAttachment = nullptr) = 0;
+		[[nodiscard]] virtual IFramebuffer* createFramebuffer(IRenderPass& renderPass, const FramebufferAttachment* colorFramebufferAttachments, const FramebufferAttachment* depthStencilFramebufferAttachment = nullptr RHI_RESOURCE_DEBUG_NAME_PARAMETER) = 0;
 
 		/**
 		*  @brief
@@ -4417,7 +4435,7 @@ namespace Rhi
 		*  @return
 		*    The root signature instance, null pointer on error. Release the returned instance if you no longer need it.
 		*/
-		[[nodiscard]] virtual IRootSignature* createRootSignature(const RootSignature& rootSignature) = 0;
+		[[nodiscard]] virtual IRootSignature* createRootSignature(const RootSignature& rootSignature RHI_RESOURCE_DEBUG_NAME_PARAMETER) = 0;
 
 		/**
 		*  @brief
@@ -4429,7 +4447,7 @@ namespace Rhi
 		*  @return
 		*    The graphics pipeline state instance, null pointer on error. Release the returned instance if you no longer need it.
 		*/
-		[[nodiscard]] virtual IGraphicsPipelineState* createGraphicsPipelineState(const GraphicsPipelineState& graphicsPipelineState) = 0;
+		[[nodiscard]] virtual IGraphicsPipelineState* createGraphicsPipelineState(const GraphicsPipelineState& graphicsPipelineState RHI_RESOURCE_DEBUG_NAME_PARAMETER) = 0;
 
 		/**
 		*  @brief
@@ -4443,7 +4461,7 @@ namespace Rhi
 		*  @return
 		*    The compute pipeline state instance, null pointer on error. Release the returned instance if you no longer need it.
 		*/
-		[[nodiscard]] virtual IComputePipelineState* createComputePipelineState(IRootSignature& rootSignature, IComputeShader& computeShader) = 0;
+		[[nodiscard]] virtual IComputePipelineState* createComputePipelineState(IRootSignature& rootSignature, IComputeShader& computeShader RHI_RESOURCE_DEBUG_NAME_PARAMETER) = 0;
 
 		/**
 		*  @brief
@@ -4455,7 +4473,7 @@ namespace Rhi
 		*  @return
 		*    The sampler state instance, null pointer on error. Release the returned instance if you no longer need it.
 		*/
-		[[nodiscard]] virtual ISamplerState* createSamplerState(const SamplerState& samplerState) = 0;
+		[[nodiscard]] virtual ISamplerState* createSamplerState(const SamplerState& samplerState RHI_RESOURCE_DEBUG_NAME_PARAMETER) = 0;
 
 		//[-------------------------------------------------------]
 		//[ Resource handling                                     ]
@@ -4712,9 +4730,9 @@ namespace Rhi
 		*  @param[in] vertexAttributes
 		*    Vertex attributes ("vertex declaration" in Direct3D 9 terminology, "input layout" in Direct3D 10 & 11 terminology)
 		*  @param[in] vertexShader
-		*    Vertex shader the graphics program is using, can be a null pointer, vertex shader and graphics program language must match!
+		*    Vertex shader the graphics program is using, can be a null pointer, vertex shader and graphics program language must match
 		*  @param[in] fragmentShader
-		*    Fragment shader the graphics program is using, can be a null pointer, fragment shader and graphics program language must match!
+		*    Fragment shader the graphics program is using, can be a null pointer, fragment shader and graphics program language must match
 		*
 		*  @return
 		*    The created graphics program, a null pointer on error. Release the returned instance if you no longer need it.
@@ -4725,9 +4743,13 @@ namespace Rhi
 		*      (this means that in the case of not having any more references, a shader might get destroyed when calling this method)
 		*    - Comfort method
 		*/
-		[[nodiscard]] inline IGraphicsProgram* createGraphicsProgram(const IRootSignature& rootSignature, const VertexAttributes& vertexAttributes, IVertexShader* vertexShader, IFragmentShader* fragmentShader)
+		[[nodiscard]] inline IGraphicsProgram* createGraphicsProgram(const IRootSignature& rootSignature, const VertexAttributes& vertexAttributes, IVertexShader* vertexShader, IFragmentShader* fragmentShader RHI_RESOURCE_DEBUG_NAME_PARAMETER)
 		{
-			return createGraphicsProgram(rootSignature, vertexAttributes, vertexShader, nullptr, nullptr, nullptr, fragmentShader);
+			#ifdef RHI_DEBUG
+				return createGraphicsProgram(rootSignature, vertexAttributes, vertexShader, nullptr, nullptr, nullptr, fragmentShader, debugName);
+			#else
+				return createGraphicsProgram(rootSignature, vertexAttributes, vertexShader, nullptr, nullptr, nullptr, fragmentShader);
+			#endif
 		}
 
 		/**
@@ -4739,11 +4761,11 @@ namespace Rhi
 		*  @param[in] vertexAttributes
 		*    Vertex attributes ("vertex declaration" in Direct3D 9 terminology, "input layout" in Direct3D 10 & 11 terminology)
 		*  @param[in] vertexShader
-		*    Vertex shader the graphics program is using, can be a null pointer, vertex shader and graphics program language must match!
+		*    Vertex shader the graphics program is using, can be a null pointer, vertex shader and graphics program language must match
 		*  @param[in] geometryShader
-		*    Geometry shader the graphics program is using, can be a null pointer, geometry shader and graphics program language must match!
+		*    Geometry shader the graphics program is using, can be a null pointer, geometry shader and graphics program language must match
 		*  @param[in] fragmentShader
-		*    Fragment shader the graphics program is using, can be a null pointer, fragment shader and graphics program language must match!
+		*    Fragment shader the graphics program is using, can be a null pointer, fragment shader and graphics program language must match
 		*
 		*  @return
 		*    The created graphics program, a null pointer on error. Release the returned instance if you no longer need it.
@@ -4754,9 +4776,13 @@ namespace Rhi
 		*      (this means that in the case of not having any more references, a shader might get destroyed when calling this method)
 		*    - Comfort method
 		*/
-		[[nodiscard]] inline IGraphicsProgram* createGraphicsProgram(const IRootSignature& rootSignature, const VertexAttributes& vertexAttributes, IVertexShader* vertexShader, IGeometryShader* geometryShader, IFragmentShader* fragmentShader)
+		[[nodiscard]] inline IGraphicsProgram* createGraphicsProgram(const IRootSignature& rootSignature, const VertexAttributes& vertexAttributes, IVertexShader* vertexShader, IGeometryShader* geometryShader, IFragmentShader* fragmentShader RHI_RESOURCE_DEBUG_NAME_PARAMETER)
 		{
-			return createGraphicsProgram(rootSignature, vertexAttributes, vertexShader, nullptr, nullptr, geometryShader, fragmentShader);
+			#ifdef RHI_DEBUG
+				return createGraphicsProgram(rootSignature, vertexAttributes, vertexShader, nullptr, nullptr, geometryShader, fragmentShader, debugName);
+			#else
+				return createGraphicsProgram(rootSignature, vertexAttributes, vertexShader, nullptr, nullptr, geometryShader, fragmentShader);
+			#endif
 		}
 
 		/**
@@ -4768,13 +4794,13 @@ namespace Rhi
 		*  @param[in] vertexAttributes
 		*    Vertex attributes ("vertex declaration" in Direct3D 9 terminology, "input layout" in Direct3D 10 & 11 terminology)
 		*  @param[in] vertexShader
-		*    Vertex shader the graphics program is using, can be a null pointer, vertex shader and graphics program language must match!
+		*    Vertex shader the graphics program is using, can be a null pointer, vertex shader and graphics program language must match
 		*  @param[in] tessellationControlShader
-		*    Tessellation control shader the graphics program is using, can be a null pointer, tessellation control shader and graphics program language must match!
+		*    Tessellation control shader the graphics program is using, can be a null pointer, tessellation control shader and graphics program language must match
 		*  @param[in] tessellationEvaluationShader
-		*    Tessellation evaluation shader the graphics program is using, can be a null pointer, tessellation evaluation shader and graphics program language must match!
+		*    Tessellation evaluation shader the graphics program is using, can be a null pointer, tessellation evaluation shader and graphics program language must match
 		*  @param[in] fragmentShader
-		*    Fragment shader the graphics program is using, can be a null pointer, fragment shader and graphics program language must match!
+		*    Fragment shader the graphics program is using, can be a null pointer, fragment shader and graphics program language must match
 		*
 		*  @return
 		*    The created graphics program, a null pointer on error. Release the returned instance if you no longer need it.
@@ -4785,9 +4811,13 @@ namespace Rhi
 		*      (this means that in the case of not having any more references, a shader might get destroyed when calling this method)
 		*    - Comfort method
 		*/
-		[[nodiscard]] inline IGraphicsProgram* createGraphicsProgram(const IRootSignature& rootSignature, const VertexAttributes& vertexAttributes, IVertexShader* vertexShader, ITessellationControlShader* tessellationControlShader, ITessellationEvaluationShader* tessellationEvaluationShader, IFragmentShader* fragmentShader)
+		[[nodiscard]] inline IGraphicsProgram* createGraphicsProgram(const IRootSignature& rootSignature, const VertexAttributes& vertexAttributes, IVertexShader* vertexShader, ITessellationControlShader* tessellationControlShader, ITessellationEvaluationShader* tessellationEvaluationShader, IFragmentShader* fragmentShader RHI_RESOURCE_DEBUG_NAME_PARAMETER)
 		{
-			return createGraphicsProgram(rootSignature, vertexAttributes, vertexShader, tessellationControlShader, tessellationEvaluationShader, nullptr, fragmentShader);
+			#ifdef RHI_DEBUG
+				return createGraphicsProgram(rootSignature, vertexAttributes, vertexShader, tessellationControlShader, tessellationEvaluationShader, nullptr, fragmentShader, debugName);
+			#else
+				return createGraphicsProgram(rootSignature, vertexAttributes, vertexShader, tessellationControlShader, tessellationEvaluationShader, nullptr, fragmentShader);
+			#endif
 		}
 
 	// Public virtual Rhi::IShaderLanguage methods
@@ -4820,7 +4850,7 @@ namespace Rhi
 		*    - Only supported if "Rhi::Capabilities::vertexShader" is "true"
 		*    - The data the given pointers are pointing to is internally copied and you have to free your memory if you no longer need it
 		*/
-		[[nodiscard]] virtual IVertexShader* createVertexShaderFromBytecode(const VertexAttributes& vertexAttributes, const ShaderBytecode& shaderBytecode) = 0;
+		[[nodiscard]] virtual IVertexShader* createVertexShaderFromBytecode(const VertexAttributes& vertexAttributes, const ShaderBytecode& shaderBytecode RHI_RESOURCE_DEBUG_NAME_PARAMETER) = 0;
 
 		/**
 		*  @brief
@@ -4882,7 +4912,7 @@ namespace Rhi
 		*    - Only supported if "Rhi::Capabilities::vertexShader" is "true"
 		*    - The data the given pointers are pointing to is internally copied and you have to free your memory if you no longer need it
 		*/
-		[[nodiscard]] virtual IVertexShader* createVertexShaderFromSourceCode(const VertexAttributes& vertexAttributes, const ShaderSourceCode& shaderSourceCode, ShaderBytecode* shaderBytecode = nullptr) = 0;
+		[[nodiscard]] virtual IVertexShader* createVertexShaderFromSourceCode(const VertexAttributes& vertexAttributes, const ShaderSourceCode& shaderSourceCode, ShaderBytecode* shaderBytecode = nullptr RHI_RESOURCE_DEBUG_NAME_PARAMETER) = 0;
 
 		/**
 		*  @brief
@@ -4898,7 +4928,7 @@ namespace Rhi
 		*    - Only supported if "Rhi::Capabilities::maximumNumberOfPatchVertices" is not 0
 		*    - The data the given pointers are pointing to is internally copied and you have to free your memory if you no longer need it
 		*/
-		[[nodiscard]] virtual ITessellationControlShader* createTessellationControlShaderFromBytecode(const ShaderBytecode& shaderBytecode) = 0;
+		[[nodiscard]] virtual ITessellationControlShader* createTessellationControlShaderFromBytecode(const ShaderBytecode& shaderBytecode RHI_RESOURCE_DEBUG_NAME_PARAMETER) = 0;
 
 		/**
 		*  @brief
@@ -4919,7 +4949,7 @@ namespace Rhi
 		*  @see
 		*    - "Rhi::IShaderLanguage::createVertexShader()" for more information
 		*/
-		[[nodiscard]] virtual ITessellationControlShader* createTessellationControlShaderFromSourceCode(const ShaderSourceCode& shaderSourceCode, ShaderBytecode* shaderBytecode = nullptr) = 0;
+		[[nodiscard]] virtual ITessellationControlShader* createTessellationControlShaderFromSourceCode(const ShaderSourceCode& shaderSourceCode, ShaderBytecode* shaderBytecode = nullptr RHI_RESOURCE_DEBUG_NAME_PARAMETER) = 0;
 
 		/**
 		*  @brief
@@ -4935,7 +4965,7 @@ namespace Rhi
 		*    - Only supported if "Rhi::Capabilities::maximumNumberOfPatchVertices" is not 0
 		*    - The data the given pointers are pointing to is internally copied and you have to free your memory if you no longer need it
 		*/
-		[[nodiscard]] virtual ITessellationEvaluationShader* createTessellationEvaluationShaderFromBytecode(const ShaderBytecode& shaderBytecode) = 0;
+		[[nodiscard]] virtual ITessellationEvaluationShader* createTessellationEvaluationShaderFromBytecode(const ShaderBytecode& shaderBytecode RHI_RESOURCE_DEBUG_NAME_PARAMETER) = 0;
 
 		/**
 		*  @brief
@@ -4956,7 +4986,7 @@ namespace Rhi
 		*  @see
 		*    - "Rhi::IShaderLanguage::createVertexShader()" for more information
 		*/
-		[[nodiscard]] virtual ITessellationEvaluationShader* createTessellationEvaluationShaderFromSourceCode(const ShaderSourceCode& shaderSourceCode, ShaderBytecode* shaderBytecode = nullptr) = 0;
+		[[nodiscard]] virtual ITessellationEvaluationShader* createTessellationEvaluationShaderFromSourceCode(const ShaderSourceCode& shaderSourceCode, ShaderBytecode* shaderBytecode = nullptr RHI_RESOURCE_DEBUG_NAME_PARAMETER) = 0;
 
 		/**
 		*  @brief
@@ -4981,7 +5011,7 @@ namespace Rhi
 		*      highly recommended to provide this information anyway to be able to switch the internal implementation (e.g. using
 		*      OpenGL instead of Direct3D)
 		*/
-		[[nodiscard]] virtual IGeometryShader* createGeometryShaderFromBytecode(const ShaderBytecode& shaderBytecode, GsInputPrimitiveTopology gsInputPrimitiveTopology, GsOutputPrimitiveTopology gsOutputPrimitiveTopology, uint32_t numberOfOutputVertices) = 0;
+		[[nodiscard]] virtual IGeometryShader* createGeometryShaderFromBytecode(const ShaderBytecode& shaderBytecode, GsInputPrimitiveTopology gsInputPrimitiveTopology, GsOutputPrimitiveTopology gsOutputPrimitiveTopology, uint32_t numberOfOutputVertices RHI_RESOURCE_DEBUG_NAME_PARAMETER) = 0;
 
 		/**
 		*  @brief
@@ -5011,7 +5041,7 @@ namespace Rhi
 		*  @see
 		*    - "Rhi::IShaderLanguage::createVertexShader()" for more information
 		*/
-		[[nodiscard]] virtual IGeometryShader* createGeometryShaderFromSourceCode(const ShaderSourceCode& shaderSourceCode, GsInputPrimitiveTopology gsInputPrimitiveTopology, GsOutputPrimitiveTopology gsOutputPrimitiveTopology, uint32_t numberOfOutputVertices, ShaderBytecode* shaderBytecode = nullptr) = 0;
+		[[nodiscard]] virtual IGeometryShader* createGeometryShaderFromSourceCode(const ShaderSourceCode& shaderSourceCode, GsInputPrimitiveTopology gsInputPrimitiveTopology, GsOutputPrimitiveTopology gsOutputPrimitiveTopology, uint32_t numberOfOutputVertices, ShaderBytecode* shaderBytecode = nullptr RHI_RESOURCE_DEBUG_NAME_PARAMETER) = 0;
 
 		/**
 		*  @brief
@@ -5027,7 +5057,7 @@ namespace Rhi
 		*    - Only supported if "Rhi::Capabilities::fragmentShader" is "true"
 		*    - The data the given pointers are pointing to is internally copied and you have to free your memory if you no longer need it
 		*/
-		[[nodiscard]] virtual IFragmentShader* createFragmentShaderFromBytecode(const ShaderBytecode& shaderBytecode) = 0;
+		[[nodiscard]] virtual IFragmentShader* createFragmentShaderFromBytecode(const ShaderBytecode& shaderBytecode RHI_RESOURCE_DEBUG_NAME_PARAMETER) = 0;
 
 		/**
 		*  @brief
@@ -5048,7 +5078,7 @@ namespace Rhi
 		*  @see
 		*    - "Rhi::IShaderLanguage::createVertexShader()" for more information
 		*/
-		[[nodiscard]] virtual IFragmentShader* createFragmentShaderFromSourceCode(const ShaderSourceCode& shaderSourceCode, ShaderBytecode* shaderBytecode = nullptr) = 0;
+		[[nodiscard]] virtual IFragmentShader* createFragmentShaderFromSourceCode(const ShaderSourceCode& shaderSourceCode, ShaderBytecode* shaderBytecode = nullptr RHI_RESOURCE_DEBUG_NAME_PARAMETER) = 0;
 
 		/**
 		*  @brief
@@ -5064,7 +5094,7 @@ namespace Rhi
 		*    - Only supported if "Rhi::Capabilities::computeShader" is "true"
 		*    - The data the given pointers are pointing to is internally copied and you have to free your memory if you no longer need it
 		*/
-		[[nodiscard]] virtual IComputeShader* createComputeShaderFromBytecode(const ShaderBytecode& shaderBytecode) = 0;
+		[[nodiscard]] virtual IComputeShader* createComputeShaderFromBytecode(const ShaderBytecode& shaderBytecode RHI_RESOURCE_DEBUG_NAME_PARAMETER) = 0;
 
 		/**
 		*  @brief
@@ -5085,7 +5115,7 @@ namespace Rhi
 		*  @see
 		*    - "Rhi::IShaderLanguage::createVertexShader()" for more information
 		*/
-		[[nodiscard]] virtual IComputeShader* createComputeShaderFromSourceCode(const ShaderSourceCode& shaderSourceCode, ShaderBytecode* shaderBytecode = nullptr) = 0;
+		[[nodiscard]] virtual IComputeShader* createComputeShaderFromSourceCode(const ShaderSourceCode& shaderSourceCode, ShaderBytecode* shaderBytecode = nullptr RHI_RESOURCE_DEBUG_NAME_PARAMETER) = 0;
 
 		/**
 		*  @brief
@@ -5096,15 +5126,15 @@ namespace Rhi
 		*  @param[in] vertexAttributes
 		*    Vertex attributes ("vertex declaration" in Direct3D 9 terminology, "input layout" in Direct3D 10 & 11 terminology)
 		*  @param[in] vertexShader
-		*    Vertex shader the graphics program is using, can be a null pointer, vertex shader and graphics program language must match!
+		*    Vertex shader the graphics program is using, can be a null pointer, vertex shader and graphics program language must match
 		*  @param[in] tessellationControlShader
-		*    Tessellation control shader the graphics program is using, can be a null pointer, tessellation control shader and graphics program language must match!
+		*    Tessellation control shader the graphics program is using, can be a null pointer, tessellation control shader and graphics program language must match
 		*  @param[in] tessellationEvaluationShader
-		*    Tessellation evaluation shader the graphics program is using, can be a null pointer, tessellation evaluation shader and graphics program language must match!
+		*    Tessellation evaluation shader the graphics program is using, can be a null pointer, tessellation evaluation shader and graphics program language must match
 		*  @param[in] geometryShader
-		*    Geometry shader the graphics program is using, can be a null pointer, geometry shader and graphics program language must match!
+		*    Geometry shader the graphics program is using, can be a null pointer, geometry shader and graphics program language must match
 		*  @param[in] fragmentShader
-		*    Fragment shader the graphics program is using, can be a null pointer, fragment shader and graphics program language must match!
+		*    Fragment shader the graphics program is using, can be a null pointer, fragment shader and graphics program language must match
 		*
 		*  @return
 		*    The created graphics program, a null pointer on error. Release the returned instance if you no longer need it.
@@ -5115,7 +5145,7 @@ namespace Rhi
 		*    - It's valid that a graphics program implementation is adding a reference and releasing it again at once
 		*      (this means that in the case of not having any more references, a shader might get destroyed when calling this method)
 		*/
-		[[nodiscard]] virtual IGraphicsProgram* createGraphicsProgram(const IRootSignature& rootSignature, const VertexAttributes& vertexAttributes, IVertexShader* vertexShader, ITessellationControlShader* tessellationControlShader, ITessellationEvaluationShader* tessellationEvaluationShader, IGeometryShader* geometryShader, IFragmentShader* fragmentShader) = 0;
+		[[nodiscard]] virtual IGraphicsProgram* createGraphicsProgram(const IRootSignature& rootSignature, const VertexAttributes& vertexAttributes, IVertexShader* vertexShader, ITessellationControlShader* tessellationControlShader, ITessellationEvaluationShader* tessellationEvaluationShader, IGeometryShader* geometryShader, IFragmentShader* fragmentShader RHI_RESOURCE_DEBUG_NAME_PARAMETER) = 0;
 
 	// Protected methods
 	protected:
@@ -5191,22 +5221,6 @@ namespace Rhi
 
 	// Public virtual Rhi::IResource methods
 	public:
-		//[-------------------------------------------------------]
-		//[ Debug                                                 ]
-		//[-------------------------------------------------------]
-		/**
-		*  @brief
-		*    Assign a name to the resource for debugging purposes
-		*
-		*  @param[in] name
-		*    ASCII name for debugging purposes, must be valid (there's no internal null pointer test)
-		*
-		*  @see
-		*    - "Rhi::IRhi::isDebugEnabled()"
-		*/
-		inline virtual void setDebugName([[maybe_unused]] const char* name)
-		{}
-
 		//[-------------------------------------------------------]
 		//[ Internal                                              ]
 		//[-------------------------------------------------------]
@@ -5316,7 +5330,7 @@ namespace Rhi
 		*  @return
 		*    The created resource group instance, a null pointer on error. Release the returned instance if you no longer need it.
 		*/
-		[[nodiscard]] virtual IResourceGroup* createResourceGroup(uint32_t rootParameterIndex, uint32_t numberOfResources, IResource** resources, ISamplerState** samplerStates = nullptr) = 0;
+		[[nodiscard]] virtual IResourceGroup* createResourceGroup(uint32_t rootParameterIndex, uint32_t numberOfResources, IResource** resources, ISamplerState** samplerStates = nullptr RHI_RESOURCE_DEBUG_NAME_PARAMETER) = 0;
 
 	// Protected methods
 	protected:
@@ -5988,7 +6002,7 @@ namespace Rhi
 		*  @return
 		*    The created VBO instance, null pointer on error. Release the returned instance if you no longer need it.
 		*/
-		[[nodiscard]] virtual IVertexBuffer* createVertexBuffer(uint32_t numberOfBytes, const void* data = nullptr, uint32_t bufferFlags = 0, BufferUsage bufferUsage = BufferUsage::STATIC_DRAW) = 0;
+		[[nodiscard]] virtual IVertexBuffer* createVertexBuffer(uint32_t numberOfBytes, const void* data = nullptr, uint32_t bufferFlags = 0, BufferUsage bufferUsage = BufferUsage::STATIC_DRAW RHI_RESOURCE_DEBUG_NAME_PARAMETER) = 0;
 
 		/**
 		*  @brief
@@ -6008,7 +6022,7 @@ namespace Rhi
 		*  @return
 		*    The created IBO instance, null pointer on error. Release the returned instance if you no longer need it.
 		*/
-		[[nodiscard]] virtual IIndexBuffer* createIndexBuffer(uint32_t numberOfBytes, const void* data = nullptr, uint32_t bufferFlags = 0, BufferUsage bufferUsage = BufferUsage::STATIC_DRAW, IndexBufferFormat::Enum indexBufferFormat = IndexBufferFormat::UNSIGNED_SHORT) = 0;
+		[[nodiscard]] virtual IIndexBuffer* createIndexBuffer(uint32_t numberOfBytes, const void* data = nullptr, uint32_t bufferFlags = 0, BufferUsage bufferUsage = BufferUsage::STATIC_DRAW, IndexBufferFormat::Enum indexBufferFormat = IndexBufferFormat::UNSIGNED_SHORT RHI_RESOURCE_DEBUG_NAME_PARAMETER) = 0;
 
 		/**
 		*  @brief
@@ -6031,7 +6045,7 @@ namespace Rhi
 		*    - It's valid that a vertex array implementation is adding a reference and releasing it again at once
 		*      (this means that in the case of not having any more references, a vertex buffer might get destroyed when calling this method)
 		*/
-		[[nodiscard]] virtual IVertexArray* createVertexArray(const VertexAttributes& vertexAttributes, uint32_t numberOfVertexBuffers, const VertexArrayVertexBuffer* vertexBuffers, IIndexBuffer* indexBuffer = nullptr) = 0;
+		[[nodiscard]] virtual IVertexArray* createVertexArray(const VertexAttributes& vertexAttributes, uint32_t numberOfVertexBuffers, const VertexArrayVertexBuffer* vertexBuffers, IIndexBuffer* indexBuffer = nullptr RHI_RESOURCE_DEBUG_NAME_PARAMETER) = 0;
 
 		/**
 		*  @brief
@@ -6054,11 +6068,11 @@ namespace Rhi
 		*  @note
 		*    - Only supported if "Rhi::Capabilities::maximumTextureBufferSize" is not 0
 		*/
-		[[nodiscard]] virtual ITextureBuffer* createTextureBuffer(uint32_t numberOfBytes, const void* data = nullptr, uint32_t bufferFlags = BufferFlag::SHADER_RESOURCE, BufferUsage bufferUsage = BufferUsage::STATIC_DRAW, TextureFormat::Enum textureFormat = TextureFormat::R32G32B32A32F) = 0;
+		[[nodiscard]] virtual ITextureBuffer* createTextureBuffer(uint32_t numberOfBytes, const void* data = nullptr, uint32_t bufferFlags = BufferFlag::SHADER_RESOURCE, BufferUsage bufferUsage = BufferUsage::STATIC_DRAW, TextureFormat::Enum textureFormat = TextureFormat::R32G32B32A32F RHI_RESOURCE_DEBUG_NAME_PARAMETER) = 0;
 
 		/**
 		*  @brief
-		*    Create an structured buffer object instance
+		*    Create an structured buffer object (SBO) instance
 		*
 		*  @param[in] numberOfBytes
 		*    Number of bytes within the structured buffer, must be valid
@@ -6077,7 +6091,7 @@ namespace Rhi
 		*  @note
 		*    - Only supported if "Rhi::Capabilities::maximumStructuredBufferSize" is not 0
 		*/
-		[[nodiscard]] virtual IStructuredBuffer* createStructuredBuffer(uint32_t numberOfBytes, const void* data, uint32_t bufferFlags, BufferUsage bufferUsage, uint32_t numberOfStructureBytes) = 0;
+		[[nodiscard]] virtual IStructuredBuffer* createStructuredBuffer(uint32_t numberOfBytes, const void* data, uint32_t bufferFlags, BufferUsage bufferUsage, uint32_t numberOfStructureBytes RHI_RESOURCE_DEBUG_NAME_PARAMETER) = 0;
 
 		/**
 		*  @brief
@@ -6098,7 +6112,7 @@ namespace Rhi
 		*  @note
 		*    - Only supported if "Rhi::Capabilities::maximumIndirectBufferSize" is >0
 		*/
-		[[nodiscard]] virtual IIndirectBuffer* createIndirectBuffer(uint32_t numberOfBytes, const void* data = nullptr, uint32_t indirectBufferFlags = 0, BufferUsage bufferUsage = BufferUsage::STATIC_DRAW) = 0;
+		[[nodiscard]] virtual IIndirectBuffer* createIndirectBuffer(uint32_t numberOfBytes, const void* data = nullptr, uint32_t indirectBufferFlags = 0, BufferUsage bufferUsage = BufferUsage::STATIC_DRAW RHI_RESOURCE_DEBUG_NAME_PARAMETER) = 0;
 
 		/**
 		*  @brief
@@ -6118,7 +6132,7 @@ namespace Rhi
 		*    - Only supported if "Rhi::Capabilities::maximumUniformBufferSize" is >0
 		*    - There are no buffer flags by intent since an uniform buffer can't be used for unordered access and as a consequence an uniform buffer must always used as shader resource to not be pointless
 		*/
-		[[nodiscard]] virtual IUniformBuffer* createUniformBuffer(uint32_t numberOfBytes, const void* data = nullptr, BufferUsage bufferUsage = BufferUsage::STATIC_DRAW) = 0;
+		[[nodiscard]] virtual IUniformBuffer* createUniformBuffer(uint32_t numberOfBytes, const void* data = nullptr, BufferUsage bufferUsage = BufferUsage::STATIC_DRAW RHI_RESOURCE_DEBUG_NAME_PARAMETER) = 0;
 
 	// Protected methods
 	protected:
@@ -6745,7 +6759,7 @@ namespace Rhi
 		*  @note
 		*    - The following texture data layout is expected: Mip0, Mip1, Mip2, Mip3 ...
 		*/
-		[[nodiscard]] virtual ITexture1D* createTexture1D(uint32_t width, TextureFormat::Enum textureFormat, const void* data = nullptr, uint32_t textureFlags = 0, TextureUsage textureUsage = TextureUsage::DEFAULT) = 0;
+		[[nodiscard]] virtual ITexture1D* createTexture1D(uint32_t width, TextureFormat::Enum textureFormat, const void* data = nullptr, uint32_t textureFlags = 0, TextureUsage textureUsage = TextureUsage::DEFAULT RHI_RESOURCE_DEBUG_NAME_PARAMETER) = 0;
 
 		/**
 		*  @brief
@@ -6777,7 +6791,7 @@ namespace Rhi
 		*  @note
 		*    - Only supported if "Rhi::Capabilities::maximumNumberOf1DTextureArraySlices" is not 0
 		*/
-		[[nodiscard]] virtual ITexture1DArray* createTexture1DArray(uint32_t width, uint32_t numberOfSlices, TextureFormat::Enum textureFormat, const void* data = nullptr, uint32_t textureFlags = 0, TextureUsage textureUsage = TextureUsage::DEFAULT) = 0;
+		[[nodiscard]] virtual ITexture1DArray* createTexture1DArray(uint32_t width, uint32_t numberOfSlices, TextureFormat::Enum textureFormat, const void* data = nullptr, uint32_t textureFlags = 0, TextureUsage textureUsage = TextureUsage::DEFAULT RHI_RESOURCE_DEBUG_NAME_PARAMETER) = 0;
 
 		/**
 		*  @brief
@@ -6806,7 +6820,7 @@ namespace Rhi
 		*  @note
 		*    - The following texture data layout is expected: Mip0, Mip1, Mip2, Mip3 ...
 		*/
-		[[nodiscard]] virtual ITexture2D* createTexture2D(uint32_t width, uint32_t height, TextureFormat::Enum textureFormat, const void* data = nullptr, uint32_t textureFlags = 0, TextureUsage textureUsage = TextureUsage::DEFAULT, uint8_t numberOfMultisamples = 1, const OptimizedTextureClearValue* optimizedTextureClearValue = nullptr) = 0;
+		[[nodiscard]] virtual ITexture2D* createTexture2D(uint32_t width, uint32_t height, TextureFormat::Enum textureFormat, const void* data = nullptr, uint32_t textureFlags = 0, TextureUsage textureUsage = TextureUsage::DEFAULT, uint8_t numberOfMultisamples = 1, const OptimizedTextureClearValue* optimizedTextureClearValue = nullptr RHI_RESOURCE_DEBUG_NAME_PARAMETER) = 0;
 
 		/**
 		*  @brief
@@ -6840,7 +6854,7 @@ namespace Rhi
 		*  @note
 		*    - Only supported if "Rhi::Capabilities::maximumNumberOf2DTextureArraySlices" is not 0
 		*/
-		[[nodiscard]] virtual ITexture2DArray* createTexture2DArray(uint32_t width, uint32_t height, uint32_t numberOfSlices, TextureFormat::Enum textureFormat, const void* data = nullptr, uint32_t textureFlags = 0, TextureUsage textureUsage = TextureUsage::DEFAULT) = 0;
+		[[nodiscard]] virtual ITexture2DArray* createTexture2DArray(uint32_t width, uint32_t height, uint32_t numberOfSlices, TextureFormat::Enum textureFormat, const void* data = nullptr, uint32_t textureFlags = 0, TextureUsage textureUsage = TextureUsage::DEFAULT RHI_RESOURCE_DEBUG_NAME_PARAMETER) = 0;
 
 		/**
 		*  @brief
@@ -6870,7 +6884,7 @@ namespace Rhi
 		*    - Mip1: Slice0, Slice1, Slice2, Slice3, Slice4, Slice5
 		*    (DDS-texture layout is using face-major order)
 		*/
-		[[nodiscard]] virtual ITexture3D* createTexture3D(uint32_t width, uint32_t height, uint32_t depth, TextureFormat::Enum textureFormat, const void* data = nullptr, uint32_t textureFlags = 0, TextureUsage textureUsage = TextureUsage::DEFAULT) = 0;
+		[[nodiscard]] virtual ITexture3D* createTexture3D(uint32_t width, uint32_t height, uint32_t depth, TextureFormat::Enum textureFormat, const void* data = nullptr, uint32_t textureFlags = 0, TextureUsage textureUsage = TextureUsage::DEFAULT RHI_RESOURCE_DEBUG_NAME_PARAMETER) = 0;
 
 		/**
 		*  @brief
@@ -6898,7 +6912,7 @@ namespace Rhi
 		*    - Mip1: Face0, Face1, Face2, Face3, Face4, Face5
 		*    (DDS-texture layout is using face-major order)
 		*/
-		[[nodiscard]] virtual ITextureCube* createTextureCube(uint32_t width, uint32_t height, TextureFormat::Enum textureFormat, const void* data = nullptr, uint32_t textureFlags = 0, TextureUsage textureUsage = TextureUsage::DEFAULT) = 0;
+		[[nodiscard]] virtual ITextureCube* createTextureCube(uint32_t width, uint32_t height, TextureFormat::Enum textureFormat, const void* data = nullptr, uint32_t textureFlags = 0, TextureUsage textureUsage = TextureUsage::DEFAULT RHI_RESOURCE_DEBUG_NAME_PARAMETER) = 0;
 
 	// Protected methods
 	protected:
@@ -9924,14 +9938,12 @@ namespace Rhi
 
 	/**
 	*  @brief
-	*    Assign a name to a given resource for debugging purposes
+	*    Resource name for debugging purposes, ignored when not using "RHI_DEBUG"
 	*
-	*  @param[in] resource
-	*    Resource to assign the debug name to, can be a null pointer
 	*  @param[in] name
 	*    ASCII name for debugging purposes, must be valid (there's no internal null pointer test)
 	*/
-	#define RHI_SET_RESOURCE_DEBUG_NAME(resource, name) if (nullptr != resource) { (resource)->setDebugName(name); }
+	#define RHI_RESOURCE_DEBUG_NAME(name) , name
 
 	/**
 	*  @brief
@@ -10023,12 +10035,10 @@ namespace Rhi
 
 	/**
 	*  @brief
-	*    Assign a name to a given resource for debugging purposes
+	*    Resource name for debugging purposes, ignored when not using "RHI_DEBUG"
 	*
-	*  @param[in] resource
-	*    Resource to assign the debug name to, can be a null pointer
 	*  @param[in] name
 	*    ASCII name for debugging purposes, must be valid (there's no internal null pointer test)
 	*/
-	#define RHI_SET_RESOURCE_DEBUG_NAME(resource, name)
+	#define RHI_RESOURCE_DEBUG_NAME(name)
 #endif

@@ -207,11 +207,11 @@ namespace Renderer
 	//[ Private data                                          ]
 	//[-------------------------------------------------------]
 	private:
-		Rhi::ILog&			  mLog;
-		Rhi::IAssert&		  mAssert;
-		Rhi::IAllocator&	  mAllocator;
-		Rhi::IRhi&			  mRhi;
-		IFileManager&		  mFileManager;
+		Rhi::ILog&		 mLog;
+		Rhi::IAssert&	 mAssert;
+		Rhi::IAllocator& mAllocator;
+		Rhi::IRhi&		 mRhi;
+		IFileManager&	 mFileManager;
 		#ifdef RENDERER_GRAPHICS_DEBUGGER
 			IGraphicsDebugger& mGraphicsDebugger;
 		#endif

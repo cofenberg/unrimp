@@ -90,8 +90,7 @@ namespace Renderer
 		{
 			// Create the RHI texture instance
 			const bool rgbHardwareGammaCorrection = true;	// TODO(co) It must be possible to set the property name from the outside: Ask the material blueprint whether or not hardware gamma correction should be used
-			texture2D = mRenderer.getTextureManager().createTexture2D(mVrRenderModelTextureMap->unWidth, mVrRenderModelTextureMap->unHeight, rgbHardwareGammaCorrection ? Rhi::TextureFormat::R8G8B8A8_SRGB : Rhi::TextureFormat::R8G8B8A8, static_cast<const void*>(mVrRenderModelTextureMap->rubTextureMapData), Rhi::TextureFlag::GENERATE_MIPMAPS | Rhi::TextureFlag::SHADER_RESOURCE);
-			RHI_SET_RESOURCE_DEBUG_NAME(texture2D, getAsset().virtualFilename)
+			texture2D = mRenderer.getTextureManager().createTexture2D(mVrRenderModelTextureMap->unWidth, mVrRenderModelTextureMap->unHeight, rgbHardwareGammaCorrection ? Rhi::TextureFormat::R8G8B8A8_SRGB : Rhi::TextureFormat::R8G8B8A8, static_cast<const void*>(mVrRenderModelTextureMap->rubTextureMapData), Rhi::TextureFlag::GENERATE_MIPMAPS | Rhi::TextureFlag::SHADER_RESOURCE, Rhi::TextureUsage::DEFAULT, 1, nullptr RHI_RESOURCE_DEBUG_NAME(getAsset().virtualFilename));
 
 			// Free the render model texture
 			vr::VRRenderModels()->FreeTexture(mVrRenderModelTextureMap);

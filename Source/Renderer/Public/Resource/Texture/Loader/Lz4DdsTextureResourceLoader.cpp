@@ -700,32 +700,29 @@ namespace Renderer
 	//[-------------------------------------------------------]
 	Rhi::ITexture* Lz4DdsTextureResourceLoader::createRhiTexture()
 	{
-		Rhi::ITexture* texture = nullptr;
 		const uint32_t flags = (mDataContainsMipmaps ? (Rhi::TextureFlag::DATA_CONTAINS_MIPMAPS | Rhi::TextureFlag::SHADER_RESOURCE) : Rhi::TextureFlag::SHADER_RESOURCE);
 		if (1 == mWidth || 1 == mHeight)
 		{
 			// 1D texture
 			if (mNumberOfSlices > 0)
 			{
-				texture = mRenderer.getTextureManager().createTexture1DArray((1 == mWidth) ? mHeight : mWidth, mNumberOfSlices, static_cast<Rhi::TextureFormat::Enum>(mTextureFormat), mImageData, flags, Rhi::TextureUsage::IMMUTABLE);
+				return mRenderer.getTextureManager().createTexture1DArray((1 == mWidth) ? mHeight : mWidth, mNumberOfSlices, static_cast<Rhi::TextureFormat::Enum>(mTextureFormat), mImageData, flags, Rhi::TextureUsage::IMMUTABLE RHI_RESOURCE_DEBUG_NAME(getAsset().virtualFilename));
 			}
 			else
 			{
-				texture = mRenderer.getTextureManager().createTexture1D((1 == mWidth) ? mHeight : mWidth, static_cast<Rhi::TextureFormat::Enum>(mTextureFormat), mImageData, flags, Rhi::TextureUsage::IMMUTABLE);
+				return mRenderer.getTextureManager().createTexture1D((1 == mWidth) ? mHeight : mWidth, static_cast<Rhi::TextureFormat::Enum>(mTextureFormat), mImageData, flags, Rhi::TextureUsage::IMMUTABLE RHI_RESOURCE_DEBUG_NAME(getAsset().virtualFilename));
 			}
 		}
 		else if (mDepth > 1)
 		{
 			// 3D texture
-			texture = mRenderer.getTextureManager().createTexture3D(mWidth, mHeight, mDepth, static_cast<Rhi::TextureFormat::Enum>(mTextureFormat), mImageData, flags, Rhi::TextureUsage::IMMUTABLE);
+			return mRenderer.getTextureManager().createTexture3D(mWidth, mHeight, mDepth, static_cast<Rhi::TextureFormat::Enum>(mTextureFormat), mImageData, flags, Rhi::TextureUsage::IMMUTABLE RHI_RESOURCE_DEBUG_NAME(getAsset().virtualFilename));
 		}
 		else
 		{
 			// 2D texture
-			texture = mRenderer.getTextureManager().createTexture2D(mWidth, mHeight, static_cast<Rhi::TextureFormat::Enum>(mTextureFormat), mImageData, flags, Rhi::TextureUsage::IMMUTABLE);
+			return mRenderer.getTextureManager().createTexture2D(mWidth, mHeight, static_cast<Rhi::TextureFormat::Enum>(mTextureFormat), mImageData, flags, Rhi::TextureUsage::IMMUTABLE, 1, nullptr RHI_RESOURCE_DEBUG_NAME(getAsset().virtualFilename));
 		}
-		RHI_SET_RESOURCE_DEBUG_NAME(texture, getAsset().virtualFilename)
-		return texture;
 	}
 
 
