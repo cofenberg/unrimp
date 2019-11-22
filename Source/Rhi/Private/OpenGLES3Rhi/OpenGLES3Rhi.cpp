@@ -4075,6 +4075,127 @@ namespace OpenGLES3Rhi
 
 
 	//[-------------------------------------------------------]
+	//[ OpenGLES3Rhi/Buffer/VertexBuffer.h                    ]
+	//[-------------------------------------------------------]
+	/**
+	*  @brief
+	*    OpenGL ES 3 vertex buffer object (VBO, "array buffer" in OpenGL terminology) class
+	*/
+	class VertexBuffer final : public Rhi::IVertexBuffer
+	{
+
+
+	//[-------------------------------------------------------]
+	//[ Public methods                                        ]
+	//[-------------------------------------------------------]
+	public:
+		/**
+		*  @brief
+		*    Constructor
+		*
+		*  @param[in] openGLES3Rhi
+		*    Owner OpenGL ES 3 RHI instance
+		*  @param[in] numberOfBytes
+		*    Number of bytes within the vertex buffer, must be valid
+		*  @param[in] data
+		*    Vertex buffer data, can be a null pointer (empty buffer)
+		*  @param[in] bufferUsage
+		*    Indication of the buffer usage
+		*/
+		VertexBuffer(OpenGLES3Rhi& openGLES3Rhi, uint32_t numberOfBytes, const void* data, Rhi::BufferUsage bufferUsage RHI_RESOURCE_DEBUG_NAME_PARAMETER) :
+			IVertexBuffer(openGLES3Rhi),
+			mOpenGLES3ArrayBuffer(0),
+			mBufferSize(numberOfBytes)
+		{
+			// Create the OpenGL ES 3 array buffer
+			glGenBuffers(1, &mOpenGLES3ArrayBuffer);
+
+			#ifdef RHI_OPENGLES3_STATE_CLEANUP
+				// Backup the currently bound OpenGL ES 3 array buffer
+				GLint openGLES3ArrayBufferBackup = 0;
+				glGetIntegerv(GL_ARRAY_BUFFER_BINDING, &openGLES3ArrayBufferBackup);
+			#endif
+
+			// Bind this OpenGL ES 3 array buffer and upload the data
+			glBindBuffer(GL_ARRAY_BUFFER, mOpenGLES3ArrayBuffer);
+			glBufferData(GL_ARRAY_BUFFER, static_cast<GLsizeiptr>(numberOfBytes), data, Mapping::getOpenGLES3Type(bufferUsage));
+
+			#ifdef RHI_OPENGLES3_STATE_CLEANUP
+				// Be polite and restore the previous bound OpenGL ES 3 array buffer
+				glBindBuffer(GL_ARRAY_BUFFER, static_cast<GLuint>(openGLES3ArrayBufferBackup));
+			#endif
+
+			// Assign a default name to the resource for debugging purposes
+			#ifdef RHI_DEBUG
+				if (openGLES3Rhi.getOpenGLES3Context().getExtensions().isGL_KHR_debug())
+				{
+					RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "VBO", 6);	// 6 = "VBO: " including terminating zero
+					glObjectLabelKHR(GL_BUFFER_KHR, mOpenGLES3ArrayBuffer, -1, detailedDebugName);
+				}
+			#endif
+		}
+
+		/**
+		*  @brief
+		*    Destructor
+		*/
+		inline virtual ~VertexBuffer() override
+		{
+			// Destroy the OpenGL ES 3 array buffer
+			// -> Silently ignores 0's and names that do not correspond to existing buffer objects
+			glDeleteBuffers(1, &mOpenGLES3ArrayBuffer);
+		}
+
+		/**
+		*  @brief
+		*    Return the OpenGL ES 3 array buffer
+		*
+		*  @return
+		*    The OpenGL ES 3 array buffer, can be zero if no resource is allocated, do not destroy the returned resource
+		*/
+		[[nodiscard]] inline GLuint getOpenGLES3ArrayBuffer() const
+		{
+			return mOpenGLES3ArrayBuffer;
+		}
+
+		[[nodiscard]] inline uint32_t getBufferSize() const
+		{
+			return mBufferSize;
+		}
+
+
+	//[-------------------------------------------------------]
+	//[ Protected virtual Rhi::RefCount methods               ]
+	//[-------------------------------------------------------]
+	protected:
+		inline virtual void selfDestruct() override
+		{
+			RHI_DELETE(getRhi().getContext(), VertexBuffer, this);
+		}
+
+
+	//[-------------------------------------------------------]
+	//[ Private methods                                       ]
+	//[-------------------------------------------------------]
+	private:
+		explicit VertexBuffer(const VertexBuffer& source) = delete;
+		VertexBuffer& operator =(const VertexBuffer& source) = delete;
+
+
+	//[-------------------------------------------------------]
+	//[ Private data                                          ]
+	//[-------------------------------------------------------]
+	private:
+		GLuint	 mOpenGLES3ArrayBuffer;	///< OpenGL ES 3 array buffer, can be zero if no resource is allocated
+		uint32_t mBufferSize;			///< Holds the size of the buffer
+
+
+	};
+
+
+
+
+	//[-------------------------------------------------------]
 	//[ OpenGLES3Rhi/Buffer/IndexBuffer.h                     ]
 	//[-------------------------------------------------------]
 	/**
@@ -4230,127 +4351,6 @@ namespace OpenGLES3Rhi
 		GLenum   mOpenGLES3Type;				///< OpenGL ES 3 element array buffer data type
 		uint32_t mIndexSizeInBytes;				///< Number of bytes of an index
 		uint32_t mBufferSize;					///< Holds the size of the buffer
-
-
-	};
-
-
-
-
-	//[-------------------------------------------------------]
-	//[ OpenGLES3Rhi/Buffer/VertexBuffer.h                    ]
-	//[-------------------------------------------------------]
-	/**
-	*  @brief
-	*    OpenGL ES 3 vertex buffer object (VBO, "array buffer" in OpenGL terminology) class
-	*/
-	class VertexBuffer final : public Rhi::IVertexBuffer
-	{
-
-
-	//[-------------------------------------------------------]
-	//[ Public methods                                        ]
-	//[-------------------------------------------------------]
-	public:
-		/**
-		*  @brief
-		*    Constructor
-		*
-		*  @param[in] openGLES3Rhi
-		*    Owner OpenGL ES 3 RHI instance
-		*  @param[in] numberOfBytes
-		*    Number of bytes within the vertex buffer, must be valid
-		*  @param[in] data
-		*    Vertex buffer data, can be a null pointer (empty buffer)
-		*  @param[in] bufferUsage
-		*    Indication of the buffer usage
-		*/
-		VertexBuffer(OpenGLES3Rhi& openGLES3Rhi, uint32_t numberOfBytes, const void* data, Rhi::BufferUsage bufferUsage RHI_RESOURCE_DEBUG_NAME_PARAMETER) :
-			IVertexBuffer(openGLES3Rhi),
-			mOpenGLES3ArrayBuffer(0),
-			mBufferSize(numberOfBytes)
-		{
-			// Create the OpenGL ES 3 array buffer
-			glGenBuffers(1, &mOpenGLES3ArrayBuffer);
-
-			#ifdef RHI_OPENGLES3_STATE_CLEANUP
-				// Backup the currently bound OpenGL ES 3 array buffer
-				GLint openGLES3ArrayBufferBackup = 0;
-				glGetIntegerv(GL_ARRAY_BUFFER_BINDING, &openGLES3ArrayBufferBackup);
-			#endif
-
-			// Bind this OpenGL ES 3 array buffer and upload the data
-			glBindBuffer(GL_ARRAY_BUFFER, mOpenGLES3ArrayBuffer);
-			glBufferData(GL_ARRAY_BUFFER, static_cast<GLsizeiptr>(numberOfBytes), data, Mapping::getOpenGLES3Type(bufferUsage));
-
-			#ifdef RHI_OPENGLES3_STATE_CLEANUP
-				// Be polite and restore the previous bound OpenGL ES 3 array buffer
-				glBindBuffer(GL_ARRAY_BUFFER, static_cast<GLuint>(openGLES3ArrayBufferBackup));
-			#endif
-
-			// Assign a default name to the resource for debugging purposes
-			#ifdef RHI_DEBUG
-				if (openGLES3Rhi.getOpenGLES3Context().getExtensions().isGL_KHR_debug())
-				{
-					RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "VBO", 6);	// 6 = "VBO: " including terminating zero
-					glObjectLabelKHR(GL_BUFFER_KHR, mOpenGLES3ArrayBuffer, -1, detailedDebugName);
-				}
-			#endif
-		}
-
-		/**
-		*  @brief
-		*    Destructor
-		*/
-		inline virtual ~VertexBuffer() override
-		{
-			// Destroy the OpenGL ES 3 array buffer
-			// -> Silently ignores 0's and names that do not correspond to existing buffer objects
-			glDeleteBuffers(1, &mOpenGLES3ArrayBuffer);
-		}
-
-		/**
-		*  @brief
-		*    Return the OpenGL ES 3 array buffer
-		*
-		*  @return
-		*    The OpenGL ES 3 array buffer, can be zero if no resource is allocated, do not destroy the returned resource
-		*/
-		[[nodiscard]] inline GLuint getOpenGLES3ArrayBuffer() const
-		{
-			return mOpenGLES3ArrayBuffer;
-		}
-
-		[[nodiscard]] inline uint32_t getBufferSize() const
-		{
-			return mBufferSize;
-		}
-
-
-	//[-------------------------------------------------------]
-	//[ Protected virtual Rhi::RefCount methods               ]
-	//[-------------------------------------------------------]
-	protected:
-		inline virtual void selfDestruct() override
-		{
-			RHI_DELETE(getRhi().getContext(), VertexBuffer, this);
-		}
-
-
-	//[-------------------------------------------------------]
-	//[ Private methods                                       ]
-	//[-------------------------------------------------------]
-	private:
-		explicit VertexBuffer(const VertexBuffer& source) = delete;
-		VertexBuffer& operator =(const VertexBuffer& source) = delete;
-
-
-	//[-------------------------------------------------------]
-	//[ Private data                                          ]
-	//[-------------------------------------------------------]
-	private:
-		GLuint	 mOpenGLES3ArrayBuffer;	///< OpenGL ES 3 array buffer, can be zero if no resource is allocated
-		uint32_t mBufferSize;			///< Holds the size of the buffer
 
 
 	};
@@ -7674,8 +7674,8 @@ namespace OpenGLES3Rhi
 						case Rhi::ResourceType::QUERY_POOL:
 						case Rhi::ResourceType::SWAP_CHAIN:
 						case Rhi::ResourceType::FRAMEBUFFER:
-						case Rhi::ResourceType::INDEX_BUFFER:
 						case Rhi::ResourceType::VERTEX_BUFFER:
+						case Rhi::ResourceType::INDEX_BUFFER:
 						case Rhi::ResourceType::TEXTURE_BUFFER:
 						case Rhi::ResourceType::STRUCTURED_BUFFER:
 						case Rhi::ResourceType::INDIRECT_BUFFER:
@@ -7745,8 +7745,8 @@ namespace OpenGLES3Rhi
 					case Rhi::ResourceType::QUERY_POOL:
 					case Rhi::ResourceType::SWAP_CHAIN:
 					case Rhi::ResourceType::FRAMEBUFFER:
-					case Rhi::ResourceType::INDEX_BUFFER:
 					case Rhi::ResourceType::VERTEX_BUFFER:
+					case Rhi::ResourceType::INDEX_BUFFER:
 					case Rhi::ResourceType::TEXTURE_BUFFER:
 					case Rhi::ResourceType::STRUCTURED_BUFFER:
 					case Rhi::ResourceType::INDIRECT_BUFFER:
@@ -9246,7 +9246,7 @@ namespace
 		//[-------------------------------------------------------]
 		//[ Global definitions                                    ]
 		//[-------------------------------------------------------]
-		static constexpr Rhi::ImplementationDispatchFunction DISPATCH_FUNCTIONS[Rhi::CommandDispatchFunctionIndex::NumberOfFunctions] =
+		static constexpr Rhi::ImplementationDispatchFunction DISPATCH_FUNCTIONS[Rhi::CommandDispatchFunctionIndex::NUMBER_OF_FUNCTIONS] =
 		{
 			// Command buffer
 			&ImplementationDispatch::ExecuteCommandBuffer,
@@ -9682,8 +9682,8 @@ namespace OpenGLES3Rhi
 					case Rhi::ResourceType::QUERY_POOL:
 					case Rhi::ResourceType::SWAP_CHAIN:
 					case Rhi::ResourceType::FRAMEBUFFER:
-					case Rhi::ResourceType::INDEX_BUFFER:
 					case Rhi::ResourceType::VERTEX_BUFFER:
+					case Rhi::ResourceType::INDEX_BUFFER:
 					case Rhi::ResourceType::INDIRECT_BUFFER:
 					case Rhi::ResourceType::GRAPHICS_PIPELINE_STATE:
 					case Rhi::ResourceType::COMPUTE_PIPELINE_STATE:
@@ -9871,8 +9871,8 @@ namespace OpenGLES3Rhi
 					case Rhi::ResourceType::VERTEX_ARRAY:
 					case Rhi::ResourceType::RENDER_PASS:
 					case Rhi::ResourceType::QUERY_POOL:
-					case Rhi::ResourceType::INDEX_BUFFER:
 					case Rhi::ResourceType::VERTEX_BUFFER:
+					case Rhi::ResourceType::INDEX_BUFFER:
 					case Rhi::ResourceType::TEXTURE_BUFFER:
 					case Rhi::ResourceType::STRUCTURED_BUFFER:
 					case Rhi::ResourceType::INDIRECT_BUFFER:
@@ -10204,8 +10204,8 @@ namespace OpenGLES3Rhi
 			case Rhi::ResourceType::QUERY_POOL:
 			case Rhi::ResourceType::SWAP_CHAIN:
 			case Rhi::ResourceType::FRAMEBUFFER:
-			case Rhi::ResourceType::INDEX_BUFFER:
 			case Rhi::ResourceType::VERTEX_BUFFER:
+			case Rhi::ResourceType::INDEX_BUFFER:
 			case Rhi::ResourceType::TEXTURE_BUFFER:
 			case Rhi::ResourceType::STRUCTURED_BUFFER:
 			case Rhi::ResourceType::INDIRECT_BUFFER:
@@ -10499,16 +10499,16 @@ namespace OpenGLES3Rhi
 		// Evaluate the resource type
 		switch (resource.getResourceType())
 		{
-			case Rhi::ResourceType::INDEX_BUFFER:
-			{
-				const IndexBuffer& indexBuffer = static_cast<IndexBuffer&>(resource);
-				return ::detail::mapBuffer(mContext, GL_ELEMENT_ARRAY_BUFFER, GL_ELEMENT_ARRAY_BUFFER_BINDING, indexBuffer.getOpenGLES3ElementArrayBuffer(), indexBuffer.getBufferSize(), mapType, mappedSubresource);
-			}
-
 			case Rhi::ResourceType::VERTEX_BUFFER:
 			{
 				const VertexBuffer& vertexBuffer = static_cast<VertexBuffer&>(resource);
 				return ::detail::mapBuffer(mContext, GL_ARRAY_BUFFER, GL_ARRAY_BUFFER_BINDING, vertexBuffer.getOpenGLES3ArrayBuffer(), vertexBuffer.getBufferSize(), mapType, mappedSubresource);
+			}
+
+			case Rhi::ResourceType::INDEX_BUFFER:
+			{
+				const IndexBuffer& indexBuffer = static_cast<IndexBuffer&>(resource);
+				return ::detail::mapBuffer(mContext, GL_ELEMENT_ARRAY_BUFFER, GL_ELEMENT_ARRAY_BUFFER_BINDING, indexBuffer.getOpenGLES3ElementArrayBuffer(), indexBuffer.getBufferSize(), mapType, mappedSubresource);
 			}
 
 			case Rhi::ResourceType::TEXTURE_BUFFER:
@@ -10650,12 +10650,12 @@ namespace OpenGLES3Rhi
 		// Evaluate the resource type
 		switch (resource.getResourceType())
 		{
-			case Rhi::ResourceType::INDEX_BUFFER:
-				::detail::unmapBuffer(GL_ELEMENT_ARRAY_BUFFER, GL_ELEMENT_ARRAY_BUFFER_BINDING, static_cast<IndexBuffer&>(resource).getOpenGLES3ElementArrayBuffer());
-				break;
-
 			case Rhi::ResourceType::VERTEX_BUFFER:
 				::detail::unmapBuffer(GL_ARRAY_BUFFER, GL_ARRAY_BUFFER_BINDING, static_cast<VertexBuffer&>(resource).getOpenGLES3ArrayBuffer());
+				break;
+
+			case Rhi::ResourceType::INDEX_BUFFER:
+				::detail::unmapBuffer(GL_ELEMENT_ARRAY_BUFFER, GL_ELEMENT_ARRAY_BUFFER_BINDING, static_cast<IndexBuffer&>(resource).getOpenGLES3ElementArrayBuffer());
 				break;
 
 			case Rhi::ResourceType::TEXTURE_BUFFER:
@@ -10796,7 +10796,7 @@ namespace OpenGLES3Rhi
 			{ // Submit command packet
 				const Rhi::CommandDispatchFunctionIndex commandDispatchFunctionIndex = Rhi::CommandPacketHelper::loadCommandDispatchFunctionIndex(constCommandPacket);
 				const void* command = Rhi::CommandPacketHelper::loadCommand(constCommandPacket);
-				detail::DISPATCH_FUNCTIONS[commandDispatchFunctionIndex](command, *this);
+				detail::DISPATCH_FUNCTIONS[static_cast<uint32_t>(commandDispatchFunctionIndex)](command, *this);
 			}
 
 			{ // Next command

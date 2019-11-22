@@ -389,13 +389,13 @@ namespace Renderer
 				if (ImGui::TreeNode("EmittedCommands", "Emitted commands: %s", ::detail::stringFormatCommas(numberOfCommands, temporary)))
 				{
 					// Loop through all commands and count them
-					uint32_t numberOfCommandFunctions[Rhi::CommandDispatchFunctionIndex::NumberOfFunctions] = {};
+					uint32_t numberOfCommandFunctions[Rhi::CommandDispatchFunctionIndex::NUMBER_OF_FUNCTIONS] = {};
 					const uint8_t* commandPacketBuffer = commandBuffer.getCommandPacketBuffer();
 					Rhi::ConstCommandPacket constCommandPacket = commandPacketBuffer;
 					while (nullptr != constCommandPacket)
 					{
 						// Count command packet
-						++numberOfCommandFunctions[Rhi::CommandPacketHelper::loadCommandDispatchFunctionIndex(constCommandPacket)];
+						++numberOfCommandFunctions[static_cast<uint32_t>(Rhi::CommandPacketHelper::loadCommandDispatchFunctionIndex(constCommandPacket))];
 
 						{ // Next command
 							const uint32_t nextCommandPacketByteIndex = Rhi::CommandPacketHelper::getNextCommandPacketByteIndex(constCommandPacket);
@@ -404,7 +404,7 @@ namespace Renderer
 					}
 
 					// Print the number of emitted command functions
-					static constexpr const char* commandFunction[Rhi::CommandDispatchFunctionIndex::NumberOfFunctions] =
+					static constexpr const char* commandFunction[static_cast<uint32_t>(Rhi::CommandDispatchFunctionIndex::NUMBER_OF_FUNCTIONS)] =
 					{
 						// Command buffer
 						"ExecuteCommandBuffer",
@@ -439,7 +439,7 @@ namespace Renderer
 						"BeginDebugEvent",
 						"EndDebugEvent"
 					};
-					for (uint32_t i = 0; i < Rhi::CommandDispatchFunctionIndex::NumberOfFunctions; ++i)
+					for (uint32_t i = 0; i < static_cast<uint32_t>(Rhi::CommandDispatchFunctionIndex::NUMBER_OF_FUNCTIONS); ++i)
 					{
 						ImGui::Text("%s: %s", commandFunction[i], ::detail::stringFormatCommas(numberOfCommandFunctions[i], temporary));
 					}
@@ -460,8 +460,8 @@ namespace Renderer
 						ImGui::Text("Query pools: %s", ::detail::stringFormatCommas(statistics.currentNumberOfQueryPools.load(), temporary));
 						ImGui::Text("Swap chains: %s", ::detail::stringFormatCommas(statistics.currentNumberOfSwapChains.load(), temporary));
 						ImGui::Text("Framebuffers: %s", ::detail::stringFormatCommas(statistics.currentNumberOfFramebuffers.load(), temporary));
-						ImGui::Text("Index buffers: %s", ::detail::stringFormatCommas(statistics.currentNumberOfIndexBuffers.load(), temporary));
 						ImGui::Text("Vertex buffers: %s", ::detail::stringFormatCommas(statistics.currentNumberOfVertexBuffers.load(), temporary));
+						ImGui::Text("Index buffers: %s", ::detail::stringFormatCommas(statistics.currentNumberOfIndexBuffers.load(), temporary));
 						ImGui::Text("Texture buffers: %s", ::detail::stringFormatCommas(statistics.currentNumberOfTextureBuffers.load(), temporary));
 						ImGui::Text("Structured buffers: %s", ::detail::stringFormatCommas(statistics.currentNumberOfStructuredBuffers.load(), temporary));
 						ImGui::Text("Indirect buffers: %s", ::detail::stringFormatCommas(statistics.currentNumberOfIndirectBuffers.load(), temporary));

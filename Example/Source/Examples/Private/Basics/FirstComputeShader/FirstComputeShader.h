@@ -45,15 +45,15 @@
 *    - Multi-draw indirect buffer written by a compute shader
 *
 *    Demonstrates infrastructure usage:
-*    - Index buffer object (IBO)
 *    - Vertex buffer object (VBO)
+*    - Index buffer object (IBO)
 *    - Vertex array object (VAO)
 *    - Texture buffer object (TBO)
-*    - Structured buffer object
+*    - Structured buffer object (SBO)
 *    - Indirect buffer
 *    - Uniform buffer object (UBO)
 *    - 2D texture
-*    - Sampler state object
+*    - Sampler state object (SO)
 *    - Vertex shader (VS), fragment shader (FS) and compute shader (CS)
 *    - Root signature
 *    - Graphics pipeline state object (PSO)
@@ -124,10 +124,10 @@ private:
 	Rhi::IGraphicsPipelineStatePtr	mGraphicsPipelineState;			///< Graphics pipeline state object (PSO), can be a null pointer
 	Rhi::IComputePipelineStatePtr	mComputePipelineState1;			///< First compute pipeline state object (PSO), can be a null pointer
 	Rhi::IComputePipelineStatePtr	mComputePipelineState2;			///< Second compute pipeline state object (PSO), can be a null pointer
-	Rhi::IIndexBufferPtr			mComputeInputIndexBuffer;		///< Graphics index buffer object (IBO) read by compute shader, can be a null pointer
-	Rhi::IIndexBufferPtr			mComputeOutputIndexBuffer;		///< Graphics index buffer object (IBO) written by compute shader, can be a null pointer
 	Rhi::IVertexBufferPtr			mComputeInputVertexBuffer;		///< Graphics vertex buffer object (VBO) read by compute shader, can be a null pointer
 	Rhi::IVertexBufferPtr			mComputeOutputVertexBuffer;		///< Graphics vertex buffer object (VBO) written by compute shader, can be a null pointer
+	Rhi::IIndexBufferPtr			mComputeInputIndexBuffer;		///< Graphics index buffer object (IBO) read by compute shader, can be a null pointer
+	Rhi::IIndexBufferPtr			mComputeOutputIndexBuffer;		///< Graphics index buffer object (IBO) written by compute shader, can be a null pointer
 	Rhi::IVertexArrayPtr			mVertexArray;					///< Graphics vertex array object (VAO), can be a null pointer
 	Rhi::ITextureBufferPtr			mComputeInputTextureBuffer;		///< Graphics texture buffer (TBO) read by compute shader, can be a null pointer
 	Rhi::ITextureBufferPtr			mComputeOutputTextureBuffer;	///< Graphics texture buffer (TBO) written by compute shader, can be a null pointer

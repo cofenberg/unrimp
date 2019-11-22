@@ -1003,63 +1003,6 @@ namespace NullRhi
 
 
 	//[-------------------------------------------------------]
-	//[ NullRhi/Buffer/IndexBuffer.h                          ]
-	//[-------------------------------------------------------]
-	/**
-	*  @brief
-	*    Null index buffer object (IBO, "element array buffer" in OpenGL terminology) class
-	*/
-	class IndexBuffer final : public Rhi::IIndexBuffer
-	{
-
-
-	//[-------------------------------------------------------]
-	//[ Public methods                                        ]
-	//[-------------------------------------------------------]
-	public:
-		/**
-		*  @brief
-		*    Constructor
-		*
-		*  @param[in] nullRhi
-		*    Owner null RHI instance
-		*/
-		inline explicit IndexBuffer(NullRhi& nullRhi) :
-			IIndexBuffer(nullRhi)
-		{}
-
-		/**
-		*  @brief
-		*    Destructor
-		*/
-		inline virtual ~IndexBuffer() override
-		{}
-
-
-	//[-------------------------------------------------------]
-	//[ Protected virtual Rhi::RefCount methods               ]
-	//[-------------------------------------------------------]
-	protected:
-		inline virtual void selfDestruct() override
-		{
-			RHI_DELETE(getRhi().getContext(), IndexBuffer, this);
-		}
-
-
-	//[-------------------------------------------------------]
-	//[ Private methods                                       ]
-	//[-------------------------------------------------------]
-	private:
-		explicit IndexBuffer(const IndexBuffer& source) = delete;
-		IndexBuffer& operator =(const IndexBuffer& source) = delete;
-
-
-	};
-
-
-
-
-	//[-------------------------------------------------------]
 	//[ NullRhi/Buffer/VertexBuffer.h                         ]
 	//[-------------------------------------------------------]
 	/**
@@ -1109,6 +1052,63 @@ namespace NullRhi
 	private:
 		explicit VertexBuffer(const VertexBuffer& source) = delete;
 		VertexBuffer& operator =(const VertexBuffer& source) = delete;
+
+
+	};
+
+
+
+
+	//[-------------------------------------------------------]
+	//[ NullRhi/Buffer/IndexBuffer.h                          ]
+	//[-------------------------------------------------------]
+	/**
+	*  @brief
+	*    Null index buffer object (IBO, "element array buffer" in OpenGL terminology) class
+	*/
+	class IndexBuffer final : public Rhi::IIndexBuffer
+	{
+
+
+	//[-------------------------------------------------------]
+	//[ Public methods                                        ]
+	//[-------------------------------------------------------]
+	public:
+		/**
+		*  @brief
+		*    Constructor
+		*
+		*  @param[in] nullRhi
+		*    Owner null RHI instance
+		*/
+		inline explicit IndexBuffer(NullRhi& nullRhi) :
+			IIndexBuffer(nullRhi)
+		{}
+
+		/**
+		*  @brief
+		*    Destructor
+		*/
+		inline virtual ~IndexBuffer() override
+		{}
+
+
+	//[-------------------------------------------------------]
+	//[ Protected virtual Rhi::RefCount methods               ]
+	//[-------------------------------------------------------]
+	protected:
+		inline virtual void selfDestruct() override
+		{
+			RHI_DELETE(getRhi().getContext(), IndexBuffer, this);
+		}
+
+
+	//[-------------------------------------------------------]
+	//[ Private methods                                       ]
+	//[-------------------------------------------------------]
+	private:
+		explicit IndexBuffer(const IndexBuffer& source) = delete;
+		IndexBuffer& operator =(const IndexBuffer& source) = delete;
 
 
 	};
@@ -1240,7 +1240,7 @@ namespace NullRhi
 	//[-------------------------------------------------------]
 	/**
 	*  @brief
-	*    Null structured buffer object class
+	*    Null structured buffer object (SBO) class
 	*/
 	class StructuredBuffer final : public Rhi::IStructuredBuffer
 	{
@@ -3542,7 +3542,7 @@ namespace
 		//[-------------------------------------------------------]
 		//[ Global definitions                                    ]
 		//[-------------------------------------------------------]
-		static constexpr Rhi::ImplementationDispatchFunction DISPATCH_FUNCTIONS[Rhi::CommandDispatchFunctionIndex::NumberOfFunctions] =
+		static constexpr Rhi::ImplementationDispatchFunction DISPATCH_FUNCTIONS[Rhi::CommandDispatchFunctionIndex::NUMBER_OF_FUNCTIONS] =
 		{
 			// Command buffer
 			&ImplementationDispatch::ExecuteCommandBuffer,
@@ -4187,7 +4187,7 @@ namespace NullRhi
 			{ // Submit command packet
 				const Rhi::CommandDispatchFunctionIndex commandDispatchFunctionIndex = Rhi::CommandPacketHelper::loadCommandDispatchFunctionIndex(constCommandPacket);
 				const void* command = Rhi::CommandPacketHelper::loadCommand(constCommandPacket);
-				detail::DISPATCH_FUNCTIONS[commandDispatchFunctionIndex](command, *this);
+				detail::DISPATCH_FUNCTIONS[static_cast<uint32_t>(commandDispatchFunctionIndex)](command, *this);
 			}
 
 			{ // Next command

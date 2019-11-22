@@ -5495,6 +5495,254 @@ namespace OpenGLRhi
 
 
 	//[-------------------------------------------------------]
+	//[ OpenGLRhi/Buffer/VertexBuffer.h                       ]
+	//[-------------------------------------------------------]
+	/**
+	*  @brief
+	*    Abstract OpenGL vertex buffer object (VBO, "array buffer" in OpenGL terminology) interface
+	*/
+	class VertexBuffer : public Rhi::IVertexBuffer
+	{
+
+
+	//[-------------------------------------------------------]
+	//[ Public methods                                        ]
+	//[-------------------------------------------------------]
+	public:
+		/**
+		*  @brief
+		*    Destructor
+		*/
+		inline virtual ~VertexBuffer() override
+		{
+			// Destroy the OpenGL array buffer
+			// -> Silently ignores 0's and names that do not correspond to existing buffer objects
+			glDeleteBuffersARB(1, &mOpenGLArrayBuffer);
+		}
+
+		/**
+		*  @brief
+		*    Return the OpenGL array buffer
+		*
+		*  @return
+		*    The OpenGL array buffer, can be zero if no resource is allocated, do not destroy the returned resource
+		*/
+		[[nodiscard]] inline GLuint getOpenGLArrayBuffer() const
+		{
+			return mOpenGLArrayBuffer;
+		}
+
+
+	//[-------------------------------------------------------]
+	//[ Protected virtual Rhi::RefCount methods               ]
+	//[-------------------------------------------------------]
+	protected:
+		inline virtual void selfDestruct() override
+		{
+			RHI_DELETE(getRhi().getContext(), VertexBuffer, this);
+		}
+
+
+	//[-------------------------------------------------------]
+	//[ Protected methods                                     ]
+	//[-------------------------------------------------------]
+	protected:
+		/**
+		*  @brief
+		*    Constructor
+		*
+		*  @param[in] openGLRhi
+		*    Owner OpenGL RHI instance
+		*/
+		inline explicit VertexBuffer(OpenGLRhi& openGLRhi) :
+			IVertexBuffer(static_cast<Rhi::IRhi&>(openGLRhi)),
+			mOpenGLArrayBuffer(0)
+		{}
+
+
+	//[-------------------------------------------------------]
+	//[ Protected data                                        ]
+	//[-------------------------------------------------------]
+	protected:
+		GLuint mOpenGLArrayBuffer;	///< OpenGL array buffer, can be zero if no resource is allocated
+
+
+	//[-------------------------------------------------------]
+	//[ Private methods                                       ]
+	//[-------------------------------------------------------]
+	private:
+		explicit VertexBuffer(const VertexBuffer& source) = delete;
+		VertexBuffer& operator =(const VertexBuffer& source) = delete;
+
+
+	};
+
+
+
+
+	//[-------------------------------------------------------]
+	//[ OpenGLRhi/Buffer/VertexBufferBind.h                   ]
+	//[-------------------------------------------------------]
+	/**
+	*  @brief
+	*    OpenGL vertex buffer object (VBO, "array buffer" in OpenGL terminology) class, traditional bind version
+	*/
+	class VertexBufferBind final : public VertexBuffer
+	{
+
+
+	//[-------------------------------------------------------]
+	//[ Public methods                                        ]
+	//[-------------------------------------------------------]
+	public:
+		/**
+		*  @brief
+		*    Constructor
+		*
+		*  @param[in] openGLRhi
+		*    Owner OpenGL RHI instance
+		*  @param[in] numberOfBytes
+		*    Number of bytes within the vertex buffer, must be valid
+		*  @param[in] data
+		*    Vertex buffer data, can be a null pointer (empty buffer)
+		*  @param[in] bufferUsage
+		*    Indication of the buffer usage
+		*/
+		VertexBufferBind(OpenGLRhi& openGLRhi, uint32_t numberOfBytes, const void* data, Rhi::BufferUsage bufferUsage RHI_RESOURCE_DEBUG_NAME_PARAMETER) :
+			VertexBuffer(openGLRhi)
+		{
+			#ifdef RHI_OPENGL_STATE_CLEANUP
+				// Backup the currently bound OpenGL array buffer
+				GLint openGLArrayBufferBackup = 0;
+				glGetIntegerv(GL_ARRAY_BUFFER_BINDING_ARB, &openGLArrayBufferBackup);
+			#endif
+
+			// Create the OpenGL array buffer
+			glGenBuffersARB(1, &mOpenGLArrayBuffer);
+
+			// Bind this OpenGL array buffer and upload the data
+			// -> Usage: These constants directly map to "GL_ARB_vertex_buffer_object" and OpenGL ES 3 constants, do not change them
+			glBindBufferARB(GL_ARRAY_BUFFER_ARB, mOpenGLArrayBuffer);
+			glBufferDataARB(GL_ARRAY_BUFFER_ARB, static_cast<GLsizeiptrARB>(numberOfBytes), data, static_cast<GLenum>(bufferUsage));
+
+			#ifdef RHI_OPENGL_STATE_CLEANUP
+				// Be polite and restore the previous bound OpenGL array buffer
+				glBindBufferARB(GL_ARRAY_BUFFER_ARB, static_cast<GLuint>(openGLArrayBufferBackup));
+			#endif
+
+			// Assign a default name to the resource for debugging purposes
+			#ifdef RHI_DEBUG
+				if (openGLRhi.getExtensions().isGL_KHR_debug())
+				{
+					RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "VBO", 6);	// 6 = "VBO: " including terminating zero
+					glObjectLabel(GL_BUFFER, mOpenGLArrayBuffer, -1, detailedDebugName);
+				}
+			#endif
+		}
+
+		/**
+		*  @brief
+		*    Destructor
+		*/
+		inline virtual ~VertexBufferBind() override
+		{}
+
+
+	//[-------------------------------------------------------]
+	//[ Private methods                                       ]
+	//[-------------------------------------------------------]
+	private:
+		explicit VertexBufferBind(const VertexBufferBind& source) = delete;
+		VertexBufferBind& operator =(const VertexBufferBind& source) = delete;
+
+
+	};
+
+
+
+
+	//[-------------------------------------------------------]
+	//[ OpenGLRhi/Buffer/VertexBufferDsa.h                    ]
+	//[-------------------------------------------------------]
+	/**
+	*  @brief
+	*    OpenGL vertex buffer object (VBO, "array buffer" in OpenGL terminology) class, effective direct state access (DSA)
+	*/
+	class VertexBufferDsa final : public VertexBuffer
+	{
+
+
+	//[-------------------------------------------------------]
+	//[ Public methods                                        ]
+	//[-------------------------------------------------------]
+	public:
+		/**
+		*  @brief
+		*    Constructor
+		*
+		*  @param[in] openGLRhi
+		*    Owner OpenGL RHI instance
+		*  @param[in] numberOfBytes
+		*    Number of bytes within the vertex buffer, must be valid
+		*  @param[in] data
+		*    Vertex buffer data, can be a null pointer (empty buffer)
+		*  @param[in] bufferUsage
+		*    Indication of the buffer usage
+		*/
+		VertexBufferDsa(OpenGLRhi& openGLRhi, uint32_t numberOfBytes, const void* data, Rhi::BufferUsage bufferUsage RHI_RESOURCE_DEBUG_NAME_PARAMETER) :
+			VertexBuffer(openGLRhi)
+		{
+			if (openGLRhi.getExtensions().isGL_ARB_direct_state_access())
+			{
+				// Create the OpenGL array buffer
+				glCreateBuffers(1, &mOpenGLArrayBuffer);
+
+				// Upload the data
+				// -> Usage: These constants directly map to "GL_ARB_vertex_buffer_object" and OpenGL ES 3 constants, do not change them
+				glNamedBufferData(mOpenGLArrayBuffer, static_cast<GLsizeiptr>(numberOfBytes), data, static_cast<GLenum>(bufferUsage));
+			}
+			else
+			{
+				// Create the OpenGL array buffer
+				glGenBuffersARB(1, &mOpenGLArrayBuffer);
+
+				// Upload the data
+				// -> Usage: These constants directly map to "GL_ARB_vertex_buffer_object" and OpenGL ES 3 constants, do not change them
+				glNamedBufferDataEXT(mOpenGLArrayBuffer, static_cast<GLsizeiptr>(numberOfBytes), data, static_cast<GLenum>(bufferUsage));
+			}
+
+			// Assign a default name to the resource for debugging purposes
+			#ifdef RHI_DEBUG
+				if (openGLRhi.getExtensions().isGL_KHR_debug())
+				{
+					RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "VBO", 6);	// 6 = "VBO: " including terminating zero
+					glObjectLabel(GL_BUFFER, mOpenGLArrayBuffer, -1, detailedDebugName);
+				}
+			#endif
+		}
+
+		/**
+		*  @brief
+		*    Destructor
+		*/
+		inline virtual ~VertexBufferDsa() override
+		{}
+
+
+	//[-------------------------------------------------------]
+	//[ Private methods                                       ]
+	//[-------------------------------------------------------]
+	private:
+		explicit VertexBufferDsa(const VertexBufferDsa& source) = delete;
+		VertexBufferDsa& operator =(const VertexBufferDsa& source) = delete;
+
+
+	};
+
+
+
+
+	//[-------------------------------------------------------]
 	//[ OpenGLRhi/Buffer/IndexBuffer.h                        ]
 	//[-------------------------------------------------------]
 	/**
@@ -5769,254 +6017,6 @@ namespace OpenGLRhi
 	private:
 		explicit IndexBufferDsa(const IndexBufferDsa& source) = delete;
 		IndexBufferDsa& operator =(const IndexBufferDsa& source) = delete;
-
-
-	};
-
-
-
-
-	//[-------------------------------------------------------]
-	//[ OpenGLRhi/Buffer/VertexBuffer.h                       ]
-	//[-------------------------------------------------------]
-	/**
-	*  @brief
-	*    Abstract OpenGL vertex buffer object (VBO, "array buffer" in OpenGL terminology) interface
-	*/
-	class VertexBuffer : public Rhi::IVertexBuffer
-	{
-
-
-	//[-------------------------------------------------------]
-	//[ Public methods                                        ]
-	//[-------------------------------------------------------]
-	public:
-		/**
-		*  @brief
-		*    Destructor
-		*/
-		inline virtual ~VertexBuffer() override
-		{
-			// Destroy the OpenGL array buffer
-			// -> Silently ignores 0's and names that do not correspond to existing buffer objects
-			glDeleteBuffersARB(1, &mOpenGLArrayBuffer);
-		}
-
-		/**
-		*  @brief
-		*    Return the OpenGL array buffer
-		*
-		*  @return
-		*    The OpenGL array buffer, can be zero if no resource is allocated, do not destroy the returned resource
-		*/
-		[[nodiscard]] inline GLuint getOpenGLArrayBuffer() const
-		{
-			return mOpenGLArrayBuffer;
-		}
-
-
-	//[-------------------------------------------------------]
-	//[ Protected virtual Rhi::RefCount methods               ]
-	//[-------------------------------------------------------]
-	protected:
-		inline virtual void selfDestruct() override
-		{
-			RHI_DELETE(getRhi().getContext(), VertexBuffer, this);
-		}
-
-
-	//[-------------------------------------------------------]
-	//[ Protected methods                                     ]
-	//[-------------------------------------------------------]
-	protected:
-		/**
-		*  @brief
-		*    Constructor
-		*
-		*  @param[in] openGLRhi
-		*    Owner OpenGL RHI instance
-		*/
-		inline explicit VertexBuffer(OpenGLRhi& openGLRhi) :
-			IVertexBuffer(static_cast<Rhi::IRhi&>(openGLRhi)),
-			mOpenGLArrayBuffer(0)
-		{}
-
-
-	//[-------------------------------------------------------]
-	//[ Protected data                                        ]
-	//[-------------------------------------------------------]
-	protected:
-		GLuint mOpenGLArrayBuffer;	///< OpenGL array buffer, can be zero if no resource is allocated
-
-
-	//[-------------------------------------------------------]
-	//[ Private methods                                       ]
-	//[-------------------------------------------------------]
-	private:
-		explicit VertexBuffer(const VertexBuffer& source) = delete;
-		VertexBuffer& operator =(const VertexBuffer& source) = delete;
-
-
-	};
-
-
-
-
-	//[-------------------------------------------------------]
-	//[ OpenGLRhi/Buffer/VertexBufferBind.h                   ]
-	//[-------------------------------------------------------]
-	/**
-	*  @brief
-	*    OpenGL vertex buffer object (VBO, "array buffer" in OpenGL terminology) class, traditional bind version
-	*/
-	class VertexBufferBind final : public VertexBuffer
-	{
-
-
-	//[-------------------------------------------------------]
-	//[ Public methods                                        ]
-	//[-------------------------------------------------------]
-	public:
-		/**
-		*  @brief
-		*    Constructor
-		*
-		*  @param[in] openGLRhi
-		*    Owner OpenGL RHI instance
-		*  @param[in] numberOfBytes
-		*    Number of bytes within the vertex buffer, must be valid
-		*  @param[in] data
-		*    Vertex buffer data, can be a null pointer (empty buffer)
-		*  @param[in] bufferUsage
-		*    Indication of the buffer usage
-		*/
-		VertexBufferBind(OpenGLRhi& openGLRhi, uint32_t numberOfBytes, const void* data, Rhi::BufferUsage bufferUsage RHI_RESOURCE_DEBUG_NAME_PARAMETER) :
-			VertexBuffer(openGLRhi)
-		{
-			#ifdef RHI_OPENGL_STATE_CLEANUP
-				// Backup the currently bound OpenGL array buffer
-				GLint openGLArrayBufferBackup = 0;
-				glGetIntegerv(GL_ARRAY_BUFFER_BINDING_ARB, &openGLArrayBufferBackup);
-			#endif
-
-			// Create the OpenGL array buffer
-			glGenBuffersARB(1, &mOpenGLArrayBuffer);
-
-			// Bind this OpenGL array buffer and upload the data
-			// -> Usage: These constants directly map to "GL_ARB_vertex_buffer_object" and OpenGL ES 3 constants, do not change them
-			glBindBufferARB(GL_ARRAY_BUFFER_ARB, mOpenGLArrayBuffer);
-			glBufferDataARB(GL_ARRAY_BUFFER_ARB, static_cast<GLsizeiptrARB>(numberOfBytes), data, static_cast<GLenum>(bufferUsage));
-
-			#ifdef RHI_OPENGL_STATE_CLEANUP
-				// Be polite and restore the previous bound OpenGL array buffer
-				glBindBufferARB(GL_ARRAY_BUFFER_ARB, static_cast<GLuint>(openGLArrayBufferBackup));
-			#endif
-
-			// Assign a default name to the resource for debugging purposes
-			#ifdef RHI_DEBUG
-				if (openGLRhi.getExtensions().isGL_KHR_debug())
-				{
-					RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "VBO", 6);	// 6 = "VBO: " including terminating zero
-					glObjectLabel(GL_BUFFER, mOpenGLArrayBuffer, -1, detailedDebugName);
-				}
-			#endif
-		}
-
-		/**
-		*  @brief
-		*    Destructor
-		*/
-		inline virtual ~VertexBufferBind() override
-		{}
-
-
-	//[-------------------------------------------------------]
-	//[ Private methods                                       ]
-	//[-------------------------------------------------------]
-	private:
-		explicit VertexBufferBind(const VertexBufferBind& source) = delete;
-		VertexBufferBind& operator =(const VertexBufferBind& source) = delete;
-
-
-	};
-
-
-
-
-	//[-------------------------------------------------------]
-	//[ OpenGLRhi/Buffer/VertexBufferDsa.h                    ]
-	//[-------------------------------------------------------]
-	/**
-	*  @brief
-	*    OpenGL vertex buffer object (VBO, "array buffer" in OpenGL terminology) class, effective direct state access (DSA)
-	*/
-	class VertexBufferDsa final : public VertexBuffer
-	{
-
-
-	//[-------------------------------------------------------]
-	//[ Public methods                                        ]
-	//[-------------------------------------------------------]
-	public:
-		/**
-		*  @brief
-		*    Constructor
-		*
-		*  @param[in] openGLRhi
-		*    Owner OpenGL RHI instance
-		*  @param[in] numberOfBytes
-		*    Number of bytes within the vertex buffer, must be valid
-		*  @param[in] data
-		*    Vertex buffer data, can be a null pointer (empty buffer)
-		*  @param[in] bufferUsage
-		*    Indication of the buffer usage
-		*/
-		VertexBufferDsa(OpenGLRhi& openGLRhi, uint32_t numberOfBytes, const void* data, Rhi::BufferUsage bufferUsage RHI_RESOURCE_DEBUG_NAME_PARAMETER) :
-			VertexBuffer(openGLRhi)
-		{
-			if (openGLRhi.getExtensions().isGL_ARB_direct_state_access())
-			{
-				// Create the OpenGL array buffer
-				glCreateBuffers(1, &mOpenGLArrayBuffer);
-
-				// Upload the data
-				// -> Usage: These constants directly map to "GL_ARB_vertex_buffer_object" and OpenGL ES 3 constants, do not change them
-				glNamedBufferData(mOpenGLArrayBuffer, static_cast<GLsizeiptr>(numberOfBytes), data, static_cast<GLenum>(bufferUsage));
-			}
-			else
-			{
-				// Create the OpenGL array buffer
-				glGenBuffersARB(1, &mOpenGLArrayBuffer);
-
-				// Upload the data
-				// -> Usage: These constants directly map to "GL_ARB_vertex_buffer_object" and OpenGL ES 3 constants, do not change them
-				glNamedBufferDataEXT(mOpenGLArrayBuffer, static_cast<GLsizeiptr>(numberOfBytes), data, static_cast<GLenum>(bufferUsage));
-			}
-
-			// Assign a default name to the resource for debugging purposes
-			#ifdef RHI_DEBUG
-				if (openGLRhi.getExtensions().isGL_KHR_debug())
-				{
-					RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "VBO", 6);	// 6 = "VBO: " including terminating zero
-					glObjectLabel(GL_BUFFER, mOpenGLArrayBuffer, -1, detailedDebugName);
-				}
-			#endif
-		}
-
-		/**
-		*  @brief
-		*    Destructor
-		*/
-		inline virtual ~VertexBufferDsa() override
-		{}
-
-
-	//[-------------------------------------------------------]
-	//[ Private methods                                       ]
-	//[-------------------------------------------------------]
-	private:
-		explicit VertexBufferDsa(const VertexBufferDsa& source) = delete;
-		VertexBufferDsa& operator =(const VertexBufferDsa& source) = delete;
 
 
 	};
@@ -7179,7 +7179,7 @@ namespace OpenGLRhi
 	//[-------------------------------------------------------]
 	/**
 	*  @brief
-	*    Abstract OpenGL structured buffer object interface
+	*    Abstract OpenGL structured buffer object (SBO) interface
 	*/
 	class StructuredBuffer : public Rhi::IStructuredBuffer
 	{
@@ -7265,7 +7265,7 @@ namespace OpenGLRhi
 	//[-------------------------------------------------------]
 	/**
 	*  @brief
-	*    OpenGL structured buffer object class, traditional bind version
+	*    OpenGL structured buffer object (SBO) class, traditional bind version
 	*/
 	class StructuredBufferBind final : public StructuredBuffer
 	{
@@ -7346,7 +7346,7 @@ namespace OpenGLRhi
 	//[-------------------------------------------------------]
 	/**
 	*  @brief
-	*    OpenGL structured buffer object class, effective direct state access (DSA)
+	*    OpenGL structured buffer object (SBO) class, effective direct state access (DSA)
 	*/
 	class StructuredBufferDsa final : public StructuredBuffer
 	{
@@ -13564,8 +13564,8 @@ namespace OpenGLRhi
 						case Rhi::ResourceType::QUERY_POOL:
 						case Rhi::ResourceType::SWAP_CHAIN:
 						case Rhi::ResourceType::FRAMEBUFFER:
-						case Rhi::ResourceType::INDEX_BUFFER:
 						case Rhi::ResourceType::VERTEX_BUFFER:
+						case Rhi::ResourceType::INDEX_BUFFER:
 						case Rhi::ResourceType::TEXTURE_BUFFER:
 						case Rhi::ResourceType::STRUCTURED_BUFFER:
 						case Rhi::ResourceType::INDIRECT_BUFFER:
@@ -13629,8 +13629,8 @@ namespace OpenGLRhi
 					case Rhi::ResourceType::QUERY_POOL:
 					case Rhi::ResourceType::SWAP_CHAIN:
 					case Rhi::ResourceType::FRAMEBUFFER:
-					case Rhi::ResourceType::INDEX_BUFFER:
 					case Rhi::ResourceType::VERTEX_BUFFER:
+					case Rhi::ResourceType::INDEX_BUFFER:
 					case Rhi::ResourceType::TEXTURE_BUFFER:
 					case Rhi::ResourceType::STRUCTURED_BUFFER:
 					case Rhi::ResourceType::INDIRECT_BUFFER:
@@ -13796,8 +13796,8 @@ namespace OpenGLRhi
 					case Rhi::ResourceType::QUERY_POOL:
 					case Rhi::ResourceType::SWAP_CHAIN:
 					case Rhi::ResourceType::FRAMEBUFFER:
-					case Rhi::ResourceType::INDEX_BUFFER:
 					case Rhi::ResourceType::VERTEX_BUFFER:
+					case Rhi::ResourceType::INDEX_BUFFER:
 					case Rhi::ResourceType::TEXTURE_BUFFER:
 					case Rhi::ResourceType::STRUCTURED_BUFFER:
 					case Rhi::ResourceType::INDIRECT_BUFFER:
@@ -13873,8 +13873,8 @@ namespace OpenGLRhi
 					case Rhi::ResourceType::QUERY_POOL:
 					case Rhi::ResourceType::SWAP_CHAIN:
 					case Rhi::ResourceType::FRAMEBUFFER:
-					case Rhi::ResourceType::INDEX_BUFFER:
 					case Rhi::ResourceType::VERTEX_BUFFER:
+					case Rhi::ResourceType::INDEX_BUFFER:
 					case Rhi::ResourceType::TEXTURE_BUFFER:
 					case Rhi::ResourceType::STRUCTURED_BUFFER:
 					case Rhi::ResourceType::INDIRECT_BUFFER:
@@ -14099,8 +14099,8 @@ namespace OpenGLRhi
 					case Rhi::ResourceType::QUERY_POOL:
 					case Rhi::ResourceType::SWAP_CHAIN:
 					case Rhi::ResourceType::FRAMEBUFFER:
-					case Rhi::ResourceType::INDEX_BUFFER:
 					case Rhi::ResourceType::VERTEX_BUFFER:
+					case Rhi::ResourceType::INDEX_BUFFER:
 					case Rhi::ResourceType::TEXTURE_BUFFER:
 					case Rhi::ResourceType::STRUCTURED_BUFFER:
 					case Rhi::ResourceType::INDIRECT_BUFFER:
@@ -14190,8 +14190,8 @@ namespace OpenGLRhi
 					case Rhi::ResourceType::QUERY_POOL:
 					case Rhi::ResourceType::SWAP_CHAIN:
 					case Rhi::ResourceType::FRAMEBUFFER:
-					case Rhi::ResourceType::INDEX_BUFFER:
 					case Rhi::ResourceType::VERTEX_BUFFER:
+					case Rhi::ResourceType::INDEX_BUFFER:
 					case Rhi::ResourceType::TEXTURE_BUFFER:
 					case Rhi::ResourceType::STRUCTURED_BUFFER:
 					case Rhi::ResourceType::INDIRECT_BUFFER:
@@ -18749,7 +18749,7 @@ namespace
 		//[-------------------------------------------------------]
 		//[ Global definitions                                    ]
 		//[-------------------------------------------------------]
-		static constexpr Rhi::ImplementationDispatchFunction DISPATCH_FUNCTIONS[Rhi::CommandDispatchFunctionIndex::NumberOfFunctions] =
+		static constexpr Rhi::ImplementationDispatchFunction DISPATCH_FUNCTIONS[Rhi::CommandDispatchFunctionIndex::NUMBER_OF_FUNCTIONS] =
 		{
 			// Command buffer
 			&ImplementationDispatch::ExecuteCommandBuffer,
@@ -19274,8 +19274,8 @@ namespace OpenGLRhi
 					case Rhi::ResourceType::VERTEX_ARRAY:
 					case Rhi::ResourceType::RENDER_PASS:
 					case Rhi::ResourceType::QUERY_POOL:
-					case Rhi::ResourceType::INDEX_BUFFER:
 					case Rhi::ResourceType::VERTEX_BUFFER:
+					case Rhi::ResourceType::INDEX_BUFFER:
 					case Rhi::ResourceType::TEXTURE_BUFFER:
 					case Rhi::ResourceType::STRUCTURED_BUFFER:
 					case Rhi::ResourceType::INDIRECT_BUFFER:
@@ -19791,8 +19791,8 @@ namespace OpenGLRhi
 			case Rhi::ResourceType::VERTEX_ARRAY:
 			case Rhi::ResourceType::RENDER_PASS:
 			case Rhi::ResourceType::QUERY_POOL:
-			case Rhi::ResourceType::INDEX_BUFFER:
 			case Rhi::ResourceType::VERTEX_BUFFER:
+			case Rhi::ResourceType::INDEX_BUFFER:
 			case Rhi::ResourceType::TEXTURE_BUFFER:
 			case Rhi::ResourceType::STRUCTURED_BUFFER:
 			case Rhi::ResourceType::INDIRECT_BUFFER:
@@ -19889,8 +19889,8 @@ namespace OpenGLRhi
 			case Rhi::ResourceType::QUERY_POOL:
 			case Rhi::ResourceType::SWAP_CHAIN:
 			case Rhi::ResourceType::FRAMEBUFFER:
-			case Rhi::ResourceType::INDEX_BUFFER:
 			case Rhi::ResourceType::VERTEX_BUFFER:
+			case Rhi::ResourceType::INDEX_BUFFER:
 			case Rhi::ResourceType::TEXTURE_BUFFER:
 			case Rhi::ResourceType::STRUCTURED_BUFFER:
 			case Rhi::ResourceType::INDIRECT_BUFFER:
@@ -20372,11 +20372,11 @@ namespace OpenGLRhi
 		// Evaluate the resource type
 		switch (resource.getResourceType())
 		{
-			case Rhi::ResourceType::INDEX_BUFFER:
-				return ::detail::mapBuffer(mContext, *mExtensions, GL_ELEMENT_ARRAY_BUFFER_ARB, GL_ELEMENT_ARRAY_BUFFER_BINDING_ARB, static_cast<IndexBuffer&>(resource).getOpenGLElementArrayBuffer(), mapType, mappedSubresource);
-
 			case Rhi::ResourceType::VERTEX_BUFFER:
 				return ::detail::mapBuffer(mContext, *mExtensions, GL_ARRAY_BUFFER_ARB, GL_ARRAY_BUFFER_BINDING_ARB, static_cast<VertexBuffer&>(resource).getOpenGLArrayBuffer(), mapType, mappedSubresource);
+
+			case Rhi::ResourceType::INDEX_BUFFER:
+				return ::detail::mapBuffer(mContext, *mExtensions, GL_ELEMENT_ARRAY_BUFFER_ARB, GL_ELEMENT_ARRAY_BUFFER_BINDING_ARB, static_cast<IndexBuffer&>(resource).getOpenGLElementArrayBuffer(), mapType, mappedSubresource);
 
 			case Rhi::ResourceType::TEXTURE_BUFFER:
 				return ::detail::mapBuffer(mContext, *mExtensions, GL_TEXTURE_BUFFER_ARB, GL_TEXTURE_BINDING_BUFFER_ARB, static_cast<TextureBuffer&>(resource).getOpenGLTextureBuffer(), mapType, mappedSubresource);
@@ -20502,12 +20502,12 @@ namespace OpenGLRhi
 		// Evaluate the resource type
 		switch (resource.getResourceType())
 		{
-			case Rhi::ResourceType::INDEX_BUFFER:
-				::detail::unmapBuffer(*mExtensions, GL_ELEMENT_ARRAY_BUFFER_ARB, GL_ELEMENT_ARRAY_BUFFER_BINDING_ARB, static_cast<IndexBuffer&>(resource).getOpenGLElementArrayBuffer());
-				break;
-
 			case Rhi::ResourceType::VERTEX_BUFFER:
 				::detail::unmapBuffer(*mExtensions, GL_ARRAY_BUFFER_ARB, GL_ARRAY_BUFFER_BINDING_ARB, static_cast<VertexBuffer&>(resource).getOpenGLArrayBuffer());
+				break;
+
+			case Rhi::ResourceType::INDEX_BUFFER:
+				::detail::unmapBuffer(*mExtensions, GL_ELEMENT_ARRAY_BUFFER_ARB, GL_ELEMENT_ARRAY_BUFFER_BINDING_ARB, static_cast<IndexBuffer&>(resource).getOpenGLElementArrayBuffer());
 				break;
 
 			case Rhi::ResourceType::TEXTURE_BUFFER:
@@ -20753,7 +20753,7 @@ namespace OpenGLRhi
 			{ // Submit command packet
 				const Rhi::CommandDispatchFunctionIndex commandDispatchFunctionIndex = Rhi::CommandPacketHelper::loadCommandDispatchFunctionIndex(constCommandPacket);
 				const void* command = Rhi::CommandPacketHelper::loadCommand(constCommandPacket);
-				detail::DISPATCH_FUNCTIONS[commandDispatchFunctionIndex](command, *this);
+				detail::DISPATCH_FUNCTIONS[static_cast<uint32_t>(commandDispatchFunctionIndex)](command, *this);
 			}
 
 			{ // Next command
@@ -21269,8 +21269,8 @@ namespace OpenGLRhi
 										case Rhi::ResourceType::QUERY_POOL:
 										case Rhi::ResourceType::SWAP_CHAIN:
 										case Rhi::ResourceType::FRAMEBUFFER:
-										case Rhi::ResourceType::INDEX_BUFFER:
 										case Rhi::ResourceType::VERTEX_BUFFER:
+										case Rhi::ResourceType::INDEX_BUFFER:
 										case Rhi::ResourceType::STRUCTURED_BUFFER:
 										case Rhi::ResourceType::INDIRECT_BUFFER:
 										case Rhi::ResourceType::UNIFORM_BUFFER:
@@ -21394,8 +21394,8 @@ namespace OpenGLRhi
 											case Rhi::ResourceType::QUERY_POOL:
 											case Rhi::ResourceType::SWAP_CHAIN:
 											case Rhi::ResourceType::FRAMEBUFFER:
-											case Rhi::ResourceType::INDEX_BUFFER:
 											case Rhi::ResourceType::VERTEX_BUFFER:
+											case Rhi::ResourceType::INDEX_BUFFER:
 											case Rhi::ResourceType::STRUCTURED_BUFFER:
 											case Rhi::ResourceType::INDIRECT_BUFFER:
 											case Rhi::ResourceType::UNIFORM_BUFFER:
@@ -21517,8 +21517,8 @@ namespace OpenGLRhi
 										case Rhi::ResourceType::QUERY_POOL:
 										case Rhi::ResourceType::SWAP_CHAIN:
 										case Rhi::ResourceType::FRAMEBUFFER:
-										case Rhi::ResourceType::INDEX_BUFFER:
 										case Rhi::ResourceType::VERTEX_BUFFER:
+										case Rhi::ResourceType::INDEX_BUFFER:
 										case Rhi::ResourceType::STRUCTURED_BUFFER:
 										case Rhi::ResourceType::INDIRECT_BUFFER:
 										case Rhi::ResourceType::UNIFORM_BUFFER:
@@ -21547,23 +21547,6 @@ namespace OpenGLRhi
 						break;
 					}
 
-					case Rhi::ResourceType::INDEX_BUFFER:
-					{
-						RHI_ASSERT(mContext, Rhi::DescriptorRangeType::SRV == descriptorRange.rangeType || Rhi::DescriptorRangeType::UAV == descriptorRange.rangeType, "OpenGL index buffer must bound at SRV or UAV descriptor range type")
-						RHI_ASSERT(mContext, Rhi::ShaderVisibility::ALL == descriptorRange.shaderVisibility || Rhi::ShaderVisibility::COMPUTE == descriptorRange.shaderVisibility, "OpenGL descriptor range shader visibility must be \"ALL\" or \"COMPUTE\"")
-
-						// "GL_ARB_uniform_buffer_object" required
-						if (mExtensions->isGL_ARB_uniform_buffer_object())
-						{
-							// "glBindBufferBase()" unit parameter is zero based so we can simply use the value we received
-							const GLuint index = descriptorRange.baseShaderRegister;
-
-							// Attach the buffer to the given SSBO binding point
-							glBindBufferBase(GL_SHADER_STORAGE_BUFFER, index, static_cast<IndexBuffer*>(resource)->getOpenGLElementArrayBuffer());
-						}
-						break;
-					}
-
 					case Rhi::ResourceType::VERTEX_BUFFER:
 					{
 						RHI_ASSERT(mContext, Rhi::DescriptorRangeType::SRV == descriptorRange.rangeType || Rhi::DescriptorRangeType::UAV == descriptorRange.rangeType, "OpenGL vertex buffer must bound at SRV or UAV descriptor range type")
@@ -21577,6 +21560,23 @@ namespace OpenGLRhi
 
 							// Attach the buffer to the given SSBO binding point
 							glBindBufferBase(GL_SHADER_STORAGE_BUFFER, index, static_cast<VertexBuffer*>(resource)->getOpenGLArrayBuffer());
+						}
+						break;
+					}
+
+					case Rhi::ResourceType::INDEX_BUFFER:
+					{
+						RHI_ASSERT(mContext, Rhi::DescriptorRangeType::SRV == descriptorRange.rangeType || Rhi::DescriptorRangeType::UAV == descriptorRange.rangeType, "OpenGL index buffer must bound at SRV or UAV descriptor range type")
+						RHI_ASSERT(mContext, Rhi::ShaderVisibility::ALL == descriptorRange.shaderVisibility || Rhi::ShaderVisibility::COMPUTE == descriptorRange.shaderVisibility, "OpenGL descriptor range shader visibility must be \"ALL\" or \"COMPUTE\"")
+
+						// "GL_ARB_uniform_buffer_object" required
+						if (mExtensions->isGL_ARB_uniform_buffer_object())
+						{
+							// "glBindBufferBase()" unit parameter is zero based so we can simply use the value we received
+							const GLuint index = descriptorRange.baseShaderRegister;
+
+							// Attach the buffer to the given SSBO binding point
+							glBindBufferBase(GL_SHADER_STORAGE_BUFFER, index, static_cast<IndexBuffer*>(resource)->getOpenGLElementArrayBuffer());
 						}
 						break;
 					}

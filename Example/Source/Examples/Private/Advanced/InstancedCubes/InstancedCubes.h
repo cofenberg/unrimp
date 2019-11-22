@@ -60,7 +60,7 @@ class ICubeRenderer;
 *    - Uniform buffer object (UBO)
 *    - 2D texture
 *    - 2D texture array
-*    - Sampler state object
+*    - Sampler state object (SO)
 *    - Vertex shader (VS) and fragment shader (FS)
 *    - Root signature
 *    - Graphics pipeline state object (PSO)

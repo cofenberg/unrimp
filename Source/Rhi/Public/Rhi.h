@@ -324,8 +324,8 @@ namespace Rhi
 		class CommandBuffer;
 		class IBufferManager;
 		class IBuffer;
-			class IIndexBuffer;
 			class IVertexBuffer;
+			class IIndexBuffer;
 			class ITextureBuffer;
 			class IStructuredBuffer;
 			class IIndirectBuffer;
@@ -516,7 +516,7 @@ namespace Rhi
 		*    Return a handle to the RHI API shared library
 		*
 		*  @return
-		*    The handle to the RHI API shared library
+		*    The handle to the RHI API shared library, can be a null pointer
 		*/
 		[[nodiscard]] inline void* getRhiApiSharedLibrary() const
 		{
@@ -528,7 +528,7 @@ namespace Rhi
 		*    Set the handle for the RHI API shared library to use instead of let it load by the RHI instance
 		*
 		*  @param[in] rhiApiSharedLibrary
-		*    A handle to the RHI API shared library; the RHI will use this handle instead of loading the RHI API shared library itself
+		*    A handle to the RHI API shared library, can be a null pointer; the RHI will use this handle instead of loading the RHI API shared library itself
 		*/
 		inline void setRhiApiSharedLibrary(void* rhiApiSharedLibrary)
 		{
@@ -548,7 +548,7 @@ namespace Rhi
 		handle		mNativeWindowHandle;
 		bool		mUseExternalContext;
 		ContextType	mContextType;
-		void*		mRhiApiSharedLibrary;	///< A handle to the RHI API shared library (e.g. obtained via "dlopen()" and co)
+		void*		mRhiApiSharedLibrary;	///< A handle to the RHI API shared library (e.g. obtained via "dlopen()" and co), can be a null pointer
 
 	};
 
@@ -1172,10 +1172,10 @@ namespace Rhi
 		SWAP_CHAIN					   = 6,		///< Swap chain
 		FRAMEBUFFER					   = 7,		///< Framebuffer object (FBO)
 		// IBuffer
-		INDEX_BUFFER				   = 8,		///< Index buffer object (IBO, input-assembler (IA) stage)
-		VERTEX_BUFFER				   = 9,		///< Vertex buffer object (VBO, input-assembler (IA) stage)
+		VERTEX_BUFFER				   = 8,		///< Vertex buffer object (VBO, input-assembler (IA) stage)
+		INDEX_BUFFER				   = 9,		///< Index buffer object (IBO, input-assembler (IA) stage)
 		TEXTURE_BUFFER				   = 10,	///< Texture buffer object (TBO)
-		STRUCTURED_BUFFER			   = 11,	///< Structured buffer object
+		STRUCTURED_BUFFER			   = 11,	///< Structured buffer object (SBO)
 		INDIRECT_BUFFER				   = 12,	///< Indirect buffer object
 		UNIFORM_BUFFER				   = 13,	///< Uniform buffer object (UBO, "constant buffer" in Direct3D terminology)
 		// ITexture
@@ -1384,8 +1384,8 @@ namespace Rhi
 				// Automatically determine the descriptor range type basing on the resource type
 				switch (_resourceType)
 				{
-					case ResourceType::INDEX_BUFFER:
 					case ResourceType::VERTEX_BUFFER:
+					case ResourceType::INDEX_BUFFER:
 					case ResourceType::TEXTURE_BUFFER:
 					case ResourceType::STRUCTURED_BUFFER:
 					case ResourceType::INDIRECT_BUFFER:
@@ -2426,7 +2426,7 @@ namespace Rhi
 						Blend::ONE,					// srcBlendAlpha (Rhi::Blend)															"ONE"			"ONE"
 						Blend::ZERO,				// destBlendAlpha (Rhi::Blend)															"ZERO"			"ZERO"
 						BlendOp::ADD,				// blendOpAlpha (Rhi::BlendOp)															"ADD"			"ADD"
-						ColorWriteEnableFlag::ALL,	// renderTargetWriteMask (uint8_t), combination of "Rhi::ColorWriteEnableFlag"-flags	"ALL"			"ALL"
+						ColorWriteEnableFlag::ALL	// renderTargetWriteMask (uint8_t), combination of "Rhi::ColorWriteEnableFlag"-flags	"ALL"			"ALL"
 					},
 					// renderTarget[1]
 					{
@@ -2437,7 +2437,7 @@ namespace Rhi
 						Blend::ONE,					// srcBlendAlpha (Rhi::Blend)															"ONE"			"ONE"
 						Blend::ZERO,				// destBlendAlpha (Rhi::Blend)															"ZERO"			"ZERO"
 						BlendOp::ADD,				// blendOpAlpha (Rhi::BlendOp)															"ADD"			"ADD"
-						ColorWriteEnableFlag::ALL,	// renderTargetWriteMask (uint8_t), combination of "Rhi::ColorWriteEnableFlag"-flags	"ALL"			"ALL"
+						ColorWriteEnableFlag::ALL	// renderTargetWriteMask (uint8_t), combination of "Rhi::ColorWriteEnableFlag"-flags	"ALL"			"ALL"
 					},
 					// renderTarget[2]
 					{
@@ -2448,7 +2448,7 @@ namespace Rhi
 						Blend::ONE,					// srcBlendAlpha (Rhi::Blend)															"ONE"			"ONE"
 						Blend::ZERO,				// destBlendAlpha (Rhi::Blend)															"ZERO"			"ZERO"
 						BlendOp::ADD,				// blendOpAlpha (Rhi::BlendOp)															"ADD"			"ADD"
-						ColorWriteEnableFlag::ALL,	// renderTargetWriteMask (uint8_t), combination of "Rhi::ColorWriteEnableFlag"-flags	"ALL"			"ALL"
+						ColorWriteEnableFlag::ALL	// renderTargetWriteMask (uint8_t), combination of "Rhi::ColorWriteEnableFlag"-flags	"ALL"			"ALL"
 					},
 					// renderTarget[3]
 					{
@@ -2459,7 +2459,7 @@ namespace Rhi
 						Blend::ONE,					// srcBlendAlpha (Rhi::Blend)															"ONE"			"ONE"
 						Blend::ZERO,				// destBlendAlpha (Rhi::Blend)															"ZERO"			"ZERO"
 						BlendOp::ADD,				// blendOpAlpha (Rhi::BlendOp)															"ADD"			"ADD"
-						ColorWriteEnableFlag::ALL,	// renderTargetWriteMask (uint8_t), combination of "Rhi::ColorWriteEnableFlag"-flags	"ALL"			"ALL"
+						ColorWriteEnableFlag::ALL	// renderTargetWriteMask (uint8_t), combination of "Rhi::ColorWriteEnableFlag"-flags	"ALL"			"ALL"
 					},
 					// renderTarget[4]
 					{
@@ -2470,7 +2470,7 @@ namespace Rhi
 						Blend::ONE,					// srcBlendAlpha (Rhi::Blend)															"ONE"			"ONE"
 						Blend::ZERO,				// destBlendAlpha (Rhi::Blend)															"ZERO"			"ZERO"
 						BlendOp::ADD,				// blendOpAlpha (Rhi::BlendOp)															"ADD"			"ADD"
-						ColorWriteEnableFlag::ALL,	// renderTargetWriteMask (uint8_t), combination of "Rhi::ColorWriteEnableFlag"-flags	"ALL"			"ALL"
+						ColorWriteEnableFlag::ALL	// renderTargetWriteMask (uint8_t), combination of "Rhi::ColorWriteEnableFlag"-flags	"ALL"			"ALL"
 					},
 					// renderTarget[5]
 					{
@@ -2481,7 +2481,7 @@ namespace Rhi
 						Blend::ONE,					// srcBlendAlpha (Rhi::Blend)															"ONE"			"ONE"
 						Blend::ZERO,				// destBlendAlpha (Rhi::Blend)															"ZERO"			"ZERO"
 						BlendOp::ADD,				// blendOpAlpha (Rhi::BlendOp)															"ADD"			"ADD"
-						ColorWriteEnableFlag::ALL,	// renderTargetWriteMask (uint8_t), combination of "Rhi::ColorWriteEnableFlag"-flags	"ALL"			"ALL"
+						ColorWriteEnableFlag::ALL	// renderTargetWriteMask (uint8_t), combination of "Rhi::ColorWriteEnableFlag"-flags	"ALL"			"ALL"
 					},
 					// renderTarget[6]
 					{
@@ -2492,7 +2492,7 @@ namespace Rhi
 						Blend::ONE,					// srcBlendAlpha (Rhi::Blend)															"ONE"			"ONE"
 						Blend::ZERO,				// destBlendAlpha (Rhi::Blend)															"ZERO"			"ZERO"
 						BlendOp::ADD,				// blendOpAlpha (Rhi::BlendOp)															"ADD"			"ADD"
-						ColorWriteEnableFlag::ALL,	// renderTargetWriteMask (uint8_t), combination of "Rhi::ColorWriteEnableFlag"-flags	"ALL"			"ALL"
+						ColorWriteEnableFlag::ALL	// renderTargetWriteMask (uint8_t), combination of "Rhi::ColorWriteEnableFlag"-flags	"ALL"			"ALL"
 					},
 					// renderTarget[7]
 					{
@@ -2503,9 +2503,9 @@ namespace Rhi
 						Blend::ONE,					// srcBlendAlpha (Rhi::Blend)															"ONE"			"ONE"
 						Blend::ZERO,				// destBlendAlpha (Rhi::Blend)															"ZERO"			"ZERO"
 						BlendOp::ADD,				// blendOpAlpha (Rhi::BlendOp)															"ADD"			"ADD"
-						ColorWriteEnableFlag::ALL,	// renderTargetWriteMask (uint8_t), combination of "Rhi::ColorWriteEnableFlag"-flags	"ALL"			"ALL"
-					},
-				},
+						ColorWriteEnableFlag::ALL	// renderTargetWriteMask (uint8_t), combination of "Rhi::ColorWriteEnableFlag"-flags	"ALL"			"ALL"
+					}
+				}
 			};
 			return BLEND_STATE;
 		}
@@ -3855,14 +3855,14 @@ namespace Rhi
 			std::atomic<uint32_t> currentNumberOfFramebuffers;					///< Current number of framebuffer object (FBO) instances
 			std::atomic<uint32_t> numberOfCreatedFramebuffers;					///< Number of created framebuffer object (FBO) instances
 			// IBuffer
-			std::atomic<uint32_t> currentNumberOfIndexBuffers;					///< Current number of index buffer object (IBO, input-assembler (IA) stage) instances
-			std::atomic<uint32_t> numberOfCreatedIndexBuffers;					///< Number of created index buffer object (IBO, input-assembler (IA) stage) instances
 			std::atomic<uint32_t> currentNumberOfVertexBuffers;					///< Current number of vertex buffer object (VBO, input-assembler (IA) stage) instances
 			std::atomic<uint32_t> numberOfCreatedVertexBuffers;					///< Number of created vertex buffer object (VBO, input-assembler (IA) stage) instances
+			std::atomic<uint32_t> currentNumberOfIndexBuffers;					///< Current number of index buffer object (IBO, input-assembler (IA) stage) instances
+			std::atomic<uint32_t> numberOfCreatedIndexBuffers;					///< Number of created index buffer object (IBO, input-assembler (IA) stage) instances
 			std::atomic<uint32_t> currentNumberOfTextureBuffers;				///< Current number of texture buffer object (TBO) instances
 			std::atomic<uint32_t> numberOfCreatedTextureBuffers;				///< Number of created texture buffer object (TBO) instances
-			std::atomic<uint32_t> currentNumberOfStructuredBuffers;				///< Current number of structured buffer object instances
-			std::atomic<uint32_t> numberOfCreatedStructuredBuffers;				///< Number of created structured buffer object instances
+			std::atomic<uint32_t> currentNumberOfStructuredBuffers;				///< Current number of structured buffer object (SBO) instances
+			std::atomic<uint32_t> numberOfCreatedStructuredBuffers;				///< Number of created structured buffer object (SBO) instances
 			std::atomic<uint32_t> currentNumberOfIndirectBuffers;				///< Current number of indirect buffer object instances
 			std::atomic<uint32_t> numberOfCreatedIndirectBuffers;				///< Number of created indirect buffer object instances
 			std::atomic<uint32_t> currentNumberOfUniformBuffers;				///< Current number of uniform buffer object (UBO, "constant buffer" in Direct3D terminology) instances
@@ -3926,10 +3926,10 @@ namespace Rhi
 				currentNumberOfFramebuffers(0),
 				numberOfCreatedFramebuffers(0),
 				// IBuffer
-				currentNumberOfIndexBuffers(0),
-				numberOfCreatedIndexBuffers(0),
 				currentNumberOfVertexBuffers(0),
 				numberOfCreatedVertexBuffers(0),
+				currentNumberOfIndexBuffers(0),
+				numberOfCreatedIndexBuffers(0),
 				currentNumberOfTextureBuffers(0),
 				numberOfCreatedTextureBuffers(0),
 				currentNumberOfStructuredBuffers(0),
@@ -4004,8 +4004,8 @@ namespace Rhi
 						currentNumberOfSwapChains +
 						currentNumberOfFramebuffers +
 						// IBuffer
-						currentNumberOfIndexBuffers +
 						currentNumberOfVertexBuffers +
+						currentNumberOfIndexBuffers +
 						currentNumberOfTextureBuffers +
 						currentNumberOfStructuredBuffers +
 						currentNumberOfIndirectBuffers +
@@ -4058,8 +4058,8 @@ namespace Rhi
 				RHI_LOG(context, INFORMATION, "Framebuffers: %u", currentNumberOfFramebuffers.load())
 
 				// IBuffer
-				RHI_LOG(context, INFORMATION, "Index buffers: %u", currentNumberOfIndexBuffers.load())
 				RHI_LOG(context, INFORMATION, "Vertex buffers: %u", currentNumberOfVertexBuffers.load())
+				RHI_LOG(context, INFORMATION, "Index buffers: %u", currentNumberOfIndexBuffers.load())
 				RHI_LOG(context, INFORMATION, "Texture buffers: %u", currentNumberOfTextureBuffers.load())
 				RHI_LOG(context, INFORMATION, "Structured buffers: %u", currentNumberOfStructuredBuffers.load())
 				RHI_LOG(context, INFORMATION, "Indirect buffers: %u", currentNumberOfIndirectBuffers.load())
@@ -4136,8 +4136,8 @@ namespace Rhi
 		friend class IQueryPool;
 		friend class ISwapChain;
 		friend class IFramebuffer;
-		friend class IIndexBuffer;
 		friend class IVertexBuffer;
+		friend class IIndexBuffer;
 		friend class ITextureBuffer;
 		friend class IStructuredBuffer;
 		friend class IIndirectBuffer;
@@ -4668,12 +4668,12 @@ namespace Rhi
 		*/
 		enum class OptimizationLevel
 		{
-			Debug = 0,	///< No optimization and debug features enabled, usually only used for debugging
-			None,		///< No optimization, usually only used for debugging
-			Low,		///< Low optimization
-			Medium,		///< Medium optimization
-			High,		///< High optimization
-			Ultra		///< Ultra optimization
+			DEBUG = 0,	///< No optimization and debug features enabled, usually only used for debugging
+			NONE,		///< No optimization, usually only used for debugging
+			LOW,		///< Low optimization
+			MEDIUM,		///< Medium optimization
+			HIGH,		///< High optimization
+			ULTRA		///< Ultra optimization
 		};
 
 	// Public methods
@@ -5158,7 +5158,7 @@ namespace Rhi
 		*/
 		inline explicit IShaderLanguage(IRhi& rhi) :
 			mRhi(&rhi),
-			mOptimizationLevel(OptimizationLevel::Ultra)
+			mOptimizationLevel(OptimizationLevel::ULTRA)
 		{}
 
 		explicit IShaderLanguage(const IShaderLanguage& source) = delete;
@@ -5944,8 +5944,8 @@ namespace Rhi
 	*
 	*  @remarks
 	*    The buffer manager is responsible for managing fine granular instances of
-	*    - Index buffer object ("Rhi::IIndexBuffer")
 	*    - Vertex buffer object ("Rhi::IVertexBuffer")
+	*    - Index buffer object ("Rhi::IIndexBuffer")
 	*    - Vertex array object ("Rhi::IVertexArray")
 	*    - Texture buffer object ("Rhi::ITextureBuffer")
 	*    - Structured buffer object ("Rhi::IStructuredBuffer")
@@ -6300,59 +6300,6 @@ namespace Rhi
 
 
 	//[-------------------------------------------------------]
-	//[ Rhi/Buffer/IIndexBuffer.h                             ]
-	//[-------------------------------------------------------]
-	/**
-	*  @brief
-	*    Abstract index buffer object (IBO, "element array buffer" in OpenGL terminology) interface
-	*/
-	class IIndexBuffer : public IBuffer
-	{
-
-	// Public methods
-	public:
-		/**
-		*  @brief
-		*    Destructor
-		*/
-		inline virtual ~IIndexBuffer() override
-		{
-			#ifdef RHI_STATISTICS
-				// Update the statistics
-				--getRhi().getStatistics().currentNumberOfIndexBuffers;
-			#endif
-		}
-
-	// Protected methods
-	protected:
-		/**
-		*  @brief
-		*    Constructor
-		*
-		*  @param[in] rhi
-		*    Owner RHI instance
-		*/
-		inline explicit IIndexBuffer(IRhi& rhi) :
-			IBuffer(ResourceType::INDEX_BUFFER, rhi)
-		{
-			#ifdef RHI_STATISTICS
-				// Update the statistics
-				++rhi.getStatistics().numberOfCreatedIndexBuffers;
-				++rhi.getStatistics().currentNumberOfIndexBuffers;
-			#endif
-		}
-
-		explicit IIndexBuffer(const IIndexBuffer& source) = delete;
-		IIndexBuffer& operator =(const IIndexBuffer& source) = delete;
-
-	};
-
-	typedef SmartRefCount<IIndexBuffer> IIndexBufferPtr;
-
-
-
-
-	//[-------------------------------------------------------]
 	//[ Rhi/Buffer/IVertexBuffer.h                            ]
 	//[-------------------------------------------------------]
 	/**
@@ -6401,6 +6348,59 @@ namespace Rhi
 	};
 
 	typedef SmartRefCount<IVertexBuffer> IVertexBufferPtr;
+
+
+
+
+	//[-------------------------------------------------------]
+	//[ Rhi/Buffer/IIndexBuffer.h                             ]
+	//[-------------------------------------------------------]
+	/**
+	*  @brief
+	*    Abstract index buffer object (IBO, "element array buffer" in OpenGL terminology) interface
+	*/
+	class IIndexBuffer : public IBuffer
+	{
+
+	// Public methods
+	public:
+		/**
+		*  @brief
+		*    Destructor
+		*/
+		inline virtual ~IIndexBuffer() override
+		{
+			#ifdef RHI_STATISTICS
+				// Update the statistics
+				--getRhi().getStatistics().currentNumberOfIndexBuffers;
+			#endif
+		}
+
+	// Protected methods
+	protected:
+		/**
+		*  @brief
+		*    Constructor
+		*
+		*  @param[in] rhi
+		*    Owner RHI instance
+		*/
+		inline explicit IIndexBuffer(IRhi& rhi) :
+			IBuffer(ResourceType::INDEX_BUFFER, rhi)
+		{
+			#ifdef RHI_STATISTICS
+				// Update the statistics
+				++rhi.getStatistics().numberOfCreatedIndexBuffers;
+				++rhi.getStatistics().currentNumberOfIndexBuffers;
+			#endif
+		}
+
+		explicit IIndexBuffer(const IIndexBuffer& source) = delete;
+		IIndexBuffer& operator =(const IIndexBuffer& source) = delete;
+
+	};
+
+	typedef SmartRefCount<IIndexBuffer> IIndexBufferPtr;
 
 
 
@@ -6477,7 +6477,7 @@ namespace Rhi
 	//[-------------------------------------------------------]
 	/**
 	*  @brief
-	*    Abstract structured buffer object interface; array of structured data
+	*    Abstract structured buffer object (SBO) interface; array of structured data
 	*
 	*  @remarks
 	*    General usage hint
@@ -7537,7 +7537,7 @@ namespace Rhi
 		*    Constructor
 		*
 		*  @param[in] rhi
-		*    Owner rhi instance
+		*    Owner RHI instance
 		*  @param[in] width
 		*    The width of the texture
 		*  @param[in] height
@@ -8359,42 +8359,42 @@ namespace Rhi
 	//[-------------------------------------------------------]
 	//[ Rhi/Buffer/CommandBuffer.h                            ]
 	//[-------------------------------------------------------]
-	enum CommandDispatchFunctionIndex : uint8_t
+	enum class CommandDispatchFunctionIndex : uint8_t
 	{
 		// Command buffer
-		ExecuteCommandBuffer = 0,
+		EXECUTE_COMMAND_BUFFER = 0,
 		// Graphics
-		SetGraphicsRootSignature,
-		SetGraphicsPipelineState,
-		SetGraphicsResourceGroup,
-		SetGraphicsVertexArray,			// Input-assembler (IA) stage
-		SetGraphicsViewports,			// Rasterizer (RS) stage
-		SetGraphicsScissorRectangles,	// Rasterizer (RS) stage
-		SetGraphicsRenderTarget,		// Output-merger (OM) stage
-		ClearGraphics,
-		DrawGraphics,
-		DrawIndexedGraphics,
+		SET_GRAPHICS_ROOT_SIGNATURE,
+		SET_GRAPHICS_PIPELINE_STATE,
+		SET_GRAPHICS_RESOURCE_GROUP,
+		SET_GRAPHICS_VERTEX_ARRAY,			// Input-assembler (IA) stage
+		SET_GRAPHICS_VIEWPORTS,				// Rasterizer (RS) stage
+		SET_GRAPHICS_SCISSOR_RECTANGLES,	// Rasterizer (RS) stage
+		SET_GRAPHICS_RENDER_TARGET,			// Output-merger (OM) stage
+		CLEAR_GRAPHICS,
+		DRAW_GRAPHICS,
+		DRAW_INDEXED_GRAPHICS,
 		// Compute
-		SetComputeRootSignature,
-		SetComputePipelineState,
-		SetComputeResourceGroup,
-		DispatchCompute,
+		SET_COMPUTE_ROOT_SIGNATURE,
+		SET_COMPUTE_PIPELINE_STATE,
+		SET_COMPUTE_RESOURCE_GROUP,
+		DISPATCH_COMPUTE,
 		// Resource
-		SetTextureMinimumMaximumMipmapIndex,
-		ResolveMultisampleFramebuffer,
-		CopyResource,
-		GenerateMipmaps,
+		SET_TEXTURE_MINIMUM_MAXIMUM_MIPMAP_INDEX,
+		RESOLVE_MULTISAMPLE_FRAMEBUFFER,
+		COPY_RESOURCE,
+		GENERATE_MIPMAPS,
 		// Query
-		ResetQueryPool,
-		BeginQuery,
-		EndQuery,
-		WriteTimestampQuery,
+		RESET_QUERY_POOL,
+		BEGIN_QUERY,
+		END_QUERY,
+		WRITE_TIMESTAMP_QUERY,
 		// Debug
-		SetDebugMarker,
-		BeginDebugEvent,
-		EndDebugEvent,
+		SET_DEBUG_MARKER,
+		BEGIN_DEBUG_EVENT,
+		END_DEBUG_EVENT,
 		// Done
-		NumberOfFunctions
+		NUMBER_OF_FUNCTIONS
 	};
 
 	typedef void (*ImplementationDispatchFunction)(const void*, IRhi& rhi);
@@ -8799,7 +8799,7 @@ namespace Rhi
 			// Data
 			CommandBuffer* commandBufferToExecute;
 			// Static data
-			static constexpr CommandDispatchFunctionIndex COMMAND_DISPATCH_FUNCTION_INDEX = CommandDispatchFunctionIndex::ExecuteCommandBuffer;
+			static constexpr CommandDispatchFunctionIndex COMMAND_DISPATCH_FUNCTION_INDEX = CommandDispatchFunctionIndex::EXECUTE_COMMAND_BUFFER;
 		};
 
 		//[-------------------------------------------------------]
@@ -8826,7 +8826,7 @@ namespace Rhi
 			// Data
 			IRootSignature* rootSignature;
 			// Static data
-			static constexpr CommandDispatchFunctionIndex COMMAND_DISPATCH_FUNCTION_INDEX = CommandDispatchFunctionIndex::SetGraphicsRootSignature;
+			static constexpr CommandDispatchFunctionIndex COMMAND_DISPATCH_FUNCTION_INDEX = CommandDispatchFunctionIndex::SET_GRAPHICS_ROOT_SIGNATURE;
 		};
 
 		/**
@@ -8850,7 +8850,7 @@ namespace Rhi
 			// Data
 			IGraphicsPipelineState* graphicsPipelineState;
 			// Static data
-			static constexpr CommandDispatchFunctionIndex COMMAND_DISPATCH_FUNCTION_INDEX = CommandDispatchFunctionIndex::SetGraphicsPipelineState;
+			static constexpr CommandDispatchFunctionIndex COMMAND_DISPATCH_FUNCTION_INDEX = CommandDispatchFunctionIndex::SET_GRAPHICS_PIPELINE_STATE;
 		};
 
 		/**
@@ -8878,7 +8878,7 @@ namespace Rhi
 			uint32_t		rootParameterIndex;
 			IResourceGroup*	resourceGroup;
 			// Static data
-			static constexpr CommandDispatchFunctionIndex COMMAND_DISPATCH_FUNCTION_INDEX = CommandDispatchFunctionIndex::SetGraphicsResourceGroup;
+			static constexpr CommandDispatchFunctionIndex COMMAND_DISPATCH_FUNCTION_INDEX = CommandDispatchFunctionIndex::SET_GRAPHICS_RESOURCE_GROUP;
 		};
 
 		/**
@@ -8902,7 +8902,7 @@ namespace Rhi
 			// Data
 			IVertexArray* vertexArray;
 			// Static data
-			static constexpr CommandDispatchFunctionIndex COMMAND_DISPATCH_FUNCTION_INDEX = CommandDispatchFunctionIndex::SetGraphicsVertexArray;
+			static constexpr CommandDispatchFunctionIndex COMMAND_DISPATCH_FUNCTION_INDEX = CommandDispatchFunctionIndex::SET_GRAPHICS_VERTEX_ARRAY;
 		};
 
 		/**
@@ -8952,7 +8952,7 @@ namespace Rhi
 			uint32_t		numberOfViewports;
 			const Viewport* viewports;	///< If null pointer, command auxiliary memory is used instead
 			// Static data
-			static constexpr CommandDispatchFunctionIndex COMMAND_DISPATCH_FUNCTION_INDEX = CommandDispatchFunctionIndex::SetGraphicsViewports;
+			static constexpr CommandDispatchFunctionIndex COMMAND_DISPATCH_FUNCTION_INDEX = CommandDispatchFunctionIndex::SET_GRAPHICS_VIEWPORTS;
 		};
 
 		/**
@@ -8999,7 +8999,7 @@ namespace Rhi
 			uint32_t				numberOfScissorRectangles;
 			const ScissorRectangle* scissorRectangles;	///< If null pointer, command auxiliary memory is used instead
 			// Static data
-			static constexpr CommandDispatchFunctionIndex COMMAND_DISPATCH_FUNCTION_INDEX = CommandDispatchFunctionIndex::SetGraphicsScissorRectangles;
+			static constexpr CommandDispatchFunctionIndex COMMAND_DISPATCH_FUNCTION_INDEX = CommandDispatchFunctionIndex::SET_GRAPHICS_SCISSOR_RECTANGLES;
 		};
 
 		/**
@@ -9057,7 +9057,7 @@ namespace Rhi
 			// Data
 			IRenderTarget* renderTarget;
 			// Static data
-			static constexpr CommandDispatchFunctionIndex COMMAND_DISPATCH_FUNCTION_INDEX = CommandDispatchFunctionIndex::SetGraphicsRenderTarget;
+			static constexpr CommandDispatchFunctionIndex COMMAND_DISPATCH_FUNCTION_INDEX = CommandDispatchFunctionIndex::SET_GRAPHICS_RENDER_TARGET;
 		};
 
 		/**
@@ -9105,7 +9105,7 @@ namespace Rhi
 			float	 z;
 			uint32_t stencil;
 			// Static data
-			static constexpr CommandDispatchFunctionIndex COMMAND_DISPATCH_FUNCTION_INDEX = CommandDispatchFunctionIndex::ClearGraphics;
+			static constexpr CommandDispatchFunctionIndex COMMAND_DISPATCH_FUNCTION_INDEX = CommandDispatchFunctionIndex::CLEAR_GRAPHICS;
 		};
 
 		/**
@@ -9158,7 +9158,7 @@ namespace Rhi
 			uint32_t			   indirectBufferOffset;
 			uint32_t			   numberOfDraws;
 			// Static data
-			static constexpr CommandDispatchFunctionIndex COMMAND_DISPATCH_FUNCTION_INDEX = CommandDispatchFunctionIndex::DrawGraphics;
+			static constexpr CommandDispatchFunctionIndex COMMAND_DISPATCH_FUNCTION_INDEX = CommandDispatchFunctionIndex::DRAW_GRAPHICS;
 		};
 
 		/**
@@ -9211,7 +9211,7 @@ namespace Rhi
 			uint32_t			   indirectBufferOffset;
 			uint32_t			   numberOfDraws;
 			// Static data
-			static constexpr CommandDispatchFunctionIndex COMMAND_DISPATCH_FUNCTION_INDEX = CommandDispatchFunctionIndex::DrawIndexedGraphics;
+			static constexpr CommandDispatchFunctionIndex COMMAND_DISPATCH_FUNCTION_INDEX = CommandDispatchFunctionIndex::DRAW_INDEXED_GRAPHICS;
 		};
 
 		//[-------------------------------------------------------]
@@ -9241,7 +9241,7 @@ namespace Rhi
 			// Data
 			IRootSignature* rootSignature;
 			// Static data
-			static constexpr CommandDispatchFunctionIndex COMMAND_DISPATCH_FUNCTION_INDEX = CommandDispatchFunctionIndex::SetComputeRootSignature;
+			static constexpr CommandDispatchFunctionIndex COMMAND_DISPATCH_FUNCTION_INDEX = CommandDispatchFunctionIndex::SET_COMPUTE_ROOT_SIGNATURE;
 		};
 
 		/**
@@ -9268,7 +9268,7 @@ namespace Rhi
 			// Data
 			IComputePipelineState* computePipelineState;
 			// Static data
-			static constexpr CommandDispatchFunctionIndex COMMAND_DISPATCH_FUNCTION_INDEX = CommandDispatchFunctionIndex::SetComputePipelineState;
+			static constexpr CommandDispatchFunctionIndex COMMAND_DISPATCH_FUNCTION_INDEX = CommandDispatchFunctionIndex::SET_COMPUTE_PIPELINE_STATE;
 		};
 
 		/**
@@ -9299,7 +9299,7 @@ namespace Rhi
 			uint32_t		rootParameterIndex;
 			IResourceGroup*	resourceGroup;
 			// Static data
-			static constexpr CommandDispatchFunctionIndex COMMAND_DISPATCH_FUNCTION_INDEX = CommandDispatchFunctionIndex::SetComputeResourceGroup;
+			static constexpr CommandDispatchFunctionIndex COMMAND_DISPATCH_FUNCTION_INDEX = CommandDispatchFunctionIndex::SET_COMPUTE_RESOURCE_GROUP;
 		};
 
 		/**
@@ -9334,7 +9334,7 @@ namespace Rhi
 			uint32_t groupCountY;
 			uint32_t groupCountZ;
 			// Static data
-			static constexpr CommandDispatchFunctionIndex COMMAND_DISPATCH_FUNCTION_INDEX = CommandDispatchFunctionIndex::DispatchCompute;
+			static constexpr CommandDispatchFunctionIndex COMMAND_DISPATCH_FUNCTION_INDEX = CommandDispatchFunctionIndex::DISPATCH_COMPUTE;
 		};
 
 		//[-------------------------------------------------------]
@@ -9369,7 +9369,7 @@ namespace Rhi
 			uint32_t  minimumMipmapIndex;
 			uint32_t  maximumMipmapIndex;
 			// Static data
-			static constexpr CommandDispatchFunctionIndex COMMAND_DISPATCH_FUNCTION_INDEX = CommandDispatchFunctionIndex::SetTextureMinimumMaximumMipmapIndex;
+			static constexpr CommandDispatchFunctionIndex COMMAND_DISPATCH_FUNCTION_INDEX = CommandDispatchFunctionIndex::SET_TEXTURE_MINIMUM_MAXIMUM_MIPMAP_INDEX;
 		};
 
 		/**
@@ -9397,7 +9397,7 @@ namespace Rhi
 			IRenderTarget* destinationRenderTarget;
 			IFramebuffer* sourceMultisampleFramebuffer;
 			// Static data
-			static constexpr CommandDispatchFunctionIndex COMMAND_DISPATCH_FUNCTION_INDEX = CommandDispatchFunctionIndex::ResolveMultisampleFramebuffer;
+			static constexpr CommandDispatchFunctionIndex COMMAND_DISPATCH_FUNCTION_INDEX = CommandDispatchFunctionIndex::RESOLVE_MULTISAMPLE_FRAMEBUFFER;
 		};
 
 		/**
@@ -9425,7 +9425,7 @@ namespace Rhi
 			IResource* destinationResource;
 			IResource* sourceResource;
 			// Static data
-			static constexpr CommandDispatchFunctionIndex COMMAND_DISPATCH_FUNCTION_INDEX = CommandDispatchFunctionIndex::CopyResource;
+			static constexpr CommandDispatchFunctionIndex COMMAND_DISPATCH_FUNCTION_INDEX = CommandDispatchFunctionIndex::COPY_RESOURCE;
 		};
 
 		/**
@@ -9449,7 +9449,7 @@ namespace Rhi
 			// Data
 			IResource* resource;
 			// Static data
-			static constexpr CommandDispatchFunctionIndex COMMAND_DISPATCH_FUNCTION_INDEX = CommandDispatchFunctionIndex::GenerateMipmaps;
+			static constexpr CommandDispatchFunctionIndex COMMAND_DISPATCH_FUNCTION_INDEX = CommandDispatchFunctionIndex::GENERATE_MIPMAPS;
 		};
 
 		//[-------------------------------------------------------]
@@ -9484,7 +9484,7 @@ namespace Rhi
 			uint32_t	firstQueryIndex;
 			uint32_t	numberOfQueries;
 			// Static data
-			static constexpr CommandDispatchFunctionIndex COMMAND_DISPATCH_FUNCTION_INDEX = CommandDispatchFunctionIndex::ResetQueryPool;
+			static constexpr CommandDispatchFunctionIndex COMMAND_DISPATCH_FUNCTION_INDEX = CommandDispatchFunctionIndex::RESET_QUERY_POOL;
 		};
 
 		/**
@@ -9516,7 +9516,7 @@ namespace Rhi
 			uint32_t	queryIndex;
 			uint32_t	queryControlFlags;
 			// Static data
-			static constexpr CommandDispatchFunctionIndex COMMAND_DISPATCH_FUNCTION_INDEX = CommandDispatchFunctionIndex::BeginQuery;
+			static constexpr CommandDispatchFunctionIndex COMMAND_DISPATCH_FUNCTION_INDEX = CommandDispatchFunctionIndex::BEGIN_QUERY;
 		};
 
 		/**
@@ -9565,7 +9565,7 @@ namespace Rhi
 			IQueryPool* queryPool;
 			uint32_t	queryIndex;
 			// Static data
-			static constexpr CommandDispatchFunctionIndex COMMAND_DISPATCH_FUNCTION_INDEX = CommandDispatchFunctionIndex::EndQuery;
+			static constexpr CommandDispatchFunctionIndex COMMAND_DISPATCH_FUNCTION_INDEX = CommandDispatchFunctionIndex::END_QUERY;
 		};
 
 		/**
@@ -9593,7 +9593,7 @@ namespace Rhi
 			IQueryPool* queryPool;
 			uint32_t	queryIndex;
 			// Static data
-			static constexpr CommandDispatchFunctionIndex COMMAND_DISPATCH_FUNCTION_INDEX = CommandDispatchFunctionIndex::WriteTimestampQuery;
+			static constexpr CommandDispatchFunctionIndex COMMAND_DISPATCH_FUNCTION_INDEX = CommandDispatchFunctionIndex::WRITE_TIMESTAMP_QUERY;
 		};
 
 		//[-------------------------------------------------------]
@@ -9626,7 +9626,7 @@ namespace Rhi
 			// Data
 			char name[128];
 			// Static data
-			static constexpr CommandDispatchFunctionIndex COMMAND_DISPATCH_FUNCTION_INDEX = CommandDispatchFunctionIndex::SetDebugMarker;
+			static constexpr CommandDispatchFunctionIndex COMMAND_DISPATCH_FUNCTION_INDEX = CommandDispatchFunctionIndex::SET_DEBUG_MARKER;
 		};
 
 		/**
@@ -9656,7 +9656,7 @@ namespace Rhi
 			// Data
 			char name[128];
 			// Static data
-			static constexpr CommandDispatchFunctionIndex COMMAND_DISPATCH_FUNCTION_INDEX = CommandDispatchFunctionIndex::BeginDebugEvent;
+			static constexpr CommandDispatchFunctionIndex COMMAND_DISPATCH_FUNCTION_INDEX = CommandDispatchFunctionIndex::BEGIN_DEBUG_EVENT;
 		};
 
 		/**
@@ -9674,7 +9674,7 @@ namespace Rhi
 				*commandBuffer.addCommand<EndDebugEvent>() = EndDebugEvent();
 			}
 			// Static data
-			static constexpr CommandDispatchFunctionIndex COMMAND_DISPATCH_FUNCTION_INDEX = CommandDispatchFunctionIndex::EndDebugEvent;
+			static constexpr CommandDispatchFunctionIndex COMMAND_DISPATCH_FUNCTION_INDEX = CommandDispatchFunctionIndex::END_DEBUG_EVENT;
 		};
 
 	}

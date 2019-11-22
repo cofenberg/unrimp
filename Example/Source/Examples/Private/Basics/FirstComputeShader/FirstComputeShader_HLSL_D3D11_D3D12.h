@@ -93,11 +93,11 @@ float4 main(float4 Position : SV_POSITION, float2 TexCoord : TEXCOORD0) : SV_TAR
 computeShaderSourceCode1 = R"(
 // Input
 Texture2D<float4>	InputTexture2D		 : register(t0);
-tbuffer				InputIndexBuffer	 : register(t1)
+ByteAddressBuffer	InputVertexBuffer	 : register(t1);
+tbuffer				InputIndexBuffer	 : register(t2)
 {
 	uint inputIndexBuffer[3];
 };
-ByteAddressBuffer	InputVertexBuffer	 : register(t2);
 cbuffer				InputUniformBuffer	 : register(b0)
 {
 	float4 inputColorUniform;
@@ -105,8 +105,8 @@ cbuffer				InputUniformBuffer	 : register(b0)
 
 // Output
 RWTexture2D<float4>	OutputTexture2D		 : register(u0);
-RWBuffer<uint>		OutputIndexBuffer    : register(u1);
-RWByteAddressBuffer	OutputVertexBuffer   : register(u2);
+RWByteAddressBuffer	OutputVertexBuffer   : register(u1);
+RWBuffer<uint>		OutputIndexBuffer    : register(u2);
 
 // Programs
 [numthreads(16, 16, 1)]
@@ -125,12 +125,6 @@ void main(uint3 dispatchThreadId : SV_DispatchThreadID)
 	// Output buffer
 	if (0 == dispatchThreadId.x && 0 == dispatchThreadId.y && 0 == dispatchThreadId.z)
 	{
-		// Output index buffer values
-		for (int indexBufferIndex = 0; indexBufferIndex < 3; ++indexBufferIndex)
-		{
-			OutputIndexBuffer[indexBufferIndex] = inputIndexBuffer[indexBufferIndex];
-		}
-
 		// Output vertex buffer values
 		// -> Using a structured vertex buffer would be handy inside shader source codes, sadly this isn't possible with Direct3D 11 and will result in the following error:
 		//    D3D11 ERROR: ID3D11Device::CreateBuffer: Buffers created with D3D11_RESOURCE_MISC_BUFFER_STRUCTURED cannot specify any of the following listed bind flags.  The following BindFlags bits (0x9) are set: D3D11_BIND_VERTEX_BUFFER (1), D3D11_BIND_INDEX_BUFFER (0), D3D11_BIND_CONSTANT_BUFFER (0), D3D11_BIND_STREAM_OUTPUT (0), D3D11_BIND_RENDER_TARGET (0), or D3D11_BIND_DEPTH_STENCIL (0). [ STATE_CREATION ERROR #68: CREATEBUFFER_INVALIDMISCFLAGS]
@@ -138,6 +132,12 @@ void main(uint3 dispatchThreadId : SV_DispatchThreadID)
 		{
 			float2 position = asfloat(InputVertexBuffer.Load2(vertexBufferIndex * 8));
 			OutputVertexBuffer.Store2(vertexBufferIndex * 8, asuint(position));
+		}
+
+		// Output index buffer values
+		for (int indexBufferIndex = 0; indexBufferIndex < 3; ++indexBufferIndex)
+		{
+			OutputIndexBuffer[indexBufferIndex] = inputIndexBuffer[indexBufferIndex];
 		}
 
 		// Output uniform buffer not possible by design

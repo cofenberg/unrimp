@@ -74,15 +74,15 @@ void FirstComputeShader::onInitialization()
 			Rhi::DescriptorRangeBuilder ranges[7];
 			// Input
 			ranges[0].initialize(Rhi::ResourceType::TEXTURE_2D,		 0,	"InputTexture2D",	  Rhi::ShaderVisibility::COMPUTE);
-			ranges[1].initialize(Rhi::ResourceType::INDEX_BUFFER,    1,	"InputIndexBuffer",	  Rhi::ShaderVisibility::COMPUTE);
-			ranges[2].initialize(Rhi::ResourceType::VERTEX_BUFFER,   2,	"InputVertexBuffer",  Rhi::ShaderVisibility::COMPUTE);
+			ranges[1].initialize(Rhi::ResourceType::VERTEX_BUFFER,   1,	"InputVertexBuffer",  Rhi::ShaderVisibility::COMPUTE);
+			ranges[2].initialize(Rhi::ResourceType::INDEX_BUFFER,    2,	"InputIndexBuffer",	  Rhi::ShaderVisibility::COMPUTE);
 			ranges[3].initialize(Rhi::ResourceType::UNIFORM_BUFFER,  0,	"InputUniformBuffer", Rhi::ShaderVisibility::COMPUTE);
 			// Output
 			// TODO(co) Compute shader: Get rid of the OpenGL/Direct3D 11 variation here
 			const uint32_t offset = (rhi->getNameId() == Rhi::NameId::VULKAN || rhi->getNameId() == Rhi::NameId::OPENGL) ? 4u : 0u;
 			ranges[4].initialize(Rhi::ResourceType::TEXTURE_2D,		 0u + offset, "OutputTexture2D",	 Rhi::ShaderVisibility::COMPUTE, Rhi::DescriptorRangeType::UAV);
-			ranges[5].initialize(Rhi::ResourceType::INDEX_BUFFER,    1u + offset, "OutputIndexBuffer",	 Rhi::ShaderVisibility::COMPUTE, Rhi::DescriptorRangeType::UAV);
-			ranges[6].initialize(Rhi::ResourceType::VERTEX_BUFFER,   2u + offset, "OutputVertexBuffer",  Rhi::ShaderVisibility::COMPUTE, Rhi::DescriptorRangeType::UAV);
+			ranges[5].initialize(Rhi::ResourceType::VERTEX_BUFFER,   1u + offset, "OutputVertexBuffer",  Rhi::ShaderVisibility::COMPUTE, Rhi::DescriptorRangeType::UAV);
+			ranges[6].initialize(Rhi::ResourceType::INDEX_BUFFER,    2u + offset, "OutputIndexBuffer",	 Rhi::ShaderVisibility::COMPUTE, Rhi::DescriptorRangeType::UAV);
 
 			Rhi::RootParameterBuilder rootParameters[1];
 			rootParameters[0].initializeAsDescriptorTable(7, &ranges[0]);
@@ -253,9 +253,9 @@ void FirstComputeShader::onInitialization()
 			{ // Create first compute resource group
 				Rhi::IResource* resources[7] = {
 					// Input
-					computeInputTexture2D, mComputeInputIndexBuffer, mComputeInputVertexBuffer, mComputeInputUniformBuffer,
+					computeInputTexture2D, mComputeInputVertexBuffer, mComputeInputIndexBuffer, mComputeInputUniformBuffer,
 					// Output
-					computeOutputTexture2D, mComputeOutputIndexBuffer, mComputeOutputVertexBuffer
+					computeOutputTexture2D, mComputeOutputVertexBuffer, mComputeOutputIndexBuffer
 				};
 				Rhi::ISamplerState* samplerStates[7] = {
 					// Input
@@ -385,10 +385,10 @@ void FirstComputeShader::fillCommandBuffer()
 	RHI_ASSERT(getRhi()->getContext(), nullptr != mGraphicsPipelineState, "Invalid graphics pipeline state");
 	RHI_ASSERT(getRhi()->getContext(), nullptr != mComputePipelineState1, "Invalid compute pipeline state 1");
 	RHI_ASSERT(getRhi()->getContext(), nullptr != mComputePipelineState2, "Invalid compute pipeline state 2");
-	RHI_ASSERT(getRhi()->getContext(), nullptr != mComputeInputIndexBuffer, "Invalid compute input index buffer");
-	RHI_ASSERT(getRhi()->getContext(), nullptr != mComputeOutputIndexBuffer, "Invalid compute output index buffer");
 	RHI_ASSERT(getRhi()->getContext(), nullptr != mComputeInputVertexBuffer, "Invalid compute input vertex buffer");
 	RHI_ASSERT(getRhi()->getContext(), nullptr != mComputeOutputVertexBuffer, "Invalid compute output vertex buffer");
+	RHI_ASSERT(getRhi()->getContext(), nullptr != mComputeInputIndexBuffer, "Invalid compute input index buffer");
+	RHI_ASSERT(getRhi()->getContext(), nullptr != mComputeOutputIndexBuffer, "Invalid compute output index buffer");
 	RHI_ASSERT(getRhi()->getContext(), nullptr != mVertexArray, "Invalid vertex array");
 	RHI_ASSERT(getRhi()->getContext(), nullptr != mComputeOutputTextureBuffer, "Invalid compute output texture buffer");
 	RHI_ASSERT(getRhi()->getContext(), nullptr != mComputeInputTextureBuffer, "Invalid compute input texture buffer");

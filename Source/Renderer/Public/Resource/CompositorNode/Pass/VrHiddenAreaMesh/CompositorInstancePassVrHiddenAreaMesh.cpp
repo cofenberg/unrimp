@@ -125,9 +125,10 @@
 						// Create the vertex buffer object (VBO)
 						Rhi::IVertexBufferPtr vertexBuffer(bufferManager.createVertexBuffer(numberOfBytes, temporaryMemory, 0, Rhi::BufferUsage::STATIC_DRAW RHI_RESOURCE_DEBUG_NAME("Compositor instance pass VR hidden area mesh")));
 
-						// Create vertex array object (VAO)
-						const Rhi::VertexArrayVertexBuffer vertexArrayVertexBuffers[] = { vertexBuffer };
-						mVertexArrayPtr = bufferManager.createVertexArray(vertexAttributes, static_cast<uint32_t>(GLM_COUNTOF(vertexArrayVertexBuffers)), vertexArrayVertexBuffers, nullptr RHI_RESOURCE_DEBUG_NAME("Compositor instance pass VR hidden area mesh"));
+						{ // Create vertex array object (VAO)
+							const Rhi::VertexArrayVertexBuffer vertexArrayVertexBuffers[] = { vertexBuffer };
+							mVertexArrayPtr = bufferManager.createVertexArray(vertexAttributes, static_cast<uint32_t>(GLM_COUNTOF(vertexArrayVertexBuffers)), vertexArrayVertexBuffers, nullptr RHI_RESOURCE_DEBUG_NAME("Compositor instance pass VR hidden area mesh"));
+						}
 
 						// Free allocated temporary vertex buffer memory, if necessary
 						if (temporaryMemory != stackMemory)

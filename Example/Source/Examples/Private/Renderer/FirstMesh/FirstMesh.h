@@ -58,7 +58,7 @@ namespace Renderer
 *    - Vertex array object (VAO)
 *    - Texture buffer object (TBO)
 *    - Uniform buffer object (UBO)
-*    - Sampler state object
+*    - Sampler state object (SO)
 *    - Vertex shader (VS) and fragment shader (FS)
 *    - Root signature
 *    - Graphics pipeline state object (PSO)

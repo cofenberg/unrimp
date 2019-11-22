@@ -926,8 +926,8 @@ namespace Renderer
 						case Rhi::ResourceType::QUERY_POOL:
 						case Rhi::ResourceType::SWAP_CHAIN:
 						case Rhi::ResourceType::FRAMEBUFFER:
-						case Rhi::ResourceType::INDEX_BUFFER:
 						case Rhi::ResourceType::VERTEX_BUFFER:
+						case Rhi::ResourceType::INDEX_BUFFER:
 						case Rhi::ResourceType::TEXTURE_BUFFER:
 						case Rhi::ResourceType::STRUCTURED_BUFFER:
 						case Rhi::ResourceType::INDIRECT_BUFFER:

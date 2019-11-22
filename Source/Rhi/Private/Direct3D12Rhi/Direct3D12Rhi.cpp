@@ -4806,32 +4806,32 @@ namespace Direct3D12Rhi
 		UINT compileFlags = (D3DCOMPILE_ENABLE_STRICTNESS | D3DCOMPILE_WARNINGS_ARE_ERRORS | D3DCOMPILE_ALL_RESOURCES_BOUND);
 		switch (optimizationLevel)
 		{
-			case Rhi::IShaderLanguage::OptimizationLevel::Debug:
+			case Rhi::IShaderLanguage::OptimizationLevel::DEBUG:
 				compileFlags |= D3DCOMPILE_DEBUG;
 				compileFlags |= D3DCOMPILE_SKIP_OPTIMIZATION;
 				break;
 
-			case Rhi::IShaderLanguage::OptimizationLevel::None:
+			case Rhi::IShaderLanguage::OptimizationLevel::NONE:
 				compileFlags |= D3DCOMPILE_SKIP_VALIDATION;
 				compileFlags |= D3DCOMPILE_SKIP_OPTIMIZATION;
 				break;
 
-			case Rhi::IShaderLanguage::OptimizationLevel::Low:
+			case Rhi::IShaderLanguage::OptimizationLevel::LOW:
 				compileFlags |= D3DCOMPILE_SKIP_VALIDATION;
 				compileFlags |= D3DCOMPILE_OPTIMIZATION_LEVEL0;
 				break;
 
-			case Rhi::IShaderLanguage::OptimizationLevel::Medium:
+			case Rhi::IShaderLanguage::OptimizationLevel::MEDIUM:
 				compileFlags |= D3DCOMPILE_SKIP_VALIDATION;
 				compileFlags |= D3DCOMPILE_OPTIMIZATION_LEVEL1;
 				break;
 
-			case Rhi::IShaderLanguage::OptimizationLevel::High:
+			case Rhi::IShaderLanguage::OptimizationLevel::HIGH:
 				compileFlags |= D3DCOMPILE_SKIP_VALIDATION;
 				compileFlags |= D3DCOMPILE_OPTIMIZATION_LEVEL2;
 				break;
 
-			case Rhi::IShaderLanguage::OptimizationLevel::Ultra:
+			case Rhi::IShaderLanguage::OptimizationLevel::ULTRA:
 				compileFlags |= D3DCOMPILE_OPTIMIZATION_LEVEL3;
 				break;
 		}
@@ -5511,6 +5511,154 @@ namespace Direct3D12Rhi
 
 
 	//[-------------------------------------------------------]
+	//[ Direct3D12Rhi/Buffer/VertexBuffer.h                   ]
+	//[-------------------------------------------------------]
+	/**
+	*  @brief
+	*    Direct3D 12 vertex buffer object (VBO, "array buffer" in OpenGL terminology) class
+	*/
+	class VertexBuffer final : public Rhi::IVertexBuffer
+	{
+
+
+	//[-------------------------------------------------------]
+	//[ Public methods                                        ]
+	//[-------------------------------------------------------]
+	public:
+		/**
+		*  @brief
+		*    Constructor
+		*
+		*  @param[in] direct3D12Rhi
+		*    Owner Direct3D 12 RHI instance
+		*  @param[in] numberOfBytes
+		*    Number of bytes within the vertex buffer, must be valid
+		*  @param[in] data
+		*    Vertex buffer data, can be a null pointer (empty buffer)
+		*  @param[in] bufferUsage
+		*    Indication of the buffer usage
+		*/
+		VertexBuffer(Direct3D12Rhi& direct3D12Rhi, uint32_t numberOfBytes, const void* data, [[maybe_unused]] Rhi::BufferUsage bufferUsage RHI_RESOURCE_DEBUG_NAME_PARAMETER) :
+			IVertexBuffer(direct3D12Rhi),
+			mNumberOfBytes(numberOfBytes),
+			mD3D12Resource(nullptr)
+		{
+			// TODO(co) This is only meant for the Direct3D 12 RHI implementation kickoff.
+			// Note: using upload heaps to transfer static data like vert buffers is not 
+			// recommended. Every time the GPU needs it, the upload heap will be marshalled 
+			// over. Please read up on Default Heap usage. An upload heap is used here for 
+			// code simplicity and because there are very few verts to actually transfer.
+
+			// TODO(co) Add buffer usage setting support
+
+			const CD3DX12_HEAP_PROPERTIES d3d12XHeapProperties(D3D12_HEAP_TYPE_UPLOAD);
+			const CD3DX12_RESOURCE_DESC d3d12XResourceDesc = CD3DX12_RESOURCE_DESC::Buffer(mNumberOfBytes);
+			if (SUCCEEDED(direct3D12Rhi.getD3D12Device().CreateCommittedResource(
+				&d3d12XHeapProperties,
+				D3D12_HEAP_FLAG_NONE,
+				&d3d12XResourceDesc,
+				D3D12_RESOURCE_STATE_GENERIC_READ,
+				nullptr,
+				IID_PPV_ARGS(&mD3D12Resource))))
+			{
+				// Data given?
+				if (nullptr != data)
+				{
+					// Copy the data to the vertex buffer
+					UINT8* pVertexDataBegin;
+					CD3DX12_RANGE readRange(0, 0);	// We do not intend to read from this resource on the CPU
+					if (SUCCEEDED(mD3D12Resource->Map(0, &readRange, reinterpret_cast<void**>(&pVertexDataBegin))))
+					{
+						memcpy(pVertexDataBegin, data, mNumberOfBytes);
+						mD3D12Resource->Unmap(0, nullptr);
+					}
+					else
+					{
+						RHI_LOG(direct3D12Rhi.getContext(), CRITICAL, "Failed to map Direct3D 12 vertex buffer")
+					}
+				}
+
+				// Assign a default name to the resource for debugging purposes
+				#ifdef RHI_DEBUG
+					RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "VBO", 6);	// 6 = "VBO: " including terminating zero
+					FAILED_DEBUG_BREAK(mD3D12Resource->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(detailedDebugName)), detailedDebugName));
+				#endif
+			}
+			else
+			{
+				RHI_LOG(direct3D12Rhi.getContext(), CRITICAL, "Failed to create Direct3D 12 vertex buffer resource")
+			}
+		}
+
+		/**
+		*  @brief
+		*    Destructor
+		*/
+		virtual ~VertexBuffer() override
+		{
+			if (nullptr != mD3D12Resource)
+			{
+				mD3D12Resource->Release();
+			}
+		}
+
+		/**
+		*  @brief
+		*    Return the number of bytes within the vertex buffer
+		*
+		*  @return
+		*    The number of bytes within the vertex buffer
+		*/
+		[[nodiscard]] inline uint32_t getNumberOfBytes() const
+		{
+			return mNumberOfBytes;
+		}
+
+		/**
+		*  @brief
+		*    Return the Direct3D vertex buffer resource instance
+		*
+		*  @return
+		*    The Direct3D vertex buffer resource instance, can be a null pointer, do not release the returned instance unless you added an own reference to it
+		*/
+		[[nodiscard]] inline ID3D12Resource* getD3D12Resource() const
+		{
+			return mD3D12Resource;
+		}
+
+
+	//[-------------------------------------------------------]
+	//[ Protected virtual Rhi::RefCount methods               ]
+	//[-------------------------------------------------------]
+	protected:
+		inline virtual void selfDestruct() override
+		{
+			RHI_DELETE(getRhi().getContext(), VertexBuffer, this);
+		}
+
+
+	//[-------------------------------------------------------]
+	//[ Private methods                                       ]
+	//[-------------------------------------------------------]
+	private:
+		explicit VertexBuffer(const VertexBuffer& source) = delete;
+		VertexBuffer& operator =(const VertexBuffer& source) = delete;
+
+
+	//[-------------------------------------------------------]
+	//[ Private data                                          ]
+	//[-------------------------------------------------------]
+	private:
+		uint32_t		mNumberOfBytes;	///< Number of bytes within the vertex buffer
+		ID3D12Resource* mD3D12Resource;
+
+
+	};
+
+
+
+
+	//[-------------------------------------------------------]
 	//[ Direct3D12Rhi/Buffer/IndexBuffer.h                    ]
 	//[-------------------------------------------------------]
 	/**
@@ -5672,154 +5820,6 @@ namespace Direct3D12Rhi
 	private:
 		ID3D12Resource*			mD3D12Resource;
 		D3D12_INDEX_BUFFER_VIEW	mD3D12IndexBufferView;
-
-
-	};
-
-
-
-
-	//[-------------------------------------------------------]
-	//[ Direct3D12Rhi/Buffer/VertexBuffer.h                   ]
-	//[-------------------------------------------------------]
-	/**
-	*  @brief
-	*    Direct3D 12 vertex buffer object (VBO, "array buffer" in OpenGL terminology) class
-	*/
-	class VertexBuffer final : public Rhi::IVertexBuffer
-	{
-
-
-	//[-------------------------------------------------------]
-	//[ Public methods                                        ]
-	//[-------------------------------------------------------]
-	public:
-		/**
-		*  @brief
-		*    Constructor
-		*
-		*  @param[in] direct3D12Rhi
-		*    Owner Direct3D 12 RHI instance
-		*  @param[in] numberOfBytes
-		*    Number of bytes within the vertex buffer, must be valid
-		*  @param[in] data
-		*    Vertex buffer data, can be a null pointer (empty buffer)
-		*  @param[in] bufferUsage
-		*    Indication of the buffer usage
-		*/
-		VertexBuffer(Direct3D12Rhi& direct3D12Rhi, uint32_t numberOfBytes, const void* data, [[maybe_unused]] Rhi::BufferUsage bufferUsage RHI_RESOURCE_DEBUG_NAME_PARAMETER) :
-			IVertexBuffer(direct3D12Rhi),
-			mNumberOfBytes(numberOfBytes),
-			mD3D12Resource(nullptr)
-		{
-			// TODO(co) This is only meant for the Direct3D 12 RHI implementation kickoff.
-			// Note: using upload heaps to transfer static data like vert buffers is not 
-			// recommended. Every time the GPU needs it, the upload heap will be marshalled 
-			// over. Please read up on Default Heap usage. An upload heap is used here for 
-			// code simplicity and because there are very few verts to actually transfer.
-
-			// TODO(co) Add buffer usage setting support
-
-			const CD3DX12_HEAP_PROPERTIES d3d12XHeapProperties(D3D12_HEAP_TYPE_UPLOAD);
-			const CD3DX12_RESOURCE_DESC d3d12XResourceDesc = CD3DX12_RESOURCE_DESC::Buffer(mNumberOfBytes);
-			if (SUCCEEDED(direct3D12Rhi.getD3D12Device().CreateCommittedResource(
-				&d3d12XHeapProperties,
-				D3D12_HEAP_FLAG_NONE,
-				&d3d12XResourceDesc,
-				D3D12_RESOURCE_STATE_GENERIC_READ,
-				nullptr,
-				IID_PPV_ARGS(&mD3D12Resource))))
-			{
-				// Data given?
-				if (nullptr != data)
-				{
-					// Copy the data to the vertex buffer
-					UINT8* pVertexDataBegin;
-					CD3DX12_RANGE readRange(0, 0);	// We do not intend to read from this resource on the CPU
-					if (SUCCEEDED(mD3D12Resource->Map(0, &readRange, reinterpret_cast<void**>(&pVertexDataBegin))))
-					{
-						memcpy(pVertexDataBegin, data, mNumberOfBytes);
-						mD3D12Resource->Unmap(0, nullptr);
-					}
-					else
-					{
-						RHI_LOG(direct3D12Rhi.getContext(), CRITICAL, "Failed to map Direct3D 12 vertex buffer")
-					}
-				}
-
-				// Assign a default name to the resource for debugging purposes
-				#ifdef RHI_DEBUG
-					RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "VBO", 6);	// 6 = "VBO: " including terminating zero
-					FAILED_DEBUG_BREAK(mD3D12Resource->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(detailedDebugName)), detailedDebugName));
-				#endif
-			}
-			else
-			{
-				RHI_LOG(direct3D12Rhi.getContext(), CRITICAL, "Failed to create Direct3D 12 vertex buffer resource")
-			}
-		}
-
-		/**
-		*  @brief
-		*    Destructor
-		*/
-		virtual ~VertexBuffer() override
-		{
-			if (nullptr != mD3D12Resource)
-			{
-				mD3D12Resource->Release();
-			}
-		}
-
-		/**
-		*  @brief
-		*    Return the number of bytes within the vertex buffer
-		*
-		*  @return
-		*    The number of bytes within the vertex buffer
-		*/
-		[[nodiscard]] inline uint32_t getNumberOfBytes() const
-		{
-			return mNumberOfBytes;
-		}
-
-		/**
-		*  @brief
-		*    Return the Direct3D vertex buffer resource instance
-		*
-		*  @return
-		*    The Direct3D vertex buffer resource instance, can be a null pointer, do not release the returned instance unless you added an own reference to it
-		*/
-		[[nodiscard]] inline ID3D12Resource* getD3D12Resource() const
-		{
-			return mD3D12Resource;
-		}
-
-
-	//[-------------------------------------------------------]
-	//[ Protected virtual Rhi::RefCount methods               ]
-	//[-------------------------------------------------------]
-	protected:
-		inline virtual void selfDestruct() override
-		{
-			RHI_DELETE(getRhi().getContext(), VertexBuffer, this);
-		}
-
-
-	//[-------------------------------------------------------]
-	//[ Private methods                                       ]
-	//[-------------------------------------------------------]
-	private:
-		explicit VertexBuffer(const VertexBuffer& source) = delete;
-		VertexBuffer& operator =(const VertexBuffer& source) = delete;
-
-
-	//[-------------------------------------------------------]
-	//[ Private data                                          ]
-	//[-------------------------------------------------------]
-	private:
-		uint32_t		mNumberOfBytes;	///< Number of bytes within the vertex buffer
-		ID3D12Resource* mD3D12Resource;
 
 
 	};
@@ -6177,7 +6177,7 @@ namespace Direct3D12Rhi
 	//[-------------------------------------------------------]
 	/**
 	*  @brief
-	*    Direct3D 12 structured buffer object class
+	*    Direct3D 12 structured buffer object (SBO) class
 	*/
 	class StructuredBuffer final : public Rhi::IStructuredBuffer
 	{
@@ -9340,8 +9340,8 @@ namespace Direct3D12Rhi
 						case Rhi::ResourceType::QUERY_POOL:
 						case Rhi::ResourceType::SWAP_CHAIN:
 						case Rhi::ResourceType::FRAMEBUFFER:
-						case Rhi::ResourceType::INDEX_BUFFER:
 						case Rhi::ResourceType::VERTEX_BUFFER:
+						case Rhi::ResourceType::INDEX_BUFFER:
 						case Rhi::ResourceType::TEXTURE_BUFFER:
 						case Rhi::ResourceType::STRUCTURED_BUFFER:
 						case Rhi::ResourceType::INDIRECT_BUFFER:
@@ -9441,8 +9441,8 @@ namespace Direct3D12Rhi
 					case Rhi::ResourceType::QUERY_POOL:
 					case Rhi::ResourceType::SWAP_CHAIN:
 					case Rhi::ResourceType::FRAMEBUFFER:
-					case Rhi::ResourceType::INDEX_BUFFER:
 					case Rhi::ResourceType::VERTEX_BUFFER:
+					case Rhi::ResourceType::INDEX_BUFFER:
 					case Rhi::ResourceType::TEXTURE_BUFFER:
 					case Rhi::ResourceType::STRUCTURED_BUFFER:
 					case Rhi::ResourceType::INDIRECT_BUFFER:
@@ -11425,8 +11425,8 @@ namespace Direct3D12Rhi
 								case Rhi::ResourceType::QUERY_POOL:
 								case Rhi::ResourceType::SWAP_CHAIN:
 								case Rhi::ResourceType::FRAMEBUFFER:
-								case Rhi::ResourceType::INDEX_BUFFER:
 								case Rhi::ResourceType::VERTEX_BUFFER:
+								case Rhi::ResourceType::INDEX_BUFFER:
 								case Rhi::ResourceType::INDIRECT_BUFFER:
 								case Rhi::ResourceType::TEXTURE_BUFFER:
 								case Rhi::ResourceType::STRUCTURED_BUFFER:
@@ -11494,8 +11494,8 @@ namespace Direct3D12Rhi
 							d3d12Device.CreateSampler(reinterpret_cast<const D3D12_SAMPLER_DESC*>(&static_cast<SamplerState*>(resource)->getSamplerState()), d3d12CpuDescriptorHandle);
 							break;
 
-						case Rhi::ResourceType::INDEX_BUFFER:
 						case Rhi::ResourceType::VERTEX_BUFFER:
+						case Rhi::ResourceType::INDEX_BUFFER:
 						case Rhi::ResourceType::TEXTURE_BUFFER:
 						case Rhi::ResourceType::STRUCTURED_BUFFER:
 						case Rhi::ResourceType::INDIRECT_BUFFER:
@@ -11915,7 +11915,7 @@ namespace
 		//[-------------------------------------------------------]
 		//[ Global definitions                                    ]
 		//[-------------------------------------------------------]
-		static constexpr Rhi::ImplementationDispatchFunction DISPATCH_FUNCTIONS[Rhi::CommandDispatchFunctionIndex::NumberOfFunctions] =
+		static constexpr Rhi::ImplementationDispatchFunction DISPATCH_FUNCTIONS[Rhi::CommandDispatchFunctionIndex::NUMBER_OF_FUNCTIONS] =
 		{
 			// Command buffer
 			&ImplementationDispatch::ExecuteCommandBuffer,
@@ -12406,8 +12406,8 @@ namespace Direct3D12Rhi
 					case Rhi::ResourceType::VERTEX_ARRAY:
 					case Rhi::ResourceType::RENDER_PASS:
 					case Rhi::ResourceType::QUERY_POOL:
-					case Rhi::ResourceType::INDEX_BUFFER:
 					case Rhi::ResourceType::VERTEX_BUFFER:
+					case Rhi::ResourceType::INDEX_BUFFER:
 					case Rhi::ResourceType::TEXTURE_BUFFER:
 					case Rhi::ResourceType::STRUCTURED_BUFFER:
 					case Rhi::ResourceType::INDIRECT_BUFFER:
@@ -12517,8 +12517,8 @@ namespace Direct3D12Rhi
 					case Rhi::ResourceType::VERTEX_ARRAY:
 					case Rhi::ResourceType::RENDER_PASS:
 					case Rhi::ResourceType::QUERY_POOL:
-					case Rhi::ResourceType::INDEX_BUFFER:
 					case Rhi::ResourceType::VERTEX_BUFFER:
+					case Rhi::ResourceType::INDEX_BUFFER:
 					case Rhi::ResourceType::TEXTURE_BUFFER:
 					case Rhi::ResourceType::STRUCTURED_BUFFER:
 					case Rhi::ResourceType::INDIRECT_BUFFER:
@@ -12644,8 +12644,8 @@ namespace Direct3D12Rhi
 				case Rhi::ResourceType::VERTEX_ARRAY:
 				case Rhi::ResourceType::RENDER_PASS:
 				case Rhi::ResourceType::QUERY_POOL:
-				case Rhi::ResourceType::INDEX_BUFFER:
 				case Rhi::ResourceType::VERTEX_BUFFER:
+				case Rhi::ResourceType::INDEX_BUFFER:
 				case Rhi::ResourceType::TEXTURE_BUFFER:
 				case Rhi::ResourceType::STRUCTURED_BUFFER:
 				case Rhi::ResourceType::INDIRECT_BUFFER:
@@ -13192,20 +13192,20 @@ namespace Direct3D12Rhi
 		// Evaluate the resource type
 		switch (resource.getResourceType())
 		{
-			case Rhi::ResourceType::INDEX_BUFFER:
-			{
-				mappedSubresource.rowPitch = 0;
-				mappedSubresource.depthPitch = 0;
-				CD3DX12_RANGE readRange(0, 0);	// We do not intend to read from this resource on the CPU
-				return SUCCEEDED(static_cast<IndexBuffer&>(resource).getD3D12Resource()->Map(0, &readRange, reinterpret_cast<void**>(&mappedSubresource.data)));
-			}
-
 			case Rhi::ResourceType::VERTEX_BUFFER:
 			{
 				mappedSubresource.rowPitch = 0;
 				mappedSubresource.depthPitch = 0;
 				CD3DX12_RANGE readRange(0, 0);	// We do not intend to read from this resource on the CPU
 				return SUCCEEDED(static_cast<VertexBuffer&>(resource).getD3D12Resource()->Map(0, &readRange, reinterpret_cast<void**>(&mappedSubresource.data)));
+			}
+
+			case Rhi::ResourceType::INDEX_BUFFER:
+			{
+				mappedSubresource.rowPitch = 0;
+				mappedSubresource.depthPitch = 0;
+				CD3DX12_RANGE readRange(0, 0);	// We do not intend to read from this resource on the CPU
+				return SUCCEEDED(static_cast<IndexBuffer&>(resource).getD3D12Resource()->Map(0, &readRange, reinterpret_cast<void**>(&mappedSubresource.data)));
 			}
 
 			case Rhi::ResourceType::TEXTURE_BUFFER:
@@ -13295,12 +13295,12 @@ namespace Direct3D12Rhi
 		// Evaluate the resource type
 		switch (resource.getResourceType())
 		{
-			case Rhi::ResourceType::INDEX_BUFFER:
-				static_cast<IndexBuffer&>(resource).getD3D12Resource()->Unmap(0, nullptr);
-				break;
-
 			case Rhi::ResourceType::VERTEX_BUFFER:
 				static_cast<VertexBuffer&>(resource).getD3D12Resource()->Unmap(0, nullptr);
+				break;
+
+			case Rhi::ResourceType::INDEX_BUFFER:
+				static_cast<IndexBuffer&>(resource).getD3D12Resource()->Unmap(0, nullptr);
 				break;
 
 			case Rhi::ResourceType::TEXTURE_BUFFER:
@@ -13422,7 +13422,7 @@ namespace Direct3D12Rhi
 			{ // Submit command packet
 				const Rhi::CommandDispatchFunctionIndex commandDispatchFunctionIndex = Rhi::CommandPacketHelper::loadCommandDispatchFunctionIndex(constCommandPacket);
 				const void* command = Rhi::CommandPacketHelper::loadCommand(constCommandPacket);
-				detail::DISPATCH_FUNCTIONS[commandDispatchFunctionIndex](command, *this);
+				detail::DISPATCH_FUNCTIONS[static_cast<uint32_t>(commandDispatchFunctionIndex)](command, *this);
 			}
 
 			{ // Next command

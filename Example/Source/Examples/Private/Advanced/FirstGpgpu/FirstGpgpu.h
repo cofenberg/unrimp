@@ -52,7 +52,7 @@ class ExampleRunner;
 *    - Vertex buffer object (VBO)
 *    - Vertex array object (VAO)
 *    - 2D texture
-*    - Sampler state object
+*    - Sampler state object (SO)
 *    - Vertex shader (VS) and fragment shader (FS)
 *    - Root signature
 *    - Graphics pipeline state object (PSO)

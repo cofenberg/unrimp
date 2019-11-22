@@ -99,13 +99,13 @@ struct Vertex
 
 // Input
 layout(binding = 0) uniform sampler2D InputTexture2D;
-layout(std430, binding = 1) readonly buffer InputIndexBuffer
-{
-	uint inputIndices[3];
-};
-layout(std430, binding = 2) readonly buffer InputVertexBuffer
+layout(std430, binding = 1) readonly buffer InputVertexBuffer
 {
 	Vertex inputVertices[3];
+};
+layout(std430, binding = 2) readonly buffer InputIndexBuffer
+{
+	uint inputIndices[3];
 };
 layout(std140, binding = 3) uniform InputUniformBuffer
 {
@@ -114,13 +114,13 @@ layout(std140, binding = 3) uniform InputUniformBuffer
 
 // Output
 layout(rgba8, binding = 4) writeonly uniform image2D OutputTexture2D;
-layout(std430, binding = 5) writeonly buffer OutputIndexBuffer
-{
-	uint outputIndices[3];
-};
-layout(std430, binding = 6) writeonly buffer OutputVertexBuffer
+layout(std430, binding = 5) writeonly buffer OutputVertexBuffer
 {
 	Vertex outputVertices[3];
+};
+layout(std430, binding = 6) writeonly buffer OutputIndexBuffer
+{
+	uint outputIndices[3];
 };
 
 // Programs
@@ -140,16 +140,16 @@ void main()
 	// Output buffer
 	if (0 == gl_GlobalInvocationID.x && 0 == gl_GlobalInvocationID.y && 0 == gl_GlobalInvocationID.z)
 	{
-		// Output index buffer values
-		for (int indexBufferIndex = 0; indexBufferIndex < 3; ++indexBufferIndex)
-		{
-			outputIndices[indexBufferIndex] = inputIndices[indexBufferIndex];
-		}
-
 		// Output vertex buffer values
 		for (int vertexBufferIndex = 0; vertexBufferIndex < 3; ++vertexBufferIndex)
 		{
 			outputVertices[vertexBufferIndex] = inputVertices[vertexBufferIndex];
+		}
+
+		// Output index buffer values
+		for (int indexBufferIndex = 0; indexBufferIndex < 3; ++indexBufferIndex)
+		{
+			outputIndices[indexBufferIndex] = inputIndices[indexBufferIndex];
 		}
 
 		// Output uniform buffer not possible by design

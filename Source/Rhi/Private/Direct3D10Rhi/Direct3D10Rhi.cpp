@@ -2942,32 +2942,32 @@ namespace Direct3D10Rhi
 		UINT compileFlags = D3DCOMPILE_ENABLE_STRICTNESS | D3DCOMPILE_WARNINGS_ARE_ERRORS;
 		switch (optimizationLevel)
 		{
-			case Rhi::IShaderLanguage::OptimizationLevel::Debug:
+			case Rhi::IShaderLanguage::OptimizationLevel::DEBUG:
 				compileFlags |= D3DCOMPILE_DEBUG;
 				compileFlags |= D3DCOMPILE_SKIP_OPTIMIZATION;
 				break;
 
-			case Rhi::IShaderLanguage::OptimizationLevel::None:
+			case Rhi::IShaderLanguage::OptimizationLevel::NONE:
 				compileFlags |= D3DCOMPILE_SKIP_VALIDATION;
 				compileFlags |= D3DCOMPILE_SKIP_OPTIMIZATION;
 				break;
 
-			case Rhi::IShaderLanguage::OptimizationLevel::Low:
+			case Rhi::IShaderLanguage::OptimizationLevel::LOW:
 				compileFlags |= D3DCOMPILE_SKIP_VALIDATION;
 				compileFlags |= D3DCOMPILE_OPTIMIZATION_LEVEL0;
 				break;
 
-			case Rhi::IShaderLanguage::OptimizationLevel::Medium:
+			case Rhi::IShaderLanguage::OptimizationLevel::MEDIUM:
 				compileFlags |= D3DCOMPILE_SKIP_VALIDATION;
 				compileFlags |= D3DCOMPILE_OPTIMIZATION_LEVEL1;
 				break;
 
-			case Rhi::IShaderLanguage::OptimizationLevel::High:
+			case Rhi::IShaderLanguage::OptimizationLevel::HIGH:
 				compileFlags |= D3DCOMPILE_SKIP_VALIDATION;
 				compileFlags |= D3DCOMPILE_OPTIMIZATION_LEVEL2;
 				break;
 
-			case Rhi::IShaderLanguage::OptimizationLevel::Ultra:
+			case Rhi::IShaderLanguage::OptimizationLevel::ULTRA:
 				compileFlags |= D3DCOMPILE_OPTIMIZATION_LEVEL3;
 				break;
 		}
@@ -3543,6 +3543,129 @@ namespace Direct3D10Rhi
 
 
 	//[-------------------------------------------------------]
+	//[ Direct3D10Rhi/Buffer/VertexBuffer.h                   ]
+	//[-------------------------------------------------------]
+	/**
+	*  @brief
+	*    Direct3D 10 vertex buffer object (VBO, "array buffer" in OpenGL terminology) class
+	*/
+	class VertexBuffer final : public Rhi::IVertexBuffer
+	{
+
+
+	//[-------------------------------------------------------]
+	//[ Public methods                                        ]
+	//[-------------------------------------------------------]
+	public:
+		/**
+		*  @brief
+		*    Constructor
+		*
+		*  @param[in] direct3D10Rhi
+		*    Owner Direct3D 10 RHI instance
+		*  @param[in] numberOfBytes
+		*    Number of bytes within the vertex buffer, must be valid
+		*  @param[in] data
+		*    Vertex buffer data, can be a null pointer (empty buffer)
+		*  @param[in] bufferUsage
+		*    Indication of the buffer usage
+		*/
+		VertexBuffer(Direct3D10Rhi& direct3D10Rhi, uint32_t numberOfBytes, const void* data, Rhi::BufferUsage bufferUsage RHI_RESOURCE_DEBUG_NAME_PARAMETER) :
+			IVertexBuffer(direct3D10Rhi),
+			mD3D10Buffer(nullptr)
+		{
+			// Direct3D 10 buffer description
+			D3D10_BUFFER_DESC d3d10BufferDesc;
+			d3d10BufferDesc.ByteWidth        = numberOfBytes;
+			d3d10BufferDesc.Usage            = Mapping::getDirect3D10UsageAndCPUAccessFlags(bufferUsage, d3d10BufferDesc.CPUAccessFlags);
+			d3d10BufferDesc.BindFlags        = D3D10_BIND_VERTEX_BUFFER;
+			//d3d10BufferDesc.CPUAccessFlags = <filled above>;
+			d3d10BufferDesc.MiscFlags        = 0;
+
+			// Data given?
+			if (nullptr != data)
+			{
+				// Direct3D 10 subresource data
+				D3D10_SUBRESOURCE_DATA d3d10SubresourceData;
+				d3d10SubresourceData.pSysMem          = data;
+				d3d10SubresourceData.SysMemPitch      = 0;
+				d3d10SubresourceData.SysMemSlicePitch = 0;
+
+				// Create the Direct3D 10 vertex buffer
+				FAILED_DEBUG_BREAK(direct3D10Rhi.getD3D10Device()->CreateBuffer(&d3d10BufferDesc, &d3d10SubresourceData, &mD3D10Buffer));
+			}
+			else
+			{
+				// Create the Direct3D 10 vertex buffer
+				FAILED_DEBUG_BREAK(direct3D10Rhi.getD3D10Device()->CreateBuffer(&d3d10BufferDesc, nullptr, &mD3D10Buffer));
+			}
+
+			// Assign a default name to the resource for debugging purposes
+			#ifdef RHI_DEBUG
+				if (nullptr != mD3D10Buffer)
+				{
+					RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "VBO", 6);	// 6 = "VBO: " including terminating zero
+					FAILED_DEBUG_BREAK(mD3D10Buffer->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(detailedDebugName)), detailedDebugName));
+				}
+			#endif
+		}
+
+		/**
+		*  @brief
+		*    Destructor
+		*/
+		virtual ~VertexBuffer() override
+		{
+			if (nullptr != mD3D10Buffer)
+			{
+				mD3D10Buffer->Release();
+			}
+		}
+
+		/**
+		*  @brief
+		*    Return the Direct3D vertex buffer instance
+		*
+		*  @return
+		*    The Direct3D vertex buffer instance, can be a null pointer, do not release the returned instance unless you added an own reference to it
+		*/
+		[[nodiscard]] inline ID3D10Buffer* getD3D10Buffer() const
+		{
+			return mD3D10Buffer;
+		}
+
+
+	//[-------------------------------------------------------]
+	//[ Protected virtual Rhi::RefCount methods               ]
+	//[-------------------------------------------------------]
+	protected:
+		inline virtual void selfDestruct() override
+		{
+			RHI_DELETE(getRhi().getContext(), VertexBuffer, this);
+		}
+
+
+	//[-------------------------------------------------------]
+	//[ Private methods                                       ]
+	//[-------------------------------------------------------]
+	private:
+		explicit VertexBuffer(const VertexBuffer& source) = delete;
+		VertexBuffer& operator =(const VertexBuffer& source) = delete;
+
+
+	//[-------------------------------------------------------]
+	//[ Private data                                          ]
+	//[-------------------------------------------------------]
+	private:
+		ID3D10Buffer* mD3D10Buffer;	///< Direct3D vertex buffer instance, can be a null pointer
+
+
+	};
+
+
+
+
+	//[-------------------------------------------------------]
 	//[ Direct3D10Rhi/Buffer/IndexBuffer.h                    ]
 	//[-------------------------------------------------------]
 	/**
@@ -3685,129 +3808,6 @@ namespace Direct3D10Rhi
 	private:
 		ID3D10Buffer* mD3D10Buffer;	///< Direct3D index buffer instance, can be a null pointer
 		DXGI_FORMAT	  mDXGIFormat;	///< DXGI index buffer data format
-
-
-	};
-
-
-
-
-	//[-------------------------------------------------------]
-	//[ Direct3D10Rhi/Buffer/VertexBuffer.h                   ]
-	//[-------------------------------------------------------]
-	/**
-	*  @brief
-	*    Direct3D 10 vertex buffer object (VBO, "array buffer" in OpenGL terminology) class
-	*/
-	class VertexBuffer final : public Rhi::IVertexBuffer
-	{
-
-
-	//[-------------------------------------------------------]
-	//[ Public methods                                        ]
-	//[-------------------------------------------------------]
-	public:
-		/**
-		*  @brief
-		*    Constructor
-		*
-		*  @param[in] direct3D10Rhi
-		*    Owner Direct3D 10 RHI instance
-		*  @param[in] numberOfBytes
-		*    Number of bytes within the vertex buffer, must be valid
-		*  @param[in] data
-		*    Vertex buffer data, can be a null pointer (empty buffer)
-		*  @param[in] bufferUsage
-		*    Indication of the buffer usage
-		*/
-		VertexBuffer(Direct3D10Rhi& direct3D10Rhi, uint32_t numberOfBytes, const void* data, Rhi::BufferUsage bufferUsage RHI_RESOURCE_DEBUG_NAME_PARAMETER) :
-			IVertexBuffer(direct3D10Rhi),
-			mD3D10Buffer(nullptr)
-		{
-			// Direct3D 10 buffer description
-			D3D10_BUFFER_DESC d3d10BufferDesc;
-			d3d10BufferDesc.ByteWidth        = numberOfBytes;
-			d3d10BufferDesc.Usage            = Mapping::getDirect3D10UsageAndCPUAccessFlags(bufferUsage, d3d10BufferDesc.CPUAccessFlags);
-			d3d10BufferDesc.BindFlags        = D3D10_BIND_VERTEX_BUFFER;
-			//d3d10BufferDesc.CPUAccessFlags = <filled above>;
-			d3d10BufferDesc.MiscFlags        = 0;
-
-			// Data given?
-			if (nullptr != data)
-			{
-				// Direct3D 10 subresource data
-				D3D10_SUBRESOURCE_DATA d3d10SubresourceData;
-				d3d10SubresourceData.pSysMem          = data;
-				d3d10SubresourceData.SysMemPitch      = 0;
-				d3d10SubresourceData.SysMemSlicePitch = 0;
-
-				// Create the Direct3D 10 vertex buffer
-				FAILED_DEBUG_BREAK(direct3D10Rhi.getD3D10Device()->CreateBuffer(&d3d10BufferDesc, &d3d10SubresourceData, &mD3D10Buffer));
-			}
-			else
-			{
-				// Create the Direct3D 10 vertex buffer
-				FAILED_DEBUG_BREAK(direct3D10Rhi.getD3D10Device()->CreateBuffer(&d3d10BufferDesc, nullptr, &mD3D10Buffer));
-			}
-
-			// Assign a default name to the resource for debugging purposes
-			#ifdef RHI_DEBUG
-				if (nullptr != mD3D10Buffer)
-				{
-					RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "VBO", 6);	// 6 = "VBO: " including terminating zero
-					FAILED_DEBUG_BREAK(mD3D10Buffer->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(detailedDebugName)), detailedDebugName));
-				}
-			#endif
-		}
-
-		/**
-		*  @brief
-		*    Destructor
-		*/
-		virtual ~VertexBuffer() override
-		{
-			if (nullptr != mD3D10Buffer)
-			{
-				mD3D10Buffer->Release();
-			}
-		}
-
-		/**
-		*  @brief
-		*    Return the Direct3D vertex buffer instance
-		*
-		*  @return
-		*    The Direct3D vertex buffer instance, can be a null pointer, do not release the returned instance unless you added an own reference to it
-		*/
-		[[nodiscard]] inline ID3D10Buffer* getD3D10Buffer() const
-		{
-			return mD3D10Buffer;
-		}
-
-
-	//[-------------------------------------------------------]
-	//[ Protected virtual Rhi::RefCount methods               ]
-	//[-------------------------------------------------------]
-	protected:
-		inline virtual void selfDestruct() override
-		{
-			RHI_DELETE(getRhi().getContext(), VertexBuffer, this);
-		}
-
-
-	//[-------------------------------------------------------]
-	//[ Private methods                                       ]
-	//[-------------------------------------------------------]
-	private:
-		explicit VertexBuffer(const VertexBuffer& source) = delete;
-		VertexBuffer& operator =(const VertexBuffer& source) = delete;
-
-
-	//[-------------------------------------------------------]
-	//[ Private data                                          ]
-	//[-------------------------------------------------------]
-	private:
-		ID3D10Buffer* mD3D10Buffer;	///< Direct3D vertex buffer instance, can be a null pointer
 
 
 	};
@@ -7927,8 +7927,8 @@ namespace Direct3D10Rhi
 						case Rhi::ResourceType::QUERY_POOL:
 						case Rhi::ResourceType::SWAP_CHAIN:
 						case Rhi::ResourceType::FRAMEBUFFER:
-						case Rhi::ResourceType::INDEX_BUFFER:
 						case Rhi::ResourceType::VERTEX_BUFFER:
+						case Rhi::ResourceType::INDEX_BUFFER:
 						case Rhi::ResourceType::TEXTURE_BUFFER:
 						case Rhi::ResourceType::STRUCTURED_BUFFER:
 						case Rhi::ResourceType::INDIRECT_BUFFER:
@@ -8009,8 +8009,8 @@ namespace Direct3D10Rhi
 					case Rhi::ResourceType::QUERY_POOL:
 					case Rhi::ResourceType::SWAP_CHAIN:
 					case Rhi::ResourceType::FRAMEBUFFER:
-					case Rhi::ResourceType::INDEX_BUFFER:
 					case Rhi::ResourceType::VERTEX_BUFFER:
+					case Rhi::ResourceType::INDEX_BUFFER:
 					case Rhi::ResourceType::TEXTURE_BUFFER:
 					case Rhi::ResourceType::STRUCTURED_BUFFER:
 					case Rhi::ResourceType::INDIRECT_BUFFER:
@@ -9518,7 +9518,7 @@ namespace
 		//[-------------------------------------------------------]
 		//[ Global definitions                                    ]
 		//[-------------------------------------------------------]
-		static constexpr Rhi::ImplementationDispatchFunction DISPATCH_FUNCTIONS[Rhi::CommandDispatchFunctionIndex::NumberOfFunctions] =
+		static constexpr Rhi::ImplementationDispatchFunction DISPATCH_FUNCTIONS[Rhi::CommandDispatchFunctionIndex::NUMBER_OF_FUNCTIONS] =
 		{
 			// Command buffer
 			&ImplementationDispatch::ExecuteCommandBuffer,
@@ -9936,8 +9936,8 @@ namespace Direct3D10Rhi
 							case Rhi::ResourceType::QUERY_POOL:
 							case Rhi::ResourceType::SWAP_CHAIN:
 							case Rhi::ResourceType::FRAMEBUFFER:
-							case Rhi::ResourceType::INDEX_BUFFER:
 							case Rhi::ResourceType::VERTEX_BUFFER:
+							case Rhi::ResourceType::INDEX_BUFFER:
 							case Rhi::ResourceType::INDIRECT_BUFFER:
 							case Rhi::ResourceType::UNIFORM_BUFFER:
 							case Rhi::ResourceType::GRAPHICS_PIPELINE_STATE:
@@ -10045,8 +10045,8 @@ namespace Direct3D10Rhi
 					case Rhi::ResourceType::QUERY_POOL:
 					case Rhi::ResourceType::SWAP_CHAIN:
 					case Rhi::ResourceType::FRAMEBUFFER:
-					case Rhi::ResourceType::INDEX_BUFFER:
 					case Rhi::ResourceType::VERTEX_BUFFER:
+					case Rhi::ResourceType::INDEX_BUFFER:
 					case Rhi::ResourceType::INDIRECT_BUFFER:
 					case Rhi::ResourceType::GRAPHICS_PIPELINE_STATE:
 					case Rhi::ResourceType::COMPUTE_PIPELINE_STATE:
@@ -10188,8 +10188,8 @@ namespace Direct3D10Rhi
 					case Rhi::ResourceType::VERTEX_ARRAY:
 					case Rhi::ResourceType::RENDER_PASS:
 					case Rhi::ResourceType::QUERY_POOL:
-					case Rhi::ResourceType::INDEX_BUFFER:
 					case Rhi::ResourceType::VERTEX_BUFFER:
+					case Rhi::ResourceType::INDEX_BUFFER:
 					case Rhi::ResourceType::TEXTURE_BUFFER:
 					case Rhi::ResourceType::STRUCTURED_BUFFER:
 					case Rhi::ResourceType::INDIRECT_BUFFER:
@@ -10318,8 +10318,8 @@ namespace Direct3D10Rhi
 				case Rhi::ResourceType::VERTEX_ARRAY:
 				case Rhi::ResourceType::RENDER_PASS:
 				case Rhi::ResourceType::QUERY_POOL:
-				case Rhi::ResourceType::INDEX_BUFFER:
 				case Rhi::ResourceType::VERTEX_BUFFER:
+				case Rhi::ResourceType::INDEX_BUFFER:
 				case Rhi::ResourceType::TEXTURE_BUFFER:
 				case Rhi::ResourceType::STRUCTURED_BUFFER:
 				case Rhi::ResourceType::INDIRECT_BUFFER:
@@ -10519,8 +10519,8 @@ namespace Direct3D10Rhi
 			case Rhi::ResourceType::VERTEX_ARRAY:
 			case Rhi::ResourceType::RENDER_PASS:
 			case Rhi::ResourceType::QUERY_POOL:
-			case Rhi::ResourceType::INDEX_BUFFER:
 			case Rhi::ResourceType::VERTEX_BUFFER:
+			case Rhi::ResourceType::INDEX_BUFFER:
 			case Rhi::ResourceType::TEXTURE_BUFFER:
 			case Rhi::ResourceType::STRUCTURED_BUFFER:
 			case Rhi::ResourceType::INDIRECT_BUFFER:
@@ -10580,8 +10580,8 @@ namespace Direct3D10Rhi
 			case Rhi::ResourceType::QUERY_POOL:
 			case Rhi::ResourceType::SWAP_CHAIN:
 			case Rhi::ResourceType::FRAMEBUFFER:
-			case Rhi::ResourceType::INDEX_BUFFER:
 			case Rhi::ResourceType::VERTEX_BUFFER:
+			case Rhi::ResourceType::INDEX_BUFFER:
 			case Rhi::ResourceType::TEXTURE_BUFFER:
 			case Rhi::ResourceType::STRUCTURED_BUFFER:
 			case Rhi::ResourceType::INDIRECT_BUFFER:
@@ -10959,15 +10959,15 @@ namespace Direct3D10Rhi
 		// Evaluate the resource type
 		switch (resource.getResourceType())
 		{
-			case Rhi::ResourceType::INDEX_BUFFER:
-				mappedSubresource.rowPitch   = 0;
-				mappedSubresource.depthPitch = 0;
-				return (S_OK == static_cast<IndexBuffer&>(resource).getD3D10Buffer()->Map(static_cast<D3D10_MAP>(mapType), mapFlags, &mappedSubresource.data));
-
 			case Rhi::ResourceType::VERTEX_BUFFER:
 				mappedSubresource.rowPitch   = 0;
 				mappedSubresource.depthPitch = 0;
 				return (S_OK == static_cast<VertexBuffer&>(resource).getD3D10Buffer()->Map(static_cast<D3D10_MAP>(mapType), mapFlags, &mappedSubresource.data));
+
+			case Rhi::ResourceType::INDEX_BUFFER:
+				mappedSubresource.rowPitch   = 0;
+				mappedSubresource.depthPitch = 0;
+				return (S_OK == static_cast<IndexBuffer&>(resource).getD3D10Buffer()->Map(static_cast<D3D10_MAP>(mapType), mapFlags, &mappedSubresource.data));
 
 			case Rhi::ResourceType::TEXTURE_BUFFER:
 				mappedSubresource.rowPitch   = 0;
@@ -11057,12 +11057,12 @@ namespace Direct3D10Rhi
 		// Evaluate the resource type
 		switch (resource.getResourceType())
 		{
-			case Rhi::ResourceType::INDEX_BUFFER:
-				static_cast<IndexBuffer&>(resource).getD3D10Buffer()->Unmap();
-				break;
-
 			case Rhi::ResourceType::VERTEX_BUFFER:
 				static_cast<VertexBuffer&>(resource).getD3D10Buffer()->Unmap();
+				break;
+
+			case Rhi::ResourceType::INDEX_BUFFER:
+				static_cast<IndexBuffer&>(resource).getD3D10Buffer()->Unmap();
 				break;
 
 			case Rhi::ResourceType::TEXTURE_BUFFER:
@@ -11239,7 +11239,7 @@ namespace Direct3D10Rhi
 			{ // Submit command packet
 				const Rhi::CommandDispatchFunctionIndex commandDispatchFunctionIndex = Rhi::CommandPacketHelper::loadCommandDispatchFunctionIndex(constCommandPacket);
 				const void* command = Rhi::CommandPacketHelper::loadCommand(constCommandPacket);
-				detail::DISPATCH_FUNCTIONS[commandDispatchFunctionIndex](command, *this);
+				detail::DISPATCH_FUNCTIONS[static_cast<uint32_t>(commandDispatchFunctionIndex)](command, *this);
 			}
 
 			{ // Next command

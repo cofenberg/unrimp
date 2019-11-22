@@ -49,7 +49,7 @@ Standalone renderer examples.
 		- Vertex buffer object (VBO)
 		- Vertex array object (VAO)
 		- 1D and 2D texture
-		- Sampler state object
+		- Sampler state object (SO)
 		- Vertex shader (VS) and fragment shader (FS)
 		- Root signature
 		- Graphics pipeline state object (PSO)
@@ -57,7 +57,7 @@ Standalone renderer examples.
 		- Vertex buffer object (VBO)
 		- Vertex array object (VAO)
 		- 2D texture
-		- Sampler state object
+		- Sampler state object (SO)
 		- Vertex shader (VS) and fragment shader (FS)
 		- Root signature
 		- Graphics pipeline state object (PSO)
@@ -66,7 +66,7 @@ Standalone renderer examples.
 		- Vertex buffer object (VBO)
 		- Vertex array object (VAO)
 		- 2D texture
-		- Sampler state object
+		- Sampler state object (SO)
 		- Vertex shader (VS) and fragment shader (FS)
 		- Root signature
 		- Graphics pipeline state object (PSO)
@@ -106,11 +106,11 @@ Standalone renderer examples.
 		- Vertex buffer object (VBO)
 		- Vertex array object (VAO)
 		- Texture buffer object (TBO)
-		- Structured buffer object
+		- Structured buffer object (SBO)
 		- Indirect buffer
 		- Uniform buffer object (UBO)
 		- 2D texture
-		- Sampler state object
+		- Sampler state object (SO)
 		- Vertex shader (VS), fragment shader (FS) and compute shader (CS)
 		- Root signature
 		- Graphics pipeline state object (PSO)
@@ -120,7 +120,7 @@ Standalone renderer examples.
 		- Vertex buffer object (VBO)
 		- Vertex array object (VAO)
 		- 2D texture
-		- Sampler state object
+		- Sampler state object (SO)
 		- Vertex shader (VS) and fragment shader (FS)
 		- Root signature
 		- Graphics pipeline state object (PSO)
@@ -134,7 +134,7 @@ Standalone renderer examples.
 		- Uniform buffer object (UBO)
 		- 2D texture
 		- 2D texture array
-		- Sampler state object
+		- Sampler state object (SO)
 		- Vertex shader (VS) and fragment shader (FS)
 		- Root signature
 		- Graphics pipeline state object (PSO)
@@ -157,7 +157,7 @@ Standalone renderer examples.
 		- Vertex array object (VAO)
 		- Texture buffer object (TBO)
 		- Uniform buffer object (UBO)
-		- Sampler state object
+		- Sampler state object (SO)
 		- Vertex shader (VS) and fragment shader (FS)
 		- Root signature
 		- Graphics pipeline state object (PSO)

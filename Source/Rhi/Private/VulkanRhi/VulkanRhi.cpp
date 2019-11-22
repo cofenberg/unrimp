@@ -4589,8 +4589,8 @@ namespace VulkanRhi
 									}
 									break;
 
-								case Rhi::ResourceType::INDEX_BUFFER:
 								case Rhi::ResourceType::VERTEX_BUFFER:
+								case Rhi::ResourceType::INDEX_BUFFER:
 								case Rhi::ResourceType::STRUCTURED_BUFFER:
 								case Rhi::ResourceType::INDIRECT_BUFFER:
 									RHI_ASSERT(vulkanRhi.getContext(), Rhi::DescriptorRangeType::SRV == descriptorRange->rangeType || Rhi::DescriptorRangeType::UAV == descriptorRange->rangeType, "Vulkan RHI implementation: Invalid descriptor range type")
@@ -4963,6 +4963,125 @@ namespace VulkanRhi
 
 
 	//[-------------------------------------------------------]
+	//[ VulkanRhi/VertexBuffer.h                              ]
+	//[-------------------------------------------------------]
+	/**
+	*  @brief
+	*    Vulkan vertex buffer object (VBO) interface
+	*/
+	class VertexBuffer final : public Rhi::IVertexBuffer
+	{
+
+
+	//[-------------------------------------------------------]
+	//[ Public methods                                        ]
+	//[-------------------------------------------------------]
+	public:
+		/**
+		*  @brief
+		*    Constructor
+		*
+		*  @param[in] vulkanRhi
+		*    Owner Vulkan RHI instance
+		*  @param[in] numberOfBytes
+		*    Number of bytes within the vertex buffer, must be valid
+		*  @param[in] data
+		*    Vertex buffer data, can be a null pointer (empty buffer)
+		*  @param[in] bufferFlags
+		*    Buffer flags, see "Rhi::BufferFlag"
+		*  @param[in] bufferUsage
+		*    Indication of the buffer usage
+		*/
+		VertexBuffer(VulkanRhi& vulkanRhi, uint32_t numberOfBytes, const void* data, uint32_t bufferFlags, [[maybe_unused]] Rhi::BufferUsage bufferUsage RHI_RESOURCE_DEBUG_NAME_PARAMETER) :
+			IVertexBuffer(vulkanRhi),
+			mVkBuffer(VK_NULL_HANDLE),
+			mVkDeviceMemory(VK_NULL_HANDLE)
+		{
+			int vkBufferUsageFlagBits = VK_BUFFER_USAGE_VERTEX_BUFFER_BIT;
+			if ((bufferFlags & Rhi::BufferFlag::UNORDERED_ACCESS) != 0 || (bufferFlags & Rhi::BufferFlag::SHADER_RESOURCE) != 0)
+			{
+				vkBufferUsageFlagBits |= VK_BUFFER_USAGE_STORAGE_BUFFER_BIT;
+			}
+			Helper::createAndAllocateVkBuffer(vulkanRhi, static_cast<VkBufferUsageFlagBits>(vkBufferUsageFlagBits), VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, numberOfBytes, data, mVkBuffer, mVkDeviceMemory);
+
+			// Assign a default name to the resource for debugging purposes
+			#ifdef RHI_DEBUG
+				if (nullptr != vkDebugMarkerSetObjectNameEXT)
+				{
+					RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "VBO", 6);	// 6 = "VBO: " including terminating zero
+					const VkDevice vkDevice = vulkanRhi.getVulkanContext().getVkDevice();
+					Helper::setDebugObjectName(vkDevice, VK_DEBUG_REPORT_OBJECT_TYPE_BUFFER_EXT, (uint64_t)mVkBuffer, detailedDebugName);
+					Helper::setDebugObjectName(vkDevice, VK_DEBUG_REPORT_OBJECT_TYPE_DEVICE_MEMORY_EXT, (uint64_t)mVkDeviceMemory, detailedDebugName);
+				}
+			#endif
+		}
+
+		/**
+		*  @brief
+		*    Destructor
+		*/
+		inline virtual ~VertexBuffer() override
+		{
+			Helper::destroyAndFreeVkBuffer(static_cast<const VulkanRhi&>(getRhi()), mVkBuffer, mVkDeviceMemory);
+		}
+
+		/**
+		*  @brief
+		*    Return the Vulkan vertex buffer
+		*
+		*  @return
+		*    The Vulkan vertex buffer
+		*/
+		[[nodiscard]] inline VkBuffer getVkBuffer() const
+		{
+			return mVkBuffer;
+		}
+
+		/**
+		*  @brief
+		*    Return the Vulkan device memory
+		*
+		*  @return
+		*    The Vulkan device memory
+		*/
+		[[nodiscard]] inline VkDeviceMemory getVkDeviceMemory() const
+		{
+			return mVkDeviceMemory;
+		}
+
+
+	//[-------------------------------------------------------]
+	//[ Protected virtual Rhi::RefCount methods               ]
+	//[-------------------------------------------------------]
+	protected:
+		inline virtual void selfDestruct() override
+		{
+			RHI_DELETE(getRhi().getContext(), VertexBuffer, this);
+		}
+
+
+	//[-------------------------------------------------------]
+	//[ Private methods                                       ]
+	//[-------------------------------------------------------]
+	private:
+		explicit VertexBuffer(const VertexBuffer& source) = delete;
+		VertexBuffer& operator =(const VertexBuffer& source) = delete;
+
+
+	//[-------------------------------------------------------]
+	//[ Private data                                          ]
+	//[-------------------------------------------------------]
+	private:
+		VkBuffer	   mVkBuffer;		///< Vulkan vertex buffer
+		VkDeviceMemory mVkDeviceMemory;	///< Vulkan vertex memory
+
+
+	};
+
+
+
+
+	//[-------------------------------------------------------]
 	//[ VulkanRhi/IndexBuffer.h                               ]
 	//[-------------------------------------------------------]
 	/**
@@ -5088,125 +5207,6 @@ namespace VulkanRhi
 	//[-------------------------------------------------------]
 	private:
 		VkIndexType	   mVkIndexType;	///< Vulkan vertex type
-		VkBuffer	   mVkBuffer;		///< Vulkan vertex buffer
-		VkDeviceMemory mVkDeviceMemory;	///< Vulkan vertex memory
-
-
-	};
-
-
-
-
-	//[-------------------------------------------------------]
-	//[ VulkanRhi/VertexBuffer.h                              ]
-	//[-------------------------------------------------------]
-	/**
-	*  @brief
-	*    Vulkan vertex buffer object (VBO) interface
-	*/
-	class VertexBuffer final : public Rhi::IVertexBuffer
-	{
-
-
-	//[-------------------------------------------------------]
-	//[ Public methods                                        ]
-	//[-------------------------------------------------------]
-	public:
-		/**
-		*  @brief
-		*    Constructor
-		*
-		*  @param[in] vulkanRhi
-		*    Owner Vulkan RHI instance
-		*  @param[in] numberOfBytes
-		*    Number of bytes within the vertex buffer, must be valid
-		*  @param[in] data
-		*    Vertex buffer data, can be a null pointer (empty buffer)
-		*  @param[in] bufferFlags
-		*    Buffer flags, see "Rhi::BufferFlag"
-		*  @param[in] bufferUsage
-		*    Indication of the buffer usage
-		*/
-		VertexBuffer(VulkanRhi& vulkanRhi, uint32_t numberOfBytes, const void* data, uint32_t bufferFlags, [[maybe_unused]] Rhi::BufferUsage bufferUsage RHI_RESOURCE_DEBUG_NAME_PARAMETER) :
-			IVertexBuffer(vulkanRhi),
-			mVkBuffer(VK_NULL_HANDLE),
-			mVkDeviceMemory(VK_NULL_HANDLE)
-		{
-			int vkBufferUsageFlagBits = VK_BUFFER_USAGE_VERTEX_BUFFER_BIT;
-			if ((bufferFlags & Rhi::BufferFlag::UNORDERED_ACCESS) != 0 || (bufferFlags & Rhi::BufferFlag::SHADER_RESOURCE) != 0)
-			{
-				vkBufferUsageFlagBits |= VK_BUFFER_USAGE_STORAGE_BUFFER_BIT;
-			}
-			Helper::createAndAllocateVkBuffer(vulkanRhi, static_cast<VkBufferUsageFlagBits>(vkBufferUsageFlagBits), VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, numberOfBytes, data, mVkBuffer, mVkDeviceMemory);
-
-			// Assign a default name to the resource for debugging purposes
-			#ifdef RHI_DEBUG
-				if (nullptr != vkDebugMarkerSetObjectNameEXT)
-				{
-					RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "VBO", 6);	// 6 = "VBO: " including terminating zero
-					const VkDevice vkDevice = vulkanRhi.getVulkanContext().getVkDevice();
-					Helper::setDebugObjectName(vkDevice, VK_DEBUG_REPORT_OBJECT_TYPE_BUFFER_EXT, (uint64_t)mVkBuffer, detailedDebugName);
-					Helper::setDebugObjectName(vkDevice, VK_DEBUG_REPORT_OBJECT_TYPE_DEVICE_MEMORY_EXT, (uint64_t)mVkDeviceMemory, detailedDebugName);
-				}
-			#endif
-		}
-
-		/**
-		*  @brief
-		*    Destructor
-		*/
-		inline virtual ~VertexBuffer() override
-		{
-			Helper::destroyAndFreeVkBuffer(static_cast<const VulkanRhi&>(getRhi()), mVkBuffer, mVkDeviceMemory);
-		}
-
-		/**
-		*  @brief
-		*    Return the Vulkan vertex buffer
-		*
-		*  @return
-		*    The Vulkan vertex buffer
-		*/
-		[[nodiscard]] inline VkBuffer getVkBuffer() const
-		{
-			return mVkBuffer;
-		}
-
-		/**
-		*  @brief
-		*    Return the Vulkan device memory
-		*
-		*  @return
-		*    The Vulkan device memory
-		*/
-		[[nodiscard]] inline VkDeviceMemory getVkDeviceMemory() const
-		{
-			return mVkDeviceMemory;
-		}
-
-
-	//[-------------------------------------------------------]
-	//[ Protected virtual Rhi::RefCount methods               ]
-	//[-------------------------------------------------------]
-	protected:
-		inline virtual void selfDestruct() override
-		{
-			RHI_DELETE(getRhi().getContext(), VertexBuffer, this);
-		}
-
-
-	//[-------------------------------------------------------]
-	//[ Private methods                                       ]
-	//[-------------------------------------------------------]
-	private:
-		explicit VertexBuffer(const VertexBuffer& source) = delete;
-		VertexBuffer& operator =(const VertexBuffer& source) = delete;
-
-
-	//[-------------------------------------------------------]
-	//[ Private data                                          ]
-	//[-------------------------------------------------------]
-	private:
 		VkBuffer	   mVkBuffer;		///< Vulkan vertex buffer
 		VkDeviceMemory mVkDeviceMemory;	///< Vulkan vertex memory
 
@@ -5588,7 +5588,7 @@ namespace VulkanRhi
 	//[-------------------------------------------------------]
 	/**
 	*  @brief
-	*    Vulkan structured buffer object interface
+	*    Vulkan structured buffer object (SBO) interface
 	*/
 	class StructuredBuffer final : public Rhi::IStructuredBuffer
 	{
@@ -8395,8 +8395,8 @@ namespace VulkanRhi
 						case Rhi::ResourceType::QUERY_POOL:
 						case Rhi::ResourceType::SWAP_CHAIN:
 						case Rhi::ResourceType::FRAMEBUFFER:
-						case Rhi::ResourceType::INDEX_BUFFER:
 						case Rhi::ResourceType::VERTEX_BUFFER:
+						case Rhi::ResourceType::INDEX_BUFFER:
 						case Rhi::ResourceType::TEXTURE_BUFFER:
 						case Rhi::ResourceType::STRUCTURED_BUFFER:
 						case Rhi::ResourceType::INDIRECT_BUFFER:
@@ -8469,8 +8469,8 @@ namespace VulkanRhi
 					case Rhi::ResourceType::QUERY_POOL:
 					case Rhi::ResourceType::SWAP_CHAIN:
 					case Rhi::ResourceType::FRAMEBUFFER:
-					case Rhi::ResourceType::INDEX_BUFFER:
 					case Rhi::ResourceType::VERTEX_BUFFER:
+					case Rhi::ResourceType::INDEX_BUFFER:
 					case Rhi::ResourceType::TEXTURE_BUFFER:
 					case Rhi::ResourceType::STRUCTURED_BUFFER:
 					case Rhi::ResourceType::INDIRECT_BUFFER:
@@ -10382,13 +10382,13 @@ namespace VulkanRhi
 				const Rhi::ResourceType resourceType = resource->getResourceType();
 				switch (resourceType)
 				{
-					case Rhi::ResourceType::INDEX_BUFFER:
+					case Rhi::ResourceType::VERTEX_BUFFER:
 					{
 						const VkDescriptorBufferInfo vkDescriptorBufferInfo =
 						{
-							static_cast<IndexBuffer*>(resource)->getVkBuffer(),	// buffer (VkBuffer)
-							0,													// offset (VkDeviceSize)
-							VK_WHOLE_SIZE										// range (VkDeviceSize)
+							static_cast<VertexBuffer*>(resource)->getVkBuffer(),	// buffer (VkBuffer)
+							0,														// offset (VkDeviceSize)
+							VK_WHOLE_SIZE											// range (VkDeviceSize)
 						};
 						const VkWriteDescriptorSet vkWriteDescriptorSet =
 						{
@@ -10407,13 +10407,13 @@ namespace VulkanRhi
 						break;
 					}
 
-					case Rhi::ResourceType::VERTEX_BUFFER:
+					case Rhi::ResourceType::INDEX_BUFFER:
 					{
 						const VkDescriptorBufferInfo vkDescriptorBufferInfo =
 						{
-							static_cast<VertexBuffer*>(resource)->getVkBuffer(),	// buffer (VkBuffer)
-							0,														// offset (VkDeviceSize)
-							VK_WHOLE_SIZE											// range (VkDeviceSize)
+							static_cast<IndexBuffer*>(resource)->getVkBuffer(),	// buffer (VkBuffer)
+							0,													// offset (VkDeviceSize)
+							VK_WHOLE_SIZE										// range (VkDeviceSize)
 						};
 						const VkWriteDescriptorSet vkWriteDescriptorSet =
 						{
@@ -10599,8 +10599,8 @@ namespace VulkanRhi
 							case Rhi::ResourceType::QUERY_POOL:
 							case Rhi::ResourceType::SWAP_CHAIN:
 							case Rhi::ResourceType::FRAMEBUFFER:
-							case Rhi::ResourceType::INDEX_BUFFER:
 							case Rhi::ResourceType::VERTEX_BUFFER:
+							case Rhi::ResourceType::INDEX_BUFFER:
 							case Rhi::ResourceType::INDIRECT_BUFFER:
 							case Rhi::ResourceType::TEXTURE_BUFFER:
 							case Rhi::ResourceType::STRUCTURED_BUFFER:
@@ -11088,7 +11088,7 @@ namespace
 		//[-------------------------------------------------------]
 		//[ Global definitions                                    ]
 		//[-------------------------------------------------------]
-		static constexpr Rhi::ImplementationDispatchFunction DISPATCH_FUNCTIONS[Rhi::CommandDispatchFunctionIndex::NumberOfFunctions] =
+		static constexpr Rhi::ImplementationDispatchFunction DISPATCH_FUNCTIONS[Rhi::CommandDispatchFunctionIndex::NUMBER_OF_FUNCTIONS] =
 		{
 			// Command buffer
 			&ImplementationDispatch::ExecuteCommandBuffer,
@@ -11968,18 +11968,18 @@ namespace VulkanRhi
 		// Evaluate the resource type
 		switch (resource.getResourceType())
 		{
-			case Rhi::ResourceType::INDEX_BUFFER:
-			{
-				mappedSubresource.rowPitch   = 0;
-				mappedSubresource.depthPitch = 0;
-				return (vkMapMemory(getVulkanContext().getVkDevice(), static_cast<IndexBuffer&>(resource).getVkDeviceMemory(), 0, VK_WHOLE_SIZE, 0, &mappedSubresource.data) == VK_SUCCESS);
-			}
-
 			case Rhi::ResourceType::VERTEX_BUFFER:
 			{
 				mappedSubresource.rowPitch   = 0;
 				mappedSubresource.depthPitch = 0;
 				return (vkMapMemory(getVulkanContext().getVkDevice(), static_cast<VertexBuffer&>(resource).getVkDeviceMemory(), 0, VK_WHOLE_SIZE, 0, &mappedSubresource.data) == VK_SUCCESS);
+			}
+
+			case Rhi::ResourceType::INDEX_BUFFER:
+			{
+				mappedSubresource.rowPitch   = 0;
+				mappedSubresource.depthPitch = 0;
+				return (vkMapMemory(getVulkanContext().getVkDevice(), static_cast<IndexBuffer&>(resource).getVkDeviceMemory(), 0, VK_WHOLE_SIZE, 0, &mappedSubresource.data) == VK_SUCCESS);
 			}
 
 			case Rhi::ResourceType::TEXTURE_BUFFER:
@@ -12079,15 +12079,15 @@ namespace VulkanRhi
 		// Evaluate the resource type
 		switch (resource.getResourceType())
 		{
-			case Rhi::ResourceType::INDEX_BUFFER:
-			{
-				vkUnmapMemory(getVulkanContext().getVkDevice(), static_cast<IndexBuffer&>(resource).getVkDeviceMemory());
-				break;
-			}
-
 			case Rhi::ResourceType::VERTEX_BUFFER:
 			{
 				vkUnmapMemory(getVulkanContext().getVkDevice(), static_cast<VertexBuffer&>(resource).getVkDeviceMemory());
+				break;
+			}
+
+			case Rhi::ResourceType::INDEX_BUFFER:
+			{
+				vkUnmapMemory(getVulkanContext().getVkDevice(), static_cast<IndexBuffer&>(resource).getVkDeviceMemory());
 				break;
 			}
 
@@ -12275,7 +12275,7 @@ namespace VulkanRhi
 			{ // Submit command packet
 				const Rhi::CommandDispatchFunctionIndex commandDispatchFunctionIndex = Rhi::CommandPacketHelper::loadCommandDispatchFunctionIndex(constCommandPacket);
 				const void* command = Rhi::CommandPacketHelper::loadCommand(constCommandPacket);
-				detail::DISPATCH_FUNCTIONS[commandDispatchFunctionIndex](command, *this);
+				detail::DISPATCH_FUNCTIONS[static_cast<uint32_t>(commandDispatchFunctionIndex)](command, *this);
 			}
 
 			{ // Next command
@@ -12471,8 +12471,8 @@ namespace VulkanRhi
 			case Rhi::ResourceType::VERTEX_ARRAY:
 			case Rhi::ResourceType::RENDER_PASS:
 			case Rhi::ResourceType::QUERY_POOL:
-			case Rhi::ResourceType::INDEX_BUFFER:
 			case Rhi::ResourceType::VERTEX_BUFFER:
+			case Rhi::ResourceType::INDEX_BUFFER:
 			case Rhi::ResourceType::TEXTURE_BUFFER:
 			case Rhi::ResourceType::STRUCTURED_BUFFER:
 			case Rhi::ResourceType::INDIRECT_BUFFER:
