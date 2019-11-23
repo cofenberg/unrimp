@@ -53,8 +53,8 @@ namespace Renderer
 *
 *  @remarks
 *    Demonstrates:
-*    - Index buffer object (IBO)
 *    - Vertex buffer object (VBO)
+*    - Index buffer object (IBO)
 *    - Vertex array object (VAO)
 *    - Texture buffer object (TBO)
 *    - Uniform buffer object (UBO)

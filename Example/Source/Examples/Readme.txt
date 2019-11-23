@@ -80,8 +80,8 @@ Standalone renderer examples.
 		- Graphics pipeline state object (PSO)
 		- Multiple swap chains
 	- "FirstInstancing" demonstrates:
-		- Index buffer object (IBO)
 		- Vertex buffer object (VBO)
+		- Index buffer object (IBO)
 		- Vertex array object (VAO)
 		- Vertex shader (VS) and fragment shader (FS)
 		- Root signature
@@ -102,8 +102,8 @@ Standalone renderer examples.
 		- Root signature
 		- Graphics pipeline state object (PSO)
 	- "FirstComputeShader" demonstrates:
-		- Index buffer object (IBO)
 		- Vertex buffer object (VBO)
+		- Index buffer object (IBO)
 		- Vertex array object (VAO)
 		- Texture buffer object (TBO)
 		- Structured buffer object (SBO)
@@ -127,8 +127,8 @@ Standalone renderer examples.
 		- Framebuffer object (FBO) used for render to texture
 		- General Purpose Computation on Graphics Processing Unit (GPGPU) by using the RHI and shaders without having any output window (also known as headless rendering)
 	- "InstancedCubes" demonstrates:
-		- Index buffer object (IBO)
 		- Vertex buffer object (VBO)
+		- Index buffer object (IBO)
 		- Vertex array object (VAO)
 		- Texture buffer object (TBO)
 		- Uniform buffer object (UBO)
@@ -141,8 +141,8 @@ Standalone renderer examples.
 		- Instanced arrays (shader model 3 feature, vertex array element advancing per-instance instead of per-vertex)
 		- Draw instanced (shader model 4 feature, build in shader variable holding the current instance ID)
 	- "IcosahedronTessellation" demonstrates:
-		- Index buffer object (IBO)
 		- Vertex buffer object (VBO)
+		- Index buffer object (IBO)
 		- Vertex array object (VAO)
 		- Uniform buffer object (UBO)
 		- Vertex shader (VS), tessellation control shader (TCS), tessellation evaluation shader (TES), geometry shader (GS) and fragment shader (FS)
@@ -152,8 +152,8 @@ Standalone renderer examples.
 	- "ImGuiExampleSelector"demonstrates:
 		- ImGui usage to select the example to start
 	- "FirstMesh" demonstrates:
-		- Index buffer object (IBO)
 		- Vertex buffer object (VBO)
+		- Index buffer object (IBO)
 		- Vertex array object (VAO)
 		- Texture buffer object (TBO)
 		- Uniform buffer object (UBO)

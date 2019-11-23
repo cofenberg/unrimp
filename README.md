@@ -35,6 +35,7 @@ Features
 		- Implementations try to stick as best as possible close-to-the-metal and as a result are just a few KiB instead of MiB in memory size
 		- Implementations load the entry points of Vulkan, Direct3D, OpenGL and so on during runtime, meaning it's possible to react on system failures by e.g. dynamically switching to another RHI implementation
 	- Support for static and shared build
+	- RTTI and C++ exceptions are not used by RHI and renderer
 	- Separation into RHI, renderer and toolkit for asset cooking
 		- RHI abstracts way the underlying API like Vulkan/OpenGL/DirectX
 		- Renderer designed with end-user and middleware-user in mind
