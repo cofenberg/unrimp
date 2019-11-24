@@ -17,6 +17,13 @@
       "projectTarget": "ExampleProjectCompiler.exe (Install)",
       "name": "ExampleProjectCompiler.exe (Install with Arguments)",
       "args": [ "Direct3D11_50" ]
+    },
+    {
+      "type": "default",
+      "project": "CMakeLists.txt",
+      "projectTarget": "ExampleSDL2.exe (Install)",
+      "name": "ExampleSDL2.exe (Install with Arguments)",
+      "args": [ "Direct3D11" ]
     }
   ]
 }

@@ -24,6 +24,5 @@ Minimal SDL2 standalone example (RHI only, no renderer nor renderer toolkit)
 
 == Preprocessor Definitions ==
 Other
-- "UNICODE":		   Enable Microsoft Windows command line Unicode support
 - "SHARED_LIBRARIES":  Use RHIs via shared libraries, if this is not defined, the RHIs are statically linked
 - Do also have a look into the RHI header file for RHI implementation preprocessor definitions

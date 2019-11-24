@@ -125,7 +125,7 @@ Rhi::handle getNativeWindowHandle(SDL_Window& sdlWindow)
 //[-------------------------------------------------------]
 //[ Platform independent program entry point              ]
 //[-------------------------------------------------------]
-int main([[maybe_unused]] int arc, [[maybe_unused]] char* argv[])
+int main(int arc, char* argv[])
 {
 	// For memory leak detection
 	#if defined(RHI_DEBUG) && defined(_WIN32)
