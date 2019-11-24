@@ -3496,7 +3496,7 @@ namespace Rhi
 		*  @param[in] ptr
 		*    Direct pointer to initialize with, can be a null pointer
 		*/
-		FORCEINLINE explicit SmartRefCount(AType* ptr) :
+		FORCEINLINE SmartRefCount(AType* ptr) :
 			mPtr(nullptr)
 		{
 			setPtr(ptr);

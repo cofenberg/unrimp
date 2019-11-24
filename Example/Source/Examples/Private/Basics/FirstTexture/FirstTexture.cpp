@@ -63,11 +63,11 @@ void FirstTexture::onInitialization()
 			rootParameters[1].initializeAsDescriptorTable(2, &ranges[2]);
 
 			// Setup
-			Rhi::RootSignatureBuilder rootSignature;
-			rootSignature.initialize(static_cast<uint32_t>(GLM_COUNTOF(rootParameters)), rootParameters, 0, nullptr, Rhi::RootSignatureFlags::ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT);
+			Rhi::RootSignatureBuilder rootSignatureBuilder;
+			rootSignatureBuilder.initialize(static_cast<uint32_t>(GLM_COUNTOF(rootParameters)), rootParameters, 0, nullptr, Rhi::RootSignatureFlags::ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT);
 
 			// Create the instance
-			mRootSignature = rhi->createRootSignature(rootSignature);
+			mRootSignature = rhi->createRootSignature(rootSignatureBuilder);
 		}
 
 		// Create sampler state and wrap it into a resource group instance

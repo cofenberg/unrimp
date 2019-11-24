@@ -275,7 +275,10 @@ Microsoft Windows: First Example Kickoff
 
 Microsoft Windows: Using the Unrimp examples together with [SDL2](https://www.libsdl.org/)
 ======
-- Download e.g. "SDL2-devel-2.0.9-VC.zip" from https://www.libsdl.org/download-2.0.php and extract it into "unrimp/External/Example/SDL2" (directory contains "include" and "lib")
+- Download e.g. "SDL2-devel-2.0.10-VC.zip" from https://www.libsdl.org/download-2.0.php and extract it into "unrimp/External/Example/SDL2" (directory contains "include" and "lib")
+- Click on Visual Studio 2019 -> Menu bar -> "Project" -> "Generate Cache for Unrimp", the minimal SDL2 standalone example "ExampleSDL2" is now also available (RHI only, no renderer nor renderer toolkit)
+- For debugging with Visual Studio 2019, use "ExampleSDL2.exe (Install with Arguments)" as startup item
+- Build and run the examples, when setting a break point inside Visual Studio 2019 at "ApplicationImplSdl2::onInitialization()" it should trigger now so you know it worked
 
 
 Microsoft Windows: Targeting Android

@@ -51,11 +51,11 @@ void FirstTessellationShader::onInitialization()
 
 		{ // Create the root signature
 			// Setup
-			Rhi::RootSignatureBuilder rootSignature;
-			rootSignature.initialize(0, nullptr, 0, nullptr, Rhi::RootSignatureFlags::ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT);
+			Rhi::RootSignatureBuilder rootSignatureBuilder;
+			rootSignatureBuilder.initialize(0, nullptr, 0, nullptr, Rhi::RootSignatureFlags::ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT);
 
 			// Create the instance
-			mRootSignature = rhi->createRootSignature(rootSignature);
+			mRootSignature = rhi->createRootSignature(rootSignatureBuilder);
 		}
 
 		// Vertex input layout

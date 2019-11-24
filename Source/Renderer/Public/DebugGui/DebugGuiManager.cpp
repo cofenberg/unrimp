@@ -420,11 +420,11 @@ namespace Renderer
 			rootParameters[1].initializeAsDescriptorTable(1, &ranges[2]);
 
 			// Setup
-			Rhi::RootSignatureBuilder rootSignature;
-			rootSignature.initialize(static_cast<uint32_t>(GLM_COUNTOF(rootParameters)), rootParameters, 0, nullptr, Rhi::RootSignatureFlags::ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT);
+			Rhi::RootSignatureBuilder rootSignatureBuilder;
+			rootSignatureBuilder.initialize(static_cast<uint32_t>(GLM_COUNTOF(rootParameters)), rootParameters, 0, nullptr, Rhi::RootSignatureFlags::ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT);
 
 			// Create the instance
-			mRootSignature = rhi.createRootSignature(rootSignature RHI_RESOURCE_DEBUG_NAME("Debug GUI"));
+			mRootSignature = rhi.createRootSignature(rootSignatureBuilder RHI_RESOURCE_DEBUG_NAME("Debug GUI"));
 		}
 
 		{ // Create the graphics pipeline state instance

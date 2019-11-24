@@ -172,8 +172,7 @@ void IApplicationRhi::onDrawRequest()
 				// Make the graphics main swap chain to the current render target
 				Rhi::Command::SetGraphicsRenderTarget::create(mCommandBuffer, mMainSwapChain);
 
-				{ // Since Direct3D 12 is command list based, the viewport and scissor rectangle
-				  // must be set in every draw call to work with all supported RHI implementations
+				{ // Since Direct3D 12 is command list based, the viewport and scissor rectangle must be set in every draw call to work with all supported RHI implementations
 					// Get the window size
 					uint32_t width  = 1;
 					uint32_t height = 1;

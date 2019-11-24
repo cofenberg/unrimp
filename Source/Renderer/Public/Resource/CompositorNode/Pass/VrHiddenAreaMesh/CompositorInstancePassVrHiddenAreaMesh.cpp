@@ -62,11 +62,11 @@
 
 					{ // Create the root signature
 						// Setup
-						Rhi::RootSignatureBuilder rootSignature;
-						rootSignature.initialize(0, nullptr, 0, nullptr, Rhi::RootSignatureFlags::ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT);
+						Rhi::RootSignatureBuilder rootSignatureBuilder;
+						rootSignatureBuilder.initialize(0, nullptr, 0, nullptr, Rhi::RootSignatureFlags::ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT);
 
 						// Create the instance
-						mRootSignature = rhi.createRootSignature(rootSignature RHI_RESOURCE_DEBUG_NAME("Compositor instance pass VR hidden area mesh"));
+						mRootSignature = rhi.createRootSignature(rootSignatureBuilder RHI_RESOURCE_DEBUG_NAME("Compositor instance pass VR hidden area mesh"));
 					}
 
 					// Vertex input layout

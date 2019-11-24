@@ -392,6 +392,16 @@ if(EXAMPLES)
 		# Set the startup project
 		set_property(DIRECTORY PROPERTY VS_STARTUP_PROJECT "Examples")
 	endif()
+
+	# Optional "Simple DirectMedia Layer" (SDL, https://www.libsdl.org/ ) support inside the example framework
+	if(EXAMPLE_SDL2_ENABLED)
+		set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/Build/")
+		find_package(SDL2)
+	endif()
+	if(SDL2_FOUND)
+		message("Found SDL2, SDL2 example project enabled")
+		add_subdirectory(Example/Source/ExampleSDL2)
+	endif()
 endif()
 if(EXAMPLE_PROJECT_COMPILER AND RENDERER AND RENDERER_TOOLKIT)
 	add_subdirectory(Example/Source/ExampleProjectCompiler)

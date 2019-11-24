@@ -122,11 +122,11 @@ void FirstGpgpu::onInitialization()
 		rootParameters[1].initializeAsDescriptorTable(1, &ranges[1]);
 
 		// Setup
-		Rhi::RootSignatureBuilder rootSignature;
-		rootSignature.initialize(static_cast<uint32_t>(GLM_COUNTOF(rootParameters)), rootParameters, 0, nullptr, Rhi::RootSignatureFlags::ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT);
+		Rhi::RootSignatureBuilder rootSignatureBuilder;
+		rootSignatureBuilder.initialize(static_cast<uint32_t>(GLM_COUNTOF(rootParameters)), rootParameters, 0, nullptr, Rhi::RootSignatureFlags::ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT);
 
 		// Create the instance
-		mRootSignature = mRhi->createRootSignature(rootSignature);
+		mRootSignature = mRhi->createRootSignature(rootSignatureBuilder);
 	}
 
 	// Create the 2D texture and framebuffer object (FBO) instances

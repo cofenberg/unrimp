@@ -63,11 +63,11 @@ void FirstComputeShader::onInitialization()
 			rootParameters[1].initializeAsDescriptorTable(1, &ranges[4]);
 
 			// Setup
-			Rhi::RootSignatureBuilder rootSignature;
-			rootSignature.initialize(static_cast<uint32_t>(GLM_COUNTOF(rootParameters)), rootParameters, 0, nullptr, Rhi::RootSignatureFlags::ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT);
+			Rhi::RootSignatureBuilder rootSignatureBuilder;
+			rootSignatureBuilder.initialize(static_cast<uint32_t>(GLM_COUNTOF(rootParameters)), rootParameters, 0, nullptr, Rhi::RootSignatureFlags::ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT);
 
 			// Create the instance
-			mGraphicsRootSignature = rhi->createRootSignature(rootSignature);
+			mGraphicsRootSignature = rhi->createRootSignature(rootSignatureBuilder);
 		}
 
 		{ // Create the first compute root signature
@@ -88,11 +88,11 @@ void FirstComputeShader::onInitialization()
 			rootParameters[0].initializeAsDescriptorTable(7, &ranges[0]);
 
 			// Setup
-			Rhi::RootSignatureBuilder rootSignature;
-			rootSignature.initialize(static_cast<uint32_t>(GLM_COUNTOF(rootParameters)), rootParameters, 0, nullptr, Rhi::RootSignatureFlags::NONE);
+			Rhi::RootSignatureBuilder rootSignatureBuilder;
+			rootSignatureBuilder.initialize(static_cast<uint32_t>(GLM_COUNTOF(rootParameters)), rootParameters, 0, nullptr, Rhi::RootSignatureFlags::NONE);
 
 			// Create the instance
-			mComputeRootSignature1 = rhi->createRootSignature(rootSignature);
+			mComputeRootSignature1 = rhi->createRootSignature(rootSignatureBuilder);
 		}
 
 		{ // Create the second compute root signature
@@ -112,11 +112,11 @@ void FirstComputeShader::onInitialization()
 			rootParameters[0].initializeAsDescriptorTable(6, &ranges[0]);
 
 			// Setup
-			Rhi::RootSignatureBuilder rootSignature;
-			rootSignature.initialize(static_cast<uint32_t>(GLM_COUNTOF(rootParameters)), rootParameters, 0, nullptr, Rhi::RootSignatureFlags::NONE);
+			Rhi::RootSignatureBuilder rootSignatureBuilder;
+			rootSignatureBuilder.initialize(static_cast<uint32_t>(GLM_COUNTOF(rootParameters)), rootParameters, 0, nullptr, Rhi::RootSignatureFlags::NONE);
 
 			// Create the instance
-			mComputeRootSignature2 = rhi->createRootSignature(rootSignature);
+			mComputeRootSignature2 = rhi->createRootSignature(rootSignatureBuilder);
 		}
 
 		// Create sampler state and wrap it into a resource group instance
