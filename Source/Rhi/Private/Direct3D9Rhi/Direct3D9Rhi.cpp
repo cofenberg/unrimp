@@ -4071,7 +4071,7 @@ namespace Direct3D9Rhi
 				// Assign a default name to the resource for debugging purposes
 				#ifdef RHI_DEBUG
 					RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "1D texture", 13);	// 13 = "1D texture: " including terminating zero
-					const UINT detailedDebugNameLength = strlen(detailedDebugName);
+					const UINT detailedDebugNameLength = static_cast<UINT>(strlen(detailedDebugName));
 					FAILED_DEBUG_BREAK(mDirect3DTexture9->SetPrivateData(WKPDID_D3DDebugObjectName, detailedDebugName, detailedDebugNameLength, 0));
 
 					// Set debug name of the texture surfaces
@@ -4281,7 +4281,7 @@ namespace Direct3D9Rhi
 				// Assign a default name to the resource for debugging purposes
 				#ifdef RHI_DEBUG
 					RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "2D texture", 13);	// 13 = "2D texture: " including terminating zero
-					const UINT detailedDebugNameLength = strlen(detailedDebugName);
+					const UINT detailedDebugNameLength = static_cast<UINT>(strlen(detailedDebugName));
 					FAILED_DEBUG_BREAK(mDirect3DTexture9->SetPrivateData(WKPDID_D3DDebugObjectName, detailedDebugName, detailedDebugNameLength, 0));
 
 					// Set debug name of the texture surfaces
@@ -4509,7 +4509,7 @@ namespace Direct3D9Rhi
 				// Assign a default name to the resource for debugging purposes
 				#ifdef RHI_DEBUG
 					RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "3D texture", 13);	// 13 = "3D texture: " including terminating zero
-					const UINT detailedDebugNameLength = strlen(detailedDebugName);
+					const UINT detailedDebugNameLength = static_cast<UINT>(strlen(detailedDebugName));
 					FAILED_DEBUG_BREAK(mDirect3DTexture9->SetPrivateData(WKPDID_D3DDebugObjectName, detailedDebugName, detailedDebugNameLength, 0));
 
 					// Set debug name of the texture surfaces
@@ -4722,7 +4722,7 @@ namespace Direct3D9Rhi
 				// Assign a default name to the resource for debugging purposes
 				#ifdef RHI_DEBUG
 					RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "Cube texture", 15);	// 15 = "Cube texture: " including terminating zero
-					const UINT detailedDebugNameLength = strlen(detailedDebugName);
+					const UINT detailedDebugNameLength = static_cast<UINT>(strlen(detailedDebugName));
 					FAILED_DEBUG_BREAK(mDirect3DTexture9->SetPrivateData(WKPDID_D3DDebugObjectName, detailedDebugName, detailedDebugNameLength, 0));
 
 					// Set debug name of the texture surfaces

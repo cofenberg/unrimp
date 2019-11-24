@@ -63,7 +63,7 @@ Rhi::handle getNativeWindowHandle(SDL_Window& sdlWindow)
 		{
 			#if defined _WIN32
 				case SDL_SYSWM_UNKNOWN:
-					assert(false);
+					ASSERT(false);
 					break;
 
 				case SDL_SYSWM_WINDOWS:
@@ -80,14 +80,14 @@ Rhi::handle getNativeWindowHandle(SDL_Window& sdlWindow)
 				case SDL_SYSWM_ANDROID:
 				case SDL_SYSWM_VIVANTE:
 				case SDL_SYSWM_OS2:
-					assert(false);
+					ASSERT(false);
 					break;
 			#elif defined __ANDROID__
 				#warning TODO(co) The Android support is work-in-progress
 			#elif defined LINUX
 				case SDL_SYSWM_UNKNOWN:
 				case SDL_SYSWM_WINDOWS:
-					assert(false);
+					ASSERT(false);
 					break;
 
 				case SDL_SYSWM_X11:
@@ -97,7 +97,7 @@ Rhi::handle getNativeWindowHandle(SDL_Window& sdlWindow)
 				case SDL_SYSWM_DIRECTFB:
 				case SDL_SYSWM_COCOA:
 				case SDL_SYSWM_UIKIT:
-					assert(false);
+					ASSERT(false);
 					break;
 
 				case SDL_SYSWM_WAYLAND:
@@ -109,7 +109,7 @@ Rhi::handle getNativeWindowHandle(SDL_Window& sdlWindow)
 				case SDL_SYSWM_ANDROID:
 				case SDL_SYSWM_VIVANTE:
 				case SDL_SYSWM_OS2:
-					assert(false);
+					ASSERT(false);
 					break;
 			#else
 				#error "Unsupported platform"
@@ -138,7 +138,7 @@ int main([[maybe_unused]] int arc, [[maybe_unused]] char* argv[])
 	if (SDL_Init(0) == 0)
 	{
 		// Create SDL 2 window instance
-		SDL_Window*	sdlWindow = SDL_CreateWindow("Example SDL2", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, 1024, 768, SDL_WINDOW_RESIZABLE | SDL_WINDOW_ALLOW_HIGHDPI);
+		SDL_Window* sdlWindow = SDL_CreateWindow("Example SDL2", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, 1024, 768, SDL_WINDOW_RESIZABLE | SDL_WINDOW_ALLOW_HIGHDPI);
 		if (nullptr != sdlWindow)
 		{
 			// Create RHI instance
