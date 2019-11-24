@@ -340,7 +340,7 @@ int main([[maybe_unused]] int arc, [[maybe_unused]] char* argv[])
 									if (rhi->beginScene())
 									{
 										// Submit command buffer to the RHI implementation
-										commandBuffer.submitToRhiAndClear(*rhi);
+										commandBuffer.submitToRhi(*rhi);
 
 										// End scene rendering
 										rhi->endScene();

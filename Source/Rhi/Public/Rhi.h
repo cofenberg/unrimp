@@ -8579,7 +8579,7 @@ namespace Rhi
 		*/
 		[[nodiscard]] inline const uint8_t* getCommandPacketBuffer() const
 		{
-			return mCommandPacketBuffer;
+			return (~0u != mPreviousCommandPacketByteIndex) ? mCommandPacketBuffer : nullptr;
 		}
 
 		/**

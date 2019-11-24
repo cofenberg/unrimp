@@ -12267,6 +12267,9 @@ namespace VulkanRhi
 
 	void VulkanRhi::submitCommandBuffer(const Rhi::CommandBuffer& commandBuffer)
 	{
+		// Sanity check
+		RHI_ASSERT(mContext, !commandBuffer.isEmpty(), "The Vulkan command buffer to execute mustn't be empty")
+
 		// Loop through all commands
 		const uint8_t* commandPacketBuffer = commandBuffer.getCommandPacketBuffer();
 		Rhi::ConstCommandPacket constCommandPacket = commandPacketBuffer;

@@ -14178,6 +14178,9 @@ namespace Direct3D11Rhi
 
 	void Direct3D11Rhi::submitCommandBuffer(const Rhi::CommandBuffer& commandBuffer)
 	{
+		// Sanity check
+		RHI_ASSERT(mContext, !commandBuffer.isEmpty(), "The Direct3D 11 command buffer to execute mustn't be empty")
+
 		// Generate asynchronous mipmaps for textures
 		// -> For multithreading we could also use a deferred context, but in first tests there were random "FinishCommandList()"/"ExecuteCommandList()" state glitches
 		//    when not fully resetting the context states. On the other hand, fully resetting the context states isn't recommended. Since we just need to be able to
