@@ -66,7 +66,7 @@ namespace Renderer
 		//[ Definitions                                           ]
 		//[-------------------------------------------------------]
 		static constexpr uint32_t FORMAT_TYPE	 = STRING_ID("Mesh");
-		static constexpr uint32_t FORMAT_VERSION = 7;
+		static constexpr uint32_t FORMAT_VERSION = 8;
 
 		#pragma pack(push)
 		#pragma pack(1)
@@ -83,6 +83,7 @@ namespace Renderer
 				uint8_t  indexBufferFormat;
 				uint32_t numberOfIndices;
 				uint8_t  numberOfVertexAttributes;
+				bool	 hasPositionOnlyIndices;
 				// Sub-meshes
 				uint16_t numberOfSubMeshes;
 				// Optional skeleton

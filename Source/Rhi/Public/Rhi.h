@@ -257,7 +257,14 @@ PRAGMA_WARNING_POP
 	*  @param[in] debugName
 	*    ASCII name for debugging purposes, must be valid (there's no internal null pointer test)
 	*/
-	#define RHI_RESOURCE_DEBUG_NAME_PARAMETER , const char* debugName = ""
+	#define RHI_RESOURCE_DEBUG_NAME_PARAMETER , const char debugName[] = ""
+	#define RHI_RESOURCE_DEBUG_NAME_PARAMETER_NO_DEFAULT , const char debugName[]
+
+	/**
+	*  @brief
+	*    Pass resource name for debugging purposes, ignored when not using "RHI_DEBUG"
+	*/
+	#define RHI_RESOURCE_DEBUG_PASS_PARAMETER , debugName
 #else
 	#define ASSERT(x)	// TODO(co) "RHI_ASSERT()" should be used everywhere
 
@@ -269,6 +276,13 @@ PRAGMA_WARNING_POP
 	*    ASCII name for debugging purposes, must be valid (there's no internal null pointer test)
 	*/
 	#define RHI_RESOURCE_DEBUG_NAME_PARAMETER
+	#define RHI_RESOURCE_DEBUG_NAME_PARAMETER_NO_DEFAULT
+
+	/**
+	*  @brief
+	*    Pass resource name for debugging purposes, ignored when not using "RHI_DEBUG"
+	*/
+	#define RHI_RESOURCE_DEBUG_PASS_PARAMETER
 #endif
 #ifdef RHI_STATISTICS
 	// Disable warnings in external headers, we can't fix them
@@ -4110,14 +4124,14 @@ namespace Rhi
 	*/
 	enum class NameId : uint32_t
 	{
-		VULKAN		= 1646768219,	///< Vulkan RHI implementation, same value as renderer runtime STRING_ID("Vulkan")
-		DIRECT3D12	= 2152506057,	///< Direct3D 12 RHI implementation, same value as renderer runtime STRING_ID("Direct3D12")
-		DIRECT3D11	= 2102173200,	///< Direct3D 11 RHI implementation, same value as renderer runtime STRING_ID("Direct3D11")
-		DIRECT3D10	= 2118950819,	///< Direct3D 10 RHI implementation, same value as renderer runtime STRING_ID("Direct3D10")
-		DIRECT3D9	= 3508528873,	///< Direct3D 9 RHI implementation, same value as renderer runtime STRING_ID("Direct3D9")
-		OPENGL		= 1149085807,	///< OpenGL RHI implementation, same value as renderer runtime STRING_ID("OpenGL")
-		OPENGLES3	= 4137012044,	///< OpenGL ES 3 RHI implementation, same value as renderer runtime STRING_ID("OpenGLES3")
-		NULL_DUMMY	= 3816175889	///< Null RHI implementation, same value as renderer runtime STRING_ID("Null")
+		VULKAN		= 1646768219,	///< Vulkan RHI implementation, same value as renderer STRING_ID("Vulkan")
+		DIRECT3D12	= 2152506057,	///< Direct3D 12 RHI implementation, same value as renderer STRING_ID("Direct3D12")
+		DIRECT3D11	= 2102173200,	///< Direct3D 11 RHI implementation, same value as renderer STRING_ID("Direct3D11")
+		DIRECT3D10	= 2118950819,	///< Direct3D 10 RHI implementation, same value as renderer STRING_ID("Direct3D10")
+		DIRECT3D9	= 3508528873,	///< Direct3D 9 RHI implementation, same value as renderer STRING_ID("Direct3D9")
+		OPENGL		= 1149085807,	///< OpenGL RHI implementation, same value as renderer STRING_ID("OpenGL")
+		OPENGLES3	= 4137012044,	///< OpenGL ES 3 RHI implementation, same value as renderer STRING_ID("OpenGLES3")
+		NULL_DUMMY	= 3816175889	///< Null RHI implementation, same value as renderer STRING_ID("Null")
 	};
 
 	/**
@@ -5195,6 +5209,20 @@ namespace Rhi
 		inline virtual ~IResource() override
 		{}
 
+		#ifdef RHI_DEBUG
+			/**
+			*  @brief
+			*    Return the resource debug name
+			*
+			*  @return
+			*    The resource debug name, never a null pointer and at least an empty string
+			*/
+			[[nodiscard]] inline const char* getDebugName() const
+			{
+				return mDebugName;
+			}
+		#endif
+
 		/**
 		*  @brief
 		*    Return the resource type
@@ -5241,40 +5269,82 @@ namespace Rhi
 
 	// Protected methods
 	protected:
-		/**
-		*  @brief
-		*    Constructor
-		*
-		*  @param[in] resourceType
-		*    The resource type
-		*
-		*  @note
-		*    - Only used for rare border cases, use the constructor with the RHI reference whenever possible
-		*/
-		inline explicit IResource(ResourceType resourceType) :
-			mResourceType(resourceType),
-			mRhi(nullptr)	// Only used for rare border cases, use the constructor with the RHI reference whenever possible. Normally the RHI pointer should never ever be a null pointer. So if you're in here, you're considered to be evil.
-		{}
+		#ifdef RHI_DEBUG
+			/**
+			*  @brief
+			*    Constructor
+			*
+			*  @param[in] resourceType
+			*    The resource type
+			*
+			*  @note
+			*    - Only used for rare border cases, use the constructor with the RHI reference whenever possible
+			*/
+			inline IResource(ResourceType resourceType, const char debugName[]) :
+				mResourceType(resourceType),
+				mRhi(nullptr)	// Only used for rare border cases, use the constructor with the RHI reference whenever possible. Normally the RHI pointer should never ever be a null pointer. So if you're in here, you're considered to be evil.
+			{
+				ASSERT((strlen(debugName) < 256) && "Resource debug name is not allowed to exceed 255 characters");
+				strncpy(mDebugName, debugName, 256);
+				mDebugName[255] = '\0';
+			}
 
-		/**
-		*  @brief
-		*    Constructor
-		*
-		*  @param[in] resourceType
-		*    The resource type
-		*  @param[in] rhi
-		*    Owner RHI instance
-		*/
-		inline IResource(ResourceType resourceType, IRhi& rhi) :
-			mResourceType(resourceType),
-			mRhi(&rhi)
-		{}
+			/**
+			*  @brief
+			*    Constructor
+			*
+			*  @param[in] resourceType
+			*    The resource type
+			*  @param[in] rhi
+			*    Owner RHI instance
+			*/
+			inline IResource(ResourceType resourceType, IRhi& rhi, const char debugName[]) :
+				mResourceType(resourceType),
+				mRhi(&rhi)
+			{
+				RHI_ASSERT(rhi.getContext(), strlen(debugName) < 256, "Resource debug name is not allowed to exceed 255 characters");
+				strncpy(mDebugName, debugName, 256);
+				mDebugName[255] = '\0';
+			}
+		#else
+			/**
+			*  @brief
+			*    Constructor
+			*
+			*  @param[in] resourceType
+			*    The resource type
+			*
+			*  @note
+			*    - Only used for rare border cases, use the constructor with the RHI reference whenever possible
+			*/
+			inline explicit IResource(ResourceType resourceType) :
+				mResourceType(resourceType),
+				mRhi(nullptr)	// Only used for rare border cases, use the constructor with the RHI reference whenever possible. Normally the RHI pointer should never ever be a null pointer. So if you're in here, you're considered to be evil.
+			{}
+
+			/**
+			*  @brief
+			*    Constructor
+			*
+			*  @param[in] resourceType
+			*    The resource type
+			*  @param[in] rhi
+			*    Owner RHI instance
+			*/
+			inline IResource(ResourceType resourceType, IRhi& rhi) :
+				mResourceType(resourceType),
+				mRhi(&rhi)
+			{}
+		#endif
 
 		explicit IResource(const IResource& source) = delete;
 		IResource& operator =(const IResource& source) = delete;
 
 	// Private data
 	private:
+		#ifdef RHI_DEBUG
+			char mDebugName[256];	///< Debug name for easier resource identification when debugging, contains terminating zero, first member variable by intent to see it at once during introspection (debug memory layout change is no problem here)
+		#endif
 		ResourceType mResourceType;	///< The resource type
 		IRhi*		 mRhi;			///< The owner RHI instance, always valid
 
@@ -5341,8 +5411,8 @@ namespace Rhi
 		*  @param[in] rhi
 		*    Owner RHI instance
 		*/
-		inline explicit IRootSignature(IRhi& rhi) :
-			IResource(ResourceType::ROOT_SIGNATURE, rhi)
+		inline explicit IRootSignature(IRhi& rhi RHI_RESOURCE_DEBUG_NAME_PARAMETER_NO_DEFAULT) :
+			IResource(ResourceType::ROOT_SIGNATURE, rhi RHI_RESOURCE_DEBUG_PASS_PARAMETER)
 		{
 			#ifdef RHI_STATISTICS
 				// Update the statistics
@@ -5405,8 +5475,8 @@ namespace Rhi
 		*  @param[in] rhi
 		*    Owner RHI instance
 		*/
-		inline explicit IResourceGroup(IRhi& rhi) :
-			IResource(ResourceType::RESOURCE_GROUP, rhi)
+		inline explicit IResourceGroup(IRhi& rhi RHI_RESOURCE_DEBUG_NAME_PARAMETER_NO_DEFAULT) :
+			IResource(ResourceType::RESOURCE_GROUP, rhi RHI_RESOURCE_DEBUG_PASS_PARAMETER)
 		{
 			#ifdef RHI_STATISTICS
 				// Update the statistics
@@ -5487,8 +5557,8 @@ namespace Rhi
 		*  @param[in] rhi
 		*    Owner RHI instance
 		*/
-		inline explicit IGraphicsProgram(IRhi& rhi) :
-			IResource(ResourceType::GRAPHICS_PROGRAM, rhi)
+		inline explicit IGraphicsProgram(IRhi& rhi RHI_RESOURCE_DEBUG_NAME_PARAMETER_NO_DEFAULT) :
+			IResource(ResourceType::GRAPHICS_PROGRAM, rhi RHI_RESOURCE_DEBUG_PASS_PARAMETER)
 		{
 			#ifdef RHI_STATISTICS
 				// Update the statistics
@@ -5540,8 +5610,8 @@ namespace Rhi
 		*  @param[in] rhi
 		*    Owner rhi instance
 		*/
-		inline explicit IRenderPass(IRhi& rhi) :
-			IResource(ResourceType::RENDER_PASS, rhi)
+		inline explicit IRenderPass(IRhi& rhi RHI_RESOURCE_DEBUG_NAME_PARAMETER_NO_DEFAULT) :
+			IResource(ResourceType::RENDER_PASS, rhi RHI_RESOURCE_DEBUG_PASS_PARAMETER)
 		{
 			#ifdef RHI_STATISTICS
 				// Update the statistics
@@ -5593,8 +5663,8 @@ namespace Rhi
 		*  @param[in] rhi
 		*    Owner rhi instance
 		*/
-		inline explicit IQueryPool(IRhi& rhi) :
-			IResource(ResourceType::QUERY_POOL, rhi)
+		inline explicit IQueryPool(IRhi& rhi RHI_RESOURCE_DEBUG_NAME_PARAMETER_NO_DEFAULT) :
+			IResource(ResourceType::QUERY_POOL, rhi RHI_RESOURCE_DEBUG_PASS_PARAMETER)
 		{
 			#ifdef RHI_STATISTICS
 				// Update the statistics
@@ -5670,8 +5740,8 @@ namespace Rhi
 		*  @param[in] renderPass
 		*    Render pass to use, the render target keeps a reference to the render pass
 		*/
-		inline IRenderTarget(ResourceType resourceType, IRenderPass& renderPass) :
-			IResource(resourceType, renderPass.getRhi()),
+		inline IRenderTarget(ResourceType resourceType, IRenderPass& renderPass RHI_RESOURCE_DEBUG_NAME_PARAMETER_NO_DEFAULT) :
+			IResource(resourceType, renderPass.getRhi() RHI_RESOURCE_DEBUG_PASS_PARAMETER),
 			mRenderPass(renderPass)
 		{
 			mRenderPass.addReference();
@@ -5845,8 +5915,8 @@ namespace Rhi
 		*  @param[in] renderPass
 		*    Render pass to use, the swap chain keeps a reference to the render pass
 		*/
-		inline explicit ISwapChain(IRenderPass& renderPass) :
-			IRenderTarget(ResourceType::SWAP_CHAIN, renderPass)
+		inline explicit ISwapChain(IRenderPass& renderPass RHI_RESOURCE_DEBUG_NAME_PARAMETER_NO_DEFAULT) :
+			IRenderTarget(ResourceType::SWAP_CHAIN, renderPass RHI_RESOURCE_DEBUG_PASS_PARAMETER)
 		{
 			#ifdef RHI_STATISTICS
 				// Update the statistics
@@ -5915,8 +5985,8 @@ namespace Rhi
 		*  @param[in] renderPass
 		*    Render pass to use, the framebuffer a reference to the render pass
 		*/
-		inline explicit IFramebuffer(IRenderPass& renderPass) :
-			IRenderTarget(ResourceType::FRAMEBUFFER, renderPass)
+		inline explicit IFramebuffer(IRenderPass& renderPass RHI_RESOURCE_DEBUG_NAME_PARAMETER_NO_DEFAULT) :
+			IRenderTarget(ResourceType::FRAMEBUFFER, renderPass RHI_RESOURCE_DEBUG_PASS_PARAMETER)
 		{
 			#ifdef RHI_STATISTICS
 				// Update the statistics
@@ -6217,8 +6287,8 @@ namespace Rhi
 		*  @param[in] id
 		*    The unique compact vertex array ID
 		*/
-		inline IVertexArray(IRhi& rhi, uint16_t id) :
-			IResource(ResourceType::VERTEX_ARRAY, rhi),
+		inline IVertexArray(IRhi& rhi, uint16_t id RHI_RESOURCE_DEBUG_NAME_PARAMETER_NO_DEFAULT) :
+			IResource(ResourceType::VERTEX_ARRAY, rhi RHI_RESOURCE_DEBUG_PASS_PARAMETER),
 			mId(id)
 		{
 			#ifdef RHI_STATISTICS
@@ -6272,8 +6342,8 @@ namespace Rhi
 		*  @note
 		*    - Only used for rare border cases, use the constructor with the RHI reference whenever possible
 		*/
-		inline explicit IBuffer(ResourceType resourceType) :
-			IResource(resourceType)
+		inline explicit IBuffer(ResourceType resourceType RHI_RESOURCE_DEBUG_NAME_PARAMETER_NO_DEFAULT) :
+			IResource(resourceType RHI_RESOURCE_DEBUG_PASS_PARAMETER)
 		{}
 
 		/**
@@ -6285,8 +6355,8 @@ namespace Rhi
 		*  @param[in] rhi
 		*    Owner RHI instance
 		*/
-		inline IBuffer(ResourceType resourceType, IRhi& rhi) :
-			IResource(resourceType, rhi)
+		inline IBuffer(ResourceType resourceType, IRhi& rhi RHI_RESOURCE_DEBUG_NAME_PARAMETER_NO_DEFAULT) :
+			IResource(resourceType, rhi RHI_RESOURCE_DEBUG_PASS_PARAMETER)
 		{}
 
 		explicit IBuffer(const IBuffer& source) = delete;
@@ -6332,8 +6402,8 @@ namespace Rhi
 		*  @param[in] rhi
 		*    Owner RHI instance
 		*/
-		inline explicit IVertexBuffer(IRhi& rhi) :
-			IBuffer(ResourceType::VERTEX_BUFFER, rhi)
+		inline explicit IVertexBuffer(IRhi& rhi RHI_RESOURCE_DEBUG_NAME_PARAMETER_NO_DEFAULT) :
+			IBuffer(ResourceType::VERTEX_BUFFER, rhi RHI_RESOURCE_DEBUG_PASS_PARAMETER)
 		{
 			#ifdef RHI_STATISTICS
 				// Update the statistics
@@ -6385,8 +6455,8 @@ namespace Rhi
 		*  @param[in] rhi
 		*    Owner RHI instance
 		*/
-		inline explicit IIndexBuffer(IRhi& rhi) :
-			IBuffer(ResourceType::INDEX_BUFFER, rhi)
+		inline explicit IIndexBuffer(IRhi& rhi RHI_RESOURCE_DEBUG_NAME_PARAMETER_NO_DEFAULT) :
+			IBuffer(ResourceType::INDEX_BUFFER, rhi RHI_RESOURCE_DEBUG_PASS_PARAMETER)
 		{
 			#ifdef RHI_STATISTICS
 				// Update the statistics
@@ -6452,8 +6522,8 @@ namespace Rhi
 		*  @param[in] rhi
 		*    Owner RHI instance
 		*/
-		inline explicit ITextureBuffer(IRhi& rhi) :
-			IBuffer(ResourceType::TEXTURE_BUFFER, rhi)
+		inline explicit ITextureBuffer(IRhi& rhi RHI_RESOURCE_DEBUG_NAME_PARAMETER_NO_DEFAULT) :
+			IBuffer(ResourceType::TEXTURE_BUFFER, rhi RHI_RESOURCE_DEBUG_PASS_PARAMETER)
 		{
 			#ifdef RHI_STATISTICS
 				// Update the statistics
@@ -6524,8 +6594,8 @@ namespace Rhi
 		*  @param[in] rhi
 		*    Owner RHI instance
 		*/
-		inline explicit IStructuredBuffer(IRhi& rhi) :
-			IBuffer(ResourceType::STRUCTURED_BUFFER, rhi)
+		inline explicit IStructuredBuffer(IRhi& rhi RHI_RESOURCE_DEBUG_NAME_PARAMETER_NO_DEFAULT) :
+			IBuffer(ResourceType::STRUCTURED_BUFFER, rhi RHI_RESOURCE_DEBUG_PASS_PARAMETER)
 		{
 			#ifdef RHI_STATISTICS
 				// Update the statistics
@@ -6586,16 +6656,29 @@ namespace Rhi
 
 	// Protected methods
 	protected:
-		/**
-		*  @brief
-		*    Default constructor
-		*
-		*  @note
-		*    - Only used for rare border cases, use the constructor with the RHI reference whenever possible
-		*/
-		inline IIndirectBuffer() :
-			IBuffer(ResourceType::INDIRECT_BUFFER)
-		{}
+		#ifdef RHI_DEBUG
+			/**
+			*  @brief
+			*    Default constructor
+			*
+			*  @note
+			*    - Only used for rare border cases, use the constructor with the RHI reference whenever possible
+			*/
+			inline explicit IIndirectBuffer(const char debugName[]) :
+				IBuffer(ResourceType::INDIRECT_BUFFER, debugName)
+			{}
+		#else
+			/**
+			*  @brief
+			*    Default constructor
+			*
+			*  @note
+			*    - Only used for rare border cases, use the constructor with the RHI reference whenever possible
+			*/
+			inline IIndirectBuffer() :
+				IBuffer(ResourceType::INDIRECT_BUFFER)
+			{}
+		#endif
 
 		/**
 		*  @brief
@@ -6604,8 +6687,8 @@ namespace Rhi
 		*  @param[in] rhi
 		*    Owner RHI instance
 		*/
-		inline explicit IIndirectBuffer(IRhi& rhi) :
-			IBuffer(ResourceType::INDIRECT_BUFFER, rhi)
+		inline explicit IIndirectBuffer(IRhi& rhi RHI_RESOURCE_DEBUG_NAME_PARAMETER_NO_DEFAULT) :
+			IBuffer(ResourceType::INDIRECT_BUFFER, rhi RHI_RESOURCE_DEBUG_PASS_PARAMETER)
 		{
 			#ifdef RHI_STATISTICS
 				// Update the statistics
@@ -6673,8 +6756,8 @@ namespace Rhi
 		*  @param[in] rhi
 		*    Owner RHI instance
 		*/
-		inline explicit IUniformBuffer(IRhi& rhi) :
-			IBuffer(ResourceType::UNIFORM_BUFFER, rhi)
+		inline explicit IUniformBuffer(IRhi& rhi RHI_RESOURCE_DEBUG_NAME_PARAMETER_NO_DEFAULT) :
+			IBuffer(ResourceType::UNIFORM_BUFFER, rhi RHI_RESOURCE_DEBUG_PASS_PARAMETER)
 		{
 			#ifdef RHI_STATISTICS
 				// Update the statistics
@@ -7101,8 +7184,8 @@ namespace Rhi
 		*  @param[in] rhi
 		*    Owner RHI instance
 		*/
-		inline ITexture(ResourceType resourceType, IRhi& rhi) :
-			IResource(resourceType, rhi)
+		inline ITexture(ResourceType resourceType, IRhi& rhi RHI_RESOURCE_DEBUG_NAME_PARAMETER_NO_DEFAULT) :
+			IResource(resourceType, rhi RHI_RESOURCE_DEBUG_PASS_PARAMETER)
 		{}
 
 		explicit ITexture(const ITexture& source) = delete;
@@ -7162,8 +7245,8 @@ namespace Rhi
 		*  @param[in] width
 		*    The width of the texture
 		*/
-		inline ITexture1D(IRhi& rhi, uint32_t width) :
-			ITexture(ResourceType::TEXTURE_1D, rhi),
+		inline ITexture1D(IRhi& rhi, uint32_t width RHI_RESOURCE_DEBUG_NAME_PARAMETER_NO_DEFAULT) :
+			ITexture(ResourceType::TEXTURE_1D, rhi RHI_RESOURCE_DEBUG_PASS_PARAMETER),
 			mWidth(width)
 		{
 			#ifdef RHI_STATISTICS
@@ -7251,8 +7334,8 @@ namespace Rhi
 		*  @param[in] numberOfSlices
 		*    The number of slices
 		*/
-		inline ITexture1DArray(IRhi& rhi, uint32_t width, uint32_t numberOfSlices) :
-			ITexture(ResourceType::TEXTURE_1D_ARRAY, rhi),
+		inline ITexture1DArray(IRhi& rhi, uint32_t width, uint32_t numberOfSlices RHI_RESOURCE_DEBUG_NAME_PARAMETER_NO_DEFAULT) :
+			ITexture(ResourceType::TEXTURE_1D_ARRAY, rhi RHI_RESOURCE_DEBUG_PASS_PARAMETER),
 			mWidth(width),
 			mNumberOfSlices(numberOfSlices)
 		{
@@ -7339,8 +7422,8 @@ namespace Rhi
 		*  @param[in] height
 		*    The height of the texture
 		*/
-		inline ITexture2D(IRhi& rhi, uint32_t width, uint32_t height) :
-			ITexture(ResourceType::TEXTURE_2D, rhi),
+		inline ITexture2D(IRhi& rhi, uint32_t width, uint32_t height RHI_RESOURCE_DEBUG_NAME_PARAMETER_NO_DEFAULT) :
+			ITexture(ResourceType::TEXTURE_2D, rhi RHI_RESOURCE_DEBUG_PASS_PARAMETER),
 			mWidth(width),
 			mHeight(height)
 		{
@@ -7441,8 +7524,8 @@ namespace Rhi
 		*  @param[in] numberOfSlices
 		*    The number of slices
 		*/
-		inline ITexture2DArray(IRhi& rhi, uint32_t width, uint32_t height, uint32_t numberOfSlices) :
-			ITexture(ResourceType::TEXTURE_2D_ARRAY, rhi),
+		inline ITexture2DArray(IRhi& rhi, uint32_t width, uint32_t height, uint32_t numberOfSlices RHI_RESOURCE_DEBUG_NAME_PARAMETER_NO_DEFAULT) :
+			ITexture(ResourceType::TEXTURE_2D_ARRAY, rhi RHI_RESOURCE_DEBUG_PASS_PARAMETER),
 			mWidth(width),
 			mHeight(height),
 			mNumberOfSlices(numberOfSlices)
@@ -7545,8 +7628,8 @@ namespace Rhi
 		*  @param[in] depth
 		*    The depth of the texture
 		*/
-		inline ITexture3D(IRhi& rhi, uint32_t width, uint32_t height, uint32_t depth) :
-			ITexture(ResourceType::TEXTURE_3D, rhi),
+		inline ITexture3D(IRhi& rhi, uint32_t width, uint32_t height, uint32_t depth RHI_RESOURCE_DEBUG_NAME_PARAMETER_NO_DEFAULT) :
+			ITexture(ResourceType::TEXTURE_3D, rhi RHI_RESOURCE_DEBUG_PASS_PARAMETER),
 			mWidth(width),
 			mHeight(height),
 			mDepth(depth)
@@ -7635,8 +7718,8 @@ namespace Rhi
 		*  @param[in] height
 		*    The height of the texture
 		*/
-		inline ITextureCube(IRhi& rhi, uint32_t width, uint32_t height) :
-			ITexture(ResourceType::TEXTURE_CUBE, rhi),
+		inline ITextureCube(IRhi& rhi, uint32_t width, uint32_t height RHI_RESOURCE_DEBUG_NAME_PARAMETER_NO_DEFAULT) :
+			ITexture(ResourceType::TEXTURE_CUBE, rhi RHI_RESOURCE_DEBUG_PASS_PARAMETER),
 			mWidth(width),
 			mHeight(height)
 		{
@@ -7692,8 +7775,8 @@ namespace Rhi
 		*  @param[in] rhi
 		*    Owner RHI instance
 		*/
-		inline IState(ResourceType resourceType, IRhi& rhi) :
-			IResource(resourceType, rhi)
+		inline IState(ResourceType resourceType, IRhi& rhi RHI_RESOURCE_DEBUG_NAME_PARAMETER_NO_DEFAULT) :
+			IResource(resourceType, rhi RHI_RESOURCE_DEBUG_PASS_PARAMETER)
 		{}
 
 		explicit IState(const IState& source) = delete;
@@ -7750,8 +7833,8 @@ namespace Rhi
 		*  @param[in] id
 		*    The unique compact graphics or compute pipeline state ID
 		*/
-		inline IPipelineState(ResourceType resourceType, IRhi& rhi, uint16_t id) :
-			IState(resourceType, rhi),
+		inline IPipelineState(ResourceType resourceType, IRhi& rhi, uint16_t id RHI_RESOURCE_DEBUG_NAME_PARAMETER_NO_DEFAULT) :
+			IState(resourceType, rhi RHI_RESOURCE_DEBUG_PASS_PARAMETER),
 			mId(id)
 		{}
 
@@ -7803,8 +7886,8 @@ namespace Rhi
 		*  @param[in] id
 		*    The unique compact graphics or compute pipeline state ID
 		*/
-		inline IGraphicsPipelineState(IRhi& rhi, uint16_t id) :
-			IPipelineState(ResourceType::GRAPHICS_PIPELINE_STATE, rhi, id)
+		inline IGraphicsPipelineState(IRhi& rhi, uint16_t id RHI_RESOURCE_DEBUG_NAME_PARAMETER_NO_DEFAULT) :
+			IPipelineState(ResourceType::GRAPHICS_PIPELINE_STATE, rhi, id RHI_RESOURCE_DEBUG_PASS_PARAMETER)
 		{
 			#ifdef RHI_STATISTICS
 				// Update the statistics
@@ -7858,8 +7941,8 @@ namespace Rhi
 		*  @param[in] id
 		*    The unique compact graphics or compute pipeline state ID
 		*/
-		inline IComputePipelineState(IRhi& rhi, uint16_t id) :
-			IPipelineState(ResourceType::COMPUTE_PIPELINE_STATE, rhi, id)
+		inline IComputePipelineState(IRhi& rhi, uint16_t id RHI_RESOURCE_DEBUG_NAME_PARAMETER_NO_DEFAULT) :
+			IPipelineState(ResourceType::COMPUTE_PIPELINE_STATE, rhi, id RHI_RESOURCE_DEBUG_PASS_PARAMETER)
 		{
 			#ifdef RHI_STATISTICS
 				// Update the statistics
@@ -7960,8 +8043,8 @@ namespace Rhi
 		*  @param[in] rhi
 		*    Owner RHI instance
 		*/
-		inline explicit ISamplerState(IRhi& rhi) :
-			IState(ResourceType::SAMPLER_STATE, rhi)
+		inline explicit ISamplerState(IRhi& rhi RHI_RESOURCE_DEBUG_NAME_PARAMETER_NO_DEFAULT) :
+			IState(ResourceType::SAMPLER_STATE, rhi RHI_RESOURCE_DEBUG_PASS_PARAMETER)
 		{
 			#ifdef RHI_STATISTICS
 				// Update the statistics
@@ -8024,8 +8107,8 @@ namespace Rhi
 		*  @param[in] rhi
 		*    Owner RHI instance
 		*/
-		inline IShader(ResourceType resourceType, IRhi& rhi) :
-			IResource(resourceType, rhi)
+		inline IShader(ResourceType resourceType, IRhi& rhi RHI_RESOURCE_DEBUG_NAME_PARAMETER_NO_DEFAULT) :
+			IResource(resourceType, rhi RHI_RESOURCE_DEBUG_PASS_PARAMETER)
 		{}
 
 		explicit IShader(const IShader& source) = delete;
@@ -8071,8 +8154,8 @@ namespace Rhi
 		*  @param[in] rhi
 		*    Owner RHI instance
 		*/
-		inline explicit IVertexShader(IRhi& rhi) :
-			IShader(ResourceType::VERTEX_SHADER, rhi)
+		inline explicit IVertexShader(IRhi& rhi RHI_RESOURCE_DEBUG_NAME_PARAMETER_NO_DEFAULT) :
+			IShader(ResourceType::VERTEX_SHADER, rhi RHI_RESOURCE_DEBUG_PASS_PARAMETER)
 		{
 			#ifdef RHI_STATISTICS
 				// Update the statistics
@@ -8124,8 +8207,8 @@ namespace Rhi
 		*  @param[in] rhi
 		*    Owner RHI instance
 		*/
-		inline explicit ITessellationControlShader(IRhi& rhi) :
-			IShader(ResourceType::TESSELLATION_CONTROL_SHADER, rhi)
+		inline explicit ITessellationControlShader(IRhi& rhi RHI_RESOURCE_DEBUG_NAME_PARAMETER_NO_DEFAULT) :
+			IShader(ResourceType::TESSELLATION_CONTROL_SHADER, rhi RHI_RESOURCE_DEBUG_PASS_PARAMETER)
 		{
 			#ifdef RHI_STATISTICS
 				// Update the statistics
@@ -8177,8 +8260,8 @@ namespace Rhi
 		*  @param[in] rhi
 		*    Owner RHI instance
 		*/
-		inline explicit ITessellationEvaluationShader(IRhi& rhi) :
-			IShader(ResourceType::TESSELLATION_EVALUATION_SHADER, rhi)
+		inline explicit ITessellationEvaluationShader(IRhi& rhi RHI_RESOURCE_DEBUG_NAME_PARAMETER_NO_DEFAULT) :
+			IShader(ResourceType::TESSELLATION_EVALUATION_SHADER, rhi RHI_RESOURCE_DEBUG_PASS_PARAMETER)
 		{
 			#ifdef RHI_STATISTICS
 				// Update the statistics
@@ -8230,8 +8313,8 @@ namespace Rhi
 		*  @param[in] rhi
 		*    Owner RHI instance
 		*/
-		inline explicit IGeometryShader(IRhi& rhi) :
-			IShader(ResourceType::GEOMETRY_SHADER, rhi)
+		inline explicit IGeometryShader(IRhi& rhi RHI_RESOURCE_DEBUG_NAME_PARAMETER_NO_DEFAULT) :
+			IShader(ResourceType::GEOMETRY_SHADER, rhi RHI_RESOURCE_DEBUG_PASS_PARAMETER)
 		{
 			#ifdef RHI_STATISTICS
 				// Update the statistics
@@ -8283,8 +8366,8 @@ namespace Rhi
 		*  @param[in] rhi
 		*    Owner RHI instance
 		*/
-		inline explicit IFragmentShader(IRhi& rhi) :
-			IShader(ResourceType::FRAGMENT_SHADER, rhi)
+		inline explicit IFragmentShader(IRhi& rhi RHI_RESOURCE_DEBUG_NAME_PARAMETER_NO_DEFAULT) :
+			IShader(ResourceType::FRAGMENT_SHADER, rhi RHI_RESOURCE_DEBUG_PASS_PARAMETER)
 		{
 			#ifdef RHI_STATISTICS
 				// Update the statistics
@@ -8336,8 +8419,8 @@ namespace Rhi
 		*  @param[in] rhi
 		*    Owner RHI instance
 		*/
-		inline explicit IComputeShader(IRhi& rhi) :
-			IShader(ResourceType::COMPUTE_SHADER, rhi)
+		inline explicit IComputeShader(IRhi& rhi RHI_RESOURCE_DEBUG_NAME_PARAMETER_NO_DEFAULT) :
+			IShader(ResourceType::COMPUTE_SHADER, rhi RHI_RESOURCE_DEBUG_PASS_PARAMETER)
 		{
 			#ifdef RHI_STATISTICS
 				// Update the statistics

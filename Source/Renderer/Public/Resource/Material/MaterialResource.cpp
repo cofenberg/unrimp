@@ -302,6 +302,22 @@ namespace Renderer
 							renderable->getRenderableManager().updateCachedRenderablesData();
 						}
 					}
+
+					// Optional "UseAlphaMap"
+					else if (USE_ALPHA_MAP_PROPERTY_ID == materialPropertyId)
+					{
+						// Update the cached material data of all attached renderables
+						const bool useAlphaMap = materialProperty->getBooleanValue();
+						for (Renderable* renderable : mAttachedRenderables)
+						{
+							renderable->mUseAlphaMap = useAlphaMap;
+
+							// In here we don't care about the fact that one and the same renderable manager instance might
+							// update cached renderables data. It's not performance critical in here and resolving this will
+							// require additional logic which itself has an performance impact. So keep it simple.
+							renderable->getRenderableManager().updateCachedRenderablesData();
+						}
+					}
 					break;
 
 				case MaterialProperty::Usage::UNKNOWN:

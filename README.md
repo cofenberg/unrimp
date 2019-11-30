@@ -150,6 +150,7 @@ Renderer (e.g. "The Game")
 	- Types: Directional, point and spot
 	- High-level sunlight controlled via time-of-day
 	- Support for [Illuminating Engineering Society (IES) light profiles](http://www.cgarena.com/freestuff/tutorials/max/ieslights/) (photometric light data, use e.g. [IESviewer](http://photometricviewer.com/) as viewer)
+- Mesh with optional position-only vertex array object (VAO) which can reduce the number of processed vertices up to half, can be used for position-only rendering (e.g. shadow map rendering) using the same vertex data that the original vertex array object (VAO) uses
 - Skeleton animation
 	- [ACL](https://github.com/nfrechette/acl) compressed skeleton animation clip
 	- GPU dual quaternion skinning (DQS), linear blend skinning (LBS) using matrices path is available as well

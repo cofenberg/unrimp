@@ -97,15 +97,15 @@ namespace Renderer
 	IResource& IResource::operator=(IResource&& resource)
 	{
 		// Swap data
+		#ifdef RHI_DEBUG
+			std::swap(mDebugName,			resource.mDebugName);
+		#endif
 		std::swap(mResourceManager,			resource.mResourceManager);
 		std::swap(mResourceId,				resource.mResourceId);
 		std::swap(mAssetId,					resource.mAssetId);
 		std::swap(mResourceLoaderTypeId,	resource.mResourceLoaderTypeId);
 		std::swap(mLoadingState,			resource.mLoadingState);
 		std::swap(mSortedResourceListeners,	resource.mSortedResourceListeners);	// This is fine, resource listeners store a resource ID instead of a raw pointer
-		#ifdef RHI_DEBUG
-			std::swap(mDebugName,			resource.mDebugName);
-		#endif
 
 		// Done
 		return *this;
@@ -144,14 +144,14 @@ namespace Renderer
 		}
 
 		// Reset everything
+		#ifdef RHI_DEBUG
+			mDebugName[0] = '\0';	// This isn't a security relevant use-case, so the most simple solution is sufficient here
+		#endif
 		mResourceManager = nullptr;
 		setInvalid(mResourceId);
 		setInvalid(mAssetId);
 		setInvalid(mResourceLoaderTypeId);
 		mSortedResourceListeners.clear();
-		#ifdef RHI_DEBUG
-			mDebugName.clear();
-		#endif
 	}
 
 

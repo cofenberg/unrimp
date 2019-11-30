@@ -45,7 +45,7 @@ namespace Renderer
 	CompositorInstancePassCompute::CompositorInstancePassCompute(const CompositorResourcePassCompute& compositorResourcePassCompute, const CompositorNodeInstance& compositorNodeInstance) :
 		ICompositorInstancePass(compositorResourcePassCompute, compositorNodeInstance),
 		mComputeMaterialBlueprint(true),
-		mRenderQueue(compositorNodeInstance.getCompositorWorkspaceInstance().getRenderer().getMaterialBlueprintResourceManager().getIndirectBufferManager(), 0, 0, false, false),
+		mRenderQueue(compositorNodeInstance.getCompositorWorkspaceInstance().getRenderer().getMaterialBlueprintResourceManager().getIndirectBufferManager(), 0, 0, false, false, false),
 		mMaterialResourceId(getInvalid<MaterialResourceId>())
 	{
 		const IRenderer& renderer = compositorNodeInstance.getCompositorWorkspaceInstance().getRenderer();

@@ -441,7 +441,7 @@ namespace Renderer
 	//[ Private methods                                       ]
 	//[-------------------------------------------------------]
 	CompositorInstancePassShadowMap::CompositorInstancePassShadowMap(const CompositorResourcePassShadowMap& compositorResourcePassShadowMap, const CompositorNodeInstance& compositorNodeInstance) :
-		CompositorInstancePassScene(compositorResourcePassShadowMap, compositorNodeInstance),
+		CompositorInstancePassScene(compositorResourcePassShadowMap, compositorNodeInstance, true),
 		// Settings
 		mEnabled(true),
 		mShadowMapSize(1024),

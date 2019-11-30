@@ -26,42 +26,6 @@
 
 
 //[-------------------------------------------------------]
-//[ Macros & definitions                                  ]
-//[-------------------------------------------------------]
-#ifdef RHI_DEBUG
-	/**
-	*  @brief
-	*    Resource name for debugging purposes, ignored when not using "RHI_DEBUG"
-	*
-	*  @param[in] debugName
-	*    ASCII name for debugging purposes, must be valid (there's no internal null pointer test)
-	*/
-	#define RHI_RESOURCE_DEBUG_NAME_PARAMETER_NO_DEFAULT , [[maybe_unused]] const char* debugName
-
-	/**
-	*  @brief
-	*    Pass resource name for debugging purposes, ignored when not using "RHI_DEBUG"
-	*/
-	#define RHI_RESOURCE_DEBUG_PASS_PARAMETER , debugName
-#else
-	/**
-	*  @brief
-	*    Resource name for debugging purposes, ignored when not using "RHI_DEBUG"
-	*
-	*  @param[in] debugName
-	*    ASCII name for debugging purposes, must be valid (there's no internal null pointer test)
-	*/
-	#define RHI_RESOURCE_DEBUG_NAME_PARAMETER_NO_DEFAULT
-
-	/**
-	*  @brief
-	*    Pass resource name for debugging purposes, ignored when not using "RHI_DEBUG"
-	*/
-	#define RHI_RESOURCE_DEBUG_PASS_PARAMETER
-#endif
-
-
-//[-------------------------------------------------------]
 //[ Namespace                                             ]
 //[-------------------------------------------------------]
 namespace Renderer

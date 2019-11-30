@@ -73,16 +73,16 @@ namespace Renderer
 			{
 				if (assetId == materialBlueprintAssetId)
 				{
-					materialResource.setDebugName(IFileManager::INVALID_CHARACTER + std::string("[CreatedMaterial][InstanceOfMaterialBlueprintAsset=\"") + std::string(virtualFilename) + "\"]");
+					materialResource.setDebugName((IFileManager::INVALID_CHARACTER + std::string("[CreatedMaterial][InstanceOfMaterialBlueprintAsset=\"") + std::string(virtualFilename) + "\"]").c_str());
 				}
 				else
 				{
-					materialResource.setDebugName(IFileManager::INVALID_CHARACTER + std::string("[CreatedMaterial][Asset=\"") + std::string(virtualFilename) + "\"][MaterialBlueprintAsset=\"" + assetManager.getAssetByAssetId(materialBlueprintAssetId).virtualFilename + "\"]");
+					materialResource.setDebugName((IFileManager::INVALID_CHARACTER + std::string("[CreatedMaterial][Asset=\"") + std::string(virtualFilename) + "\"][MaterialBlueprintAsset=\"" + assetManager.getAssetByAssetId(materialBlueprintAssetId).virtualFilename + "\"]").c_str());
 				}
 			}
 			else
 			{
-				materialResource.setDebugName(IFileManager::INVALID_CHARACTER + std::string("[CreatedMaterial][AssetId=") + std::to_string(assetId) + "][MaterialBlueprintAsset=\"" + assetManager.getAssetByAssetId(materialBlueprintAssetId).virtualFilename + "\"]");
+				materialResource.setDebugName((IFileManager::INVALID_CHARACTER + std::string("[CreatedMaterial][AssetId=") + std::to_string(assetId) + "][MaterialBlueprintAsset=\"" + assetManager.getAssetByAssetId(materialBlueprintAssetId).virtualFilename + "\"]").c_str());
 			}
 		}
 		#endif
@@ -125,7 +125,7 @@ namespace Renderer
 		materialResource.setAssetId(assetId);
 		materialResource.setParentMaterialResourceId(parentMaterialResourceId);
 		#ifdef RHI_DEBUG
-			materialResource.setDebugName(mInternalResourceManager->getResources().getElementById(parentMaterialResourceId).getDebugName() + "[Clone]");
+			materialResource.setDebugName((std::string(mInternalResourceManager->getResources().getElementById(parentMaterialResourceId).getDebugName()) + "[Clone]").c_str());
 		#endif
 
 		// Done

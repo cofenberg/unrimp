@@ -83,14 +83,23 @@ namespace Renderer
 		}
 
 		#if defined(RHI_DEBUG) || defined(RENDERER_PROFILER)
+			/**
+			*  @brief
+			*    Return the compositor resource pass debug name
+			*
+			*  @return
+			*    The compositor resource pass debug name, never a null pointer and at least an empty string
+			*/
 			[[nodiscard]] inline const char* getDebugName() const
 			{
 				return mDebugName;
 			}
 
-			inline void setDebugName(const char* debugName)
+			inline void setDebugName(const char debugName[])
 			{
+				ASSERT((strlen(debugName) < MAXIMUM_PASS_NAME_LENGTH) && "Compositor resource pass debug name is not allowed to exceed 63 characters");
 				strncpy(mDebugName, debugName, MAXIMUM_PASS_NAME_LENGTH);
+				mDebugName[MAXIMUM_PASS_NAME_LENGTH - 1] = '\0';
 			}
 		#endif
 
@@ -179,10 +188,10 @@ namespace Renderer
 	//[-------------------------------------------------------]
 	protected:
 		inline explicit ICompositorResourcePass(const CompositorTarget& compositorTarget) :
-			mCompositorTarget(compositorTarget),
 			#if defined(RHI_DEBUG) || defined(RENDERER_PROFILER)
 				mDebugName{ "Compositor pass" },
 			#endif
+			mCompositorTarget(compositorTarget),
 			mMinimumDepth(0.0f),
 			mMaximumDepth(1.0f),
 			mSkipFirstExecution(false),
@@ -204,10 +213,10 @@ namespace Renderer
 	//[ Private data                                          ]
 	//[-------------------------------------------------------]
 	private:
-		const CompositorTarget& mCompositorTarget;
 		#if defined(RHI_DEBUG) || defined(RENDERER_PROFILER)
-			char				mDebugName[MAXIMUM_PASS_NAME_LENGTH];	///< Human readable ASCII pass name for debugging and profiling, contains terminating zero
+			char				mDebugName[MAXIMUM_PASS_NAME_LENGTH];	///< Debug name for easier compositor resource identification when debugging, contains terminating zero, first member variable by intent to see it at once during introspection (debug memory layout change is no problem here)
 		#endif
+		const CompositorTarget& mCompositorTarget;
 		float					mMinimumDepth;
 		float					mMaximumDepth;
 		bool					mSkipFirstExecution;

@@ -490,10 +490,10 @@ namespace
 				const uint32_t starVertex = numberOfVertices;
 
 				{ // Loop through the Assimp mesh vertices
-					uint8_t* currentVertexBuffer = vertexBuffer + numberOfVertices * numberOfBytesPerVertex;
+					uint8_t* RESTRICT currentVertexBuffer = vertexBuffer + numberOfVertices * numberOfBytesPerVertex;
 					for (uint32_t j = 0; j < assimpMesh.mNumVertices; ++j)
 					{
-						uint8_t* currentVertex = currentVertexBuffer + j * numberOfBytesPerVertex;
+						uint8_t* RESTRICT currentVertex = currentVertexBuffer + j * numberOfBytesPerVertex;
 
 						{ // 32 bit position
 							// Get the Assimp mesh vertex position
@@ -503,7 +503,7 @@ namespace
 							assimpVertex *= currentAssimpTransformation;
 
 							// Set our vertex buffer position
-							float* currentVertexBufferFloat = reinterpret_cast<float*>(currentVertex);
+							float* RESTRICT currentVertexBufferFloat = reinterpret_cast<float*>(currentVertex);
 							*currentVertexBufferFloat = assimpVertex.x;
 							++currentVertexBufferFloat;
 							*currentVertexBufferFloat = assimpVertex.y;
@@ -525,7 +525,7 @@ namespace
 							aiVector3D assimpTexCoord = assimpMesh.mTextureCoords[0][j];
 
 							// Set our vertex buffer 32 bit texture coordinate
-							float* currentVertexBufferFloat = reinterpret_cast<float*>(currentVertex);
+							float* RESTRICT currentVertexBufferFloat = reinterpret_cast<float*>(currentVertex);
 							*currentVertexBufferFloat = assimpTexCoord.x;
 							++currentVertexBufferFloat;
 							*currentVertexBufferFloat = assimpTexCoord.y;
@@ -534,7 +534,7 @@ namespace
 						else
 						{
 							// Set our vertex buffer 32 bit texture coordinate
-							float* currentVertexBufferFloat = reinterpret_cast<float*>(currentVertex);
+							float* RESTRICT currentVertexBufferFloat = reinterpret_cast<float*>(currentVertex);
 							*currentVertexBufferFloat = 0.0f;
 							++currentVertexBufferFloat;
 							*currentVertexBufferFloat = 0.0f;
@@ -570,7 +570,7 @@ namespace
 							const glm::quat tangentFrameQuaternion = Renderer::Math::calculateTangentFrameQuaternion(tangentFrame);
 
 							// Set our vertex buffer 16 bit QTangent
-							short* currentVertexBufferShort = reinterpret_cast<short*>(currentVertex);
+							short* RESTRICT currentVertexBufferShort = reinterpret_cast<short*>(currentVertex);
 							*currentVertexBufferShort = static_cast<short>(tangentFrameQuaternion.x * SHRT_MAX);
 							++currentVertexBufferShort;
 							*currentVertexBufferShort = static_cast<short>(tangentFrameQuaternion.y * SHRT_MAX);
@@ -591,7 +591,7 @@ namespace
 					memset(numberOfWeightsPerVertex.data(), 0, sizeof(uint8_t) * assimpMesh.mNumVertices);
 
 					// Loop through the Assimp bones
-					uint8_t* currentVertexBuffer = vertexBuffer + numberOfVertices * numberOfBytesPerVertex;
+					uint8_t* RESTRICT currentVertexBuffer = vertexBuffer + numberOfVertices * numberOfBytesPerVertex;
 					for (unsigned int bone = 0; bone < assimpMesh.mNumBones; ++bone)
 					{
 						const aiBone* assimpBone = assimpMesh.mBones[bone];
@@ -611,7 +611,7 @@ namespace
 							const uint8_t numberOfVertexWeights = numberOfWeightsPerVertex[assimpVertexWeight.mVertexId];
 							if (numberOfVertexWeights < 4)
 							{
-								uint8_t* currentVertex = currentVertexBuffer + assimpVertexWeight.mVertexId * numberOfBytesPerVertex;
+								uint8_t* RESTRICT currentVertex = currentVertexBuffer + assimpVertexWeight.mVertexId * numberOfBytesPerVertex;
 
 								// Skip 32 bit position, 32 bit texture coordinate and 16 bit QTangent
 								currentVertex += sizeof(float) * 3 + sizeof(float) * 2 + sizeof(short) * 4;
@@ -660,6 +660,40 @@ namespace
 			for (uint32_t assimpChild = 0; assimpChild < assimpNode.mNumChildren; ++assimpChild)
 			{
 				fillMeshRecursive(assimpScene, *assimpNode.mChildren[assimpChild], skeleton, numberOfBytesPerVertex, vertexBuffer, indexBuffer, currentAssimpTransformation, minimumBoundingBoxPosition, maximumBoundingBoxPosition, numberOfVertices, numberOfIndices);
+			}
+		}
+
+		/**
+		*  @brief
+		*    Write index buffer data into a given file
+		*
+		*  @param[in] indexBufferFormat
+		*    Index buffer format
+		*  @param[in] indexBufferData
+		*    Index buffer data to write into the given file
+		*  @param[in, out] temporaryShortIndexBufferData
+		*    Temporary short index buffer data to be able to reuse allocated memory
+		*  @param[out] file
+		*    File to write into
+		*/
+		void writeIndexBufferData(Rhi::IndexBufferFormat::Enum indexBufferFormat, const std::vector<uint32_t>& indexBufferData, std::vector<uint16_t>& temporaryShortIndexBufferData, Renderer::IFile& file)
+		{
+			const size_t numberOfIndices = indexBufferData.size();
+			if (Rhi::IndexBufferFormat::UNSIGNED_INT == indexBufferFormat)
+			{
+				// Dump the 32-bit indices we have in memory
+				file.write(indexBufferData.data(), sizeof(uint32_t) * numberOfIndices);
+			}
+			else
+			{
+				// Convert the 32-bit indices we have in memory to 16-bit indices before writing them into a given file
+				temporaryShortIndexBufferData.resize(numberOfIndices);
+				uint16_t* RESTRICT shortIndexBufferData = temporaryShortIndexBufferData.data();
+				for (size_t i = 0; i < numberOfIndices; ++i)
+				{
+					shortIndexBufferData[i] = static_cast<uint16_t>(indexBufferData[i]);
+				}
+				file.write(shortIndexBufferData, sizeof(uint16_t) * numberOfIndices);
 			}
 		}
 
@@ -789,6 +823,7 @@ namespace RendererToolkit
 				uint8_t* vertexBufferData = new uint8_t[numberOfBytesPerVertex * numberOfVertices];
 				memset(vertexBufferData, 0, numberOfBytesPerVertex * numberOfVertices);
 				std::vector<uint32_t> indexBufferData(numberOfIndices);
+				std::vector<uint16_t> temporaryShortIndexBufferData;	// Defined here to be able to reuse allocated memory
 
 				// Fill the mesh data recursively
 				glm::vec3 minimumBoundingBoxPosition(std::numeric_limits<float>::max());
@@ -803,7 +838,9 @@ namespace RendererToolkit
 					}
 				}
 
-				{ // "meshoptimizer", in-place is supported internally so we don't need to create own vertex and index buffer copies
+				// "meshoptimizer", in-place is supported internally so we don't need to create own vertex and index buffer copies
+				std::vector<uint32_t> positionOnlyIndexBufferData;
+				{
 					static constexpr float OVERDRAW_THRESHOLD = 1.01f;	// Allow up to 1% worse ACMR to get more reordering opportunities for overdraw
 
 					// Set "meshoptimizer" allocator
@@ -825,17 +862,79 @@ namespace RendererToolkit
 					// Vertex fetch optimization should go last as it depends on the final index order
 					meshopt_optimizeVertexFetch(vertexBufferData, &indexBufferData[0], numberOfIndices, vertexBufferData, numberOfVertices, numberOfBytesPerVertex);
 
+					{ // Optional position-only index buffer (can reduce the number of processed vertices up to half)
+					  // -> This index buffer can be used for position-only rendering (e.g. shadow map rendering) using the same vertex data that the original index buffer uses
+					  // -> In case a mesh is only used together with materials using an alpha map for semi-transparent rendering, one can disable the optional position-only index buffer to save some memory (automatic detection not possible since the material might be changed during runtime)
+						bool hasPositionOnlyIndexBuffer = true;
+						JsonHelper::optionalBooleanProperty(rapidJsonValueMeshAssetCompiler, "HasPositionOnlyIndexBuffer", hasPositionOnlyIndexBuffer);
+						if (hasPositionOnlyIndexBuffer)
+						{
+							positionOnlyIndexBufferData.resize(numberOfIndices);
+							if (numberOfBones > 0)
+							{
+								// For "meshopt_generateShadowIndexBuffer()" to work correctly, we also need to take the bone indices and bone weights into account. Those attributes don't directly
+								// follow the vertex position and this vertex layout has several benefits at other places, so we don't change the vertex layout so "meshopt_generateShadowIndexBuffer()"
+								// can work in an efficient direct way but create a temporary vertex buffer instead.
 
-					// TODO(co) Add support for position-only index buffer (can reduce the number of indices up to half)
-					/*
-					// This index buffer can be used for position-only rendering using the same vertex data that the original index buffer uses
-					std::vector<uint32_t> positionOnlyIndexBufferData(numberOfIndices);
-					meshopt_generateShadowIndexBuffer(&positionOnlyIndexBufferData[0], &indexBufferData[0], numberOfIndices, vertexBufferData, numberOfVertices, sizeof(float) * 53, numberOfBytesPerVertex);
+								// Number of bytes per position-only skinned vertex (3 float position, 4 byte bone indices, 4 byte bone weights) = 20 bytes
+								static const uint32_t NUMBER_OF_BYTES_PER_VERTEX = 20;
+								uint8_t* temporaryVertexBufferData = new uint8_t[NUMBER_OF_BYTES_PER_VERTEX * numberOfVertices];
+								{
+									uint8_t* RESTRICT currentTemporaryVertexBufferData = temporaryVertexBufferData;
+									const uint8_t* RESTRICT currentVertexBufferData = vertexBufferData;
+									for (uint32_t i = 0; i < numberOfVertices; ++i)
+									{
+										{ // Copy over 3 float position
+											float* RESTRICT currentTemporaryVertexBufferDataFloat = reinterpret_cast<float*>(currentTemporaryVertexBufferData);
+											const float* currentVertexBufferDataFloat = reinterpret_cast<const float*>(currentVertexBufferData);
+											currentTemporaryVertexBufferDataFloat[0] = currentVertexBufferDataFloat[0];
+											currentTemporaryVertexBufferDataFloat[1] = currentVertexBufferDataFloat[1];
+											currentTemporaryVertexBufferDataFloat[2] = currentVertexBufferDataFloat[2];
+										}
 
-					// While you can't optimize the vertex data after shadow IB was constructed, you can and should optimize the shadow IB for vertex cache this is valuable even if the original indices array was optimized for vertex cache
-					meshopt_optimizeVertexCache(&positionOnlyIndexBufferData[0], &positionOnlyIndexBufferData[0], numberOfIndices, numberOfVertices);
-					*/
+										// Skip 32 bit position, 32 bit texture coordinate and 16 bit QTangent
+										currentTemporaryVertexBufferData += sizeof(float) * 3;
+										currentVertexBufferData += sizeof(float) * 3 + sizeof(float) * 2 + sizeof(short) * 4;
 
+										// Copy over 4 byte bone indices and 4 byte bone weights
+										for (uint32_t j = 0; j < 8; ++j)
+										{
+											currentTemporaryVertexBufferData[j] = currentVertexBufferData[j];
+										}
+										currentTemporaryVertexBufferData += sizeof(uint8_t) * 8;
+										currentVertexBufferData += sizeof(uint8_t) * 8;
+									}
+								}
+								meshopt_generateShadowIndexBuffer(&positionOnlyIndexBufferData[0], &indexBufferData[0], numberOfIndices, temporaryVertexBufferData, numberOfVertices, NUMBER_OF_BYTES_PER_VERTEX, NUMBER_OF_BYTES_PER_VERTEX);
+								delete [] temporaryVertexBufferData;
+							}
+							else
+							{
+								// Number of bytes per position-only vertex (3 float position) = 12 bytes
+								meshopt_generateShadowIndexBuffer(&positionOnlyIndexBufferData[0], &indexBufferData[0], numberOfIndices, vertexBufferData, numberOfVertices, 12, numberOfBytesPerVertex);
+							}
+
+							// While you can't optimize the vertex data after shadow index buffer was constructed, you can and should optimize the shadow index buffer for vertex cache this is valuable even if the original indices array was optimized for vertex cache
+							meshopt_optimizeVertexCache(&positionOnlyIndexBufferData[0], &positionOnlyIndexBufferData[0], numberOfIndices, numberOfVertices);
+
+							/*
+							// Don't remove this comment: For testing or verbose logging how many vertices the position-only index buffer saves one can do the following:
+							std::unordered_set<uint32_t> vertexIndices;
+							for (uint32_t vertexIndex : indexBufferData)
+							{
+								vertexIndices.insert(vertexIndex);
+							}
+							const size_t numberOfOriginalIndexedVertices = vertexIndices.size();
+							vertexIndices.clear();
+							for (uint32_t vertexIndex : positionOnlyIndexBufferData)
+							{
+								vertexIndices.insert(vertexIndex);
+							}
+							const size_t numberOfPositionOnlyIndexedVertices = vertexIndices.size();
+							NOP;
+							*/
+						}
+					}
 
 					/*
 					{ // TODO(co) Add support for mesh level of detail (LOD), the following is a quick'n'dirty test basing on "meshoptimizer\demo\main.cpp"
@@ -923,6 +1022,7 @@ namespace RendererToolkit
 					meshHeader.indexBufferFormat		= static_cast<uint8_t>(indexBufferFormat);
 					meshHeader.numberOfIndices			= numberOfIndices;
 					meshHeader.numberOfVertexAttributes = static_cast<uint8_t>(vertexAttributes.numberOfAttributes);
+					meshHeader.hasPositionOnlyIndices	= !positionOnlyIndexBufferData.empty();
 
 					// Sub-meshes
 					meshHeader.numberOfSubMeshes = static_cast<uint16_t>(subMeshes.size());
@@ -938,22 +1038,13 @@ namespace RendererToolkit
 				memoryFile.write(vertexBufferData, numberOfBytesPerVertex * numberOfVertices);
 				if (numberOfIndices > 0)
 				{
-					if (Rhi::IndexBufferFormat::UNSIGNED_INT == indexBufferFormat)
-					{
-						// Dump the 32-bit indices we have in memory
-						memoryFile.write(&indexBufferData[0], sizeof(uint32_t) * numberOfIndices);
-					}
-					else
-					{
-						// Convert the 32-bit indices we have in memory to 16-bit indices
-						uint16_t* shortIndexBufferData = new uint16_t[numberOfIndices];
-						for (uint32_t i = 0; i < numberOfIndices; ++i)
-						{
-							shortIndexBufferData[i] = static_cast<uint16_t>(indexBufferData[i]);
-						}
-						memoryFile.write(shortIndexBufferData, sizeof(uint16_t) * numberOfIndices);
-						delete [] shortIndexBufferData;
-					}
+					::detail::writeIndexBufferData(indexBufferFormat, indexBufferData, temporaryShortIndexBufferData, memoryFile);
+				}
+
+				// Write down the optional position-only index buffer
+				if (!positionOnlyIndexBufferData.empty())
+				{
+					::detail::writeIndexBufferData(indexBufferFormat, positionOnlyIndexBufferData, temporaryShortIndexBufferData, memoryFile);
 				}
 
 				// Destroy local vertex and input buffer data

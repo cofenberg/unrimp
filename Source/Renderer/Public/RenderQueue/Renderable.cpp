@@ -72,6 +72,7 @@ namespace Renderer
 		// Cached material data
 		mRenderQueueIndex(0),
 		mCastShadows(false),
+		mUseAlphaMap(false),
 		// Internal data
 		mMaterialResourceManager(nullptr),
 		mMaterialResourceAttachmentIndex(getInvalid<int>())
@@ -79,7 +80,7 @@ namespace Renderer
 		// Nothing here
 	}
 
-	Renderable::Renderable(RenderableManager& renderableManager, const Rhi::IVertexArrayPtr& vertexArrayPtr, const MaterialResourceManager& materialResourceManager, MaterialResourceId materialResourceId, SkeletonResourceId skeletonResourceId, bool drawIndexed, uint32_t startIndexLocation, uint32_t numberOfIndices, uint32_t instanceCount) :
+	Renderable::Renderable(RenderableManager& renderableManager, const Rhi::IVertexArrayPtr& vertexArrayPtr, const MaterialResourceManager& materialResourceManager, MaterialResourceId materialResourceId, SkeletonResourceId skeletonResourceId, bool drawIndexed, uint32_t startIndexLocation, uint32_t numberOfIndices, uint32_t instanceCount RHI_RESOURCE_DEBUG_NAME_PARAMETER_NO_DEFAULT) :
 		// Data
 		mRenderableManager(renderableManager),
 		mVertexArrayPtr(vertexArrayPtr),
@@ -92,17 +93,24 @@ namespace Renderer
 		// Cached material data
 		mRenderQueueIndex(0),
 		mCastShadows(false),
+		mUseAlphaMap(false),
 		// Internal data
 		mMaterialResourceManager(nullptr),
 		mMaterialResourceAttachmentIndex(getInvalid<int>())
 	{
+		#ifdef RHI_DEBUG
+			if ('\0' != debugName[0])
+			{
+				setDebugName(debugName);
+			}
+		#endif
 		if (isValid(materialResourceId))
 		{
 			setMaterialResourceId(materialResourceManager, materialResourceId);
 		}
 	}
 
-	Renderable::Renderable(RenderableManager& renderableManager, const Rhi::IVertexArrayPtr& vertexArrayPtr, const MaterialResourceManager& materialResourceManager, MaterialResourceId materialResourceId, SkeletonResourceId skeletonResourceId, bool drawIndexed, const Rhi::IIndirectBufferPtr& indirectBufferPtr, uint32_t indirectBufferOffset, uint32_t numberOfDraws) :
+	Renderable::Renderable(RenderableManager& renderableManager, const Rhi::IVertexArrayPtr& vertexArrayPtr, const MaterialResourceManager& materialResourceManager, MaterialResourceId materialResourceId, SkeletonResourceId skeletonResourceId, bool drawIndexed, const Rhi::IIndirectBufferPtr& indirectBufferPtr, uint32_t indirectBufferOffset, uint32_t numberOfDraws RHI_RESOURCE_DEBUG_NAME_PARAMETER_NO_DEFAULT) :
 		// Data
 		mRenderableManager(renderableManager),
 		mVertexArrayPtr(vertexArrayPtr),
@@ -116,10 +124,80 @@ namespace Renderer
 		// Cached material data
 		mRenderQueueIndex(0),
 		mCastShadows(false),
+		mUseAlphaMap(false),
 		// Internal data
 		mMaterialResourceManager(nullptr),
 		mMaterialResourceAttachmentIndex(getInvalid<int>())
 	{
+		#ifdef RHI_DEBUG
+			if ('\0' != debugName[0])
+			{
+				setDebugName(debugName);
+			}
+		#endif
+		if (isValid(materialResourceId))
+		{
+			setMaterialResourceId(materialResourceManager, materialResourceId);
+		}
+	}
+
+	Renderable::Renderable(RenderableManager& renderableManager, const Rhi::IVertexArrayPtr& vertexArrayPtr, const Rhi::IVertexArrayPtr& positionOnlyVertexArrayPtr, const MaterialResourceManager& materialResourceManager, MaterialResourceId materialResourceId, SkeletonResourceId skeletonResourceId, bool drawIndexed, uint32_t startIndexLocation, uint32_t numberOfIndices, uint32_t instanceCount RHI_RESOURCE_DEBUG_NAME_PARAMETER_NO_DEFAULT) :
+		// Data
+		mRenderableManager(renderableManager),
+		mVertexArrayPtr(vertexArrayPtr),
+		mPositionOnlyVertexArrayPtr(positionOnlyVertexArrayPtr),
+		mStartIndexLocation(startIndexLocation),
+		mNumberOfIndices(numberOfIndices),
+		mInstanceCount(instanceCount),
+		mMaterialResourceId(getInvalid<MaterialResourceId>()),
+		mSkeletonResourceId(skeletonResourceId),
+		mDrawIndexed(drawIndexed),
+		// Cached material data
+		mRenderQueueIndex(0),
+		mCastShadows(false),
+		mUseAlphaMap(false),
+		// Internal data
+		mMaterialResourceManager(nullptr),
+		mMaterialResourceAttachmentIndex(getInvalid<int>())
+	{
+		#ifdef RHI_DEBUG
+			if ('\0' != debugName[0])
+			{
+				setDebugName(debugName);
+			}
+		#endif
+		if (isValid(materialResourceId))
+		{
+			setMaterialResourceId(materialResourceManager, materialResourceId);
+		}
+	}
+
+	Renderable::Renderable(RenderableManager& renderableManager, const Rhi::IVertexArrayPtr& vertexArrayPtr, const Rhi::IVertexArrayPtr& positionOnlyVertexArrayPtr, const MaterialResourceManager& materialResourceManager, MaterialResourceId materialResourceId, SkeletonResourceId skeletonResourceId, bool drawIndexed, const Rhi::IIndirectBufferPtr& indirectBufferPtr, uint32_t indirectBufferOffset, uint32_t numberOfDraws RHI_RESOURCE_DEBUG_NAME_PARAMETER_NO_DEFAULT) :
+		// Data
+		mRenderableManager(renderableManager),
+		mVertexArrayPtr(vertexArrayPtr),
+		mPositionOnlyVertexArrayPtr(positionOnlyVertexArrayPtr),
+		mIndirectBufferPtr(indirectBufferPtr),
+		mIndirectBufferOffset(indirectBufferOffset),	// Indirect buffer used
+		mNumberOfIndices(~0u),							// Invalid since read from the indirect buffer
+		mNumberOfDraws(numberOfDraws),					// Indirect buffer used
+		mMaterialResourceId(getInvalid<MaterialResourceId>()),
+		mSkeletonResourceId(skeletonResourceId),
+		mDrawIndexed(drawIndexed),
+		// Cached material data
+		mRenderQueueIndex(0),
+		mCastShadows(false),
+		mUseAlphaMap(false),
+		// Internal data
+		mMaterialResourceManager(nullptr),
+		mMaterialResourceAttachmentIndex(getInvalid<int>())
+	{
+		#ifdef RHI_DEBUG
+			if ('\0' != debugName[0])
+			{
+				setDebugName(debugName);
+			}
+		#endif
 		if (isValid(materialResourceId))
 		{
 			setMaterialResourceId(materialResourceManager, materialResourceId);
@@ -181,6 +259,21 @@ namespace Renderer
 					else
 					{
 						mCastShadows = false;
+					}
+
+					// Optional "UseAlphaMap"
+					materialProperty = materialResource->getPropertyById(MaterialResource::USE_ALPHA_MAP_PROPERTY_ID);
+					if (nullptr != materialProperty)
+					{
+						// Sanity checks
+						RHI_ASSERT(materialResourceManager.getRenderer().getContext(), materialProperty->getUsage() == MaterialProperty::Usage::SHADER_COMBINATION, "Invalid material property usage")
+
+						// Set value
+						mUseAlphaMap = materialProperty->getBooleanValue();
+					}
+					else
+					{
+						mUseAlphaMap = false;
 					}
 				}
 			}

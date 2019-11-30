@@ -97,6 +97,30 @@ namespace Renderer
 	//[ Public methods                                        ]
 	//[-------------------------------------------------------]
 	public:
+		#ifdef RHI_DEBUG
+			/**
+			*  @brief
+			*    Return the renderable debug name
+			*
+			*  @return
+			*    The renderable debug name, never a null pointer and at least an empty string
+			*
+			*  @note
+			*    - If possible, the renderable debug name should use the following convention: "<filename>?[<attribute 0>][<attribute n>]" (for "?" see "Renderer::IFileManager::INVALID_CHARACTER")
+			*/
+			[[nodiscard]] inline const char* getDebugName() const
+			{
+				return mDebugName;
+			}
+
+			inline void setDebugName(const char debugName[])
+			{
+				ASSERT((strlen(debugName) < 256) && "Renderable debug name is not allowed to exceed 255 characters");
+				strncpy(mDebugName, debugName, 256);
+				mDebugName[255] = '\0';
+			}
+		#endif
+
 		[[nodiscard]] inline IResourceManager& getResourceManager() const
 		{
 			ASSERT(nullptr != mResourceManager);
@@ -133,25 +157,15 @@ namespace Renderer
 		RENDERER_API_EXPORT void connectResourceListener(IResourceListener& resourceListener);	// No guaranteed resource listener caller order, if already connected nothing happens (no double registration)
 		RENDERER_API_EXPORT void disconnectResourceListener(IResourceListener& resourceListener);
 
-		#ifdef RHI_DEBUG
-			// If possible, the resource debug name should use the following convention: "<filename>?[<attribute 0>][<attribute n>]" (for "?" see "Renderer::IFileManager::INVALID_CHARACTER")
-			[[nodiscard]] inline const std::string& getDebugName() const
-			{
-				return mDebugName;
-			}
-
-			inline void setDebugName(const std::string& debugName)
-			{
-				mDebugName = debugName;
-			}
-		#endif
-
 
 	//[-------------------------------------------------------]
 	//[ Protected methods                                     ]
 	//[-------------------------------------------------------]
 	protected:
 		inline IResource() :
+			#ifdef RHI_DEBUG
+				mDebugName{},
+			#endif
 			mResourceManager(nullptr),
 			mResourceId(getInvalid<ResourceId>()),
 			mAssetId(getInvalid<AssetId>()),
@@ -164,13 +178,13 @@ namespace Renderer
 		inline virtual ~IResource()
 		{
 			// Sanity checks
+			ASSERT('\0' == mDebugName[0]);
 			ASSERT(nullptr == mResourceManager);
 			ASSERT(isInvalid(mResourceId));
 			ASSERT(isInvalid(mAssetId));
 			ASSERT(isInvalid(mResourceLoaderTypeId));
 			ASSERT(LoadingState::UNLOADED == mLoadingState || LoadingState::FAILED == mLoadingState);
 			ASSERT(mSortedResourceListeners.empty());
-			ASSERT(mDebugName.empty());
 		}
 
 		explicit IResource(const IResource&) = delete;
@@ -200,13 +214,13 @@ namespace Renderer
 		inline void initializeElement(ResourceId resourceId)
 		{
 			// Sanity checks
+			ASSERT('\0' == mDebugName[0]);
 			ASSERT(nullptr == mResourceManager);
 			ASSERT(isInvalid(mResourceId));
 			ASSERT(isInvalid(mAssetId));
 			ASSERT(isInvalid(mResourceLoaderTypeId));
 			ASSERT(LoadingState::UNLOADED == mLoadingState);
 			ASSERT(mSortedResourceListeners.empty());
-			ASSERT(mDebugName.empty());
 
 			// Set data
 			mResourceId = resourceId;
@@ -226,15 +240,15 @@ namespace Renderer
 	//[ Private data                                          ]
 	//[-------------------------------------------------------]
 	private:
+		#ifdef RHI_DEBUG
+			char				mDebugName[256];		///< Debug name for easier resource identification when debugging, contains terminating zero, first member variable by intent to see it at once during introspection (debug memory layout change is no problem here)
+		#endif
 		IResourceManager*		mResourceManager;		///< Owner resource manager, always valid
 		ResourceId				mResourceId;			///< Unique resource ID inside the resource manager
 		AssetId					mAssetId;				///< In case the resource is an instance of an asset, this is the ID of this asset
 		ResourceLoaderTypeId	mResourceLoaderTypeId;
 		LoadingState			mLoadingState;
 		SortedResourceListeners mSortedResourceListeners;
-		#ifdef RHI_DEBUG
-			std::string			mDebugName;				///< Debug name for easier resource identification when debugging
-		#endif
 
 
 	};

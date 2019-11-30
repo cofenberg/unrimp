@@ -102,7 +102,7 @@ public:
 //[ Private static data                                   ]
 //[-------------------------------------------------------]
 private:
-	static constexpr uint32_t NUMBER_OF_CHANGED_CUBES = 10000;	///< Number of changed cubes on key interaction
+	static constexpr uint32_t NUMBER_OF_CHANGED_CUBES = 1000;	///< Number of changed cubes on key interaction
 	static constexpr uint32_t NUMBER_OF_TEXTURES	  = 8;		///< Number of textures
 	static constexpr uint32_t SCENE_RADIUS			  = 10;		///< Scene radius
 

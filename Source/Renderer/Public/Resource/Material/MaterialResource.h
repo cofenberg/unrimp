@@ -90,6 +90,7 @@ namespace Renderer
 		// Fixed build in material properties
 		static constexpr uint32_t RENDER_QUEUE_INDEX_PROPERTY_ID  = STRING_ID("RenderQueueIndex");	///< "RenderQueueIndex", value type = "INTEGER" with usage = "STATIC" and value range = [0, 255]
 		static constexpr uint32_t CAST_SHADOWS_PROPERTY_ID		  = STRING_ID("CastShadows");		///< "CastShadows", value type = "BOOLEAN" with usage = "STATIC"
+		static constexpr uint32_t USE_ALPHA_MAP_PROPERTY_ID		  = STRING_ID("UseAlphaMap");		///< "UseAlphaMap", value type = "BOOLEAN" with usage = "SHADER_COMBINATION"
 		static constexpr uint32_t LOCAL_COMPUTE_SIZE_PROPERTY_ID  = STRING_ID("LocalComputeSize");	///< "LocalComputeSize", value type = "INTEGER_3" with usage = "STATIC" and value e.g. "32 32 1"
 		static constexpr uint32_t GLOBAL_COMPUTE_SIZE_PROPERTY_ID = STRING_ID("GlobalComputeSize");	/** "GlobalComputeSize":
 																										 - Static value example: value type = "INTEGER_3" with usage = "STATIC" and value e.g. "1920 1080 1"

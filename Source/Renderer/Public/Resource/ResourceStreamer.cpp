@@ -352,7 +352,7 @@ namespace Renderer
 			if (mResourceLoaderTypeManager.cend() != iterator)
 			{
 				#ifdef RHI_DEBUG
-					loadRequest.getResource().setDebugName(std::string(loadRequest.resourceLoader->getAsset().virtualFilename) + IFileManager::INVALID_CHARACTER + "[Loaded]");
+					loadRequest.getResource().setDebugName((std::string(loadRequest.resourceLoader->getAsset().virtualFilename) + IFileManager::INVALID_CHARACTER + "[Loaded]").c_str());
 				#endif
 
 				// The resource loader instance is free now and ready to be reused

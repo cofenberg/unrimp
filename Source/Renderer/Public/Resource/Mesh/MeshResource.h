@@ -167,9 +167,15 @@ namespace Renderer
 			return mVertexArray;
 		}
 
-		inline void setVertexArray(Rhi::IVertexArray* vertexArray)
+		[[nodiscard]] inline const Rhi::IVertexArrayPtr& getPositionOnlyVertexArrayPtr() const
+		{
+			return mPositionOnlyVertexArray;
+		}
+
+		inline void setVertexArray(Rhi::IVertexArray* vertexArray, Rhi::IVertexArray* positionOnlyVertexArray = nullptr)
 		{
 			mVertexArray = vertexArray;
+			mPositionOnlyVertexArray = positionOnlyVertexArray;
 		}
 
 		//[-------------------------------------------------------]
@@ -228,6 +234,7 @@ namespace Renderer
 			ASSERT(0 == mNumberOfVertices);
 			ASSERT(0 == mNumberOfIndices);
 			ASSERT(nullptr == mVertexArray.getPointer());
+			ASSERT(nullptr == mPositionOnlyVertexArray.getPointer());
 			ASSERT(mSubMeshes.empty());
 			ASSERT(isInvalid(mSkeletonResourceId));
 		}
@@ -248,6 +255,7 @@ namespace Renderer
 			ASSERT(0 == mNumberOfVertices);
 			ASSERT(0 == mNumberOfIndices);
 			ASSERT(nullptr == mVertexArray.getPointer());
+			ASSERT(nullptr == mPositionOnlyVertexArray.getPointer());
 			ASSERT(mSubMeshes.empty());
 			ASSERT(isInvalid(mSkeletonResourceId));
 
@@ -271,6 +279,7 @@ namespace Renderer
 			mNumberOfVertices = 0;
 			mNumberOfIndices = 0;
 			mVertexArray = nullptr;
+			mPositionOnlyVertexArray = nullptr;
 			mSubMeshes.clear();
 			setInvalid(mSkeletonResourceId);
 
@@ -289,9 +298,10 @@ namespace Renderer
 		glm::vec3 mBoundingSpherePosition;
 		float	  mBoundingSphereRadius;
 		// Vertex and index data
-		uint32_t			 mNumberOfVertices;		///< Number of vertices
-		uint32_t			 mNumberOfIndices;		///< Number of indices
-		Rhi::IVertexArrayPtr mVertexArray;			///< Vertex array object (VAO), can be a null pointer
+		uint32_t			 mNumberOfVertices;			///< Number of vertices
+		uint32_t			 mNumberOfIndices;			///< Number of indices
+		Rhi::IVertexArrayPtr mVertexArray;				///< Vertex array object (VAO), can be a null pointer
+		Rhi::IVertexArrayPtr mPositionOnlyVertexArray;	///< Optional position-only vertex array object (VAO) which can reduce the number of processed vertices up to half, can be a null pointer, can be used for position-only rendering (e.g. shadow map rendering) using the same vertex data that the original vertex array object (VAO) uses
 		// Sub-meshes
 		SubMeshes			 mSubMeshes;			///< Sub-meshes
 		// Optional skeleton

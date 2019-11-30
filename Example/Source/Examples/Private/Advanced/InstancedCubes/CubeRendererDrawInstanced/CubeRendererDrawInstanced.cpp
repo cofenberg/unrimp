@@ -165,7 +165,7 @@ CubeRendererDrawInstanced::CubeRendererDrawInstanced(Rhi::IRhi& rhi, Rhi::IRende
 
 		{ // Fill the texture content
 			// TODO(co) Be a little bit more creative while filling the texture data
-			uint8_t* dataCurrent = data;
+			uint8_t* RESTRICT dataCurrent = data;
 			const float colors[][MAXIMUM_NUMBER_OF_TEXTURES] =
 			{
 				{ 1.0f, 0.0f, 0.0f},
@@ -488,8 +488,8 @@ void CubeRendererDrawInstanced::fillReusableCommandBuffer()
 	if (nullptr != mBatches)
 	{
 		// Loop though all batches
-		BatchDrawInstanced *batch     = mBatches;
-		BatchDrawInstanced *lastBatch = mBatches + mNumberOfBatches;
+		BatchDrawInstanced* batch     = mBatches;
+		BatchDrawInstanced* lastBatch = mBatches + mNumberOfBatches;
 		for (; batch < lastBatch; ++batch)
 		{
 			// Draw this batch

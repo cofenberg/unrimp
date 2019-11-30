@@ -138,7 +138,7 @@ namespace Renderer
 		for (int i = 0; i != mNumberOfTerrainTileRings; ++i)
 		{
 			const TerrainTileRing& terrainTileRing = mTerrainTileRings[i];
-			renderables.emplace_back(mRenderableManager, terrainTileRing.vertexArrayPtr, materialResourceManager, getMaterialResourceId(), getInvalid<SkeletonResourceId>(), true, 0, ::detail::NUMBER_OF_INDICES, terrainTileRing.numberOfTiles);
+			renderables.emplace_back(mRenderableManager, terrainTileRing.vertexArrayPtr, materialResourceManager, getMaterialResourceId(), getInvalid<SkeletonResourceId>(), true, 0, ::detail::NUMBER_OF_INDICES, terrainTileRing.numberOfTiles RHI_RESOURCE_DEBUG_NAME((std::string("Terrain tile ring ") + std::to_string(i)).c_str()));
 		}
 		mRenderableManager.updateCachedRenderablesData();
 	}
@@ -157,15 +157,15 @@ namespace Renderer
 		if (renderer.getRhi().getCapabilities().maximumNumberOfPatchVertices > 0)
 		{
 			// This array defines the outer width of each successive ring
-			const int widths[] = { 0, 16, 16, 16, 16, 16 };
-			mNumberOfTerrainTileRings = sizeof(widths) / sizeof(widths[0]) - 1;	// "widths[0]" doesn't define a ring hence -1
+			static constexpr int WIDTHS[] = { 0, 16, 16, 16, 16, 16 };
+			mNumberOfTerrainTileRings = sizeof(WIDTHS) / sizeof(WIDTHS[0]) - 1;	// "WIDTHS[0]" doesn't define a ring hence -1
 			RHI_ASSERT(getContext(), mNumberOfTerrainTileRings <= MAXIMUM_NUMBER_OF_TERRAIN_TILE_RINGS, "Invalid number of terrain tile rings")
 			Rhi::IBufferManager& bufferManager = renderer.getBufferManager();
 			createIndexBuffer(bufferManager);
 			float tileWidth = 0.125f;
 			for (int i = 0; i != mNumberOfTerrainTileRings && i != MAXIMUM_NUMBER_OF_TERRAIN_TILE_RINGS; ++i)
 			{
-				createTerrainTileRing(mTerrainTileRings[i], bufferManager, widths[i] / 2, widths[i + 1], tileWidth);
+				createTerrainTileRing(mTerrainTileRings[i], bufferManager, WIDTHS[i] / 2, WIDTHS[i + 1], tileWidth);
 				tileWidth *= 2.0f;
 			}
 		}

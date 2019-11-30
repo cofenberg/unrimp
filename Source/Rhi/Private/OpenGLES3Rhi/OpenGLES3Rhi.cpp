@@ -512,15 +512,8 @@ namespace OpenGLES3Rhi
 	*  @param[in] debugName
 	*    ASCII name for debugging purposes, must be valid (there's no internal null pointer test)
 	*/
-	#define RHI_RESOURCE_DEBUG_NAME_PARAMETER_NO_DEFAULT , [[maybe_unused]] const char* debugName
-	#define RHI_RESOURCE_DEBUG_NAME_MAYBE_UNUSED_PARAMETER , [[maybe_unused]] const char* debugName = ""
-	#define RHI_RESOURCE_DEBUG_NAME_MAYBE_UNUSED_PARAMETER_NO_DEFAULT , [[maybe_unused]] const char* debugName
-
-	/**
-	*  @brief
-	*    Pass resource name for debugging purposes, ignored when not using "RHI_DEBUG"
-	*/
-	#define RHI_RESOURCE_DEBUG_PASS_PARAMETER , debugName
+	#define RHI_RESOURCE_DEBUG_NAME_MAYBE_UNUSED_PARAMETER , [[maybe_unused]] const char debugName[] = ""
+	#define RHI_RESOURCE_DEBUG_NAME_MAYBE_UNUSED_PARAMETER_NO_DEFAULT , [[maybe_unused]] const char debugName[]
 #else
 	/*
 	*  @brief
@@ -535,15 +528,8 @@ namespace OpenGLES3Rhi
 	*  @param[in] debugName
 	*    ASCII name for debugging purposes, must be valid (there's no internal null pointer test)
 	*/
-	#define RHI_RESOURCE_DEBUG_NAME_PARAMETER_NO_DEFAULT
 	#define RHI_RESOURCE_DEBUG_NAME_MAYBE_UNUSED_PARAMETER
 	#define RHI_RESOURCE_DEBUG_NAME_MAYBE_UNUSED_PARAMETER_NO_DEFAULT
-
-	/**
-	*  @brief
-	*    Pass resource name for debugging purposes, ignored when not using "RHI_DEBUG"
-	*/
-	#define RHI_RESOURCE_DEBUG_PASS_PARAMETER
 #endif
 
 
@@ -3735,8 +3721,8 @@ namespace OpenGLES3Rhi
 		*  @param[in] samplerStates
 		*    If not a null pointer at least "numberOfResources" sampler state pointers, must be valid if there's at least one texture resource, the resource group will keep a reference to the sampler states
 		*/
-		ResourceGroup(OpenGLES3Rhi& openGLES3Rhi, const Rhi::RootSignature& rootSignature, uint32_t rootParameterIndex, uint32_t numberOfResources, Rhi::IResource** resources, Rhi::ISamplerState** samplerStates) :
-			IResourceGroup(openGLES3Rhi),
+		ResourceGroup(OpenGLES3Rhi& openGLES3Rhi, const Rhi::RootSignature& rootSignature, uint32_t rootParameterIndex, uint32_t numberOfResources, Rhi::IResource** resources, Rhi::ISamplerState** samplerStates RHI_RESOURCE_DEBUG_NAME_PARAMETER_NO_DEFAULT) :
+			IResourceGroup(openGLES3Rhi RHI_RESOURCE_DEBUG_PASS_PARAMETER),
 			mRootParameterIndex(rootParameterIndex),
 			mNumberOfResources(numberOfResources),
 			mResources(RHI_MALLOC_TYPED(openGLES3Rhi.getContext(), Rhi::IResource*, mNumberOfResources)),
@@ -3951,8 +3937,8 @@ namespace OpenGLES3Rhi
 		*  @param[in] rootSignature
 		*    Root signature to use
 		*/
-		RootSignature(OpenGLES3Rhi& openGLES3Rhi, const Rhi::RootSignature& rootSignature) :
-			IRootSignature(openGLES3Rhi),
+		RootSignature(OpenGLES3Rhi& openGLES3Rhi, const Rhi::RootSignature& rootSignature RHI_RESOURCE_DEBUG_NAME_PARAMETER_NO_DEFAULT) :
+			IRootSignature(openGLES3Rhi RHI_RESOURCE_DEBUG_PASS_PARAMETER),
 			mRootSignature(rootSignature)
 		{
 			const Rhi::Context& context = openGLES3Rhi.getContext();
@@ -4030,7 +4016,7 @@ namespace OpenGLES3Rhi
 	//[ Public virtual Rhi::IRootSignature methods            ]
 	//[-------------------------------------------------------]
 	public:
-		[[nodiscard]] inline virtual Rhi::IResourceGroup* createResourceGroup(uint32_t rootParameterIndex, uint32_t numberOfResources, Rhi::IResource** resources, Rhi::ISamplerState** samplerStates = nullptr RHI_RESOURCE_DEBUG_NAME_MAYBE_UNUSED_PARAMETER) override
+		[[nodiscard]] inline virtual Rhi::IResourceGroup* createResourceGroup(uint32_t rootParameterIndex, uint32_t numberOfResources, Rhi::IResource** resources, Rhi::ISamplerState** samplerStates = nullptr RHI_RESOURCE_DEBUG_NAME_PARAMETER) override
 		{
 			OpenGLES3Rhi& openGLES3Rhi = static_cast<OpenGLES3Rhi&>(getRhi());
 
@@ -4040,7 +4026,7 @@ namespace OpenGLES3Rhi
 			RHI_ASSERT(openGLES3Rhi.getContext(), nullptr != resources, "The OpenGL ES 3 resource pointers must be valid")
 
 			// Create resource group
-			return RHI_NEW(openGLES3Rhi.getContext(), ResourceGroup)(openGLES3Rhi, getRootSignature(), rootParameterIndex, numberOfResources, resources, samplerStates);
+			return RHI_NEW(openGLES3Rhi.getContext(), ResourceGroup)(openGLES3Rhi, getRootSignature(), rootParameterIndex, numberOfResources, resources, samplerStates RHI_RESOURCE_DEBUG_PASS_PARAMETER);
 		}
 
 
@@ -4103,7 +4089,7 @@ namespace OpenGLES3Rhi
 		*    Indication of the buffer usage
 		*/
 		VertexBuffer(OpenGLES3Rhi& openGLES3Rhi, uint32_t numberOfBytes, const void* data, Rhi::BufferUsage bufferUsage RHI_RESOURCE_DEBUG_NAME_PARAMETER) :
-			IVertexBuffer(openGLES3Rhi),
+			IVertexBuffer(openGLES3Rhi RHI_RESOURCE_DEBUG_PASS_PARAMETER),
 			mOpenGLES3ArrayBuffer(0),
 			mBufferSize(numberOfBytes)
 		{
@@ -4226,7 +4212,7 @@ namespace OpenGLES3Rhi
 		*    Index buffer data format
 		*/
 		IndexBuffer(OpenGLES3Rhi& openGLES3Rhi, uint32_t numberOfBytes, const void* data, Rhi::BufferUsage bufferUsage, Rhi::IndexBufferFormat::Enum indexBufferFormat RHI_RESOURCE_DEBUG_NAME_PARAMETER) :
-			IIndexBuffer(openGLES3Rhi),
+			IIndexBuffer(openGLES3Rhi RHI_RESOURCE_DEBUG_PASS_PARAMETER),
 			mOpenGLES3ElementArrayBuffer(0),
 			mOpenGLES3Type(GL_UNSIGNED_SHORT),
 			mIndexSizeInBytes(Rhi::IndexBufferFormat::getNumberOfBytesPerElement(indexBufferFormat)),
@@ -4391,7 +4377,7 @@ namespace OpenGLES3Rhi
 		*    The unique compact vertex array ID
 		*/
 		VertexArray(OpenGLES3Rhi& openGLES3Rhi, const Rhi::VertexAttributes& vertexAttributes, uint32_t numberOfVertexBuffers, const Rhi::VertexArrayVertexBuffer* vertexBuffers, IndexBuffer* indexBuffer, uint16_t id RHI_RESOURCE_DEBUG_NAME_PARAMETER) :
-			IVertexArray(openGLES3Rhi, id),
+			IVertexArray(openGLES3Rhi, id RHI_RESOURCE_DEBUG_PASS_PARAMETER),
 			mOpenGLES3VertexArray(0),
 			mNumberOfVertexBuffers(numberOfVertexBuffers),
 			mVertexBuffers((mNumberOfVertexBuffers > 0) ? RHI_MALLOC_TYPED(openGLES3Rhi.getContext(), VertexBuffer*, mNumberOfVertexBuffers) : nullptr),	// Guaranteed to be filled below, so we don't need to care to initialize the content in here
@@ -4669,8 +4655,8 @@ namespace OpenGLES3Rhi
 		*  @param[in] numberOfBytes
 		*    Number of bytes within the texture buffer, must be valid
 		*/
-		TextureBuffer(OpenGLES3Rhi& openGLES3Rhi, uint32_t numberOfBytes) :
-			ITextureBuffer(static_cast<Rhi::IRhi&>(openGLES3Rhi)),
+		TextureBuffer(OpenGLES3Rhi& openGLES3Rhi, uint32_t numberOfBytes RHI_RESOURCE_DEBUG_NAME_PARAMETER_NO_DEFAULT) :
+			ITextureBuffer(openGLES3Rhi RHI_RESOURCE_DEBUG_PASS_PARAMETER),
 			mOpenGLES3TextureBuffer(0),
 			mOpenGLES3Texture(0),
 			mBufferSize(numberOfBytes)
@@ -4746,7 +4732,7 @@ namespace OpenGLES3Rhi
 		*    Texture buffer data format
 		*/
 		TextureBufferBind(OpenGLES3Rhi& openGLES3Rhi, uint32_t numberOfBytes, const void* data, Rhi::BufferUsage bufferUsage, Rhi::TextureFormat::Enum textureFormat RHI_RESOURCE_DEBUG_NAME_PARAMETER) :
-			TextureBuffer(openGLES3Rhi, numberOfBytes)
+			TextureBuffer(openGLES3Rhi, numberOfBytes RHI_RESOURCE_DEBUG_PASS_PARAMETER)
 		{
 			{ // Buffer part
 				#ifdef RHI_OPENGLES3_STATE_CLEANUP
@@ -4854,7 +4840,7 @@ namespace OpenGLES3Rhi
 		*    Texture buffer data format
 		*/
 		TextureBufferBindEmulation(OpenGLES3Rhi& openGLES3Rhi, uint32_t numberOfBytes, const void* data, Rhi::BufferUsage bufferUsage, [[maybe_unused]] Rhi::TextureFormat::Enum textureFormat RHI_RESOURCE_DEBUG_NAME_PARAMETER) :
-			TextureBuffer(openGLES3Rhi, numberOfBytes)
+			TextureBuffer(openGLES3Rhi, numberOfBytes RHI_RESOURCE_DEBUG_PASS_PARAMETER)
 		{
 			#ifdef RHI_OPENGLES3_STATE_CLEANUP
 				// Backup the currently bound OpenGL ES 3 uniform buffer
@@ -4933,8 +4919,8 @@ namespace OpenGLES3Rhi
 		*  @param[in] indirectBufferFlags
 		*    Indirect buffer flags, see "Rhi::IndirectBufferFlag"
 		*/
-		IndirectBuffer(OpenGLES3Rhi& openGLES3Rhi, uint32_t numberOfBytes, const void* data, [[maybe_unused]] uint32_t indirectBufferFlags) :
-			IIndirectBuffer(openGLES3Rhi),
+		IndirectBuffer(OpenGLES3Rhi& openGLES3Rhi, uint32_t numberOfBytes, const void* data, [[maybe_unused]] uint32_t indirectBufferFlags RHI_RESOURCE_DEBUG_NAME_PARAMETER_NO_DEFAULT) :
+			IIndirectBuffer(openGLES3Rhi RHI_RESOURCE_DEBUG_PASS_PARAMETER),
 			mNumberOfBytes(numberOfBytes),
 			mData(nullptr)
 		{
@@ -5051,7 +5037,7 @@ namespace OpenGLES3Rhi
 		*    Indication of the buffer usage
 		*/
 		UniformBuffer(OpenGLES3Rhi& openGLES3Rhi, uint32_t numberOfBytes, const void* data, Rhi::BufferUsage bufferUsage RHI_RESOURCE_DEBUG_NAME_PARAMETER) :
-			IUniformBuffer(static_cast<Rhi::IRhi&>(openGLES3Rhi)),
+			IUniformBuffer(openGLES3Rhi RHI_RESOURCE_DEBUG_PASS_PARAMETER),
 			mOpenGLES3UniformBuffer(0),
 			mBufferSize(numberOfBytes)
 		{
@@ -5270,10 +5256,10 @@ namespace OpenGLES3Rhi
 			return nullptr;
 		}
 
-		[[nodiscard]] inline virtual Rhi::IIndirectBuffer* createIndirectBuffer(uint32_t numberOfBytes, const void* data = nullptr, uint32_t indirectBufferFlags = 0, [[maybe_unused]] Rhi::BufferUsage bufferUsage = Rhi::BufferUsage::STATIC_DRAW RHI_RESOURCE_DEBUG_NAME_MAYBE_UNUSED_PARAMETER) override
+		[[nodiscard]] inline virtual Rhi::IIndirectBuffer* createIndirectBuffer(uint32_t numberOfBytes, const void* data = nullptr, uint32_t indirectBufferFlags = 0, [[maybe_unused]] Rhi::BufferUsage bufferUsage = Rhi::BufferUsage::STATIC_DRAW RHI_RESOURCE_DEBUG_NAME_PARAMETER) override
 		{
 			OpenGLES3Rhi& openGLES3Rhi = static_cast<OpenGLES3Rhi&>(getRhi());
-			return RHI_NEW(openGLES3Rhi.getContext(), IndirectBuffer)(openGLES3Rhi, numberOfBytes, data, indirectBufferFlags);
+			return RHI_NEW(openGLES3Rhi.getContext(), IndirectBuffer)(openGLES3Rhi, numberOfBytes, data, indirectBufferFlags RHI_RESOURCE_DEBUG_PASS_PARAMETER);
 		}
 
 		[[nodiscard]] inline virtual Rhi::IUniformBuffer* createUniformBuffer(uint32_t numberOfBytes, const void* data = nullptr, Rhi::BufferUsage bufferUsage = Rhi::BufferUsage::STATIC_DRAW RHI_RESOURCE_DEBUG_NAME_PARAMETER) override
@@ -5352,7 +5338,7 @@ namespace OpenGLES3Rhi
 		*    Texture flags, see "Rhi::TextureFlag::Enum"
 		*/
 		Texture1D(OpenGLES3Rhi& openGLES3Rhi, uint32_t width, Rhi::TextureFormat::Enum textureFormat, const void* data, uint32_t textureFlags RHI_RESOURCE_DEBUG_NAME_PARAMETER) :
-			ITexture1D(openGLES3Rhi, width),
+			ITexture1D(openGLES3Rhi, width RHI_RESOURCE_DEBUG_PASS_PARAMETER),
 			mOpenGLES3Texture(0)
 		{
 			// OpenGL ES 3 has no 1D textures, just use a 2D texture with a height of one
@@ -5566,7 +5552,7 @@ namespace OpenGLES3Rhi
 		*    Texture flags, see "Rhi::TextureFlag::Enum"
 		*/
 		Texture1DArray(OpenGLES3Rhi& openGLES3Rhi, uint32_t width, uint32_t numberOfSlices, Rhi::TextureFormat::Enum textureFormat, const void* data, uint32_t textureFlags RHI_RESOURCE_DEBUG_NAME_PARAMETER) :
-			ITexture1DArray(openGLES3Rhi, width, numberOfSlices),
+			ITexture1DArray(openGLES3Rhi, width, numberOfSlices RHI_RESOURCE_DEBUG_PASS_PARAMETER),
 			mOpenGLES3Texture(0)
 		{
 			// OpenGL ES 3 has no 1D texture arrays, just use a 2D texture array with a height of one
@@ -5716,7 +5702,7 @@ namespace OpenGLES3Rhi
 		*    Texture flags, see "Rhi::TextureFlag::Enum"
 		*/
 		Texture2D(OpenGLES3Rhi& openGLES3Rhi, uint32_t width, uint32_t height, Rhi::TextureFormat::Enum textureFormat, const void* data, uint32_t textureFlags RHI_RESOURCE_DEBUG_NAME_PARAMETER) :
-			ITexture2D(openGLES3Rhi, width, height),
+			ITexture2D(openGLES3Rhi, width, height RHI_RESOURCE_DEBUG_PASS_PARAMETER),
 			mOpenGLES3Texture(0)
 		{
 			// Sanity checks
@@ -5968,7 +5954,7 @@ namespace OpenGLES3Rhi
 		*    Texture flags, see "Rhi::TextureFlag::Enum"
 		*/
 		Texture2DArray(OpenGLES3Rhi& openGLES3Rhi, uint32_t width, uint32_t height, uint32_t numberOfSlices, Rhi::TextureFormat::Enum textureFormat, const void* data, uint32_t textureFlags RHI_RESOURCE_DEBUG_NAME_PARAMETER) :
-			ITexture2DArray(openGLES3Rhi, width, height, numberOfSlices),
+			ITexture2DArray(openGLES3Rhi, width, height, numberOfSlices RHI_RESOURCE_DEBUG_PASS_PARAMETER),
 			mOpenGLES3Texture(0)
 		{
 			// TODO(co) Check support formats
@@ -6118,7 +6104,7 @@ namespace OpenGLES3Rhi
 		*    Texture flags, see "Rhi::TextureFlag::Enum"
 		*/
 		inline Texture3D(OpenGLES3Rhi& openGLES3Rhi, uint32_t width, uint32_t height, uint32_t depth, Rhi::TextureFormat::Enum textureFormat, const void* data, uint32_t textureFlags RHI_RESOURCE_DEBUG_NAME_PARAMETER) :
-			ITexture3D(openGLES3Rhi, width, height, depth),
+			ITexture3D(openGLES3Rhi, width, height, depth RHI_RESOURCE_DEBUG_PASS_PARAMETER),
 			mTextureFormat(textureFormat),
 			mOpenGLES3Texture(0)
 		{
@@ -6346,7 +6332,7 @@ namespace OpenGLES3Rhi
 		*    Texture flags, see "Rhi::TextureFlag::Enum"
 		*/
 		TextureCube(OpenGLES3Rhi& openGLES3Rhi, uint32_t width, uint32_t height, Rhi::TextureFormat::Enum textureFormat, const void* data, uint32_t textureFlags RHI_RESOURCE_DEBUG_NAME_PARAMETER) :
-			ITextureCube(openGLES3Rhi, width, height),
+			ITextureCube(openGLES3Rhi, width, height RHI_RESOURCE_DEBUG_PASS_PARAMETER),
 			mOpenGLES3Texture(0)
 		{
 			// Sanity checks
@@ -6727,8 +6713,8 @@ namespace OpenGLES3Rhi
 		*  @param[in] samplerState
 		*    Sampler state to use
 		*/
-		SamplerState(OpenGLES3Rhi& openGLES3Rhi, const Rhi::SamplerState& samplerState) :
-			ISamplerState(openGLES3Rhi),
+		SamplerState(OpenGLES3Rhi& openGLES3Rhi, const Rhi::SamplerState& samplerState RHI_RESOURCE_DEBUG_NAME_PARAMETER_NO_DEFAULT) :
+			ISamplerState(openGLES3Rhi RHI_RESOURCE_DEBUG_PASS_PARAMETER),
 			mOpenGLMagFilterMode(Mapping::getOpenGLES3MagFilterMode(openGLES3Rhi.getContext(), samplerState.filter)),
 			mOpenGLMinFilterMode(Mapping::getOpenGLES3MinFilterMode(openGLES3Rhi.getContext(), samplerState.filter, samplerState.maxLod > 0.0f)),
 			mOpenGLTextureAddressModeS(Mapping::getOpenGLES3TextureAddressMode(samplerState.addressU)),
@@ -7260,8 +7246,8 @@ namespace OpenGLES3Rhi
 		*  @param[in] numberOfMultisamples
 		*    The number of multisamples per pixel (valid values: 1, 2, 4, 8)
 		*/
-		RenderPass(Rhi::IRhi& rhi, uint32_t numberOfColorAttachments, const Rhi::TextureFormat::Enum* colorAttachmentTextureFormats, Rhi::TextureFormat::Enum depthStencilAttachmentTextureFormat, uint8_t numberOfMultisamples) :
-			IRenderPass(rhi),
+		RenderPass(Rhi::IRhi& rhi, uint32_t numberOfColorAttachments, const Rhi::TextureFormat::Enum* colorAttachmentTextureFormats, Rhi::TextureFormat::Enum depthStencilAttachmentTextureFormat, uint8_t numberOfMultisamples RHI_RESOURCE_DEBUG_NAME_PARAMETER_NO_DEFAULT) :
+			IRenderPass(rhi RHI_RESOURCE_DEBUG_PASS_PARAMETER),
 			mNumberOfColorAttachments(numberOfColorAttachments),
 			mDepthStencilAttachmentTextureFormat(depthStencilAttachmentTextureFormat),
 			mNumberOfMultisamples(numberOfMultisamples)
@@ -7347,8 +7333,8 @@ namespace OpenGLES3Rhi
 		*  @param[in] windowHandle
 		*    Information about the window to render into
 		*/
-		inline SwapChain(Rhi::IRenderPass& renderPass, Rhi::WindowHandle windowHandle) :
-			ISwapChain(renderPass),
+		inline SwapChain(Rhi::IRenderPass& renderPass, Rhi::WindowHandle windowHandle RHI_RESOURCE_DEBUG_NAME_PARAMETER_NO_DEFAULT) :
+			ISwapChain(renderPass RHI_RESOURCE_DEBUG_PASS_PARAMETER),
 			mNativeWindowHandle(windowHandle.nativeWindowHandle),
 			mRenderWindow(windowHandle.renderWindow),
 			mNewVerticalSynchronizationInterval(0)	// 0 instead of ~0u to ensure that we always set the swap interval at least once to have a known initial setting
@@ -7580,7 +7566,7 @@ namespace OpenGLES3Rhi
 		*    - The framebuffer keeps a reference to the provided texture instances
 		*/
 		Framebuffer(Rhi::IRenderPass& renderPass, const Rhi::FramebufferAttachment* colorFramebufferAttachments, const Rhi::FramebufferAttachment* depthStencilFramebufferAttachment RHI_RESOURCE_DEBUG_NAME_PARAMETER) :
-			IFramebuffer(renderPass),
+			IFramebuffer(renderPass RHI_RESOURCE_DEBUG_PASS_PARAMETER),
 			mOpenGLES3Framebuffer(0),
 			mDepthRenderbuffer(0),
 			mNumberOfColorTextures(static_cast<RenderPass&>(renderPass).getNumberOfColorAttachments()),
@@ -7989,7 +7975,7 @@ namespace OpenGLES3Rhi
 		*    Shader ASCII source code, must be valid
 		*/
 		VertexShaderGlsl(OpenGLES3Rhi& openGLES3Rhi, const char* sourceCode RHI_RESOURCE_DEBUG_NAME_PARAMETER) :
-			IVertexShader(openGLES3Rhi),
+			IVertexShader(openGLES3Rhi RHI_RESOURCE_DEBUG_PASS_PARAMETER),
 			mOpenGLES3Shader(loadShaderFromSourcecode(openGLES3Rhi, GL_VERTEX_SHADER, sourceCode))
 		{
 			// Assign a default name to the resource for debugging purposes
@@ -8091,7 +8077,7 @@ namespace OpenGLES3Rhi
 		*    Shader ASCII source code, must be valid
 		*/
 		FragmentShaderGlsl(OpenGLES3Rhi& openGLES3Rhi, const char* sourceCode RHI_RESOURCE_DEBUG_NAME_PARAMETER) :
-			IFragmentShader(openGLES3Rhi),
+			IFragmentShader(openGLES3Rhi RHI_RESOURCE_DEBUG_PASS_PARAMETER),
 			mOpenGLES3Shader(loadShaderFromSourcecode(openGLES3Rhi, GL_FRAGMENT_SHADER, sourceCode))
 		{
 			// Assign a default name to the resource for debugging purposes
@@ -8202,7 +8188,7 @@ namespace OpenGLES3Rhi
 		*    - The graphics program keeps a reference to the provided shaders and releases it when no longer required
 		*/
 		GraphicsProgramGlsl(OpenGLES3Rhi& openGLES3Rhi, const Rhi::IRootSignature& rootSignature, const Rhi::VertexAttributes& vertexAttributes, VertexShaderGlsl* vertexShaderGlsl, FragmentShaderGlsl* fragmentShaderGlsl RHI_RESOURCE_DEBUG_NAME_PARAMETER) :
-			IGraphicsProgram(openGLES3Rhi),
+			IGraphicsProgram(openGLES3Rhi RHI_RESOURCE_DEBUG_PASS_PARAMETER),
 			mNumberOfRootSignatureParameters(0),
 			mOpenGLES3Program(glCreateProgram()),
 			mDrawIdUniformLocation(-1)
@@ -8830,8 +8816,8 @@ namespace OpenGLES3Rhi
 		*  @param[in] id
 		*    The unique compact graphics pipeline state ID
 		*/
-		GraphicsPipelineState(OpenGLES3Rhi& openGLES3Rhi, const Rhi::GraphicsPipelineState& graphicsPipelineState, uint16_t id) :
-			IGraphicsPipelineState(openGLES3Rhi, id),
+		GraphicsPipelineState(OpenGLES3Rhi& openGLES3Rhi, const Rhi::GraphicsPipelineState& graphicsPipelineState, uint16_t id RHI_RESOURCE_DEBUG_NAME_PARAMETER_NO_DEFAULT) :
+			IGraphicsPipelineState(openGLES3Rhi, id RHI_RESOURCE_DEBUG_PASS_PARAMETER),
 			mOpenGLES3PrimitiveTopology(Mapping::getOpenGLES3Type(graphicsPipelineState.primitiveTopology)),
 			mGraphicsProgram(graphicsPipelineState.graphicsProgram),
 			mRenderPass(graphicsPipelineState.renderPass),
@@ -10400,9 +10386,9 @@ namespace OpenGLES3Rhi
 	//[-------------------------------------------------------]
 	//[ Resource creation                                     ]
 	//[-------------------------------------------------------]
-	Rhi::IRenderPass* OpenGLES3Rhi::createRenderPass(uint32_t numberOfColorAttachments, const Rhi::TextureFormat::Enum* colorAttachmentTextureFormats, Rhi::TextureFormat::Enum depthStencilAttachmentTextureFormat, uint8_t numberOfMultisamples RHI_RESOURCE_DEBUG_NAME_MAYBE_UNUSED_PARAMETER_NO_DEFAULT)
+	Rhi::IRenderPass* OpenGLES3Rhi::createRenderPass(uint32_t numberOfColorAttachments, const Rhi::TextureFormat::Enum* colorAttachmentTextureFormats, Rhi::TextureFormat::Enum depthStencilAttachmentTextureFormat, uint8_t numberOfMultisamples RHI_RESOURCE_DEBUG_NAME_PARAMETER_NO_DEFAULT)
 	{
-		return RHI_NEW(mContext, RenderPass)(*this, numberOfColorAttachments, colorAttachmentTextureFormats, depthStencilAttachmentTextureFormat, numberOfMultisamples);
+		return RHI_NEW(mContext, RenderPass)(*this, numberOfColorAttachments, colorAttachmentTextureFormats, depthStencilAttachmentTextureFormat, numberOfMultisamples RHI_RESOURCE_DEBUG_PASS_PARAMETER);
 	}
 
 	Rhi::IQueryPool* OpenGLES3Rhi::createQueryPool([[maybe_unused]] Rhi::QueryType queryType, [[maybe_unused]] uint32_t numberOfQueries RHI_RESOURCE_DEBUG_NAME_MAYBE_UNUSED_PARAMETER_NO_DEFAULT)
@@ -10411,14 +10397,14 @@ namespace OpenGLES3Rhi
 		return nullptr;
 	}
 
-	Rhi::ISwapChain* OpenGLES3Rhi::createSwapChain(Rhi::IRenderPass& renderPass, Rhi::WindowHandle windowHandle, bool RHI_RESOURCE_DEBUG_NAME_MAYBE_UNUSED_PARAMETER_NO_DEFAULT)
+	Rhi::ISwapChain* OpenGLES3Rhi::createSwapChain(Rhi::IRenderPass& renderPass, Rhi::WindowHandle windowHandle, bool RHI_RESOURCE_DEBUG_NAME_PARAMETER_NO_DEFAULT)
 	{
 		// Sanity checks
 		RHI_MATCH_CHECK(*this, renderPass)
 		RHI_ASSERT(mContext, NULL_HANDLE != windowHandle.nativeWindowHandle || nullptr != windowHandle.renderWindow, "OpenGL ES 3: The provided native window handle or render window must not be a null handle / null pointer")
 
 		// Create the swap chain
-		return RHI_NEW(mContext, SwapChain)(renderPass, windowHandle);
+		return RHI_NEW(mContext, SwapChain)(renderPass, windowHandle RHI_RESOURCE_DEBUG_PASS_PARAMETER);
 	}
 
 	Rhi::IFramebuffer* OpenGLES3Rhi::createFramebuffer(Rhi::IRenderPass& renderPass, const Rhi::FramebufferAttachment* colorFramebufferAttachments, const Rhi::FramebufferAttachment* depthStencilFramebufferAttachment RHI_RESOURCE_DEBUG_NAME_PARAMETER_NO_DEFAULT)
@@ -10440,12 +10426,12 @@ namespace OpenGLES3Rhi
 		return RHI_NEW(mContext, TextureManager)(*this);
 	}
 
-	Rhi::IRootSignature* OpenGLES3Rhi::createRootSignature(const Rhi::RootSignature& rootSignature RHI_RESOURCE_DEBUG_NAME_MAYBE_UNUSED_PARAMETER_NO_DEFAULT)
+	Rhi::IRootSignature* OpenGLES3Rhi::createRootSignature(const Rhi::RootSignature& rootSignature RHI_RESOURCE_DEBUG_NAME_PARAMETER_NO_DEFAULT)
 	{
-		return RHI_NEW(mContext, RootSignature)(*this, rootSignature);
+		return RHI_NEW(mContext, RootSignature)(*this, rootSignature RHI_RESOURCE_DEBUG_PASS_PARAMETER);
 	}
 
-	Rhi::IGraphicsPipelineState* OpenGLES3Rhi::createGraphicsPipelineState(const Rhi::GraphicsPipelineState& graphicsPipelineState RHI_RESOURCE_DEBUG_NAME_MAYBE_UNUSED_PARAMETER_NO_DEFAULT)
+	Rhi::IGraphicsPipelineState* OpenGLES3Rhi::createGraphicsPipelineState(const Rhi::GraphicsPipelineState& graphicsPipelineState RHI_RESOURCE_DEBUG_NAME_PARAMETER_NO_DEFAULT)
 	{
 		// Sanity checks
 		RHI_ASSERT(mContext, nullptr != graphicsPipelineState.rootSignature, "OpenGL ES 3: Invalid graphics pipeline state root signature")
@@ -10456,7 +10442,7 @@ namespace OpenGLES3Rhi
 		uint16_t id = 0;
 		if (GraphicsPipelineStateMakeId.CreateID(id))
 		{
-			return RHI_NEW(mContext, GraphicsPipelineState)(*this, graphicsPipelineState, id);
+			return RHI_NEW(mContext, GraphicsPipelineState)(*this, graphicsPipelineState, id RHI_RESOURCE_DEBUG_PASS_PARAMETER);
 		}
 
 		// Error: Ensure a correct reference counter behaviour
@@ -10485,9 +10471,9 @@ namespace OpenGLES3Rhi
 		return nullptr;
 	}
 
-	Rhi::ISamplerState* OpenGLES3Rhi::createSamplerState(const Rhi::SamplerState& samplerState RHI_RESOURCE_DEBUG_NAME_MAYBE_UNUSED_PARAMETER_NO_DEFAULT)
+	Rhi::ISamplerState* OpenGLES3Rhi::createSamplerState(const Rhi::SamplerState& samplerState RHI_RESOURCE_DEBUG_NAME_PARAMETER_NO_DEFAULT)
 	{
-		return RHI_NEW(mContext, SamplerState)(*this, samplerState);
+		return RHI_NEW(mContext, SamplerState)(*this, samplerState RHI_RESOURCE_DEBUG_PASS_PARAMETER);
 	}
 
 

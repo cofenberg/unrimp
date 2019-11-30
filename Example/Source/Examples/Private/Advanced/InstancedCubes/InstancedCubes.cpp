@@ -148,11 +148,11 @@ void InstancedCubes::onUpdate()
 	#endif
 
 	{ // Input
-		const DeviceInput::Keyboard* keyboard = mInputManager->GetKeyboard();
+		DeviceInput::Keyboard* keyboard = mInputManager->GetKeyboard();
 		if (keyboard->HasChanged())
 		{
 			// Add a fixed number of cubes
-			if (keyboard->NumpadAdd.isHit() || keyboard->Add.isHit())
+			if (keyboard->NumpadAdd.checkHitAndReset() || keyboard->Add.checkHitAndReset())
 			{
 				// Upper limit, just in case someone tries something nasty
 				if (mNumberOfCubeInstances < UINT_MAX - NUMBER_OF_CHANGED_CUBES)
@@ -169,7 +169,7 @@ void InstancedCubes::onUpdate()
 			}
 
 			// Subtract a fixed number of cubes
-			if (keyboard->NumpadSubtract.isHit() || keyboard->Subtract.isHit())
+			if (keyboard->NumpadSubtract.checkHitAndReset() || keyboard->Subtract.checkHitAndReset())
 			{
 				// Lower limit
 				if (mNumberOfCubeInstances > 1)
@@ -193,19 +193,19 @@ void InstancedCubes::onUpdate()
 			}
 
 			// Scale cubes up (change the size of all cubes at the same time)
-			if (keyboard->Up.isHit())
+			if (keyboard->Up.checkHitAndReset())
 			{
 				mGlobalScale += 0.1f;
 			}
 
 			// Scale cubes down (change the size of all cubes at the same time)
-			if (keyboard->Down.isHit())
+			if (keyboard->Down.checkHitAndReset())
 			{
 				mGlobalScale -= 0.1f;	// No need to check for negative values, results in entertaining inversed backface culling
 			}
 
 			// Show/hide statistics
-			if (keyboard->Space.isHit())
+			if (keyboard->Space.checkHitAndReset())
 			{
 				// Toggle display of statistics
 				mDisplayStatistics = !mDisplayStatistics;
@@ -232,7 +232,7 @@ void InstancedCubes::onDraw()
 
 		// Display statistics
 		#ifdef RENDERER_IMGUI
-			if (mDisplayStatistics && nullptr != getMainRenderTarget())
+			if (mDisplayStatistics && nullptr != getMainRenderTarget() && nullptr != getRenderer())
 			{
 				Renderer::DebugGuiManager& debugGuiManager = getRendererSafe().getDebugGuiManager();
 				debugGuiManager.newFrame(*getMainRenderTarget());

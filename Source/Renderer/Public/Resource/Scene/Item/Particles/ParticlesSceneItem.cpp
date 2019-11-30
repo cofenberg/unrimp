@@ -52,7 +52,7 @@ namespace Renderer
 		const IRenderer& renderer = getSceneResource().getRenderer();
 		const MaterialResourceManager& materialResourceManager = renderer.getMaterialResourceManager();
 		const MaterialResourceId materialResourceId = getMaterialResourceId();
-		mRenderableManager.getRenderables().emplace_back(mRenderableManager, renderer.getMeshResourceManager().getDrawIdVertexArrayPtr(), materialResourceManager, materialResourceId, getInvalid<SkeletonResourceId>(), false, 0, 6, mMaximumNumberOfParticles);
+		mRenderableManager.getRenderables().emplace_back(mRenderableManager, renderer.getMeshResourceManager().getDrawIdVertexArrayPtr(), materialResourceManager, materialResourceId, getInvalid<SkeletonResourceId>(), false, 0, 6, mMaximumNumberOfParticles RHI_RESOURCE_DEBUG_NAME("Particles"));
 		mRenderableManager.updateCachedRenderablesData();
 
 		// Tell the used material resource about our structured buffer

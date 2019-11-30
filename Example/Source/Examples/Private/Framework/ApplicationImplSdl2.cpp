@@ -93,7 +93,10 @@ bool ApplicationImplSdl2::processMessages()
 			SDL_ShowWindow(mSdlWindow);
 		}
 		#ifdef RENDERER_IMGUI
-			initializeImGuiKeyMap();
+			if (ImGui::GetCurrentContext() != nullptr)
+			{
+				initializeImGuiKeyMap();
+			}
 		#endif
 		mFirstUpdate = false;
 	}

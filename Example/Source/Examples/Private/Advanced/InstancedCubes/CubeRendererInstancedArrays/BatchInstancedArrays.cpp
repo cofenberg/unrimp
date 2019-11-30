@@ -56,8 +56,8 @@ void BatchInstancedArrays::initialize(Rhi::IBufferManager& bufferManager, Rhi::I
 	{ // Create the texture buffer instance
 		// Allocate the local per instance data
 		const uint32_t numberOfElements = mNumberOfCubeInstances * 2 * 4;
-		float *data = new float[numberOfElements];
-		float *dataCurrent = data;
+		float* data = new float[numberOfElements];
+		float* RESTRICT dataCurrent = data;
 
 		// Set data
 		// -> Layout: [Position][Rotation][Position][Rotation]...
@@ -102,7 +102,7 @@ void BatchInstancedArrays::initialize(Rhi::IBufferManager& bufferManager, Rhi::I
 		}
 
 		// Create the vertex buffer object (VBO) instance containing the per-instance-data
-		Rhi::IVertexBuffer *vertexBufferPerInstanceData = bufferManager.createVertexBuffer(sizeof(float) * numberOfElements, data);
+		Rhi::IVertexBuffer* vertexBufferPerInstanceData = bufferManager.createVertexBuffer(sizeof(float) * numberOfElements, data);
 
 		{ // Create vertex array object (VAO)
 			// -> The vertex array object (VAO) keeps a reference to the used vertex buffer object (VBO)

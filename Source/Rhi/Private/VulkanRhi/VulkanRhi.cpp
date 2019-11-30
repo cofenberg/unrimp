@@ -555,62 +555,12 @@ namespace VulkanRhi
 	*/
 	#define RHI_MATCH_CHECK(rhiReference, resourceReference) \
 		RHI_ASSERT(mContext, &rhiReference == &(resourceReference).getRhi(), "Vulkan error: The given resource is owned by another RHI instance")
-
-	/**
-	*  @brief
-	*    Resource name for debugging purposes, ignored when not using "RHI_DEBUG"
-	*
-	*  @param[in] debugName
-	*    ASCII name for debugging purposes, must be valid (there's no internal null pointer test)
-	*/
-	#define RHI_RESOURCE_DEBUG_NAME_PARAMETER_NO_DEFAULT , const char* debugName
-	#define RHI_RESOURCE_DEBUG_NAME_MAYBE_UNUSED_PARAMETER_NO_DEFAULT , [[maybe_unused]] const char* debugName
-
-	/**
-	*  @brief
-	*    Resource name for debugging purposes, ignored when not using "RHI_DEBUG"
-	*
-	*  @param[in] debugName
-	*    ASCII name for debugging purposes, must be valid (there's no internal null pointer test)
-	*/
-	#define RHI_RESOURCE_DEBUG_NAME_MAYBE_UNUSED_PARAMETER , [[maybe_unused]] const char* debugName = ""
-
-	/**
-	*  @brief
-	*    Pass resource name for debugging purposes, ignored when not using "RHI_DEBUG"
-	*/
-	#define RHI_RESOURCE_DEBUG_PASS_PARAMETER , debugName
 #else
 	/*
 	*  @brief
 	*    Check whether or not the given resource is owned by the given RHI
 	*/
 	#define RHI_MATCH_CHECK(rhiReference, resourceReference)
-
-	/**
-	*  @brief
-	*    Resource name for debugging purposes, ignored when not using "RHI_DEBUG"
-	*
-	*  @param[in] debugName
-	*    ASCII name for debugging purposes, must be valid (there's no internal null pointer test)
-	*/
-	#define RHI_RESOURCE_DEBUG_NAME_PARAMETER_NO_DEFAULT
-	#define RHI_RESOURCE_DEBUG_NAME_MAYBE_UNUSED_PARAMETER_NO_DEFAULT
-
-	/**
-	*  @brief
-	*    Resource name for debugging purposes, ignored when not using "RHI_DEBUG"
-	*
-	*  @param[in] debugName
-	*    ASCII name for debugging purposes, must be valid (there's no internal null pointer test)
-	*/
-	#define RHI_RESOURCE_DEBUG_NAME_MAYBE_UNUSED_PARAMETER
-
-	/**
-	*  @brief
-	*    Pass resource name for debugging purposes, ignored when not using "RHI_DEBUG"
-	*/
-	#define RHI_RESOURCE_DEBUG_PASS_PARAMETER
 #endif
 
 #ifndef FNPTR
@@ -4502,7 +4452,7 @@ namespace VulkanRhi
 		*    Root signature to use
 		*/
 		RootSignature(VulkanRhi& vulkanRhi, const Rhi::RootSignature& rootSignature RHI_RESOURCE_DEBUG_NAME_PARAMETER) :
-			IRootSignature(vulkanRhi),
+			IRootSignature(vulkanRhi RHI_RESOURCE_DEBUG_PASS_PARAMETER),
 			mRootSignature(rootSignature),
 			mVkPipelineLayout(VK_NULL_HANDLE),
 			mVkDescriptorPool(VK_NULL_HANDLE)
@@ -4993,7 +4943,7 @@ namespace VulkanRhi
 		*    Indication of the buffer usage
 		*/
 		VertexBuffer(VulkanRhi& vulkanRhi, uint32_t numberOfBytes, const void* data, uint32_t bufferFlags, [[maybe_unused]] Rhi::BufferUsage bufferUsage RHI_RESOURCE_DEBUG_NAME_PARAMETER) :
-			IVertexBuffer(vulkanRhi),
+			IVertexBuffer(vulkanRhi RHI_RESOURCE_DEBUG_PASS_PARAMETER),
 			mVkBuffer(VK_NULL_HANDLE),
 			mVkDeviceMemory(VK_NULL_HANDLE)
 		{
@@ -5114,7 +5064,7 @@ namespace VulkanRhi
 		*    Index buffer data format
 		*/
 		IndexBuffer(VulkanRhi& vulkanRhi, uint32_t numberOfBytes, const void* data, uint32_t bufferFlags, [[maybe_unused]] Rhi::BufferUsage bufferUsage, Rhi::IndexBufferFormat::Enum indexBufferFormat RHI_RESOURCE_DEBUG_NAME_PARAMETER) :
-			IIndexBuffer(vulkanRhi),
+			IIndexBuffer(vulkanRhi RHI_RESOURCE_DEBUG_PASS_PARAMETER),
 			mVkIndexType(Mapping::getVulkanType(vulkanRhi.getContext(), indexBufferFormat)),
 			mVkBuffer(VK_NULL_HANDLE),
 			mVkDeviceMemory(VK_NULL_HANDLE)
@@ -5248,8 +5198,8 @@ namespace VulkanRhi
 		*  @param[in] id
 		*    The unique compact vertex array ID
 		*/
-		VertexArray(VulkanRhi& vulkanRhi, const Rhi::VertexAttributes& vertexAttributes, uint32_t numberOfVertexBuffers, const Rhi::VertexArrayVertexBuffer* vertexBuffers, IndexBuffer* indexBuffer, uint16_t id) :
-			IVertexArray(static_cast<Rhi::IRhi&>(vulkanRhi), id),
+		VertexArray(VulkanRhi& vulkanRhi, const Rhi::VertexAttributes& vertexAttributes, uint32_t numberOfVertexBuffers, const Rhi::VertexArrayVertexBuffer* vertexBuffers, IndexBuffer* indexBuffer, uint16_t id RHI_RESOURCE_DEBUG_NAME_PARAMETER_NO_DEFAULT) :
+			IVertexArray(static_cast<Rhi::IRhi&>(vulkanRhi), id RHI_RESOURCE_DEBUG_PASS_PARAMETER),
 			mIndexBuffer(indexBuffer),
 			mNumberOfSlots(numberOfVertexBuffers),
 			mVertexVkBuffers(nullptr),
@@ -5448,7 +5398,7 @@ namespace VulkanRhi
 		*    Texture buffer data format
 		*/
 		TextureBuffer(VulkanRhi& vulkanRhi, uint32_t numberOfBytes, const void* data, uint32_t bufferFlags, [[maybe_unused]] Rhi::BufferUsage bufferUsage, Rhi::TextureFormat::Enum textureFormat RHI_RESOURCE_DEBUG_NAME_PARAMETER) :
-			ITextureBuffer(vulkanRhi),
+			ITextureBuffer(vulkanRhi RHI_RESOURCE_DEBUG_PASS_PARAMETER),
 			mVkBuffer(VK_NULL_HANDLE),
 			mVkDeviceMemory(VK_NULL_HANDLE),
 			mVkBufferView(VK_NULL_HANDLE)
@@ -5614,7 +5564,7 @@ namespace VulkanRhi
 		*    Number of structure bytes
 		*/
 		StructuredBuffer(VulkanRhi& vulkanRhi, uint32_t numberOfBytes, const void* data, [[maybe_unused]] Rhi::BufferUsage bufferUsage, [[maybe_unused]] uint32_t numberOfStructureBytes RHI_RESOURCE_DEBUG_NAME_PARAMETER) :
-			IStructuredBuffer(vulkanRhi),
+			IStructuredBuffer(vulkanRhi RHI_RESOURCE_DEBUG_PASS_PARAMETER),
 			mVkBuffer(VK_NULL_HANDLE),
 			mVkDeviceMemory(VK_NULL_HANDLE)
 		{
@@ -5733,7 +5683,7 @@ namespace VulkanRhi
 		*    Indication of the buffer usage
 		*/
 		IndirectBuffer(VulkanRhi& vulkanRhi, uint32_t numberOfBytes, const void* data, uint32_t indirectBufferFlags, [[maybe_unused]] Rhi::BufferUsage bufferUsage RHI_RESOURCE_DEBUG_NAME_PARAMETER) :
-			IIndirectBuffer(vulkanRhi),
+			IIndirectBuffer(vulkanRhi RHI_RESOURCE_DEBUG_PASS_PARAMETER),
 			mVkBuffer(VK_NULL_HANDLE),
 			mVkDeviceMemory(VK_NULL_HANDLE)
 		{
@@ -5867,7 +5817,7 @@ namespace VulkanRhi
 		*    Indication of the buffer usage
 		*/
 		UniformBuffer(VulkanRhi& vulkanRhi, uint32_t numberOfBytes, const void* data, [[maybe_unused]] Rhi::BufferUsage bufferUsage RHI_RESOURCE_DEBUG_NAME_PARAMETER) :
-			IUniformBuffer(vulkanRhi),
+			IUniformBuffer(vulkanRhi RHI_RESOURCE_DEBUG_PASS_PARAMETER),
 			mVkBuffer(VK_NULL_HANDLE),
 			mVkDeviceMemory(VK_NULL_HANDLE)
 		{
@@ -6000,7 +5950,7 @@ namespace VulkanRhi
 			return RHI_NEW(vulkanRhi.getContext(), IndexBuffer)(vulkanRhi, numberOfBytes, data, bufferFlags, bufferUsage, indexBufferFormat RHI_RESOURCE_DEBUG_PASS_PARAMETER);
 		}
 
-		[[nodiscard]] inline virtual Rhi::IVertexArray* createVertexArray(const Rhi::VertexAttributes& vertexAttributes, uint32_t numberOfVertexBuffers, const Rhi::VertexArrayVertexBuffer* vertexBuffers, Rhi::IIndexBuffer* indexBuffer = nullptr RHI_RESOURCE_DEBUG_NAME_MAYBE_UNUSED_PARAMETER) override
+		[[nodiscard]] inline virtual Rhi::IVertexArray* createVertexArray(const Rhi::VertexAttributes& vertexAttributes, uint32_t numberOfVertexBuffers, const Rhi::VertexArrayVertexBuffer* vertexBuffers, Rhi::IIndexBuffer* indexBuffer = nullptr RHI_RESOURCE_DEBUG_NAME_PARAMETER) override
 		{
 			VulkanRhi& vulkanRhi = static_cast<VulkanRhi&>(getRhi());
 
@@ -6020,7 +5970,7 @@ namespace VulkanRhi
 			uint16_t id = 0;
 			if (vulkanRhi.VertexArrayMakeId.CreateID(id))
 			{
-				return RHI_NEW(vulkanRhi.getContext(), VertexArray)(vulkanRhi, vertexAttributes, numberOfVertexBuffers, vertexBuffers, static_cast<IndexBuffer*>(indexBuffer), id);
+				return RHI_NEW(vulkanRhi.getContext(), VertexArray)(vulkanRhi, vertexAttributes, numberOfVertexBuffers, vertexBuffers, static_cast<IndexBuffer*>(indexBuffer), id RHI_RESOURCE_DEBUG_PASS_PARAMETER);
 			}
 
 			// Error: Ensure a correct reference counter behaviour
@@ -6125,7 +6075,7 @@ namespace VulkanRhi
 		*    Texture flags, see "Rhi::TextureFlag::Enum"
 		*/
 		Texture1D(VulkanRhi& vulkanRhi, uint32_t width, Rhi::TextureFormat::Enum textureFormat, const void* data, uint32_t textureFlags RHI_RESOURCE_DEBUG_NAME_PARAMETER) :
-			ITexture1D(vulkanRhi, width),
+			ITexture1D(vulkanRhi, width RHI_RESOURCE_DEBUG_PASS_PARAMETER),
 			mVkImage(VK_NULL_HANDLE),
 			mVkImageLayout(Helper::getVkImageLayoutByTextureFlags(textureFlags)),
 			mVkDeviceMemory(VK_NULL_HANDLE),
@@ -6246,7 +6196,7 @@ namespace VulkanRhi
 		*    Texture flags, see "Rhi::TextureFlag::Enum"
 		*/
 		Texture1DArray(VulkanRhi& vulkanRhi, uint32_t width, uint32_t numberOfSlices, Rhi::TextureFormat::Enum textureFormat, const void* data, uint32_t textureFlags RHI_RESOURCE_DEBUG_NAME_PARAMETER) :
-			ITexture1DArray(vulkanRhi, width, numberOfSlices),
+			ITexture1DArray(vulkanRhi, width, numberOfSlices RHI_RESOURCE_DEBUG_PASS_PARAMETER),
 			mVkImage(VK_NULL_HANDLE),
 			mVkImageLayout(Helper::getVkImageLayoutByTextureFlags(textureFlags)),
 			mVkDeviceMemory(VK_NULL_HANDLE),
@@ -6402,7 +6352,7 @@ namespace VulkanRhi
 		*    The number of multisamples per pixel (valid values: 1, 2, 4, 8)
 		*/
 		Texture2D(VulkanRhi& vulkanRhi, uint32_t width, uint32_t height, Rhi::TextureFormat::Enum textureFormat, const void* data, uint32_t textureFlags, uint8_t numberOfMultisamples RHI_RESOURCE_DEBUG_NAME_PARAMETER) :
-			ITexture2D(vulkanRhi, width, height),
+			ITexture2D(vulkanRhi, width, height RHI_RESOURCE_DEBUG_PASS_PARAMETER),
 			mVrVulkanTextureData{},
 			mVkImageLayout(Helper::getVkImageLayoutByTextureFlags(textureFlags)),
 			mVkDeviceMemory(VK_NULL_HANDLE),
@@ -6575,7 +6525,7 @@ namespace VulkanRhi
 		*    Texture flags, see "Rhi::TextureFlag::Enum"
 		*/
 		Texture2DArray(VulkanRhi& vulkanRhi, uint32_t width, uint32_t height, uint32_t numberOfSlices, Rhi::TextureFormat::Enum textureFormat, const void* data, uint32_t textureFlags RHI_RESOURCE_DEBUG_NAME_PARAMETER) :
-			ITexture2DArray(vulkanRhi, width, height, numberOfSlices),
+			ITexture2DArray(vulkanRhi, width, height, numberOfSlices RHI_RESOURCE_DEBUG_PASS_PARAMETER),
 			mVkImage(VK_NULL_HANDLE),
 			mVkImageLayout(Helper::getVkImageLayoutByTextureFlags(textureFlags)),
 			mVkDeviceMemory(VK_NULL_HANDLE),
@@ -6710,7 +6660,7 @@ namespace VulkanRhi
 		*    Texture flags, see "Rhi::TextureFlag::Enum"
 		*/
 		Texture3D(VulkanRhi& vulkanRhi, uint32_t width, uint32_t height, uint32_t depth, Rhi::TextureFormat::Enum textureFormat, const void* data, uint32_t textureFlags RHI_RESOURCE_DEBUG_NAME_PARAMETER) :
-			ITexture3D(vulkanRhi, width, height, depth),
+			ITexture3D(vulkanRhi, width, height, depth RHI_RESOURCE_DEBUG_PASS_PARAMETER),
 			mVkImage(VK_NULL_HANDLE),
 			mVkImageLayout(Helper::getVkImageLayoutByTextureFlags(textureFlags)),
 			mVkDeviceMemory(VK_NULL_HANDLE),
@@ -6831,7 +6781,7 @@ namespace VulkanRhi
 		*    Texture flags, see "Rhi::TextureFlag::Enum"
 		*/
 		TextureCube(VulkanRhi& vulkanRhi, uint32_t width, uint32_t height, Rhi::TextureFormat::Enum textureFormat, const void* data, uint32_t textureFlags RHI_RESOURCE_DEBUG_NAME_PARAMETER) :
-			ITextureCube(vulkanRhi, width, height),
+			ITextureCube(vulkanRhi, width, height RHI_RESOURCE_DEBUG_PASS_PARAMETER),
 			mVkImage(VK_NULL_HANDLE),
 			mVkImageLayout(Helper::getVkImageLayoutByTextureFlags(textureFlags)),
 			mVkDeviceMemory(VK_NULL_HANDLE),
@@ -7078,7 +7028,7 @@ namespace VulkanRhi
 		*    Sampler state to use
 		*/
 		SamplerState(VulkanRhi& vulkanRhi, const Rhi::SamplerState& samplerState RHI_RESOURCE_DEBUG_NAME_PARAMETER) :
-			ISamplerState(vulkanRhi),
+			ISamplerState(vulkanRhi RHI_RESOURCE_DEBUG_PASS_PARAMETER),
 			mVkSampler(VK_NULL_HANDLE)
 		{
 			// Sanity checks
@@ -7213,7 +7163,7 @@ namespace VulkanRhi
 		*    The number of multisamples per pixel (valid values: 1, 2, 4, 8)
 		*/
 		RenderPass(VulkanRhi& vulkanRhi, uint32_t numberOfColorAttachments, const Rhi::TextureFormat::Enum* colorAttachmentTextureFormats, Rhi::TextureFormat::Enum depthStencilAttachmentTextureFormat, uint8_t numberOfMultisamples RHI_RESOURCE_DEBUG_NAME_PARAMETER) :
-			IRenderPass(vulkanRhi),
+			IRenderPass(vulkanRhi RHI_RESOURCE_DEBUG_PASS_PARAMETER),
 			mVkRenderPass(VK_NULL_HANDLE),
 			mNumberOfColorAttachments(numberOfColorAttachments),
 			mDepthStencilAttachmentTextureFormat(depthStencilAttachmentTextureFormat),
@@ -7479,7 +7429,7 @@ namespace VulkanRhi
 		*    Number of queries
 		*/
 		QueryPool(VulkanRhi& vulkanRhi, Rhi::QueryType queryType, uint32_t numberOfQueries RHI_RESOURCE_DEBUG_NAME_PARAMETER) :
-			IQueryPool(vulkanRhi),
+			IQueryPool(vulkanRhi RHI_RESOURCE_DEBUG_PASS_PARAMETER),
 			mQueryType(queryType),
 			mVkQueryPool(VK_NULL_HANDLE)
 		{
@@ -7674,8 +7624,8 @@ namespace VulkanRhi
 		*  @param[in] windowHandle
 		*    Information about the window to render into
 		*/
-		SwapChain(Rhi::IRenderPass& renderPass, Rhi::WindowHandle windowHandle) :
-			ISwapChain(renderPass),
+		SwapChain(Rhi::IRenderPass& renderPass, Rhi::WindowHandle windowHandle RHI_RESOURCE_DEBUG_NAME_PARAMETER_NO_DEFAULT) :
+			ISwapChain(renderPass RHI_RESOURCE_DEBUG_PASS_PARAMETER),
 			// Operation system window
 			mNativeWindowHandle(windowHandle.nativeWindowHandle),
 			mRenderWindow(windowHandle.renderWindow),
@@ -8328,7 +8278,7 @@ namespace VulkanRhi
 		*    - The framebuffer keeps a reference to the provided texture instances
 		*/
 		Framebuffer(Rhi::IRenderPass& renderPass, const Rhi::FramebufferAttachment* colorFramebufferAttachments, const Rhi::FramebufferAttachment* depthStencilFramebufferAttachment RHI_RESOURCE_DEBUG_NAME_PARAMETER) :
-			IFramebuffer(renderPass),
+			IFramebuffer(renderPass RHI_RESOURCE_DEBUG_PASS_PARAMETER),
 			mNumberOfColorTextures(static_cast<RenderPass&>(renderPass).getNumberOfColorAttachments()),
 			mColorTextures(nullptr),	// Set below
 			mDepthStencilTexture(nullptr),
@@ -8676,7 +8626,7 @@ namespace VulkanRhi
 		*    Shader bytecode
 		*/
 		VertexShaderGlsl(VulkanRhi& vulkanRhi, const Rhi::ShaderBytecode& shaderBytecode RHI_RESOURCE_DEBUG_NAME_PARAMETER) :
-			IVertexShader(vulkanRhi),
+			IVertexShader(vulkanRhi RHI_RESOURCE_DEBUG_PASS_PARAMETER),
 			mVkShaderModule(::detail::createVkShaderModuleFromBytecode(vulkanRhi.getContext(), vulkanRhi.getVkAllocationCallbacks(), vulkanRhi.getVulkanContext().getVkDevice(), shaderBytecode))
 		{
 			#ifdef RHI_DEBUG
@@ -8698,7 +8648,7 @@ namespace VulkanRhi
 		*    Shader ASCII source code, must be valid
 		*/
 		VertexShaderGlsl(VulkanRhi& vulkanRhi, const char* sourceCode, Rhi::ShaderBytecode* shaderBytecode RHI_RESOURCE_DEBUG_NAME_PARAMETER) :
-			IVertexShader(vulkanRhi),
+			IVertexShader(vulkanRhi RHI_RESOURCE_DEBUG_PASS_PARAMETER),
 			mVkShaderModule(::detail::createVkShaderModuleFromSourceCode(vulkanRhi.getContext(), vulkanRhi.getVkAllocationCallbacks(), vulkanRhi.getVulkanContext().getVkDevice(), VK_SHADER_STAGE_VERTEX_BIT, sourceCode, shaderBytecode))
 		{
 			#ifdef RHI_DEBUG
@@ -8801,7 +8751,7 @@ namespace VulkanRhi
 		*    Shader bytecode
 		*/
 		TessellationControlShaderGlsl(VulkanRhi& vulkanRhi, const Rhi::ShaderBytecode& shaderBytecode RHI_RESOURCE_DEBUG_NAME_PARAMETER) :
-			ITessellationControlShader(vulkanRhi),
+			ITessellationControlShader(vulkanRhi RHI_RESOURCE_DEBUG_PASS_PARAMETER),
 			mVkShaderModule(::detail::createVkShaderModuleFromBytecode(vulkanRhi.getContext(), vulkanRhi.getVkAllocationCallbacks(), vulkanRhi.getVulkanContext().getVkDevice(), shaderBytecode))
 		{
 			#ifdef RHI_DEBUG
@@ -8823,7 +8773,7 @@ namespace VulkanRhi
 		*    Shader ASCII source code, must be valid
 		*/
 		TessellationControlShaderGlsl(VulkanRhi& vulkanRhi, const char* sourceCode, Rhi::ShaderBytecode* shaderBytecode RHI_RESOURCE_DEBUG_NAME_PARAMETER) :
-			ITessellationControlShader(vulkanRhi),
+			ITessellationControlShader(vulkanRhi RHI_RESOURCE_DEBUG_PASS_PARAMETER),
 			mVkShaderModule(::detail::createVkShaderModuleFromSourceCode(vulkanRhi.getContext(), vulkanRhi.getVkAllocationCallbacks(), vulkanRhi.getVulkanContext().getVkDevice(), VK_SHADER_STAGE_TESSELLATION_CONTROL_BIT, sourceCode, shaderBytecode))
 		{
 			#ifdef RHI_DEBUG
@@ -8926,7 +8876,7 @@ namespace VulkanRhi
 		*    Shader bytecode
 		*/
 		TessellationEvaluationShaderGlsl(VulkanRhi& vulkanRhi, const Rhi::ShaderBytecode& shaderBytecode RHI_RESOURCE_DEBUG_NAME_PARAMETER) :
-			ITessellationEvaluationShader(vulkanRhi),
+			ITessellationEvaluationShader(vulkanRhi RHI_RESOURCE_DEBUG_PASS_PARAMETER),
 			mVkShaderModule(::detail::createVkShaderModuleFromBytecode(vulkanRhi.getContext(), vulkanRhi.getVkAllocationCallbacks(), vulkanRhi.getVulkanContext().getVkDevice(), shaderBytecode))
 		{
 			#ifdef RHI_DEBUG
@@ -8948,7 +8898,7 @@ namespace VulkanRhi
 		*    Shader ASCII source code, must be valid
 		*/
 		TessellationEvaluationShaderGlsl(VulkanRhi& vulkanRhi, const char* sourceCode, Rhi::ShaderBytecode* shaderBytecode RHI_RESOURCE_DEBUG_NAME_PARAMETER) :
-			ITessellationEvaluationShader(vulkanRhi),
+			ITessellationEvaluationShader(vulkanRhi RHI_RESOURCE_DEBUG_PASS_PARAMETER),
 			mVkShaderModule(::detail::createVkShaderModuleFromSourceCode(vulkanRhi.getContext(), vulkanRhi.getVkAllocationCallbacks(), vulkanRhi.getVulkanContext().getVkDevice(), VK_SHADER_STAGE_TESSELLATION_EVALUATION_BIT, sourceCode, shaderBytecode))
 		{
 			#ifdef RHI_DEBUG
@@ -9058,7 +9008,7 @@ namespace VulkanRhi
 		*/
 		// TODO(co) Remove unused parameters
 		GeometryShaderGlsl(VulkanRhi& vulkanRhi, const Rhi::ShaderBytecode& shaderBytecode, [[maybe_unused]] Rhi::GsInputPrimitiveTopology gsInputPrimitiveTopology, [[maybe_unused]] Rhi::GsOutputPrimitiveTopology gsOutputPrimitiveTopology, [[maybe_unused]] uint32_t numberOfOutputVertices RHI_RESOURCE_DEBUG_NAME_PARAMETER) :
-			IGeometryShader(vulkanRhi),
+			IGeometryShader(vulkanRhi RHI_RESOURCE_DEBUG_PASS_PARAMETER),
 			mVkShaderModule(::detail::createVkShaderModuleFromBytecode(vulkanRhi.getContext(), vulkanRhi.getVkAllocationCallbacks(), vulkanRhi.getVulkanContext().getVkDevice(), shaderBytecode))
 		{
 			#ifdef RHI_DEBUG
@@ -9087,7 +9037,7 @@ namespace VulkanRhi
 		*/
 		// TODO(co) Remove unused parameters
 		GeometryShaderGlsl(VulkanRhi& vulkanRhi, const char* sourceCode, [[maybe_unused]] Rhi::GsInputPrimitiveTopology gsInputPrimitiveTopology, [[maybe_unused]] Rhi::GsOutputPrimitiveTopology gsOutputPrimitiveTopology, [[maybe_unused]] uint32_t numberOfOutputVertices, Rhi::ShaderBytecode* shaderBytecode RHI_RESOURCE_DEBUG_NAME_PARAMETER) :
-			IGeometryShader(vulkanRhi),
+			IGeometryShader(vulkanRhi RHI_RESOURCE_DEBUG_PASS_PARAMETER),
 			mVkShaderModule(::detail::createVkShaderModuleFromSourceCode(vulkanRhi.getContext(), vulkanRhi.getVkAllocationCallbacks(), vulkanRhi.getVulkanContext().getVkDevice(), VK_SHADER_STAGE_GEOMETRY_BIT, sourceCode, shaderBytecode))
 		{
 			#ifdef RHI_DEBUG
@@ -9190,7 +9140,7 @@ namespace VulkanRhi
 		*    Shader bytecode
 		*/
 		FragmentShaderGlsl(VulkanRhi& vulkanRhi, const Rhi::ShaderBytecode& shaderBytecode RHI_RESOURCE_DEBUG_NAME_PARAMETER) :
-			IFragmentShader(vulkanRhi),
+			IFragmentShader(vulkanRhi RHI_RESOURCE_DEBUG_PASS_PARAMETER),
 			mVkShaderModule(::detail::createVkShaderModuleFromBytecode(vulkanRhi.getContext(), vulkanRhi.getVkAllocationCallbacks(), vulkanRhi.getVulkanContext().getVkDevice(), shaderBytecode))
 		{
 			#ifdef RHI_DEBUG
@@ -9212,7 +9162,7 @@ namespace VulkanRhi
 		*    Shader ASCII source code, must be valid
 		*/
 		FragmentShaderGlsl(VulkanRhi& vulkanRhi, const char* sourceCode, Rhi::ShaderBytecode* shaderBytecode RHI_RESOURCE_DEBUG_NAME_PARAMETER) :
-			IFragmentShader(vulkanRhi),
+			IFragmentShader(vulkanRhi RHI_RESOURCE_DEBUG_PASS_PARAMETER),
 			mVkShaderModule(::detail::createVkShaderModuleFromSourceCode(vulkanRhi.getContext(), vulkanRhi.getVkAllocationCallbacks(), vulkanRhi.getVulkanContext().getVkDevice(), VK_SHADER_STAGE_FRAGMENT_BIT, sourceCode, shaderBytecode))
 		{
 			#ifdef RHI_DEBUG
@@ -9315,7 +9265,7 @@ namespace VulkanRhi
 		*    Shader bytecode
 		*/
 		ComputeShaderGlsl(VulkanRhi& vulkanRhi, const Rhi::ShaderBytecode& shaderBytecode RHI_RESOURCE_DEBUG_NAME_PARAMETER) :
-			IComputeShader(vulkanRhi),
+			IComputeShader(vulkanRhi RHI_RESOURCE_DEBUG_PASS_PARAMETER),
 			mVkShaderModule(::detail::createVkShaderModuleFromBytecode(vulkanRhi.getContext(), vulkanRhi.getVkAllocationCallbacks(), vulkanRhi.getVulkanContext().getVkDevice(), shaderBytecode))
 		{
 			#ifdef RHI_DEBUG
@@ -9337,7 +9287,7 @@ namespace VulkanRhi
 		*    Shader ASCII source code, must be valid
 		*/
 		ComputeShaderGlsl(VulkanRhi& vulkanRhi, const char* sourceCode, Rhi::ShaderBytecode* shaderBytecode RHI_RESOURCE_DEBUG_NAME_PARAMETER) :
-			IComputeShader(vulkanRhi),
+			IComputeShader(vulkanRhi RHI_RESOURCE_DEBUG_PASS_PARAMETER),
 			mVkShaderModule(::detail::createVkShaderModuleFromSourceCode(vulkanRhi.getContext(), vulkanRhi.getVkAllocationCallbacks(), vulkanRhi.getVulkanContext().getVkDevice(), VK_SHADER_STAGE_COMPUTE_BIT, sourceCode, shaderBytecode))
 		{
 			#ifdef RHI_DEBUG
@@ -9455,8 +9405,8 @@ namespace VulkanRhi
 		*    - The graphics program keeps a reference to the provided shaders and releases it when no longer required
 		*/
 		// TODO(co) Remove unused parameters
-		GraphicsProgramGlsl(VulkanRhi& vulkanRhi, [[maybe_unused]] const Rhi::IRootSignature& rootSignature, [[maybe_unused]] const Rhi::VertexAttributes& vertexAttributes, VertexShaderGlsl *vertexShaderGlsl, TessellationControlShaderGlsl *tessellationControlShaderGlsl, TessellationEvaluationShaderGlsl *tessellationEvaluationShaderGlsl, GeometryShaderGlsl *geometryShaderGlsl, FragmentShaderGlsl *fragmentShaderGlsl) :
-			IGraphicsProgram(vulkanRhi),
+		GraphicsProgramGlsl(VulkanRhi& vulkanRhi, [[maybe_unused]] const Rhi::IRootSignature& rootSignature, [[maybe_unused]] const Rhi::VertexAttributes& vertexAttributes, VertexShaderGlsl *vertexShaderGlsl, TessellationControlShaderGlsl *tessellationControlShaderGlsl, TessellationEvaluationShaderGlsl *tessellationEvaluationShaderGlsl, GeometryShaderGlsl *geometryShaderGlsl, FragmentShaderGlsl *fragmentShaderGlsl RHI_RESOURCE_DEBUG_NAME_PARAMETER_NO_DEFAULT) :
+			IGraphicsProgram(vulkanRhi RHI_RESOURCE_DEBUG_PASS_PARAMETER),
 			mVertexShaderGlsl(vertexShaderGlsl),
 			mTessellationControlShaderGlsl(tessellationControlShaderGlsl),
 			mTessellationEvaluationShaderGlsl(tessellationEvaluationShaderGlsl),
@@ -9767,7 +9717,7 @@ namespace VulkanRhi
 			return RHI_NEW(vulkanRhi.getContext(), ComputeShaderGlsl)(vulkanRhi, shaderSourceCode.sourceCode, shaderBytecode RHI_RESOURCE_DEBUG_PASS_PARAMETER);
 		}
 
-		[[nodiscard]] virtual Rhi::IGraphicsProgram* createGraphicsProgram(const Rhi::IRootSignature& rootSignature, const Rhi::VertexAttributes& vertexAttributes, Rhi::IVertexShader* vertexShader, Rhi::ITessellationControlShader* tessellationControlShader, Rhi::ITessellationEvaluationShader* tessellationEvaluationShader, Rhi::IGeometryShader* geometryShader, Rhi::IFragmentShader* fragmentShader RHI_RESOURCE_DEBUG_NAME_MAYBE_UNUSED_PARAMETER) override
+		[[nodiscard]] virtual Rhi::IGraphicsProgram* createGraphicsProgram(const Rhi::IRootSignature& rootSignature, const Rhi::VertexAttributes& vertexAttributes, Rhi::IVertexShader* vertexShader, Rhi::ITessellationControlShader* tessellationControlShader, Rhi::ITessellationEvaluationShader* tessellationEvaluationShader, Rhi::IGeometryShader* geometryShader, Rhi::IFragmentShader* fragmentShader RHI_RESOURCE_DEBUG_NAME_PARAMETER) override
 		{
 			VulkanRhi& vulkanRhi = static_cast<VulkanRhi&>(getRhi());
 
@@ -9783,7 +9733,7 @@ namespace VulkanRhi
 			RHI_ASSERT(vulkanRhi.getContext(), nullptr == fragmentShader || fragmentShader->getShaderLanguageName() == ::detail::GLSL_NAME, "Vulkan fragment shader language mismatch")
 
 			// Create the graphics program
-			return RHI_NEW(vulkanRhi.getContext(), GraphicsProgramGlsl)(vulkanRhi, rootSignature, vertexAttributes, static_cast<VertexShaderGlsl*>(vertexShader), static_cast<TessellationControlShaderGlsl*>(tessellationControlShader), static_cast<TessellationEvaluationShaderGlsl*>(tessellationEvaluationShader), static_cast<GeometryShaderGlsl*>(geometryShader), static_cast<FragmentShaderGlsl*>(fragmentShader));
+			return RHI_NEW(vulkanRhi.getContext(), GraphicsProgramGlsl)(vulkanRhi, rootSignature, vertexAttributes, static_cast<VertexShaderGlsl*>(vertexShader), static_cast<TessellationControlShaderGlsl*>(tessellationControlShader), static_cast<TessellationEvaluationShaderGlsl*>(tessellationEvaluationShader), static_cast<GeometryShaderGlsl*>(geometryShader), static_cast<FragmentShaderGlsl*>(fragmentShader) RHI_RESOURCE_DEBUG_PASS_PARAMETER);
 		}
 
 
@@ -9837,7 +9787,7 @@ namespace VulkanRhi
 		*    The unique compact graphics pipeline state ID
 		*/
 		GraphicsPipelineState(VulkanRhi& vulkanRhi, const Rhi::GraphicsPipelineState& graphicsPipelineState, uint16_t id RHI_RESOURCE_DEBUG_NAME_PARAMETER) :
-			IGraphicsPipelineState(vulkanRhi, id),
+			IGraphicsPipelineState(vulkanRhi, id RHI_RESOURCE_DEBUG_PASS_PARAMETER),
 			mRootSignature(graphicsPipelineState.rootSignature),
 			mGraphicsProgram(graphicsPipelineState.graphicsProgram),
 			mRenderPass(graphicsPipelineState.renderPass),
@@ -10202,7 +10152,7 @@ namespace VulkanRhi
 		*    The unique compact compute pipeline state ID
 		*/
 		ComputePipelineState(VulkanRhi& vulkanRhi, Rhi::IRootSignature& rootSignature, Rhi::IComputeShader& computeShader, uint16_t id RHI_RESOURCE_DEBUG_NAME_PARAMETER) :
-			IComputePipelineState(vulkanRhi, id),
+			IComputePipelineState(vulkanRhi, id RHI_RESOURCE_DEBUG_PASS_PARAMETER),
 			mRootSignature(rootSignature),
 			mComputeShader(computeShader),
 			mVkPipeline(VK_NULL_HANDLE)
@@ -10346,7 +10296,7 @@ namespace VulkanRhi
 		*    If not a null pointer at least "numberOfResources" sampler state pointers, must be valid if there's at least one texture resource, the resource group will keep a reference to the sampler states
 		*/
 		ResourceGroup(RootSignature& rootSignature, uint32_t rootParameterIndex, VkDescriptorSet vkDescriptorSet, uint32_t numberOfResources, Rhi::IResource** resources, Rhi::ISamplerState** samplerStates RHI_RESOURCE_DEBUG_NAME_PARAMETER) :
-			IResourceGroup(static_cast<VulkanRhi&>(rootSignature.getRhi())),
+			IResourceGroup(rootSignature.getRhi() RHI_RESOURCE_DEBUG_PASS_PARAMETER),
 			mRootSignature(rootSignature),
 			mVkDescriptorSet(vkDescriptorSet),
 			mNumberOfResources(numberOfResources),
@@ -11875,14 +11825,14 @@ namespace VulkanRhi
 		return RHI_NEW(mContext, QueryPool)(*this, queryType, numberOfQueries RHI_RESOURCE_DEBUG_PASS_PARAMETER);
 	}
 
-	Rhi::ISwapChain* VulkanRhi::createSwapChain(Rhi::IRenderPass& renderPass, Rhi::WindowHandle windowHandle, bool RHI_RESOURCE_DEBUG_NAME_MAYBE_UNUSED_PARAMETER_NO_DEFAULT)
+	Rhi::ISwapChain* VulkanRhi::createSwapChain(Rhi::IRenderPass& renderPass, Rhi::WindowHandle windowHandle, bool RHI_RESOURCE_DEBUG_NAME_PARAMETER_NO_DEFAULT)
 	{
 		// Sanity checks
 		RHI_MATCH_CHECK(*this, renderPass)
 		RHI_ASSERT(mContext, NULL_HANDLE != windowHandle.nativeWindowHandle || nullptr != windowHandle.renderWindow, "Vulkan: The provided native window handle or render window must not be a null handle / null pointer")
 
 		// Create the swap chain
-		return RHI_NEW(mContext, SwapChain)(renderPass, windowHandle);
+		return RHI_NEW(mContext, SwapChain)(renderPass, windowHandle RHI_RESOURCE_DEBUG_PASS_PARAMETER);
 	}
 
 	Rhi::IFramebuffer* VulkanRhi::createFramebuffer(Rhi::IRenderPass& renderPass, const Rhi::FramebufferAttachment* colorFramebufferAttachments, const Rhi::FramebufferAttachment* depthStencilFramebufferAttachment RHI_RESOURCE_DEBUG_NAME_PARAMETER_NO_DEFAULT)

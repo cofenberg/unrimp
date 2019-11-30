@@ -471,7 +471,7 @@ namespace Renderer
 						ImGui::Text("2D textures: %s", ::detail::stringFormatCommas(statistics.currentNumberOfTexture2Ds.load(), temporary));
 						ImGui::Text("2D texture arrays: %s", ::detail::stringFormatCommas(statistics.currentNumberOfTexture2DArrays.load(), temporary));
 						ImGui::Text("3D textures: %s", ::detail::stringFormatCommas(statistics.currentNumberOfTexture3Ds.load(), temporary));
-						ImGui::Text("Cubes textures: %s", ::detail::stringFormatCommas(statistics.currentNumberOfTextureCubes.load(), temporary));
+						ImGui::Text("Cube textures: %s", ::detail::stringFormatCommas(statistics.currentNumberOfTextureCubes.load(), temporary));
 						ImGui::Text("Graphics pipeline states: %s", ::detail::stringFormatCommas(statistics.currentNumberOfGraphicsPipelineStates.load(), temporary));
 						ImGui::Text("Compute pipeline states: %s", ::detail::stringFormatCommas(statistics.currentNumberOfComputePipelineStates.load(), temporary));
 						ImGui::Text("Sampler states: %s", ::detail::stringFormatCommas(statistics.currentNumberOfSamplerStates.load(), temporary));

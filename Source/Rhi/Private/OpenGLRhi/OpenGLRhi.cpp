@@ -548,15 +548,7 @@ namespace OpenGLRhi
 	*  @param[in] debugName
 	*    ASCII name for debugging purposes, must be valid (there's no internal null pointer test)
 	*/
-	#define RHI_RESOURCE_DEBUG_NAME_PARAMETER_NO_DEFAULT , const char* debugName
-	#define RHI_RESOURCE_DEBUG_NAME_MAYBE_UNUSED_PARAMETER , [[maybe_unused]] const char* debugName = ""
-	#define RHI_RESOURCE_DEBUG_NAME_MAYBE_UNUSED_PARAMETER_NO_DEFAULT , [[maybe_unused]] const char* debugName
-
-	/**
-	*  @brief
-	*    Pass resource name for debugging purposes, ignored when not using "RHI_DEBUG"
-	*/
-	#define RHI_RESOURCE_DEBUG_PASS_PARAMETER , debugName
+	#define RHI_RESOURCE_DEBUG_NAME_MAYBE_UNUSED_PARAMETER , [[maybe_unused]] const char debugName[] = ""
 #else
 	/*
 	*  @brief
@@ -571,15 +563,7 @@ namespace OpenGLRhi
 	*  @param[in] debugName
 	*    ASCII name for debugging purposes, must be valid (there's no internal null pointer test)
 	*/
-	#define RHI_RESOURCE_DEBUG_NAME_PARAMETER_NO_DEFAULT
 	#define RHI_RESOURCE_DEBUG_NAME_MAYBE_UNUSED_PARAMETER
-	#define RHI_RESOURCE_DEBUG_NAME_MAYBE_UNUSED_PARAMETER_NO_DEFAULT
-
-	/**
-	*  @brief
-	*    Pass resource name for debugging purposes, ignored when not using "RHI_DEBUG"
-	*/
-	#define RHI_RESOURCE_DEBUG_PASS_PARAMETER
 #endif
 
 
@@ -5172,8 +5156,8 @@ namespace OpenGLRhi
 		*  @param[in] samplerStates
 		*    If not a null pointer at least "numberOfResources" sampler state pointers, must be valid if there's at least one texture resource, the resource group will keep a reference to the sampler states
 		*/
-		ResourceGroup(Rhi::IRhi& rhi, const Rhi::RootSignature& rootSignature, uint32_t rootParameterIndex, uint32_t numberOfResources, Rhi::IResource** resources, Rhi::ISamplerState** samplerStates) :
-			IResourceGroup(rhi),
+		ResourceGroup(Rhi::IRhi& rhi, const Rhi::RootSignature& rootSignature, uint32_t rootParameterIndex, uint32_t numberOfResources, Rhi::IResource** resources, Rhi::ISamplerState** samplerStates RHI_RESOURCE_DEBUG_NAME_PARAMETER_NO_DEFAULT) :
+			IResourceGroup(rhi RHI_RESOURCE_DEBUG_PASS_PARAMETER),
 			mRootParameterIndex(rootParameterIndex),
 			mNumberOfResources(numberOfResources),
 			mResources(RHI_MALLOC_TYPED(rhi.getContext(), Rhi::IResource*, mNumberOfResources)),
@@ -5371,8 +5355,8 @@ namespace OpenGLRhi
 		*  @param[in] rootSignature
 		*    Root signature to use
 		*/
-		RootSignature(OpenGLRhi& openGLRhi, const Rhi::RootSignature& rootSignature) :
-			IRootSignature(openGLRhi),
+		RootSignature(OpenGLRhi& openGLRhi, const Rhi::RootSignature& rootSignature RHI_RESOURCE_DEBUG_NAME_PARAMETER_NO_DEFAULT) :
+			IRootSignature(openGLRhi RHI_RESOURCE_DEBUG_PASS_PARAMETER),
 			mRootSignature(rootSignature)
 		{
 			const Rhi::Context& context = openGLRhi.getContext();
@@ -5450,7 +5434,7 @@ namespace OpenGLRhi
 	//[ Public virtual Rhi::IRootSignature methods            ]
 	//[-------------------------------------------------------]
 	public:
-		[[nodiscard]] inline virtual Rhi::IResourceGroup* createResourceGroup(uint32_t rootParameterIndex, uint32_t numberOfResources, Rhi::IResource** resources, Rhi::ISamplerState** samplerStates = nullptr RHI_RESOURCE_DEBUG_NAME_MAYBE_UNUSED_PARAMETER) override
+		[[nodiscard]] inline virtual Rhi::IResourceGroup* createResourceGroup(uint32_t rootParameterIndex, uint32_t numberOfResources, Rhi::IResource** resources, Rhi::ISamplerState** samplerStates = nullptr RHI_RESOURCE_DEBUG_NAME_PARAMETER) override
 		{
 			Rhi::IRhi& rhi = getRhi();
 
@@ -5460,7 +5444,7 @@ namespace OpenGLRhi
 			RHI_ASSERT(rhi.getContext(), nullptr != resources, "The OpenGL resource pointers must be valid")
 
 			// Create resource group
-			return RHI_NEW(rhi.getContext(), ResourceGroup)(rhi, mRootSignature, rootParameterIndex, numberOfResources, resources, samplerStates);
+			return RHI_NEW(rhi.getContext(), ResourceGroup)(rhi, mRootSignature, rootParameterIndex, numberOfResources, resources, samplerStates RHI_RESOURCE_DEBUG_PASS_PARAMETER);
 		}
 
 
@@ -5554,8 +5538,8 @@ namespace OpenGLRhi
 		*  @param[in] openGLRhi
 		*    Owner OpenGL RHI instance
 		*/
-		inline explicit VertexBuffer(OpenGLRhi& openGLRhi) :
-			IVertexBuffer(static_cast<Rhi::IRhi&>(openGLRhi)),
+		inline explicit VertexBuffer(OpenGLRhi& openGLRhi RHI_RESOURCE_DEBUG_NAME_PARAMETER_NO_DEFAULT) :
+			IVertexBuffer(openGLRhi RHI_RESOURCE_DEBUG_PASS_PARAMETER),
 			mOpenGLArrayBuffer(0)
 		{}
 
@@ -5609,7 +5593,7 @@ namespace OpenGLRhi
 		*    Indication of the buffer usage
 		*/
 		VertexBufferBind(OpenGLRhi& openGLRhi, uint32_t numberOfBytes, const void* data, Rhi::BufferUsage bufferUsage RHI_RESOURCE_DEBUG_NAME_PARAMETER) :
-			VertexBuffer(openGLRhi)
+			VertexBuffer(openGLRhi RHI_RESOURCE_DEBUG_PASS_PARAMETER)
 		{
 			#ifdef RHI_OPENGL_STATE_CLEANUP
 				// Backup the currently bound OpenGL array buffer
@@ -5690,7 +5674,7 @@ namespace OpenGLRhi
 		*    Indication of the buffer usage
 		*/
 		VertexBufferDsa(OpenGLRhi& openGLRhi, uint32_t numberOfBytes, const void* data, Rhi::BufferUsage bufferUsage RHI_RESOURCE_DEBUG_NAME_PARAMETER) :
-			VertexBuffer(openGLRhi)
+			VertexBuffer(openGLRhi RHI_RESOURCE_DEBUG_PASS_PARAMETER)
 		{
 			if (openGLRhi.getExtensions().isGL_ARB_direct_state_access())
 			{
@@ -5828,8 +5812,8 @@ namespace OpenGLRhi
 		*  @param[in] indexBufferFormat
 		*    Index buffer data format
 		*/
-		inline IndexBuffer(OpenGLRhi& openGLRhi, Rhi::IndexBufferFormat::Enum indexBufferFormat) :
-			IIndexBuffer(openGLRhi),
+		inline IndexBuffer(OpenGLRhi& openGLRhi, Rhi::IndexBufferFormat::Enum indexBufferFormat RHI_RESOURCE_DEBUG_NAME_PARAMETER_NO_DEFAULT) :
+			IIndexBuffer(openGLRhi RHI_RESOURCE_DEBUG_PASS_PARAMETER),
 			mOpenGLElementArrayBuffer(0),
 			mOpenGLType(Mapping::getOpenGLType(indexBufferFormat)),
 			mIndexSizeInBytes(Rhi::IndexBufferFormat::getNumberOfBytesPerElement(indexBufferFormat))
@@ -5889,7 +5873,7 @@ namespace OpenGLRhi
 		*    Index buffer data format
 		*/
 		IndexBufferBind(OpenGLRhi& openGLRhi, uint32_t numberOfBytes, const void* data, Rhi::BufferUsage bufferUsage, Rhi::IndexBufferFormat::Enum indexBufferFormat RHI_RESOURCE_DEBUG_NAME_PARAMETER) :
-			IndexBuffer(openGLRhi, indexBufferFormat)
+			IndexBuffer(openGLRhi, indexBufferFormat RHI_RESOURCE_DEBUG_PASS_PARAMETER)
 		{
 			#ifdef RHI_OPENGL_STATE_CLEANUP
 				// Backup the currently bound OpenGL element array buffer
@@ -5972,7 +5956,7 @@ namespace OpenGLRhi
 		*    Index buffer data format
 		*/
 		IndexBufferDsa(OpenGLRhi& openGLRhi, uint32_t numberOfBytes, const void* data, Rhi::BufferUsage bufferUsage, Rhi::IndexBufferFormat::Enum indexBufferFormat RHI_RESOURCE_DEBUG_NAME_PARAMETER) :
-			IndexBuffer(openGLRhi, indexBufferFormat)
+			IndexBuffer(openGLRhi, indexBufferFormat RHI_RESOURCE_DEBUG_PASS_PARAMETER)
 		{
 			if (openGLRhi.getExtensions().isGL_ARB_direct_state_access())
 			{
@@ -6126,8 +6110,8 @@ namespace OpenGLRhi
 		*  @param[in] id
 		*    The unique compact vertex array ID
 		*/
-		inline VertexArray(OpenGLRhi& openGLRhi, IndexBuffer* indexBuffer, InternalResourceType::Enum internalResourceType, uint16_t id) :
-			IVertexArray(openGLRhi, id),
+		inline VertexArray(OpenGLRhi& openGLRhi, IndexBuffer* indexBuffer, InternalResourceType::Enum internalResourceType, uint16_t id RHI_RESOURCE_DEBUG_NAME_PARAMETER_NO_DEFAULT) :
+			IVertexArray(openGLRhi, id RHI_RESOURCE_DEBUG_PASS_PARAMETER),
 			mIndexBuffer(indexBuffer),
 			mInternalResourceType(internalResourceType)
 		{
@@ -6192,8 +6176,8 @@ namespace OpenGLRhi
 		*  @param[in] id
 		*    The unique compact vertex array ID
 		*/
-		VertexArrayNoVao(OpenGLRhi& openGLRhi, const Rhi::VertexAttributes& vertexAttributes, uint32_t numberOfVertexBuffers, const Rhi::VertexArrayVertexBuffer* vertexBuffers, IndexBuffer* indexBuffer, uint16_t id) :
-			VertexArray(openGLRhi, indexBuffer, InternalResourceType::NO_VAO, id),
+		VertexArrayNoVao(OpenGLRhi& openGLRhi, const Rhi::VertexAttributes& vertexAttributes, uint32_t numberOfVertexBuffers, const Rhi::VertexArrayVertexBuffer* vertexBuffers, IndexBuffer* indexBuffer, uint16_t id RHI_RESOURCE_DEBUG_NAME_PARAMETER_NO_DEFAULT) :
+			VertexArray(openGLRhi, indexBuffer, InternalResourceType::NO_VAO, id RHI_RESOURCE_DEBUG_PASS_PARAMETER),
 			mNumberOfAttributes(vertexAttributes.numberOfAttributes),
 			mAttributes(mNumberOfAttributes ? RHI_MALLOC_TYPED(openGLRhi.getContext(), Rhi::VertexAttribute, mNumberOfAttributes) : nullptr),
 			mNumberOfVertexBuffers(numberOfVertexBuffers),
@@ -6431,8 +6415,8 @@ namespace OpenGLRhi
 		*  @param[in] id
 		*    The unique compact vertex array ID
 		*/
-		VertexArrayVao(OpenGLRhi& openGLRhi, uint32_t numberOfVertexBuffers, const Rhi::VertexArrayVertexBuffer* vertexBuffers, IndexBuffer* indexBuffer, uint16_t id) :
-			VertexArray(openGLRhi, indexBuffer, InternalResourceType::VAO, id),
+		VertexArrayVao(OpenGLRhi& openGLRhi, uint32_t numberOfVertexBuffers, const Rhi::VertexArrayVertexBuffer* vertexBuffers, IndexBuffer* indexBuffer, uint16_t id RHI_RESOURCE_DEBUG_NAME_PARAMETER_NO_DEFAULT) :
+			VertexArray(openGLRhi, indexBuffer, InternalResourceType::VAO, id RHI_RESOURCE_DEBUG_PASS_PARAMETER),
 			mOpenGLVertexArray(0),
 			mNumberOfVertexBuffers(numberOfVertexBuffers),
 			mVertexBuffers(nullptr)
@@ -6510,7 +6494,7 @@ namespace OpenGLRhi
 		*    The unique compact vertex array ID
 		*/
 		VertexArrayVaoBind(OpenGLRhi& openGLRhi, const Rhi::VertexAttributes& vertexAttributes, uint32_t numberOfVertexBuffers, const Rhi::VertexArrayVertexBuffer* vertexBuffers, IndexBuffer* indexBuffer, uint16_t id RHI_RESOURCE_DEBUG_NAME_PARAMETER) :
-			VertexArrayVao(openGLRhi, numberOfVertexBuffers, vertexBuffers, indexBuffer, id)
+			VertexArrayVao(openGLRhi, numberOfVertexBuffers, vertexBuffers, indexBuffer, id RHI_RESOURCE_DEBUG_PASS_PARAMETER)
 		{
 			// Vertex buffer reference handling is done within the base class "VertexArrayVao"
 
@@ -6658,7 +6642,7 @@ namespace OpenGLRhi
 		*    The unique compact vertex array ID
 		*/
 		VertexArrayVaoDsa(OpenGLRhi& openGLRhi, const Rhi::VertexAttributes& vertexAttributes, uint32_t numberOfVertexBuffers, const Rhi::VertexArrayVertexBuffer* vertexBuffers, IndexBuffer* indexBuffer, uint16_t id RHI_RESOURCE_DEBUG_NAME_PARAMETER) :
-			VertexArrayVao(openGLRhi, numberOfVertexBuffers, vertexBuffers, indexBuffer, id)
+			VertexArrayVao(openGLRhi, numberOfVertexBuffers, vertexBuffers, indexBuffer, id RHI_RESOURCE_DEBUG_PASS_PARAMETER)
 		{
 			// Vertex buffer reference handling is done within the base class "VertexArrayVao"
 			const bool isArbDsa = openGLRhi.getExtensions().isGL_ARB_direct_state_access();
@@ -6918,8 +6902,8 @@ namespace OpenGLRhi
 		*  @param[in] textureFormat
 		*    Texture buffer data format
 		*/
-		inline TextureBuffer(OpenGLRhi& openGLRhi, Rhi::TextureFormat::Enum textureFormat) :
-			ITextureBuffer(static_cast<Rhi::IRhi&>(openGLRhi)),
+		inline TextureBuffer(OpenGLRhi& openGLRhi, Rhi::TextureFormat::Enum textureFormat RHI_RESOURCE_DEBUG_NAME_PARAMETER_NO_DEFAULT) :
+			ITextureBuffer(openGLRhi RHI_RESOURCE_DEBUG_PASS_PARAMETER),
 			mOpenGLTextureBuffer(0),
 			mOpenGLTexture(0),
 			mOpenGLInternalFormat(Mapping::getOpenGLInternalFormat(textureFormat))
@@ -6979,7 +6963,7 @@ namespace OpenGLRhi
 		*    Texture buffer data format
 		*/
 		TextureBufferBind(OpenGLRhi& openGLRhi, uint32_t numberOfBytes, const void* data, Rhi::BufferUsage bufferUsage, Rhi::TextureFormat::Enum textureFormat RHI_RESOURCE_DEBUG_NAME_PARAMETER) :
-			TextureBuffer(openGLRhi, textureFormat)
+			TextureBuffer(openGLRhi, textureFormat RHI_RESOURCE_DEBUG_PASS_PARAMETER)
 		{
 			{ // Buffer part
 				#ifdef RHI_OPENGL_STATE_CLEANUP
@@ -7087,7 +7071,7 @@ namespace OpenGLRhi
 		*    Texture buffer data format
 		*/
 		TextureBufferDsa(OpenGLRhi& openGLRhi, uint32_t numberOfBytes, const void* data, Rhi::BufferUsage bufferUsage, Rhi::TextureFormat::Enum textureFormat RHI_RESOURCE_DEBUG_NAME_PARAMETER) :
-			TextureBuffer(openGLRhi, textureFormat)
+			TextureBuffer(openGLRhi, textureFormat RHI_RESOURCE_DEBUG_PASS_PARAMETER)
 		{
 			if (openGLRhi.getExtensions().isGL_ARB_direct_state_access())
 			{
@@ -7234,8 +7218,8 @@ namespace OpenGLRhi
 		*  @param[in] openGLRhi
 		*    Owner OpenGL RHI instance
 		*/
-		inline explicit StructuredBuffer(OpenGLRhi& openGLRhi) :
-			IStructuredBuffer(static_cast<Rhi::IRhi&>(openGLRhi)),
+		inline explicit StructuredBuffer(OpenGLRhi& openGLRhi RHI_RESOURCE_DEBUG_NAME_PARAMETER_NO_DEFAULT) :
+			IStructuredBuffer(openGLRhi RHI_RESOURCE_DEBUG_PASS_PARAMETER),
 			mOpenGLStructuredBuffer(0)
 		{}
 
@@ -7289,7 +7273,7 @@ namespace OpenGLRhi
 		*    Indication of the buffer usage
 		*/
 		StructuredBufferBind(OpenGLRhi& openGLRhi, uint32_t numberOfBytes, const void* data, Rhi::BufferUsage bufferUsage RHI_RESOURCE_DEBUG_NAME_PARAMETER) :
-			StructuredBuffer(openGLRhi)
+			StructuredBuffer(openGLRhi RHI_RESOURCE_DEBUG_PASS_PARAMETER)
 		{
 			#ifdef RHI_OPENGL_STATE_CLEANUP
 				// Backup the currently bound OpenGL structured buffer
@@ -7370,7 +7354,7 @@ namespace OpenGLRhi
 		*    Indication of the buffer usage
 		*/
 		StructuredBufferDsa(OpenGLRhi& openGLRhi, uint32_t numberOfBytes, const void* data, Rhi::BufferUsage bufferUsage RHI_RESOURCE_DEBUG_NAME_PARAMETER) :
-			StructuredBuffer(openGLRhi)
+			StructuredBuffer(openGLRhi RHI_RESOURCE_DEBUG_PASS_PARAMETER)
 		{
 			if (openGLRhi.getExtensions().isGL_ARB_direct_state_access())
 			{
@@ -7493,8 +7477,8 @@ namespace OpenGLRhi
 		*  @param[in] openGLRhi
 		*    Owner OpenGL RHI instance
 		*/
-		inline explicit IndirectBuffer(OpenGLRhi& openGLRhi) :
-			IIndirectBuffer(static_cast<Rhi::IRhi&>(openGLRhi)),
+		inline explicit IndirectBuffer(OpenGLRhi& openGLRhi RHI_RESOURCE_DEBUG_NAME_PARAMETER_NO_DEFAULT) :
+			IIndirectBuffer(openGLRhi RHI_RESOURCE_DEBUG_PASS_PARAMETER),
 			mOpenGLIndirectBuffer(0)
 		{}
 
@@ -7548,7 +7532,7 @@ namespace OpenGLRhi
 		*    Indication of the buffer usage
 		*/
 		IndirectBufferBind(OpenGLRhi& openGLRhi, uint32_t numberOfBytes, const void* data, Rhi::BufferUsage bufferUsage RHI_RESOURCE_DEBUG_NAME_PARAMETER) :
-			IndirectBuffer(openGLRhi)
+			IndirectBuffer(openGLRhi RHI_RESOURCE_DEBUG_PASS_PARAMETER)
 		{
 			#ifdef RHI_OPENGL_STATE_CLEANUP
 				// Backup the currently bound OpenGL indirect buffer
@@ -7629,7 +7613,7 @@ namespace OpenGLRhi
 		*    Indication of the buffer usage
 		*/
 		IndirectBufferDsa(OpenGLRhi& openGLRhi, uint32_t numberOfBytes, const void* data, Rhi::BufferUsage bufferUsage RHI_RESOURCE_DEBUG_NAME_PARAMETER) :
-			IndirectBuffer(openGLRhi)
+			IndirectBuffer(openGLRhi RHI_RESOURCE_DEBUG_PASS_PARAMETER)
 		{
 			if (openGLRhi.getExtensions().isGL_ARB_direct_state_access())
 			{
@@ -7741,8 +7725,8 @@ namespace OpenGLRhi
 		*  @param[in] openGLRhi
 		*    Owner OpenGL RHI instance
 		*/
-		inline explicit UniformBuffer(OpenGLRhi& openGLRhi) :
-			IUniformBuffer(static_cast<Rhi::IRhi&>(openGLRhi)),
+		inline explicit UniformBuffer(OpenGLRhi& openGLRhi RHI_RESOURCE_DEBUG_NAME_PARAMETER_NO_DEFAULT) :
+			IUniformBuffer(openGLRhi RHI_RESOURCE_DEBUG_PASS_PARAMETER),
 			mOpenGLUniformBuffer(0)
 		{}
 
@@ -7796,7 +7780,7 @@ namespace OpenGLRhi
 		*    Indication of the buffer usage
 		*/
 		UniformBufferBind(OpenGLRhi& openGLRhi, uint32_t numberOfBytes, const void* data, Rhi::BufferUsage bufferUsage RHI_RESOURCE_DEBUG_NAME_PARAMETER) :
-			UniformBuffer(openGLRhi)
+			UniformBuffer(openGLRhi RHI_RESOURCE_DEBUG_PASS_PARAMETER)
 		{
 			// TODO(co) Review OpenGL uniform buffer alignment topic
 
@@ -7879,7 +7863,7 @@ namespace OpenGLRhi
 		*    Indication of the buffer usage
 		*/
 		UniformBufferDsa(OpenGLRhi& openGLRhi, uint32_t numberOfBytes, const void* data, Rhi::BufferUsage bufferUsage RHI_RESOURCE_DEBUG_NAME_PARAMETER) :
-			UniformBuffer(openGLRhi)
+			UniformBuffer(openGLRhi RHI_RESOURCE_DEBUG_PASS_PARAMETER)
 		{
 			// TODO(co) Review OpenGL uniform buffer alignment topic
 
@@ -8062,7 +8046,7 @@ namespace OpenGLRhi
 				else
 				{
 					// Traditional version
-					return RHI_NEW(openGLRhi.getContext(), VertexArrayNoVao)(openGLRhi, vertexAttributes, numberOfVertexBuffers, vertexBuffers, static_cast<IndexBuffer*>(indexBuffer), id);
+					return RHI_NEW(openGLRhi.getContext(), VertexArrayNoVao)(openGLRhi, vertexAttributes, numberOfVertexBuffers, vertexBuffers, static_cast<IndexBuffer*>(indexBuffer), id RHI_RESOURCE_DEBUG_PASS_PARAMETER);
 				}
 			}
 
@@ -8321,8 +8305,8 @@ namespace OpenGLRhi
 		*  @param[in] textureFormat
 		*    Texture format
 		*/
-		inline Texture1D(OpenGLRhi& openGLRhi, uint32_t width, Rhi::TextureFormat::Enum textureFormat) :
-			ITexture1D(static_cast<Rhi::IRhi&>(openGLRhi), width),
+		inline Texture1D(OpenGLRhi& openGLRhi, uint32_t width, Rhi::TextureFormat::Enum textureFormat RHI_RESOURCE_DEBUG_NAME_PARAMETER_NO_DEFAULT) :
+			ITexture1D(openGLRhi, width RHI_RESOURCE_DEBUG_PASS_PARAMETER),
 			mOpenGLTexture(0),
 			mOpenGLInternalFormat(Mapping::getOpenGLInternalFormat(textureFormat))
 		{}
@@ -8380,7 +8364,7 @@ namespace OpenGLRhi
 		*    Texture flags, see "Rhi::TextureFlag::Enum"
 		*/
 		Texture1DBind(OpenGLRhi& openGLRhi, uint32_t width, Rhi::TextureFormat::Enum textureFormat, const void* data, uint32_t textureFlags RHI_RESOURCE_DEBUG_NAME_PARAMETER) :
-			Texture1D(openGLRhi, width, textureFormat)
+			Texture1D(openGLRhi, width, textureFormat RHI_RESOURCE_DEBUG_PASS_PARAMETER)
 		{
 			// Sanity checks
 			RHI_ASSERT(openGLRhi.getContext(), 0 == (textureFlags & Rhi::TextureFlag::DATA_CONTAINS_MIPMAPS) || nullptr != data, "Invalid OpenGL texture parameters")
@@ -8544,7 +8528,7 @@ namespace OpenGLRhi
 		*    Texture flags, see "Rhi::TextureFlag::Enum"
 		*/
 		Texture1DDsa(OpenGLRhi& openGLRhi, uint32_t width, Rhi::TextureFormat::Enum textureFormat, const void* data, uint32_t textureFlags RHI_RESOURCE_DEBUG_NAME_PARAMETER) :
-			Texture1D(openGLRhi, width, textureFormat)
+			Texture1D(openGLRhi, width, textureFormat RHI_RESOURCE_DEBUG_PASS_PARAMETER)
 		{
 			// Sanity checks
 			RHI_ASSERT(openGLRhi.getContext(), 0 == (textureFlags & Rhi::TextureFlag::DATA_CONTAINS_MIPMAPS) || nullptr != data, "Invalid OpenGL texture parameters")
@@ -8816,8 +8800,8 @@ namespace OpenGLRhi
 		*  @param[in] textureFormat
 		*    Texture format
 		*/
-		inline Texture1DArray(OpenGLRhi& openGLRhi, uint32_t width, uint32_t numberOfSlices, Rhi::TextureFormat::Enum textureFormat) :
-			ITexture1DArray(static_cast<Rhi::IRhi&>(openGLRhi), width, numberOfSlices),
+		inline Texture1DArray(OpenGLRhi& openGLRhi, uint32_t width, uint32_t numberOfSlices, Rhi::TextureFormat::Enum textureFormat RHI_RESOURCE_DEBUG_NAME_PARAMETER_NO_DEFAULT) :
+			ITexture1DArray(openGLRhi, width, numberOfSlices RHI_RESOURCE_DEBUG_PASS_PARAMETER),
 			mOpenGLTexture(0),
 			mOpenGLInternalFormat(Mapping::getOpenGLInternalFormat(textureFormat))
 		{}
@@ -8877,7 +8861,7 @@ namespace OpenGLRhi
 		*    Texture flags, see "Rhi::TextureFlag::Enum"
 		*/
 		Texture1DArrayBind(OpenGLRhi& openGLRhi, uint32_t width, uint32_t numberOfSlices, Rhi::TextureFormat::Enum textureFormat, const void* data, uint32_t textureFlags RHI_RESOURCE_DEBUG_NAME_PARAMETER) :
-			Texture1DArray(openGLRhi, width, numberOfSlices, textureFormat)
+			Texture1DArray(openGLRhi, width, numberOfSlices, textureFormat RHI_RESOURCE_DEBUG_PASS_PARAMETER)
 		{
 			#ifdef RHI_OPENGL_STATE_CLEANUP
 				// Backup the currently set alignment
@@ -8991,7 +8975,7 @@ namespace OpenGLRhi
 		*    Texture flags, see "Rhi::TextureFlag::Enum"
 		*/
 		Texture1DArrayDsa(OpenGLRhi& openGLRhi, uint32_t width, uint32_t numberOfSlices, Rhi::TextureFormat::Enum textureFormat, const void* data, uint32_t textureFlags RHI_RESOURCE_DEBUG_NAME_PARAMETER) :
-			Texture1DArray(openGLRhi, width, numberOfSlices, textureFormat)
+			Texture1DArray(openGLRhi, width, numberOfSlices, textureFormat RHI_RESOURCE_DEBUG_PASS_PARAMETER)
 		{
 			#ifdef RHI_OPENGL_STATE_CLEANUP
 				// Backup the currently set alignment
@@ -9315,8 +9299,8 @@ namespace OpenGLRhi
 		*  @param[in] numberOfMultisamples
 		*    The number of multisamples per pixel (valid values: 1, 2, 4, 8)
 		*/
-		inline Texture2D(OpenGLRhi& openGLRhi, uint32_t width, uint32_t height, Rhi::TextureFormat::Enum textureFormat, uint8_t numberOfMultisamples) :
-			ITexture2D(static_cast<Rhi::IRhi&>(openGLRhi), width, height),
+		inline Texture2D(OpenGLRhi& openGLRhi, uint32_t width, uint32_t height, Rhi::TextureFormat::Enum textureFormat, uint8_t numberOfMultisamples RHI_RESOURCE_DEBUG_NAME_PARAMETER_NO_DEFAULT) :
+			ITexture2D(openGLRhi, width, height RHI_RESOURCE_DEBUG_PASS_PARAMETER),
 			mNumberOfMultisamples(numberOfMultisamples),
 			mOpenGLTexture(0),
 			mOpenGLInternalFormat(Mapping::getOpenGLInternalFormat(textureFormat))
@@ -9380,7 +9364,7 @@ namespace OpenGLRhi
 		*    The number of multisamples per pixel (valid values: 1, 2, 4, 8)
 		*/
 		Texture2DBind(OpenGLRhi& openGLRhi, uint32_t width, uint32_t height, Rhi::TextureFormat::Enum textureFormat, const void* data, uint32_t textureFlags, uint8_t numberOfMultisamples RHI_RESOURCE_DEBUG_NAME_PARAMETER) :
-			Texture2D(openGLRhi, width, height, textureFormat, numberOfMultisamples)
+			Texture2D(openGLRhi, width, height, textureFormat, numberOfMultisamples RHI_RESOURCE_DEBUG_PASS_PARAMETER)
 		{
 			// Sanity checks
 			RHI_ASSERT(openGLRhi.getContext(), numberOfMultisamples == 1 || numberOfMultisamples == 2 || numberOfMultisamples == 4 || numberOfMultisamples == 8, "Invalid OpenGL texture parameters")
@@ -9610,7 +9594,7 @@ namespace OpenGLRhi
 		*    The number of multisamples per pixel (valid values: 1, 2, 4, 8)
 		*/
 		Texture2DDsa(OpenGLRhi& openGLRhi, uint32_t width, uint32_t height, Rhi::TextureFormat::Enum textureFormat, const void* data, uint32_t textureFlags, uint8_t numberOfMultisamples RHI_RESOURCE_DEBUG_NAME_PARAMETER) :
-			Texture2D(openGLRhi, width, height, textureFormat, numberOfMultisamples)
+			Texture2D(openGLRhi, width, height, textureFormat, numberOfMultisamples RHI_RESOURCE_DEBUG_PASS_PARAMETER)
 		{
 			// Sanity checks
 			RHI_ASSERT(openGLRhi.getContext(), numberOfMultisamples == 1 || numberOfMultisamples == 2 || numberOfMultisamples == 4 || numberOfMultisamples == 8, "Invalid OpenGL texture parameters")
@@ -9957,8 +9941,8 @@ namespace OpenGLRhi
 		*  @param[in] textureFormat
 		*    Texture format
 		*/
-		inline Texture2DArray(OpenGLRhi& openGLRhi, uint32_t width, uint32_t height, uint32_t numberOfSlices, Rhi::TextureFormat::Enum textureFormat) :
-			ITexture2DArray(static_cast<Rhi::IRhi&>(openGLRhi), width, height, numberOfSlices),
+		inline Texture2DArray(OpenGLRhi& openGLRhi, uint32_t width, uint32_t height, uint32_t numberOfSlices, Rhi::TextureFormat::Enum textureFormat RHI_RESOURCE_DEBUG_NAME_PARAMETER_NO_DEFAULT) :
+			ITexture2DArray(openGLRhi, width, height, numberOfSlices RHI_RESOURCE_DEBUG_PASS_PARAMETER),
 			mNumberOfMultisamples(1),	// TODO(co) Currently no MSAA support for 2D array textures
 			mOpenGLTexture(0),
 			mOpenGLInternalFormat(Mapping::getOpenGLInternalFormat(textureFormat))
@@ -10022,7 +10006,7 @@ namespace OpenGLRhi
 		*    Texture flags, see "Rhi::TextureFlag::Enum"
 		*/
 		Texture2DArrayBind(OpenGLRhi& openGLRhi, uint32_t width, uint32_t height, uint32_t numberOfSlices, Rhi::TextureFormat::Enum textureFormat, const void* data, uint32_t textureFlags RHI_RESOURCE_DEBUG_NAME_PARAMETER) :
-			Texture2DArray(openGLRhi, width, height, numberOfSlices, textureFormat)
+			Texture2DArray(openGLRhi, width, height, numberOfSlices, textureFormat RHI_RESOURCE_DEBUG_PASS_PARAMETER)
 		{
 			#ifdef RHI_OPENGL_STATE_CLEANUP
 				// Backup the currently set alignment
@@ -10138,7 +10122,7 @@ namespace OpenGLRhi
 		*    Texture flags, see "Rhi::TextureFlag::Enum"
 		*/
 		Texture2DArrayDsa(OpenGLRhi& openGLRhi, uint32_t width, uint32_t height, uint32_t numberOfSlices, Rhi::TextureFormat::Enum textureFormat, const void* data, uint32_t textureFlags RHI_RESOURCE_DEBUG_NAME_PARAMETER) :
-			Texture2DArray(openGLRhi, width, height, numberOfSlices, textureFormat)
+			Texture2DArray(openGLRhi, width, height, numberOfSlices, textureFormat RHI_RESOURCE_DEBUG_PASS_PARAMETER)
 		{
 			#ifdef RHI_OPENGL_STATE_CLEANUP
 				// Backup the currently set alignment
@@ -10461,8 +10445,8 @@ namespace OpenGLRhi
 		*  @param[in] textureFormat
 		*    Texture format
 		*/
-		inline Texture3D(OpenGLRhi& openGLRhi, uint32_t width, uint32_t height, uint32_t depth, Rhi::TextureFormat::Enum textureFormat) :
-			ITexture3D(static_cast<Rhi::IRhi&>(openGLRhi), width, height, depth),
+		inline Texture3D(OpenGLRhi& openGLRhi, uint32_t width, uint32_t height, uint32_t depth, Rhi::TextureFormat::Enum textureFormat RHI_RESOURCE_DEBUG_NAME_PARAMETER_NO_DEFAULT) :
+			ITexture3D(openGLRhi, width, height, depth RHI_RESOURCE_DEBUG_PASS_PARAMETER),
 			mOpenGLTexture(0),
 			mTextureFormat(textureFormat),
 			mOpenGLInternalFormat(Mapping::getOpenGLInternalFormat(textureFormat)),
@@ -10530,7 +10514,7 @@ namespace OpenGLRhi
 		*    Indication of the texture usage
 		*/
 		Texture3DBind(OpenGLRhi& openGLRhi, uint32_t width, uint32_t height, uint32_t depth, Rhi::TextureFormat::Enum textureFormat, const void* data, uint32_t textureFlags, Rhi::TextureUsage textureUsage RHI_RESOURCE_DEBUG_NAME_PARAMETER) :
-			Texture3D(openGLRhi, width, height, depth, textureFormat)
+			Texture3D(openGLRhi, width, height, depth, textureFormat RHI_RESOURCE_DEBUG_PASS_PARAMETER)
 		{
 			// Sanity checks
 			RHI_ASSERT(openGLRhi.getContext(), 0 == (textureFlags & Rhi::TextureFlag::DATA_CONTAINS_MIPMAPS) || nullptr != data, "Invalid OpenGL texture parameters")
@@ -10741,7 +10725,7 @@ namespace OpenGLRhi
 		*    Indication of the texture usage
 		*/
 		Texture3DDsa(OpenGLRhi& openGLRhi, uint32_t width, uint32_t height, uint32_t depth, Rhi::TextureFormat::Enum textureFormat, const void* data, uint32_t textureFlags, Rhi::TextureUsage textureUsage RHI_RESOURCE_DEBUG_NAME_PARAMETER) :
-			Texture3D(openGLRhi, width, height, depth, textureFormat)
+			Texture3D(openGLRhi, width, height, depth, textureFormat RHI_RESOURCE_DEBUG_PASS_PARAMETER)
 		{
 			// Sanity checks
 			RHI_ASSERT(openGLRhi.getContext(), 0 == (textureFlags & Rhi::TextureFlag::DATA_CONTAINS_MIPMAPS) || nullptr != data, "Invalid OpenGL texture parameters")
@@ -11048,8 +11032,8 @@ namespace OpenGLRhi
 		*  @param[in] textureFormat
 		*    Texture format
 		*/
-		inline TextureCube(OpenGLRhi& openGLRhi, uint32_t width, uint32_t height, Rhi::TextureFormat::Enum textureFormat) :
-			ITextureCube(static_cast<Rhi::IRhi&>(openGLRhi), width, height),
+		inline TextureCube(OpenGLRhi& openGLRhi, uint32_t width, uint32_t height, Rhi::TextureFormat::Enum textureFormat RHI_RESOURCE_DEBUG_NAME_PARAMETER_NO_DEFAULT) :
+			ITextureCube(openGLRhi, width, height RHI_RESOURCE_DEBUG_PASS_PARAMETER),
 			mOpenGLTexture(0),
 			mOpenGLInternalFormat(Mapping::getOpenGLInternalFormat(textureFormat))
 		{}
@@ -11109,7 +11093,7 @@ namespace OpenGLRhi
 		*    Texture flags, see "Rhi::TextureFlag::Enum"
 		*/
 		TextureCubeBind(OpenGLRhi& openGLRhi, uint32_t width, uint32_t height, Rhi::TextureFormat::Enum textureFormat, const void* data, uint32_t textureFlags RHI_RESOURCE_DEBUG_NAME_PARAMETER) :
-			TextureCube(openGLRhi, width, height, textureFormat)
+			TextureCube(openGLRhi, width, height, textureFormat RHI_RESOURCE_DEBUG_PASS_PARAMETER)
 		{
 			// Sanity checks
 			RHI_ASSERT(openGLRhi.getContext(), 0 == (textureFlags & Rhi::TextureFlag::DATA_CONTAINS_MIPMAPS) || nullptr != data, "Invalid OpenGL texture parameters")
@@ -11309,7 +11293,7 @@ namespace OpenGLRhi
 		*    Texture flags, see "Rhi::TextureFlag::Enum"
 		*/
 		TextureCubeDsa(OpenGLRhi& openGLRhi, uint32_t width, uint32_t height, Rhi::TextureFormat::Enum textureFormat, const void* data, uint32_t textureFlags RHI_RESOURCE_DEBUG_NAME_PARAMETER) :
-			TextureCube(openGLRhi, width, height, textureFormat)
+			TextureCube(openGLRhi, width, height, textureFormat RHI_RESOURCE_DEBUG_PASS_PARAMETER)
 		{
 			// Sanity checks
 			RHI_ASSERT(openGLRhi.getContext(), 0 == (textureFlags & Rhi::TextureFlag::DATA_CONTAINS_MIPMAPS) || nullptr != data, "Invalid OpenGL texture parameters")
@@ -11807,8 +11791,8 @@ namespace OpenGLRhi
 		*  @param[in] openGLRhi
 		*    Owner OpenGL RHI instance
 		*/
-		inline explicit SamplerState(OpenGLRhi& openGLRhi) :
-			ISamplerState(openGLRhi)
+		inline explicit SamplerState(OpenGLRhi& openGLRhi RHI_RESOURCE_DEBUG_NAME_PARAMETER_NO_DEFAULT) :
+			ISamplerState(openGLRhi RHI_RESOURCE_DEBUG_PASS_PARAMETER)
 		{}
 
 
@@ -11849,8 +11833,8 @@ namespace OpenGLRhi
 		*  @param[in] samplerState
 		*    Sampler state to use
 		*/
-		SamplerStateBind(OpenGLRhi& openGLRhi, const Rhi::SamplerState& samplerState) :
-			SamplerState(openGLRhi),
+		SamplerStateBind(OpenGLRhi& openGLRhi, const Rhi::SamplerState& samplerState RHI_RESOURCE_DEBUG_NAME_PARAMETER_NO_DEFAULT) :
+			SamplerState(openGLRhi RHI_RESOURCE_DEBUG_PASS_PARAMETER),
 			mOpenGLMagFilterMode(Mapping::getOpenGLMagFilterMode(openGLRhi.getContext(), samplerState.filter)),
 			mOpenGLMinFilterMode(Mapping::getOpenGLMinFilterMode(openGLRhi.getContext(), samplerState.filter, samplerState.maxLod > 0.0f)),
 			mOpenGLTextureAddressModeS(Mapping::getOpenGLTextureAddressMode(samplerState.addressU)),
@@ -11983,8 +11967,8 @@ namespace OpenGLRhi
 		*  @param[in] samplerState
 		*    Sampler state to use
 		*/
-		inline SamplerStateDsa(OpenGLRhi& openGLRhi, const Rhi::SamplerState& samplerState) :
-			SamplerState(openGLRhi),
+		inline SamplerStateDsa(OpenGLRhi& openGLRhi, const Rhi::SamplerState& samplerState RHI_RESOURCE_DEBUG_NAME_PARAMETER_NO_DEFAULT) :
+			SamplerState(openGLRhi RHI_RESOURCE_DEBUG_PASS_PARAMETER),
 			mSamplerState(samplerState)
 		{
 			// Sanity check
@@ -12055,7 +12039,7 @@ namespace OpenGLRhi
 		*    Sampler state to use
 		*/
 		SamplerStateSo(OpenGLRhi& openGLRhi, const Rhi::SamplerState& samplerState RHI_RESOURCE_DEBUG_NAME_PARAMETER) :
-			SamplerState(openGLRhi),
+			SamplerState(openGLRhi RHI_RESOURCE_DEBUG_PASS_PARAMETER),
 			mOpenGLSampler(0)
 		{
 			// Sanity check
@@ -12550,8 +12534,8 @@ namespace OpenGLRhi
 		*  @param[in] numberOfMultisamples
 		*    The number of multisamples per pixel (valid values: 1, 2, 4, 8)
 		*/
-		RenderPass(Rhi::IRhi& rhi, uint32_t numberOfColorAttachments, const Rhi::TextureFormat::Enum* colorAttachmentTextureFormats, Rhi::TextureFormat::Enum depthStencilAttachmentTextureFormat, uint8_t numberOfMultisamples) :
-			IRenderPass(rhi),
+		RenderPass(Rhi::IRhi& rhi, uint32_t numberOfColorAttachments, const Rhi::TextureFormat::Enum* colorAttachmentTextureFormats, Rhi::TextureFormat::Enum depthStencilAttachmentTextureFormat, uint8_t numberOfMultisamples RHI_RESOURCE_DEBUG_NAME_PARAMETER_NO_DEFAULT) :
+			IRenderPass(rhi RHI_RESOURCE_DEBUG_PASS_PARAMETER),
 			mNumberOfColorAttachments(numberOfColorAttachments),
 			mDepthStencilAttachmentTextureFormat(depthStencilAttachmentTextureFormat),
 			mNumberOfMultisamples(numberOfMultisamples)
@@ -12679,8 +12663,8 @@ namespace OpenGLRhi
 		*  @param[in] numberOfQueries
 		*    Number of queries
 		*/
-		inline QueryPool(OpenGLRhi& openGLRhi, Rhi::QueryType queryType, uint32_t numberOfQueries) :
-			IQueryPool(openGLRhi),
+		inline QueryPool(OpenGLRhi& openGLRhi, Rhi::QueryType queryType, uint32_t numberOfQueries RHI_RESOURCE_DEBUG_NAME_PARAMETER_NO_DEFAULT) :
+			IQueryPool(openGLRhi RHI_RESOURCE_DEBUG_PASS_PARAMETER),
 			mQueryType(queryType),
 			mNumberOfQueries(numberOfQueries)
 		{}
@@ -12765,7 +12749,7 @@ namespace OpenGLRhi
 		*    Number of queries
 		*/
 		OcclusionTimestampQueryPool(OpenGLRhi& openGLRhi, Rhi::QueryType queryType, uint32_t numberOfQueries RHI_RESOURCE_DEBUG_NAME_PARAMETER) :
-			QueryPool(openGLRhi, queryType, numberOfQueries),
+			QueryPool(openGLRhi, queryType, numberOfQueries RHI_RESOURCE_DEBUG_PASS_PARAMETER),
 			mOpenGLQueries(RHI_MALLOC_TYPED(openGLRhi.getContext(), GLuint, numberOfQueries))
 		{
 			// If possible, use "glCreateQueries()" (OpenGL 4.5) in order to create the query instance at once
@@ -12907,7 +12891,7 @@ namespace OpenGLRhi
 		*    Number of queries
 		*/
 		PipelineStatisticsQueryPool(OpenGLRhi& openGLRhi, Rhi::QueryType queryType, uint32_t numberOfQueries RHI_RESOURCE_DEBUG_NAME_PARAMETER) :
-			QueryPool(openGLRhi, queryType, numberOfQueries),
+			QueryPool(openGLRhi, queryType, numberOfQueries RHI_RESOURCE_DEBUG_PASS_PARAMETER),
 			mVerticesSubmittedOpenGLQueries(RHI_MALLOC_TYPED(openGLRhi.getContext(), GLuint, numberOfQueries * 11)),
 			mPrimitivesSubmittedOpenGLQueries(mVerticesSubmittedOpenGLQueries + numberOfQueries),
 			mVertexShaderInvocationsOpenGLQueries(mPrimitivesSubmittedOpenGLQueries + numberOfQueries),
@@ -13126,8 +13110,8 @@ namespace OpenGLRhi
 		*  @param[in] useExternalContext
 		*    Indicates if an external RHI context is used; in this case the RHI itself has nothing to do with the creation/managing of an RHI context
 		*/
-		SwapChain(Rhi::IRenderPass& renderPass, Rhi::WindowHandle windowHandle, [[maybe_unused]] bool useExternalContext) :
-			ISwapChain(renderPass),
+		SwapChain(Rhi::IRenderPass& renderPass, Rhi::WindowHandle windowHandle, [[maybe_unused]] bool useExternalContext RHI_RESOURCE_DEBUG_NAME_PARAMETER_NO_DEFAULT) :
+			ISwapChain(renderPass RHI_RESOURCE_DEBUG_PASS_PARAMETER),
 			mNativeWindowHandle(windowHandle.nativeWindowHandle),
 			#ifdef _WIN32
 				mOpenGLContext(RHI_NEW(renderPass.getRhi().getContext(), OpenGLContextWindows)(static_cast<const RenderPass&>(renderPass).getDepthStencilAttachmentTextureFormat(), windowHandle.nativeWindowHandle, static_cast<const OpenGLContextWindows*>(&static_cast<OpenGLRhi&>(renderPass.getRhi()).getOpenGLContext()))),
@@ -13501,8 +13485,8 @@ namespace OpenGLRhi
 		*  @note
 		*    - The framebuffer keeps a reference to the provided texture instances
 		*/
-		Framebuffer(Rhi::IRenderPass& renderPass, const Rhi::FramebufferAttachment* colorFramebufferAttachments, const Rhi::FramebufferAttachment* depthStencilFramebufferAttachment) :
-			IFramebuffer(renderPass),
+		Framebuffer(Rhi::IRenderPass& renderPass, const Rhi::FramebufferAttachment* colorFramebufferAttachments, const Rhi::FramebufferAttachment* depthStencilFramebufferAttachment RHI_RESOURCE_DEBUG_NAME_PARAMETER_NO_DEFAULT) :
+			IFramebuffer(renderPass RHI_RESOURCE_DEBUG_PASS_PARAMETER),
 			mOpenGLFramebuffer(0),
 			mNumberOfColorTextures(static_cast<RenderPass&>(renderPass).getNumberOfColorAttachments()),
 			mColorTextures(nullptr),	// Set below
@@ -13725,7 +13709,7 @@ namespace OpenGLRhi
 		*    - The framebuffer keeps a reference to the provided texture instances
 		*/
 		FramebufferBind(Rhi::IRenderPass& renderPass, const Rhi::FramebufferAttachment* colorFramebufferAttachments, const Rhi::FramebufferAttachment* depthStencilFramebufferAttachment RHI_RESOURCE_DEBUG_NAME_PARAMETER) :
-			Framebuffer(renderPass, colorFramebufferAttachments, depthStencilFramebufferAttachment)
+			Framebuffer(renderPass, colorFramebufferAttachments, depthStencilFramebufferAttachment RHI_RESOURCE_DEBUG_PASS_PARAMETER)
 		{
 			// Texture reference handling is done within the base class "Framebuffer"
 			OpenGLRhi& openGLRhi = static_cast<OpenGLRhi&>(renderPass.getRhi());
@@ -14015,7 +13999,7 @@ namespace OpenGLRhi
 		*    - The framebuffer keeps a reference to the provided texture instances
 		*/
 		FramebufferDsa(Rhi::IRenderPass& renderPass, const Rhi::FramebufferAttachment* colorFramebufferAttachments, const Rhi::FramebufferAttachment* depthStencilFramebufferAttachment RHI_RESOURCE_DEBUG_NAME_PARAMETER) :
-			Framebuffer(renderPass, colorFramebufferAttachments, depthStencilFramebufferAttachment)
+			Framebuffer(renderPass, colorFramebufferAttachments, depthStencilFramebufferAttachment RHI_RESOURCE_DEBUG_PASS_PARAMETER)
 		{
 			// Texture reference handling is done within the base class "Framebuffer"
 			OpenGLRhi& openGLRhi = static_cast<OpenGLRhi&>(renderPass.getRhi());
@@ -14321,7 +14305,7 @@ namespace OpenGLRhi
 		*    Shader ASCII source code, must be valid
 		*/
 		inline VertexShaderMonolithic(OpenGLRhi& openGLRhi, const char* sourceCode RHI_RESOURCE_DEBUG_NAME_PARAMETER) :
-			IVertexShader(static_cast<Rhi::IRhi&>(openGLRhi)),
+			IVertexShader(openGLRhi RHI_RESOURCE_DEBUG_PASS_PARAMETER),
 			mOpenGLShader(::detail::loadShaderFromSourcecode(openGLRhi.getContext(), GL_VERTEX_SHADER_ARB, sourceCode))
 		{
 			// Assign a default name to the resource for debugging purposes
@@ -14423,7 +14407,7 @@ namespace OpenGLRhi
 		*    Shader ASCII source code, must be valid
 		*/
 		inline TessellationControlShaderMonolithic(OpenGLRhi& openGLRhi, const char* sourceCode RHI_RESOURCE_DEBUG_NAME_PARAMETER) :
-			ITessellationControlShader(static_cast<Rhi::IRhi&>(openGLRhi)),
+			ITessellationControlShader(openGLRhi RHI_RESOURCE_DEBUG_PASS_PARAMETER),
 			mOpenGLShader(::detail::loadShaderFromSourcecode(openGLRhi.getContext(), GL_TESS_CONTROL_SHADER, sourceCode))
 		{
 			// Assign a default name to the resource for debugging purposes
@@ -14525,7 +14509,7 @@ namespace OpenGLRhi
 		*    Shader ASCII source code, must be valid
 		*/
 		inline TessellationEvaluationShaderMonolithic(OpenGLRhi& openGLRhi, const char* sourceCode RHI_RESOURCE_DEBUG_NAME_PARAMETER) :
-			ITessellationEvaluationShader(static_cast<Rhi::IRhi&>(openGLRhi)),
+			ITessellationEvaluationShader(openGLRhi RHI_RESOURCE_DEBUG_PASS_PARAMETER),
 			mOpenGLShader(::detail::loadShaderFromSourcecode(openGLRhi.getContext(), GL_TESS_EVALUATION_SHADER, sourceCode))
 		{
 			// Assign a default name to the resource for debugging purposes
@@ -14633,7 +14617,7 @@ namespace OpenGLRhi
 		*    Number of output vertices
 		*/
 		inline GeometryShaderMonolithic(OpenGLRhi& openGLRhi, const char* sourceCode, Rhi::GsInputPrimitiveTopology gsInputPrimitiveTopology, Rhi::GsOutputPrimitiveTopology gsOutputPrimitiveTopology, uint32_t numberOfOutputVertices RHI_RESOURCE_DEBUG_NAME_PARAMETER) :
-			IGeometryShader(static_cast<Rhi::IRhi&>(openGLRhi)),
+			IGeometryShader(openGLRhi RHI_RESOURCE_DEBUG_PASS_PARAMETER),
 			mOpenGLShader(::detail::loadShaderFromSourcecode(openGLRhi.getContext(), GL_GEOMETRY_SHADER_ARB, sourceCode)),
 			mOpenGLGsInputPrimitiveTopology(static_cast<int>(gsInputPrimitiveTopology)),	// The "Rhi::GsInputPrimitiveTopology" values directly map to OpenGL constants, do not change them
 			mOpenGLGsOutputPrimitiveTopology(static_cast<int>(gsOutputPrimitiveTopology)),	// The "Rhi::GsOutputPrimitiveTopology" values directly map to OpenGL constants, do not change them
@@ -14777,7 +14761,7 @@ namespace OpenGLRhi
 		*    Shader ASCII source code, must be valid
 		*/
 		inline FragmentShaderMonolithic(OpenGLRhi& openGLRhi, const char* sourceCode RHI_RESOURCE_DEBUG_NAME_PARAMETER) :
-			IFragmentShader(static_cast<Rhi::IRhi&>(openGLRhi)),
+			IFragmentShader(openGLRhi RHI_RESOURCE_DEBUG_PASS_PARAMETER),
 			mOpenGLShader(::detail::loadShaderFromSourcecode(openGLRhi.getContext(), GL_FRAGMENT_SHADER_ARB, sourceCode))
 		{
 			// Assign a default name to the resource for debugging purposes
@@ -14879,7 +14863,7 @@ namespace OpenGLRhi
 		*    Shader ASCII source code, must be valid
 		*/
 		inline ComputeShaderMonolithic(OpenGLRhi& openGLRhi, const char* sourceCode RHI_RESOURCE_DEBUG_NAME_PARAMETER) :
-			IComputeShader(static_cast<Rhi::IRhi&>(openGLRhi)),
+			IComputeShader(openGLRhi RHI_RESOURCE_DEBUG_PASS_PARAMETER),
 			mOpenGLShader(::detail::loadShaderFromSourcecode(openGLRhi.getContext(), GL_COMPUTE_SHADER, sourceCode))
 		{
 			// Assign a default name to the resource for debugging purposes
@@ -14996,7 +14980,7 @@ namespace OpenGLRhi
 		*    - The graphics program keeps a reference to the provided shaders and releases it when no longer required
 		*/
 		GraphicsProgramMonolithic(OpenGLRhi& openGLRhi, const Rhi::IRootSignature& rootSignature, const Rhi::VertexAttributes& vertexAttributes, VertexShaderMonolithic* vertexShaderMonolithic, TessellationControlShaderMonolithic* tessellationControlShaderMonolithic, TessellationEvaluationShaderMonolithic* tessellationEvaluationShaderMonolithic, GeometryShaderMonolithic* geometryShaderMonolithic, FragmentShaderMonolithic* fragmentShaderMonolithic RHI_RESOURCE_DEBUG_NAME_PARAMETER) :
-			IGraphicsProgram(openGLRhi),
+			IGraphicsProgram(openGLRhi RHI_RESOURCE_DEBUG_PASS_PARAMETER),
 			mOpenGLProgram(glCreateProgram()),
 			mDrawIdUniformLocation(-1)
 		{
@@ -15627,8 +15611,8 @@ namespace OpenGLRhi
 		*  @param[in] id
 		*    The unique compact compute pipeline state ID
 		*/
-		inline explicit ComputePipelineState(OpenGLRhi& openGLRhi, uint16_t id) :
-			IComputePipelineState(openGLRhi, id)
+		inline explicit ComputePipelineState(OpenGLRhi& openGLRhi, uint16_t id RHI_RESOURCE_DEBUG_NAME_PARAMETER_NO_DEFAULT) :
+			IComputePipelineState(openGLRhi, id RHI_RESOURCE_DEBUG_PASS_PARAMETER)
 		{}
 
 		/**
@@ -15687,7 +15671,7 @@ namespace OpenGLRhi
 		*    - The compute pipeline state keeps a reference to the provided compute shader and releases it when no longer required
 		*/
 		ComputePipelineStateMonolithic(OpenGLRhi& openGLRhi, const Rhi::IRootSignature& rootSignature, ComputeShaderMonolithic& computeShaderMonolithic, uint16_t id RHI_RESOURCE_DEBUG_NAME_PARAMETER) :
-			ComputePipelineState(openGLRhi, id),
+			ComputePipelineState(openGLRhi, id RHI_RESOURCE_DEBUG_PASS_PARAMETER),
 			mOpenGLProgram(glCreateProgram())
 		{
 			// Attach the compute shader to the program
@@ -16145,7 +16129,7 @@ namespace OpenGLRhi
 		*    Shader bytecode
 		*/
 		inline VertexShaderSeparate(OpenGLRhi& openGLRhi, const Rhi::VertexAttributes& vertexAttributes, const Rhi::ShaderBytecode& shaderBytecode RHI_RESOURCE_DEBUG_NAME_PARAMETER) :
-			IVertexShader(static_cast<Rhi::IRhi&>(openGLRhi)),
+			IVertexShader(openGLRhi RHI_RESOURCE_DEBUG_PASS_PARAMETER),
 			mOpenGLShaderProgram(::detail::loadShaderProgramFromBytecode(openGLRhi.getContext(), vertexAttributes, GL_VERTEX_SHADER_ARB, shaderBytecode)),
 			mDrawIdUniformLocation(openGLRhi.getExtensions().isGL_ARB_base_instance() ? -1 : glGetUniformLocation(mOpenGLShaderProgram, "drawIdUniform"))
 		{
@@ -16171,7 +16155,7 @@ namespace OpenGLRhi
 		*    Shader ASCII source code, must be valid
 		*/
 		inline VertexShaderSeparate(OpenGLRhi& openGLRhi, const Rhi::VertexAttributes& vertexAttributes, const char* sourceCode, Rhi::ShaderBytecode* shaderBytecode RHI_RESOURCE_DEBUG_NAME_PARAMETER) :
-			IVertexShader(static_cast<Rhi::IRhi&>(openGLRhi)),
+			IVertexShader(openGLRhi RHI_RESOURCE_DEBUG_PASS_PARAMETER),
 			mOpenGLShaderProgram(::detail::loadShaderProgramFromSourcecode(openGLRhi.getContext(), vertexAttributes, GL_VERTEX_SHADER_ARB, sourceCode)),
 			mDrawIdUniformLocation(openGLRhi.getExtensions().isGL_ARB_base_instance() ? -1 : glGetUniformLocation(mOpenGLShaderProgram, "drawIdUniform"))
 		{
@@ -16293,7 +16277,7 @@ namespace OpenGLRhi
 		*    Shader bytecode
 		*/
 		inline TessellationControlShaderSeparate(OpenGLRhi& openGLRhi, const Rhi::ShaderBytecode& shaderBytecode RHI_RESOURCE_DEBUG_NAME_PARAMETER) :
-			ITessellationControlShader(static_cast<Rhi::IRhi&>(openGLRhi)),
+			ITessellationControlShader(openGLRhi RHI_RESOURCE_DEBUG_PASS_PARAMETER),
 			mOpenGLShaderProgram(::detail::loadShaderProgramFromBytecode(openGLRhi.getContext(), GL_TESS_CONTROL_SHADER, shaderBytecode))
 		{
 			// Assign a default name to the resource for debugging purposes
@@ -16316,7 +16300,7 @@ namespace OpenGLRhi
 		*    Shader ASCII source code, must be valid
 		*/
 		inline TessellationControlShaderSeparate(OpenGLRhi& openGLRhi, const char* sourceCode, Rhi::ShaderBytecode* shaderBytecode RHI_RESOURCE_DEBUG_NAME_PARAMETER) :
-			ITessellationControlShader(static_cast<Rhi::IRhi&>(openGLRhi)),
+			ITessellationControlShader(openGLRhi RHI_RESOURCE_DEBUG_PASS_PARAMETER),
 			mOpenGLShaderProgram(::detail::loadShaderProgramFromSourceCode(openGLRhi.getContext(), GL_TESS_CONTROL_SHADER, sourceCode))
 		{
 			// Return shader bytecode, if requested do to so
@@ -16424,7 +16408,7 @@ namespace OpenGLRhi
 		*    Shader bytecode
 		*/
 		inline TessellationEvaluationShaderSeparate(OpenGLRhi& openGLRhi, const Rhi::ShaderBytecode& shaderBytecode RHI_RESOURCE_DEBUG_NAME_PARAMETER) :
-			ITessellationEvaluationShader(static_cast<Rhi::IRhi&>(openGLRhi)),
+			ITessellationEvaluationShader(openGLRhi RHI_RESOURCE_DEBUG_PASS_PARAMETER),
 			mOpenGLShaderProgram(::detail::loadShaderProgramFromBytecode(openGLRhi.getContext(), GL_TESS_EVALUATION_SHADER, shaderBytecode))
 		{
 			// Assign a default name to the resource for debugging purposes
@@ -16447,7 +16431,7 @@ namespace OpenGLRhi
 		*    Shader ASCII source code, must be valid
 		*/
 		inline TessellationEvaluationShaderSeparate(OpenGLRhi& openGLRhi, const char* sourceCode, Rhi::ShaderBytecode* shaderBytecode RHI_RESOURCE_DEBUG_NAME_PARAMETER) :
-			ITessellationEvaluationShader(static_cast<Rhi::IRhi&>(openGLRhi)),
+			ITessellationEvaluationShader(openGLRhi RHI_RESOURCE_DEBUG_PASS_PARAMETER),
 			mOpenGLShaderProgram(::detail::loadShaderProgramFromSourceCode(openGLRhi.getContext(), GL_TESS_EVALUATION_SHADER, sourceCode))
 		{
 			// Return shader bytecode, if requested do to so
@@ -16561,7 +16545,7 @@ namespace OpenGLRhi
 		*    Number of output vertices
 		*/
 		inline GeometryShaderSeparate(OpenGLRhi& openGLRhi, const Rhi::ShaderBytecode& shaderBytecode, [[maybe_unused]] Rhi::GsInputPrimitiveTopology gsInputPrimitiveTopology, [[maybe_unused]] Rhi::GsOutputPrimitiveTopology gsOutputPrimitiveTopology, [[maybe_unused]] uint32_t numberOfOutputVertices RHI_RESOURCE_DEBUG_NAME_PARAMETER) :
-			IGeometryShader(static_cast<Rhi::IRhi&>(openGLRhi)),
+			IGeometryShader(openGLRhi RHI_RESOURCE_DEBUG_PASS_PARAMETER),
 			mOpenGLShaderProgram(::detail::loadShaderProgramFromBytecode(openGLRhi.getContext(), GL_GEOMETRY_SHADER_ARB, shaderBytecode))
 		{
 			// Assign a default name to the resource for debugging purposes
@@ -16590,7 +16574,7 @@ namespace OpenGLRhi
 		*    Number of output vertices
 		*/
 		inline GeometryShaderSeparate(OpenGLRhi& openGLRhi, const char* sourceCode, Rhi::GsInputPrimitiveTopology gsInputPrimitiveTopology, Rhi::GsOutputPrimitiveTopology gsOutputPrimitiveTopology, uint32_t numberOfOutputVertices, Rhi::ShaderBytecode* shaderBytecode RHI_RESOURCE_DEBUG_NAME_PARAMETER) :
-			IGeometryShader(static_cast<Rhi::IRhi&>(openGLRhi)),
+			IGeometryShader(openGLRhi RHI_RESOURCE_DEBUG_PASS_PARAMETER),
 			mOpenGLShaderProgram(::detail::loadShaderProgramFromSourceCode(openGLRhi.getContext(), GL_GEOMETRY_SHADER_ARB, sourceCode))
 		{
 			// In modern GLSL, "geometry shader input primitive topology" & "geometry shader output primitive topology" & "number of output vertices" can be directly set within GLSL by writing e.g.
@@ -16706,7 +16690,7 @@ namespace OpenGLRhi
 		*    Shader bytecode
 		*/
 		inline FragmentShaderSeparate(OpenGLRhi& openGLRhi, const Rhi::ShaderBytecode& shaderBytecode RHI_RESOURCE_DEBUG_NAME_PARAMETER) :
-			IFragmentShader(static_cast<Rhi::IRhi&>(openGLRhi)),
+			IFragmentShader(openGLRhi RHI_RESOURCE_DEBUG_PASS_PARAMETER),
 			mOpenGLShaderProgram(::detail::loadShaderProgramFromBytecode(openGLRhi.getContext(), GL_FRAGMENT_SHADER_ARB, shaderBytecode))
 		{
 			// Assign a default name to the resource for debugging purposes
@@ -16729,7 +16713,7 @@ namespace OpenGLRhi
 		*    Shader ASCII source code, must be valid
 		*/
 		inline FragmentShaderSeparate(OpenGLRhi& openGLRhi, const char* sourceCode, Rhi::ShaderBytecode* shaderBytecode RHI_RESOURCE_DEBUG_NAME_PARAMETER) :
-			IFragmentShader(static_cast<Rhi::IRhi&>(openGLRhi)),
+			IFragmentShader(openGLRhi RHI_RESOURCE_DEBUG_PASS_PARAMETER),
 			mOpenGLShaderProgram(::detail::loadShaderProgramFromSourceCode(openGLRhi.getContext(), GL_FRAGMENT_SHADER_ARB, sourceCode))
 		{
 			// Return shader bytecode, if requested do to so
@@ -16837,7 +16821,7 @@ namespace OpenGLRhi
 		*    Shader bytecode
 		*/
 		inline ComputeShaderSeparate(OpenGLRhi& openGLRhi, const Rhi::ShaderBytecode& shaderBytecode RHI_RESOURCE_DEBUG_NAME_PARAMETER) :
-			IComputeShader(static_cast<Rhi::IRhi&>(openGLRhi)),
+			IComputeShader(openGLRhi RHI_RESOURCE_DEBUG_PASS_PARAMETER),
 			mOpenGLShaderProgram(::detail::loadShaderProgramFromBytecode(openGLRhi.getContext(), GL_COMPUTE_SHADER, shaderBytecode))
 		{
 			// Assign a default name to the resource for debugging purposes
@@ -16860,7 +16844,7 @@ namespace OpenGLRhi
 		*    Shader ASCII source code, must be valid
 		*/
 		inline ComputeShaderSeparate(OpenGLRhi& openGLRhi, const char* sourceCode, Rhi::ShaderBytecode* shaderBytecode RHI_RESOURCE_DEBUG_NAME_PARAMETER) :
-			IComputeShader(static_cast<Rhi::IRhi&>(openGLRhi)),
+			IComputeShader(openGLRhi RHI_RESOURCE_DEBUG_PASS_PARAMETER),
 			mOpenGLShaderProgram(::detail::loadShaderProgramFromSourceCode(openGLRhi.getContext(), GL_COMPUTE_SHADER, sourceCode))
 		{
 			// Return shader bytecode, if requested do to so
@@ -16981,7 +16965,7 @@ namespace OpenGLRhi
 		*    - The graphics program keeps a reference to the provided shaders and releases it when no longer required
 		*/
 		GraphicsProgramSeparate(OpenGLRhi& openGLRhi, const Rhi::IRootSignature& rootSignature, VertexShaderSeparate* vertexShaderSeparate, TessellationControlShaderSeparate* tessellationControlShaderSeparate, TessellationEvaluationShaderSeparate* tessellationEvaluationShaderSeparate, GeometryShaderSeparate* geometryShaderSeparate, FragmentShaderSeparate* fragmentShaderSeparate RHI_RESOURCE_DEBUG_NAME_PARAMETER) :
-			IGraphicsProgram(openGLRhi),
+			IGraphicsProgram(openGLRhi RHI_RESOURCE_DEBUG_PASS_PARAMETER),
 			mOpenGLProgramPipeline(0),
 			mVertexShaderSeparate(vertexShaderSeparate),
 			mTessellationControlShaderSeparate(tessellationControlShaderSeparate),
@@ -17607,7 +17591,7 @@ namespace OpenGLRhi
 		*    - The compute pipeline state keeps a reference to the provided compute shader and releases it when no longer required
 		*/
 		ComputePipelineStateSeparate(OpenGLRhi& openGLRhi, const Rhi::IRootSignature& rootSignature, ComputeShaderSeparate& computeShaderSeparate, uint16_t id RHI_RESOURCE_DEBUG_NAME_PARAMETER) :
-			ComputePipelineState(openGLRhi, id),
+			ComputePipelineState(openGLRhi, id RHI_RESOURCE_DEBUG_PASS_PARAMETER),
 			mOpenGLProgramPipeline(0),
 			mComputeShaderSeparate(computeShaderSeparate)
 		{
@@ -18237,8 +18221,8 @@ namespace OpenGLRhi
 		*  @param[in] id
 		*    The unique compact graphics pipeline state ID
 		*/
-		GraphicsPipelineState(OpenGLRhi& openGLRhi, const Rhi::GraphicsPipelineState& graphicsPipelineState, uint16_t id) :
-			IGraphicsPipelineState(openGLRhi, id),
+		GraphicsPipelineState(OpenGLRhi& openGLRhi, const Rhi::GraphicsPipelineState& graphicsPipelineState, uint16_t id RHI_RESOURCE_DEBUG_NAME_PARAMETER_NO_DEFAULT) :
+			IGraphicsPipelineState(openGLRhi, id RHI_RESOURCE_DEBUG_PASS_PARAMETER),
 			mOpenGLPrimitiveTopology(0xFFFF),	// Unknown default setting
 			mNumberOfVerticesPerPatch(0),
 			mGraphicsProgram(graphicsPipelineState.graphicsProgram),
@@ -18845,7 +18829,7 @@ namespace OpenGLRhi
 		{
 			const Rhi::handle nativeWindowHandle = mContext.getNativeWindowHandle();
 			const Rhi::TextureFormat::Enum textureFormat = Rhi::TextureFormat::Enum::R8G8B8A8;
-			const RenderPass renderPass(*this, 1, &textureFormat, Rhi::TextureFormat::Enum::UNKNOWN, 1);
+			const RenderPass renderPass(*this, 1, &textureFormat, Rhi::TextureFormat::Enum::UNKNOWN, 1 RHI_RESOURCE_DEBUG_NAME("OpenGL Unknown"));
 			#ifdef _WIN32
 			{
 				// TODO(co) Add external OpenGL context support
@@ -20196,9 +20180,9 @@ namespace OpenGLRhi
 	//[-------------------------------------------------------]
 	//[ Resource creation                                     ]
 	//[-------------------------------------------------------]
-	Rhi::IRenderPass* OpenGLRhi::createRenderPass(uint32_t numberOfColorAttachments, const Rhi::TextureFormat::Enum* colorAttachmentTextureFormats, Rhi::TextureFormat::Enum depthStencilAttachmentTextureFormat, uint8_t numberOfMultisamples RHI_RESOURCE_DEBUG_NAME_MAYBE_UNUSED_PARAMETER_NO_DEFAULT)
+	Rhi::IRenderPass* OpenGLRhi::createRenderPass(uint32_t numberOfColorAttachments, const Rhi::TextureFormat::Enum* colorAttachmentTextureFormats, Rhi::TextureFormat::Enum depthStencilAttachmentTextureFormat, uint8_t numberOfMultisamples RHI_RESOURCE_DEBUG_NAME_PARAMETER_NO_DEFAULT)
 	{
-		return RHI_NEW(mContext, RenderPass)(*this, numberOfColorAttachments, colorAttachmentTextureFormats, depthStencilAttachmentTextureFormat, numberOfMultisamples);
+		return RHI_NEW(mContext, RenderPass)(*this, numberOfColorAttachments, colorAttachmentTextureFormats, depthStencilAttachmentTextureFormat, numberOfMultisamples RHI_RESOURCE_DEBUG_PASS_PARAMETER);
 	}
 
 	Rhi::IQueryPool* OpenGLRhi::createQueryPool(Rhi::QueryType queryType, uint32_t numberOfQueries RHI_RESOURCE_DEBUG_NAME_PARAMETER_NO_DEFAULT)
@@ -20233,14 +20217,14 @@ namespace OpenGLRhi
 		return nullptr;
 	}
 
-	Rhi::ISwapChain* OpenGLRhi::createSwapChain(Rhi::IRenderPass& renderPass, Rhi::WindowHandle windowHandle, bool useExternalContext RHI_RESOURCE_DEBUG_NAME_MAYBE_UNUSED_PARAMETER_NO_DEFAULT)
+	Rhi::ISwapChain* OpenGLRhi::createSwapChain(Rhi::IRenderPass& renderPass, Rhi::WindowHandle windowHandle, bool useExternalContext RHI_RESOURCE_DEBUG_NAME_PARAMETER_NO_DEFAULT)
 	{
 		// Sanity checks
 		RHI_MATCH_CHECK(*this, renderPass)
 		RHI_ASSERT(mContext, NULL_HANDLE != windowHandle.nativeWindowHandle || nullptr != windowHandle.renderWindow, "OpenGL: The provided native window handle or render window must not be a null handle / null pointer")
 
 		// Create the swap chain
-		return RHI_NEW(mContext, SwapChain)(renderPass, windowHandle, useExternalContext);
+		return RHI_NEW(mContext, SwapChain)(renderPass, windowHandle, useExternalContext RHI_RESOURCE_DEBUG_PASS_PARAMETER);
 	}
 
 	Rhi::IFramebuffer* OpenGLRhi::createFramebuffer(Rhi::IRenderPass& renderPass, const Rhi::FramebufferAttachment* colorFramebufferAttachments, const Rhi::FramebufferAttachment* depthStencilFramebufferAttachment RHI_RESOURCE_DEBUG_NAME_PARAMETER_NO_DEFAULT)
@@ -20282,12 +20266,12 @@ namespace OpenGLRhi
 		return RHI_NEW(mContext, TextureManager)(*this);
 	}
 
-	Rhi::IRootSignature* OpenGLRhi::createRootSignature(const Rhi::RootSignature& rootSignature RHI_RESOURCE_DEBUG_NAME_MAYBE_UNUSED_PARAMETER_NO_DEFAULT)
+	Rhi::IRootSignature* OpenGLRhi::createRootSignature(const Rhi::RootSignature& rootSignature RHI_RESOURCE_DEBUG_NAME_PARAMETER_NO_DEFAULT)
 	{
-		return RHI_NEW(mContext, RootSignature)(*this, rootSignature);
+		return RHI_NEW(mContext, RootSignature)(*this, rootSignature RHI_RESOURCE_DEBUG_PASS_PARAMETER);
 	}
 
-	Rhi::IGraphicsPipelineState* OpenGLRhi::createGraphicsPipelineState(const Rhi::GraphicsPipelineState& graphicsPipelineState RHI_RESOURCE_DEBUG_NAME_MAYBE_UNUSED_PARAMETER_NO_DEFAULT)
+	Rhi::IGraphicsPipelineState* OpenGLRhi::createGraphicsPipelineState(const Rhi::GraphicsPipelineState& graphicsPipelineState RHI_RESOURCE_DEBUG_NAME_PARAMETER_NO_DEFAULT)
 	{
 		// Sanity checks
 		RHI_ASSERT(mContext, nullptr != graphicsPipelineState.rootSignature, "OpenGL: Invalid graphics pipeline state root signature")
@@ -20298,7 +20282,7 @@ namespace OpenGLRhi
 		uint16_t id = 0;
 		if (GraphicsPipelineStateMakeId.CreateID(id))
 		{
-			return RHI_NEW(mContext, GraphicsPipelineState)(*this, graphicsPipelineState, id);
+			return RHI_NEW(mContext, GraphicsPipelineState)(*this, graphicsPipelineState, id RHI_RESOURCE_DEBUG_PASS_PARAMETER);
 		}
 
 		// Error: Ensure a correct reference counter behaviour
@@ -20354,12 +20338,12 @@ namespace OpenGLRhi
 		else if (mExtensions->isGL_EXT_direct_state_access() || mExtensions->isGL_ARB_direct_state_access())
 		{
 			// Direct state access (DSA) version to emulate a sampler object
-			return RHI_NEW(mContext, SamplerStateDsa)(*this, samplerState);
+			return RHI_NEW(mContext, SamplerStateDsa)(*this, samplerState RHI_RESOURCE_DEBUG_PASS_PARAMETER);
 		}
 		else
 		{
 			// Traditional bind version to emulate a sampler object
-			return RHI_NEW(mContext, SamplerStateBind)(*this, samplerState);
+			return RHI_NEW(mContext, SamplerStateBind)(*this, samplerState RHI_RESOURCE_DEBUG_PASS_PARAMETER);
 		}
 	}
 

@@ -101,12 +101,14 @@ namespace Renderer
 		*    Minimum render queue index (inclusive)
 		*  @param[in] maximumRenderQueueIndex
 		*    Maximum render queue index (inclusive)
+		*  @param[in] positionOnlyPass
+		*    "true" if this render queue is used for a position-only render pass, else "false"
 		*  @param[in] transparentPass
 		*    "true" if this render queue is used for a transparent render pass, else "false" for opaque render pass (influences the renderables sorting)
 		*  @param[in] doSort
 		*    Sort renderables?
 		*/
-		RenderQueue(IndirectBufferManager& indirectBufferManager, uint8_t minimumRenderQueueIndex, uint8_t maximumRenderQueueIndex, bool transparentPass, bool doSort);
+		RenderQueue(IndirectBufferManager& indirectBufferManager, uint8_t minimumRenderQueueIndex, uint8_t maximumRenderQueueIndex, bool positionOnly, bool transparentPass, bool doSort);
 
 		inline ~RenderQueue()
 		{
@@ -198,6 +200,7 @@ namespace Renderer
 		uint32_t				mNumberOfDrawCalls;
 		uint8_t					mMinimumRenderQueueIndex;	///< Inclusive
 		uint8_t					mMaximumRenderQueueIndex;	///< Inclusive
+		bool					mPositionOnlyPass;
 		bool					mTransparentPass;
 		bool					mDoSort;
 		// Scratch buffers to reduce dynamic memory allocations

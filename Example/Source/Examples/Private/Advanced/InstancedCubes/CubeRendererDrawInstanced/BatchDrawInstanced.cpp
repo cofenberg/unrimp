@@ -57,7 +57,7 @@ void BatchDrawInstanced::initialize(Rhi::IBufferManager& bufferManager, Rhi::IRo
 		// Allocate the local per instance data
 		const uint32_t numberOfElements = mNumberOfCubeInstances * 2 * 4;
 		float* data = new float[numberOfElements];
-		float* dataCurrent = data;
+		float* RESTRICT dataCurrent = data;
 
 		// Set data
 		// -> Layout: [Position][Rotation][Position][Rotation]...

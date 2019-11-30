@@ -123,7 +123,11 @@ ExampleRunner::ExampleRunner() :
 	// Advanced
 	addExample("FirstGpgpu",					&runBasicExample<FirstGpgpu>,				supportsAllRhi);
 	addExample("IcosahedronTessellation",		&runRhiExample<IcosahedronTessellation>,	onlyShaderModel5Plus);
-	addExample("InstancedCubes",				&runRhiExample<InstancedCubes>,				supportsAllRhi);
+	#ifdef RENDERER_IMGUI
+		addExample("InstancedCubes",			&runRenderExample<InstancedCubes>,			supportsAllRhi);
+	#else
+		addExample("InstancedCubes",			&runRhiExample<InstancedCubes>,				supportsAllRhi);
+	#endif
 
 	// Renderer
 	#ifdef RENDERER

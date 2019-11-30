@@ -188,8 +188,12 @@ namespace Renderer
 
 					// Get vertex array instance
 					const Rhi::IVertexArrayPtr& vertexArrayPtr = meshResource->getVertexArrayPtr();
+					const Rhi::IVertexArrayPtr& positionOnlyVertexArrayPtr = meshResource->getPositionOnlyVertexArrayPtr();
 
 					// Set material resource ID of each sub-mesh
+					#ifdef RHI_DEBUG
+						const char* debugName = meshResource->getDebugName();
+					#endif
 					const SkeletonResourceId skeletonResourceId = meshResource->getSkeletonResourceId();
 					MaterialResourceManager& materialResourceManager = renderer.getMaterialResourceManager();
 					const SubMeshes& subMeshes = static_cast<const MeshResource&>(resource).getSubMeshes();
@@ -198,7 +202,7 @@ namespace Renderer
 					for (size_t i = 0; i < numberOfSubMeshes; ++i)
 					{
 						const SubMesh& subMesh = subMeshes[i];
-						renderables.emplace_back(mRenderableManager, vertexArrayPtr, materialResourceManager, subMesh.getMaterialResourceId(), skeletonResourceId, true, subMesh.getStartIndexLocation(), subMesh.getNumberOfIndices());
+						renderables.emplace_back(mRenderableManager, vertexArrayPtr, positionOnlyVertexArrayPtr, materialResourceManager, subMesh.getMaterialResourceId(), skeletonResourceId, true, subMesh.getStartIndexLocation(), subMesh.getNumberOfIndices(), 1 RHI_RESOURCE_DEBUG_NAME((std::string(debugName) + "[SubMesh" + std::to_string(i) + ']').c_str()));
 					}
 
 					// Handle overwritten sub-meshes

@@ -107,6 +107,29 @@ namespace Renderer
 			mMemoryFile.read(mIndexBufferData, mNumberOfUsedIndexBufferDataBytes);
 		}
 
+		// Read in the position-only index buffer
+		if (meshHeader.hasPositionOnlyIndices)
+		{
+			mNumberOfUsedPositionOnlyIndexBufferDataBytes = mNumberOfUsedIndexBufferDataBytes;
+			if (mNumberOfUsedPositionOnlyIndexBufferDataBytes > 0)
+			{
+				// Allocate memory for the local position-only index buffer data
+				if (mNumberOfPositionOnlyIndexBufferDataBytes < mNumberOfUsedPositionOnlyIndexBufferDataBytes)
+				{
+					mNumberOfPositionOnlyIndexBufferDataBytes = mNumberOfUsedPositionOnlyIndexBufferDataBytes;
+					delete [] mPositionOnlyIndexBufferData;
+					mPositionOnlyIndexBufferData = new uint8_t[mNumberOfPositionOnlyIndexBufferDataBytes];
+				}
+
+				// Read in the position-only index buffer
+				mMemoryFile.read(mPositionOnlyIndexBufferData, mNumberOfUsedPositionOnlyIndexBufferDataBytes);
+			}
+		}
+		else
+		{
+			mNumberOfUsedPositionOnlyIndexBufferDataBytes = 0;
+		}
+
 		// Read in the vertex attributes
 		mNumberOfUsedVertexAttributes = meshHeader.numberOfVertexAttributes;
 		if (mNumberOfVertexAttributes < mNumberOfUsedVertexAttributes)
@@ -140,14 +163,18 @@ namespace Renderer
 		// Can we create the RHI resource asynchronous as well?
 		if (mRenderer.getRhi().getCapabilities().nativeMultithreading)
 		{
-			mVertexArray = createVertexArray();
+			createVertexArrays();
 		}
 	}
 
 	bool MeshResourceLoader::onDispatch()
 	{
 		// Create vertex array object (VAO)
-		mMeshResource->setVertexArray(mRenderer.getRhi().getCapabilities().nativeMultithreading ? mVertexArray : createVertexArray());
+		if (!mRenderer.getRhi().getCapabilities().nativeMultithreading)
+		{
+			createVertexArrays();
+		}
+		mMeshResource->setVertexArray(mVertexArray, mPositionOnlyVertexArray);
 
 		{ // Create sub-meshes
 			MaterialResourceManager& materialResourceManager = mRenderer.getMaterialResourceManager();
@@ -223,15 +250,20 @@ namespace Renderer
 		IMeshResourceLoader(resourceManager, renderer),
 		mBufferManager(renderer.getBufferManager()),
 		mVertexArray(nullptr),
+		mPositionOnlyVertexArray(nullptr),
 		// Temporary vertex buffer
 		mNumberOfVertexBufferDataBytes(0),
 		mNumberOfUsedVertexBufferDataBytes(0),
 		mVertexBufferData(nullptr),
 		// Temporary index buffer
+		mIndexBufferFormat(0),
 		mNumberOfIndexBufferDataBytes(0),
 		mNumberOfUsedIndexBufferDataBytes(0),
 		mIndexBufferData(nullptr),
-		mIndexBufferFormat(0),
+		// Temporary position-only index buffer
+		mNumberOfPositionOnlyIndexBufferDataBytes(0),
+		mNumberOfUsedPositionOnlyIndexBufferDataBytes(0),
+		mPositionOnlyIndexBufferData(nullptr),
 		// Temporary vertex attributes
 		mNumberOfVertexAttributes(0),
 		mNumberOfUsedVertexAttributes(0),
@@ -251,12 +283,13 @@ namespace Renderer
 	{
 		delete [] mVertexBufferData;
 		delete [] mIndexBufferData;
+		delete [] mPositionOnlyIndexBufferData;
 		delete [] mVertexAttributes;
 		delete [] mSubMeshes;
 		delete [] mSkeletonData;	// In case the mesh resource loaded was never dispatched
 	}
 
-	Rhi::IVertexArray* MeshResourceLoader::createVertexArray() const
+	void MeshResourceLoader::createVertexArrays()
 	{
 		// Create the vertex buffer object (VBO)
 		Rhi::IVertexBufferPtr vertexBuffer(mBufferManager.createVertexBuffer(mNumberOfUsedVertexBufferDataBytes, mVertexBufferData, 0, Rhi::BufferUsage::STATIC_DRAW RHI_RESOURCE_DEBUG_NAME(getAsset().virtualFilename)));
@@ -266,7 +299,22 @@ namespace Renderer
 
 		// Create vertex array object (VAO)
 		const Rhi::VertexArrayVertexBuffer vertexArrayVertexBuffers[] = { vertexBuffer, mRenderer.getMeshResourceManager().getDrawIdVertexBufferPtr() };
-		return mBufferManager.createVertexArray(Rhi::VertexAttributes(mNumberOfUsedVertexAttributes, mVertexAttributes), static_cast<uint32_t>(GLM_COUNTOF(vertexArrayVertexBuffers)), vertexArrayVertexBuffers, indexBuffer RHI_RESOURCE_DEBUG_NAME(getAsset().virtualFilename));
+		const Rhi::VertexAttributes vertexAttributes(mNumberOfUsedVertexAttributes, mVertexAttributes);
+		mVertexArray = mBufferManager.createVertexArray(vertexAttributes, static_cast<uint32_t>(GLM_COUNTOF(vertexArrayVertexBuffers)), vertexArrayVertexBuffers, indexBuffer RHI_RESOURCE_DEBUG_NAME(getAsset().virtualFilename));
+
+		// Create the position-only vertex array object (VAO)
+		if (mNumberOfUsedPositionOnlyIndexBufferDataBytes > 0)
+		{
+			// Create the index buffer object (IBO)
+			indexBuffer = mBufferManager.createIndexBuffer(mNumberOfUsedPositionOnlyIndexBufferDataBytes, mPositionOnlyIndexBufferData, 0, Rhi::BufferUsage::STATIC_DRAW, static_cast<Rhi::IndexBufferFormat::Enum>(mIndexBufferFormat) RHI_RESOURCE_DEBUG_NAME(getAsset().virtualFilename));
+
+			// Create vertex array object (VAO)
+			mPositionOnlyVertexArray = mBufferManager.createVertexArray(vertexAttributes, static_cast<uint32_t>(GLM_COUNTOF(vertexArrayVertexBuffers)), vertexArrayVertexBuffers, indexBuffer RHI_RESOURCE_DEBUG_NAME(getAsset().virtualFilename));
+		}
+		else
+		{
+			mPositionOnlyVertexArray = nullptr;
+		}
 	}
 
 

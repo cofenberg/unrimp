@@ -115,7 +115,7 @@ namespace Renderer
 		virtual ~MeshResourceLoader() override;
 		explicit MeshResourceLoader(const MeshResourceLoader&) = delete;
 		MeshResourceLoader& operator=(const MeshResourceLoader&) = delete;
-		[[nodiscard]] Rhi::IVertexArray* createVertexArray() const;
+		void createVertexArrays();
 
 
 	//[-------------------------------------------------------]
@@ -125,7 +125,8 @@ namespace Renderer
 		Rhi::IBufferManager& mBufferManager;	///< Buffer manager instance, do not destroy the instance
 
 		// Temporary data
-		Rhi::IVertexArray* mVertexArray;	///< In case the used RHI implementation supports native multithreading we also create the RHI resource asynchronous, but the final resource pointer reassignment must still happen synchronous
+		Rhi::IVertexArray* mVertexArray;			///< In case the used RHI implementation supports native multithreading we also create the RHI resource asynchronous, but the final resource pointer reassignment must still happen synchronous
+		Rhi::IVertexArray* mPositionOnlyVertexArray;
 		MemoryFile		   mMemoryFile;
 
 		// Temporary vertex buffer
@@ -134,10 +135,15 @@ namespace Renderer
 		uint8_t* mVertexBufferData;
 
 		// Temporary index buffer
+		uint8_t  mIndexBufferFormat;	// "Rhi::IndexBufferFormat", don't want to include the header in here
 		uint32_t mNumberOfIndexBufferDataBytes;
 		uint32_t mNumberOfUsedIndexBufferDataBytes;
 		uint8_t* mIndexBufferData;
-		uint8_t  mIndexBufferFormat;	// "Rhi::IndexBufferFormat", don't want to include the header in here
+
+		// Temporary position-only index buffer
+		uint32_t mNumberOfPositionOnlyIndexBufferDataBytes;
+		uint32_t mNumberOfUsedPositionOnlyIndexBufferDataBytes;
+		uint8_t* mPositionOnlyIndexBufferData;
 
 		// Temporary vertex attributes
 		uint32_t			  mNumberOfVertexAttributes;

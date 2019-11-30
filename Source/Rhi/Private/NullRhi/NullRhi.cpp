@@ -487,8 +487,7 @@ namespace NullRhi
 	*  @param[in] debugName
 	*    ASCII name for debugging purposes, must be valid (there's no internal null pointer test)
 	*/
-	#define RHI_RESOURCE_DEBUG_NAME_MAYBE_UNUSED_PARAMETER , [[maybe_unused]] const char* debugName = ""
-	#define RHI_RESOURCE_DEBUG_NAME_MAYBE_UNUSED_PARAMETER_NO_DEFAULT , [[maybe_unused]] const char* debugName
+	#define RHI_RESOURCE_DEBUG_NAME_MAYBE_UNUSED_PARAMETER_NO_DEFAULT , [[maybe_unused]] const char debugName[]
 #else
 	/*
 	*  @brief
@@ -503,7 +502,6 @@ namespace NullRhi
 	*  @param[in] debugName
 	*    ASCII name for debugging purposes, must be valid (there's no internal null pointer test)
 	*/
-	#define RHI_RESOURCE_DEBUG_NAME_MAYBE_UNUSED_PARAMETER
 	#define RHI_RESOURCE_DEBUG_NAME_MAYBE_UNUSED_PARAMETER_NO_DEFAULT
 #endif
 
@@ -742,8 +740,8 @@ namespace NullRhi
 		*  @param[in] samplerStates
 		*    If not a null pointer at least "numberOfResources" sampler state pointers, must be valid if there's at least one texture resource, the resource group will keep a reference to the sampler states
 		*/
-		ResourceGroup(Rhi::IRhi& rhi, uint32_t rootParameterIndex, uint32_t numberOfResources, Rhi::IResource** resources, Rhi::ISamplerState** samplerStates) :
-			IResourceGroup(rhi),
+		ResourceGroup(Rhi::IRhi& rhi, uint32_t rootParameterIndex, uint32_t numberOfResources, Rhi::IResource** resources, Rhi::ISamplerState** samplerStates RHI_RESOURCE_DEBUG_NAME_PARAMETER_NO_DEFAULT) :
+			IResourceGroup(rhi RHI_RESOURCE_DEBUG_PASS_PARAMETER),
 			mRootParameterIndex(rootParameterIndex),
 			mNumberOfResources(numberOfResources),
 			mResources(RHI_MALLOC_TYPED(rhi.getContext(), Rhi::IResource*, mNumberOfResources)),
@@ -880,8 +878,8 @@ namespace NullRhi
 		*  @param[in] rootSignature
 		*    Root signature to use
 		*/
-		RootSignature(NullRhi& nullRhi, const Rhi::RootSignature& rootSignature) :
-			IRootSignature(nullRhi),
+		RootSignature(NullRhi& nullRhi, const Rhi::RootSignature& rootSignature RHI_RESOURCE_DEBUG_NAME_PARAMETER_NO_DEFAULT) :
+			IRootSignature(nullRhi RHI_RESOURCE_DEBUG_PASS_PARAMETER),
 			mRootSignature(rootSignature)
 		{
 			const Rhi::Context& context = nullRhi.getContext();
@@ -958,7 +956,7 @@ namespace NullRhi
 	//[ Public virtual Rhi::IRootSignature methods            ]
 	//[-------------------------------------------------------]
 	public:
-		virtual Rhi::IResourceGroup* createResourceGroup(uint32_t rootParameterIndex, uint32_t numberOfResources, Rhi::IResource** resources, Rhi::ISamplerState** samplerStates = nullptr RHI_RESOURCE_DEBUG_NAME_MAYBE_UNUSED_PARAMETER) override
+		virtual Rhi::IResourceGroup* createResourceGroup(uint32_t rootParameterIndex, uint32_t numberOfResources, Rhi::IResource** resources, Rhi::ISamplerState** samplerStates = nullptr RHI_RESOURCE_DEBUG_NAME_PARAMETER) override
 		{
 			Rhi::IRhi& rhi = getRhi();
 
@@ -968,7 +966,7 @@ namespace NullRhi
 			RHI_ASSERT(rhi.getContext(), nullptr != resources, "The null resource pointers must be valid")
 
 			// Create resource group
-			return RHI_NEW(rhi.getContext(), ResourceGroup)(rhi, rootParameterIndex, numberOfResources, resources, samplerStates);
+			return RHI_NEW(rhi.getContext(), ResourceGroup)(rhi, rootParameterIndex, numberOfResources, resources, samplerStates RHI_RESOURCE_DEBUG_PASS_PARAMETER);
 		}
 
 
@@ -1024,8 +1022,8 @@ namespace NullRhi
 		*  @param[in] nullRhi
 		*    Owner null RHI instance
 		*/
-		inline explicit VertexBuffer(NullRhi& nullRhi) :
-			IVertexBuffer(nullRhi)
+		inline explicit VertexBuffer(NullRhi& nullRhi RHI_RESOURCE_DEBUG_NAME_PARAMETER_NO_DEFAULT) :
+			IVertexBuffer(nullRhi RHI_RESOURCE_DEBUG_PASS_PARAMETER)
 		{}
 
 		/**
@@ -1081,8 +1079,8 @@ namespace NullRhi
 		*  @param[in] nullRhi
 		*    Owner null RHI instance
 		*/
-		inline explicit IndexBuffer(NullRhi& nullRhi) :
-			IIndexBuffer(nullRhi)
+		inline explicit IndexBuffer(NullRhi& nullRhi RHI_RESOURCE_DEBUG_NAME_PARAMETER_NO_DEFAULT) :
+			IIndexBuffer(nullRhi RHI_RESOURCE_DEBUG_PASS_PARAMETER)
 		{}
 
 		/**
@@ -1140,8 +1138,8 @@ namespace NullRhi
 		*  @param[in] id
 		*    The unique compact vertex array ID
 		*/
-		inline explicit VertexArray(NullRhi& nullRhi, uint16_t id) :
-			IVertexArray(nullRhi, id)
+		inline explicit VertexArray(NullRhi& nullRhi, uint16_t id RHI_RESOURCE_DEBUG_NAME_PARAMETER_NO_DEFAULT) :
+			IVertexArray(nullRhi, id RHI_RESOURCE_DEBUG_PASS_PARAMETER)
 		{}
 
 		/**
@@ -1200,8 +1198,8 @@ namespace NullRhi
 		*  @param[in] nullRhi
 		*    Owner null RHI instance
 		*/
-		inline explicit TextureBuffer(NullRhi& nullRhi) :
-			ITextureBuffer(nullRhi)
+		inline explicit TextureBuffer(NullRhi& nullRhi RHI_RESOURCE_DEBUG_NAME_PARAMETER_NO_DEFAULT) :
+			ITextureBuffer(nullRhi RHI_RESOURCE_DEBUG_PASS_PARAMETER)
 		{}
 
 		/**
@@ -1257,8 +1255,8 @@ namespace NullRhi
 		*  @param[in] nullRhi
 		*    Owner null RHI instance
 		*/
-		inline explicit StructuredBuffer(NullRhi& nullRhi) :
-			IStructuredBuffer(nullRhi)
+		inline explicit StructuredBuffer(NullRhi& nullRhi RHI_RESOURCE_DEBUG_NAME_PARAMETER_NO_DEFAULT) :
+			IStructuredBuffer(nullRhi RHI_RESOURCE_DEBUG_PASS_PARAMETER)
 		{}
 
 		/**
@@ -1314,8 +1312,8 @@ namespace NullRhi
 		*  @param[in] nullRhi
 		*    Owner null RHI instance
 		*/
-		inline explicit IndirectBuffer(NullRhi& nullRhi) :
-			IIndirectBuffer(nullRhi)
+		inline explicit IndirectBuffer(NullRhi& nullRhi RHI_RESOURCE_DEBUG_NAME_PARAMETER_NO_DEFAULT) :
+			IIndirectBuffer(nullRhi RHI_RESOURCE_DEBUG_PASS_PARAMETER)
 		{}
 
 		/**
@@ -1381,8 +1379,8 @@ namespace NullRhi
 		*  @param[in] nullRhi
 		*    Owner null RHI instance
 		*/
-		inline explicit UniformBuffer(NullRhi& nullRhi) :
-			IUniformBuffer(nullRhi)
+		inline explicit UniformBuffer(NullRhi& nullRhi RHI_RESOURCE_DEBUG_NAME_PARAMETER_NO_DEFAULT) :
+			IUniformBuffer(nullRhi RHI_RESOURCE_DEBUG_PASS_PARAMETER)
 		{}
 
 		/**
@@ -1454,19 +1452,19 @@ namespace NullRhi
 	//[ Public virtual Rhi::IBufferManager methods            ]
 	//[-------------------------------------------------------]
 	public:
-		[[nodiscard]] inline virtual Rhi::IVertexBuffer* createVertexBuffer([[maybe_unused]] uint32_t numberOfBytes, [[maybe_unused]] const void* data = nullptr, [[maybe_unused]] uint32_t bufferFlags = 0, [[maybe_unused]] Rhi::BufferUsage bufferUsage = Rhi::BufferUsage::STATIC_DRAW RHI_RESOURCE_DEBUG_NAME_MAYBE_UNUSED_PARAMETER) override
+		[[nodiscard]] inline virtual Rhi::IVertexBuffer* createVertexBuffer([[maybe_unused]] uint32_t numberOfBytes, [[maybe_unused]] const void* data = nullptr, [[maybe_unused]] uint32_t bufferFlags = 0, [[maybe_unused]] Rhi::BufferUsage bufferUsage = Rhi::BufferUsage::STATIC_DRAW RHI_RESOURCE_DEBUG_NAME_PARAMETER) override
 		{
 			NullRhi& nullRhi = static_cast<NullRhi&>(getRhi());
-			return RHI_NEW(nullRhi.getContext(), VertexBuffer)(nullRhi);
+			return RHI_NEW(nullRhi.getContext(), VertexBuffer)(nullRhi RHI_RESOURCE_DEBUG_PASS_PARAMETER);
 		}
 
-		[[nodiscard]] inline virtual Rhi::IIndexBuffer* createIndexBuffer([[maybe_unused]] uint32_t numberOfBytes, [[maybe_unused]] const void* data = nullptr, [[maybe_unused]] uint32_t bufferFlags = 0, [[maybe_unused]] Rhi::BufferUsage bufferUsage = Rhi::BufferUsage::STATIC_DRAW, [[maybe_unused]] Rhi::IndexBufferFormat::Enum indexBufferFormat = Rhi::IndexBufferFormat::UNSIGNED_SHORT RHI_RESOURCE_DEBUG_NAME_MAYBE_UNUSED_PARAMETER) override
+		[[nodiscard]] inline virtual Rhi::IIndexBuffer* createIndexBuffer([[maybe_unused]] uint32_t numberOfBytes, [[maybe_unused]] const void* data = nullptr, [[maybe_unused]] uint32_t bufferFlags = 0, [[maybe_unused]] Rhi::BufferUsage bufferUsage = Rhi::BufferUsage::STATIC_DRAW, [[maybe_unused]] Rhi::IndexBufferFormat::Enum indexBufferFormat = Rhi::IndexBufferFormat::UNSIGNED_SHORT RHI_RESOURCE_DEBUG_NAME_PARAMETER) override
 		{
 			NullRhi& nullRhi = static_cast<NullRhi&>(getRhi());
-			return RHI_NEW(nullRhi.getContext(), IndexBuffer)(nullRhi);
+			return RHI_NEW(nullRhi.getContext(), IndexBuffer)(nullRhi RHI_RESOURCE_DEBUG_PASS_PARAMETER);
 		}
 
-		[[nodiscard]] virtual Rhi::IVertexArray* createVertexArray([[maybe_unused]] const Rhi::VertexAttributes& vertexAttributes, uint32_t numberOfVertexBuffers, const Rhi::VertexArrayVertexBuffer* vertexBuffers, Rhi::IIndexBuffer* indexBuffer = nullptr RHI_RESOURCE_DEBUG_NAME_MAYBE_UNUSED_PARAMETER) override
+		[[nodiscard]] virtual Rhi::IVertexArray* createVertexArray([[maybe_unused]] const Rhi::VertexAttributes& vertexAttributes, uint32_t numberOfVertexBuffers, const Rhi::VertexArrayVertexBuffer* vertexBuffers, Rhi::IIndexBuffer* indexBuffer = nullptr RHI_RESOURCE_DEBUG_NAME_PARAMETER) override
 		{
 			NullRhi& nullRhi = static_cast<NullRhi&>(getRhi());
 
@@ -1501,10 +1499,10 @@ namespace NullRhi
 
 			// Create the vertex array instance
 			uint16_t id = 0;
-			return nullRhi.VertexArrayMakeId.CreateID(id) ? RHI_NEW(nullRhi.getContext(), VertexArray)(nullRhi, id) : nullptr;
+			return nullRhi.VertexArrayMakeId.CreateID(id) ? RHI_NEW(nullRhi.getContext(), VertexArray)(nullRhi, id RHI_RESOURCE_DEBUG_PASS_PARAMETER) : nullptr;
 		}
 
-		[[nodiscard]] inline virtual Rhi::ITextureBuffer* createTextureBuffer([[maybe_unused]] uint32_t numberOfBytes, [[maybe_unused]] const void* data = nullptr, [[maybe_unused]] uint32_t bufferFlags = Rhi::BufferFlag::SHADER_RESOURCE, [[maybe_unused]] Rhi::BufferUsage bufferUsage = Rhi::BufferUsage::STATIC_DRAW, [[maybe_unused]] Rhi::TextureFormat::Enum textureFormat = Rhi::TextureFormat::R32G32B32A32F RHI_RESOURCE_DEBUG_NAME_MAYBE_UNUSED_PARAMETER) override
+		[[nodiscard]] inline virtual Rhi::ITextureBuffer* createTextureBuffer([[maybe_unused]] uint32_t numberOfBytes, [[maybe_unused]] const void* data = nullptr, [[maybe_unused]] uint32_t bufferFlags = Rhi::BufferFlag::SHADER_RESOURCE, [[maybe_unused]] Rhi::BufferUsage bufferUsage = Rhi::BufferUsage::STATIC_DRAW, [[maybe_unused]] Rhi::TextureFormat::Enum textureFormat = Rhi::TextureFormat::R32G32B32A32F RHI_RESOURCE_DEBUG_NAME_PARAMETER) override
 		{
 			NullRhi& nullRhi = static_cast<NullRhi&>(getRhi());
 
@@ -1512,10 +1510,10 @@ namespace NullRhi
 			RHI_ASSERT(nullRhi.getContext(), (numberOfBytes % Rhi::TextureFormat::getNumberOfBytesPerElement(textureFormat)) == 0, "The null texture buffer size must be a multiple of the selected texture format bytes per texel")
 
 			// Create the texture buffer
-			return RHI_NEW(nullRhi.getContext(), TextureBuffer)(nullRhi);
+			return RHI_NEW(nullRhi.getContext(), TextureBuffer)(nullRhi RHI_RESOURCE_DEBUG_PASS_PARAMETER);
 		}
 
-		[[nodiscard]] inline virtual Rhi::IStructuredBuffer* createStructuredBuffer([[maybe_unused]] uint32_t numberOfBytes, [[maybe_unused]] const void* data, [[maybe_unused]] uint32_t bufferFlags, [[maybe_unused]] Rhi::BufferUsage bufferUsage, [[maybe_unused]] uint32_t numberOfStructureBytes RHI_RESOURCE_DEBUG_NAME_MAYBE_UNUSED_PARAMETER) override
+		[[nodiscard]] inline virtual Rhi::IStructuredBuffer* createStructuredBuffer([[maybe_unused]] uint32_t numberOfBytes, [[maybe_unused]] const void* data, [[maybe_unused]] uint32_t bufferFlags, [[maybe_unused]] Rhi::BufferUsage bufferUsage, [[maybe_unused]] uint32_t numberOfStructureBytes RHI_RESOURCE_DEBUG_NAME_PARAMETER) override
 		{
 			NullRhi& nullRhi = static_cast<NullRhi&>(getRhi());
 
@@ -1524,10 +1522,10 @@ namespace NullRhi
 			RHI_ASSERT(nullRhi.getContext(), (numberOfBytes % (sizeof(float) * 4)) == 0, "Performance: The null structured buffer should be aligned to a 128-bit stride, see \"Understanding Structured Buffer Performance\" by Evan Hart, posted Apr 17 2015 at 11:33AM - https://developer.nvidia.com/content/understanding-structured-buffer-performance")
 
 			// Create the structured buffer
-			return RHI_NEW(nullRhi.getContext(), StructuredBuffer)(nullRhi);
+			return RHI_NEW(nullRhi.getContext(), StructuredBuffer)(nullRhi RHI_RESOURCE_DEBUG_PASS_PARAMETER);
 		}
 
-		[[nodiscard]] inline virtual Rhi::IIndirectBuffer* createIndirectBuffer([[maybe_unused]] uint32_t numberOfBytes, [[maybe_unused]] const void* data = nullptr, [[maybe_unused]] uint32_t indirectBufferFlags = 0, [[maybe_unused]] Rhi::BufferUsage bufferUsage = Rhi::BufferUsage::STATIC_DRAW RHI_RESOURCE_DEBUG_NAME_MAYBE_UNUSED_PARAMETER) override
+		[[nodiscard]] inline virtual Rhi::IIndirectBuffer* createIndirectBuffer([[maybe_unused]] uint32_t numberOfBytes, [[maybe_unused]] const void* data = nullptr, [[maybe_unused]] uint32_t indirectBufferFlags = 0, [[maybe_unused]] Rhi::BufferUsage bufferUsage = Rhi::BufferUsage::STATIC_DRAW RHI_RESOURCE_DEBUG_NAME_PARAMETER) override
 		{
 			NullRhi& nullRhi = static_cast<NullRhi&>(getRhi());
 
@@ -1538,10 +1536,10 @@ namespace NullRhi
 			RHI_ASSERT(nullRhi.getContext(), (indirectBufferFlags & Rhi::IndirectBufferFlag::DRAW_INDEXED_ARGUMENTS) == 0 || (numberOfBytes % sizeof(Rhi::DrawIndexedArguments)) == 0, "Null indirect buffer element type flags specification is \"DRAW_INDEXED_ARGUMENTS\" but the given number of bytes don't align to this")
 
 			// Create indirect buffer
-			return RHI_NEW(nullRhi.getContext(), IndirectBuffer)(nullRhi);
+			return RHI_NEW(nullRhi.getContext(), IndirectBuffer)(nullRhi RHI_RESOURCE_DEBUG_PASS_PARAMETER);
 		}
 
-		[[nodiscard]] inline virtual Rhi::IUniformBuffer* createUniformBuffer([[maybe_unused]] uint32_t numberOfBytes, [[maybe_unused]] const void* data = nullptr, [[maybe_unused]] Rhi::BufferUsage bufferUsage = Rhi::BufferUsage::STATIC_DRAW RHI_RESOURCE_DEBUG_NAME_MAYBE_UNUSED_PARAMETER) override
+		[[nodiscard]] inline virtual Rhi::IUniformBuffer* createUniformBuffer([[maybe_unused]] uint32_t numberOfBytes, [[maybe_unused]] const void* data = nullptr, [[maybe_unused]] Rhi::BufferUsage bufferUsage = Rhi::BufferUsage::STATIC_DRAW RHI_RESOURCE_DEBUG_NAME_PARAMETER) override
 		{
 			NullRhi& nullRhi = static_cast<NullRhi&>(getRhi());
 
@@ -1550,7 +1548,7 @@ namespace NullRhi
 			// RHI_ASSERT(nullRhi.getContext(), (bufferFlags & Rhi::BufferFlag::SHADER_RESOURCE) != 0, "Invalid null buffer flags, uniform buffer must be used as shader resource")
 
 			// Create the uniform buffer
-			return RHI_NEW(nullRhi.getContext(), UniformBuffer)(nullRhi);
+			return RHI_NEW(nullRhi.getContext(), UniformBuffer)(nullRhi RHI_RESOURCE_DEBUG_PASS_PARAMETER);
 		}
 
 
@@ -1601,8 +1599,8 @@ namespace NullRhi
 		*  @param[in] width
 		*    The width of the texture
 		*/
-		inline Texture1D(NullRhi& nullRhi, uint32_t width) :
-			ITexture1D(nullRhi, width)
+		inline Texture1D(NullRhi& nullRhi, uint32_t width RHI_RESOURCE_DEBUG_NAME_PARAMETER_NO_DEFAULT) :
+			ITexture1D(nullRhi, width RHI_RESOURCE_DEBUG_PASS_PARAMETER)
 		{}
 
 		/**
@@ -1662,8 +1660,8 @@ namespace NullRhi
 		*  @param[in] numberOfSlices
 		*    The number of slices
 		*/
-		inline Texture1DArray(NullRhi& nullRhi, uint32_t width, uint32_t numberOfSlices) :
-			ITexture1DArray(nullRhi, width, numberOfSlices)
+		inline Texture1DArray(NullRhi& nullRhi, uint32_t width, uint32_t numberOfSlices RHI_RESOURCE_DEBUG_NAME_PARAMETER_NO_DEFAULT) :
+			ITexture1DArray(nullRhi, width, numberOfSlices RHI_RESOURCE_DEBUG_PASS_PARAMETER)
 		{}
 
 		/**
@@ -1723,8 +1721,8 @@ namespace NullRhi
 		*  @param[in] height
 		*    The height of the texture
 		*/
-		inline Texture2D(NullRhi& nullRhi, uint32_t width, uint32_t height) :
-			ITexture2D(nullRhi, width, height)
+		inline Texture2D(NullRhi& nullRhi, uint32_t width, uint32_t height RHI_RESOURCE_DEBUG_NAME_PARAMETER_NO_DEFAULT) :
+			ITexture2D(nullRhi, width, height RHI_RESOURCE_DEBUG_PASS_PARAMETER)
 		{}
 
 		/**
@@ -1786,8 +1784,8 @@ namespace NullRhi
 		*  @param[in] numberOfSlices
 		*    The number of slices
 		*/
-		inline Texture2DArray(NullRhi& nullRhi, uint32_t width, uint32_t height, uint32_t numberOfSlices) :
-			ITexture2DArray(nullRhi, width, height, numberOfSlices)
+		inline Texture2DArray(NullRhi& nullRhi, uint32_t width, uint32_t height, uint32_t numberOfSlices RHI_RESOURCE_DEBUG_NAME_PARAMETER_NO_DEFAULT) :
+			ITexture2DArray(nullRhi, width, height, numberOfSlices RHI_RESOURCE_DEBUG_PASS_PARAMETER)
 		{}
 
 		/**
@@ -1849,8 +1847,8 @@ namespace NullRhi
 		*  @param[in] depth
 		*    The depth of the texture
 		*/
-		inline Texture3D(NullRhi& nullRhi, uint32_t width, uint32_t height, uint32_t depth) :
-			ITexture3D(nullRhi, width, height, depth)
+		inline Texture3D(NullRhi& nullRhi, uint32_t width, uint32_t height, uint32_t depth RHI_RESOURCE_DEBUG_NAME_PARAMETER_NO_DEFAULT) :
+			ITexture3D(nullRhi, width, height, depth RHI_RESOURCE_DEBUG_PASS_PARAMETER)
 		{}
 
 		/**
@@ -1910,8 +1908,8 @@ namespace NullRhi
 		*  @param[in] height
 		*    The height of the texture
 		*/
-		inline TextureCube(NullRhi& nullRhi, uint32_t width, uint32_t height) :
-			ITextureCube(nullRhi, width, height)
+		inline TextureCube(NullRhi& nullRhi, uint32_t width, uint32_t height RHI_RESOURCE_DEBUG_NAME_PARAMETER_NO_DEFAULT) :
+			ITextureCube(nullRhi, width, height RHI_RESOURCE_DEBUG_PASS_PARAMETER)
 		{}
 
 		/**
@@ -1983,7 +1981,7 @@ namespace NullRhi
 	//[ Public virtual Rhi::ITextureManager methods           ]
 	//[-------------------------------------------------------]
 	public:
-		[[nodiscard]] virtual Rhi::ITexture1D* createTexture1D(uint32_t width, [[maybe_unused]] Rhi::TextureFormat::Enum textureFormat, [[maybe_unused]] const void* data = nullptr, [[maybe_unused]] uint32_t textureFlags = 0, [[maybe_unused]] Rhi::TextureUsage textureUsage = Rhi::TextureUsage::DEFAULT RHI_RESOURCE_DEBUG_NAME_MAYBE_UNUSED_PARAMETER) override
+		[[nodiscard]] virtual Rhi::ITexture1D* createTexture1D(uint32_t width, [[maybe_unused]] Rhi::TextureFormat::Enum textureFormat, [[maybe_unused]] const void* data = nullptr, [[maybe_unused]] uint32_t textureFlags = 0, [[maybe_unused]] Rhi::TextureUsage textureUsage = Rhi::TextureUsage::DEFAULT RHI_RESOURCE_DEBUG_NAME_PARAMETER) override
 		{
 			NullRhi& nullRhi = static_cast<NullRhi&>(getRhi());
 
@@ -1991,10 +1989,10 @@ namespace NullRhi
 			RHI_ASSERT(nullRhi.getContext(), width > 0, "Null create texture 1D was called with invalid parameters")
 
 			// Create 1D texture resource
-			return RHI_NEW(nullRhi.getContext(), Texture1D)(nullRhi, width);
+			return RHI_NEW(nullRhi.getContext(), Texture1D)(nullRhi, width RHI_RESOURCE_DEBUG_PASS_PARAMETER);
 		}
 
-		[[nodiscard]] virtual Rhi::ITexture1DArray* createTexture1DArray(uint32_t width, uint32_t numberOfSlices, [[maybe_unused]] Rhi::TextureFormat::Enum textureFormat, [[maybe_unused]] const void* data = nullptr, [[maybe_unused]] uint32_t textureFlags = 0, [[maybe_unused]] Rhi::TextureUsage textureUsage = Rhi::TextureUsage::DEFAULT RHI_RESOURCE_DEBUG_NAME_MAYBE_UNUSED_PARAMETER) override
+		[[nodiscard]] virtual Rhi::ITexture1DArray* createTexture1DArray(uint32_t width, uint32_t numberOfSlices, [[maybe_unused]] Rhi::TextureFormat::Enum textureFormat, [[maybe_unused]] const void* data = nullptr, [[maybe_unused]] uint32_t textureFlags = 0, [[maybe_unused]] Rhi::TextureUsage textureUsage = Rhi::TextureUsage::DEFAULT RHI_RESOURCE_DEBUG_NAME_PARAMETER) override
 		{
 			NullRhi& nullRhi = static_cast<NullRhi&>(getRhi());
 
@@ -2002,10 +2000,10 @@ namespace NullRhi
 			RHI_ASSERT(nullRhi.getContext(), width > 0 && numberOfSlices > 0, "Null create texture 1D array was called with invalid parameters")
 
 			// Create 1D texture array resource
-			return RHI_NEW(nullRhi.getContext(), Texture1DArray)(nullRhi, width, numberOfSlices);
+			return RHI_NEW(nullRhi.getContext(), Texture1DArray)(nullRhi, width, numberOfSlices RHI_RESOURCE_DEBUG_PASS_PARAMETER);
 		}
 
-		[[nodiscard]] virtual Rhi::ITexture2D* createTexture2D(uint32_t width, uint32_t height, [[maybe_unused]] Rhi::TextureFormat::Enum textureFormat, [[maybe_unused]] const void* data = nullptr, [[maybe_unused]] uint32_t textureFlags = 0, [[maybe_unused]] Rhi::TextureUsage textureUsage = Rhi::TextureUsage::DEFAULT, [[maybe_unused]] uint8_t numberOfMultisamples = 1, [[maybe_unused]] const Rhi::OptimizedTextureClearValue* optimizedTextureClearValue = nullptr RHI_RESOURCE_DEBUG_NAME_MAYBE_UNUSED_PARAMETER) override
+		[[nodiscard]] virtual Rhi::ITexture2D* createTexture2D(uint32_t width, uint32_t height, [[maybe_unused]] Rhi::TextureFormat::Enum textureFormat, [[maybe_unused]] const void* data = nullptr, [[maybe_unused]] uint32_t textureFlags = 0, [[maybe_unused]] Rhi::TextureUsage textureUsage = Rhi::TextureUsage::DEFAULT, [[maybe_unused]] uint8_t numberOfMultisamples = 1, [[maybe_unused]] const Rhi::OptimizedTextureClearValue* optimizedTextureClearValue = nullptr RHI_RESOURCE_DEBUG_NAME_PARAMETER) override
 		{
 			NullRhi& nullRhi = static_cast<NullRhi&>(getRhi());
 
@@ -2013,10 +2011,10 @@ namespace NullRhi
 			RHI_ASSERT(nullRhi.getContext(), width > 0 && height > 0, "Null create texture 2D was called with invalid parameters")
 
 			// Create 2D texture resource
-			return RHI_NEW(nullRhi.getContext(), Texture2D)(nullRhi, width, height);
+			return RHI_NEW(nullRhi.getContext(), Texture2D)(nullRhi, width, height RHI_RESOURCE_DEBUG_PASS_PARAMETER);
 		}
 
-		[[nodiscard]] virtual Rhi::ITexture2DArray* createTexture2DArray(uint32_t width, uint32_t height, uint32_t numberOfSlices, [[maybe_unused]] Rhi::TextureFormat::Enum textureFormat, [[maybe_unused]] const void* data = nullptr, [[maybe_unused]] uint32_t textureFlags = 0, [[maybe_unused]] Rhi::TextureUsage textureUsage = Rhi::TextureUsage::DEFAULT RHI_RESOURCE_DEBUG_NAME_MAYBE_UNUSED_PARAMETER) override
+		[[nodiscard]] virtual Rhi::ITexture2DArray* createTexture2DArray(uint32_t width, uint32_t height, uint32_t numberOfSlices, [[maybe_unused]] Rhi::TextureFormat::Enum textureFormat, [[maybe_unused]] const void* data = nullptr, [[maybe_unused]] uint32_t textureFlags = 0, [[maybe_unused]] Rhi::TextureUsage textureUsage = Rhi::TextureUsage::DEFAULT RHI_RESOURCE_DEBUG_NAME_PARAMETER) override
 		{
 			NullRhi& nullRhi = static_cast<NullRhi&>(getRhi());
 
@@ -2024,10 +2022,10 @@ namespace NullRhi
 			RHI_ASSERT(nullRhi.getContext(), width > 0 && height > 0 && numberOfSlices > 0, "Null create texture 2D array was called with invalid parameters")
 
 			// Create 2D texture array resource
-			return RHI_NEW(nullRhi.getContext(), Texture2DArray)(nullRhi, width, height, numberOfSlices);
+			return RHI_NEW(nullRhi.getContext(), Texture2DArray)(nullRhi, width, height, numberOfSlices RHI_RESOURCE_DEBUG_PASS_PARAMETER);
 		}
 
-		[[nodiscard]] virtual Rhi::ITexture3D* createTexture3D(uint32_t width, uint32_t height, uint32_t depth, [[maybe_unused]] Rhi::TextureFormat::Enum textureFormat, [[maybe_unused]] const void* data = nullptr, [[maybe_unused]] uint32_t textureFlags = 0, [[maybe_unused]] Rhi::TextureUsage textureUsage = Rhi::TextureUsage::DEFAULT RHI_RESOURCE_DEBUG_NAME_MAYBE_UNUSED_PARAMETER) override
+		[[nodiscard]] virtual Rhi::ITexture3D* createTexture3D(uint32_t width, uint32_t height, uint32_t depth, [[maybe_unused]] Rhi::TextureFormat::Enum textureFormat, [[maybe_unused]] const void* data = nullptr, [[maybe_unused]] uint32_t textureFlags = 0, [[maybe_unused]] Rhi::TextureUsage textureUsage = Rhi::TextureUsage::DEFAULT RHI_RESOURCE_DEBUG_NAME_PARAMETER) override
 		{
 			NullRhi& nullRhi = static_cast<NullRhi&>(getRhi());
 
@@ -2035,10 +2033,10 @@ namespace NullRhi
 			RHI_ASSERT(nullRhi.getContext(), width > 0 && height > 0 && depth > 0, "Null create texture 3D was called with invalid parameters")
 
 			// Create 3D texture resource
-			return RHI_NEW(nullRhi.getContext(), Texture3D)(nullRhi, width, height, depth);
+			return RHI_NEW(nullRhi.getContext(), Texture3D)(nullRhi, width, height, depth RHI_RESOURCE_DEBUG_PASS_PARAMETER);
 		}
 
-		[[nodiscard]] virtual Rhi::ITextureCube* createTextureCube(uint32_t width, uint32_t height, [[maybe_unused]] Rhi::TextureFormat::Enum textureFormat, [[maybe_unused]] const void* data = nullptr, [[maybe_unused]] uint32_t textureFlags = 0, [[maybe_unused]] Rhi::TextureUsage textureUsage = Rhi::TextureUsage::DEFAULT RHI_RESOURCE_DEBUG_NAME_MAYBE_UNUSED_PARAMETER) override
+		[[nodiscard]] virtual Rhi::ITextureCube* createTextureCube(uint32_t width, uint32_t height, [[maybe_unused]] Rhi::TextureFormat::Enum textureFormat, [[maybe_unused]] const void* data = nullptr, [[maybe_unused]] uint32_t textureFlags = 0, [[maybe_unused]] Rhi::TextureUsage textureUsage = Rhi::TextureUsage::DEFAULT RHI_RESOURCE_DEBUG_NAME_PARAMETER) override
 		{
 			NullRhi& nullRhi = static_cast<NullRhi&>(getRhi());
 
@@ -2046,7 +2044,7 @@ namespace NullRhi
 			RHI_ASSERT(nullRhi.getContext(), width > 0 && height > 0, "Null create texture cube was called with invalid parameters")
 
 			// Create cube texture resource
-			return RHI_NEW(nullRhi.getContext(), TextureCube)(nullRhi, width, height);
+			return RHI_NEW(nullRhi.getContext(), TextureCube)(nullRhi, width, height RHI_RESOURCE_DEBUG_PASS_PARAMETER);
 		}
 
 
@@ -2095,8 +2093,8 @@ namespace NullRhi
 		*  @param[in] nullRhi
 		*    Owner null RHI instance
 		*/
-		inline explicit SamplerState(NullRhi& nullRhi) :
-			ISamplerState(nullRhi)
+		inline explicit SamplerState(NullRhi& nullRhi RHI_RESOURCE_DEBUG_NAME_PARAMETER_NO_DEFAULT) :
+			ISamplerState(nullRhi RHI_RESOURCE_DEBUG_PASS_PARAMETER)
 		{}
 
 		/**
@@ -2161,8 +2159,8 @@ namespace NullRhi
 		*  @param[in] numberOfMultisamples
 		*    The number of multisamples per pixel (valid values: 1, 2, 4, 8)
 		*/
-		RenderPass(Rhi::IRhi& rhi, uint32_t numberOfColorAttachments, const Rhi::TextureFormat::Enum* colorAttachmentTextureFormats, Rhi::TextureFormat::Enum depthStencilAttachmentTextureFormat, uint8_t numberOfMultisamples) :
-			IRenderPass(rhi),
+		RenderPass(Rhi::IRhi& rhi, uint32_t numberOfColorAttachments, const Rhi::TextureFormat::Enum* colorAttachmentTextureFormats, Rhi::TextureFormat::Enum depthStencilAttachmentTextureFormat, uint8_t numberOfMultisamples RHI_RESOURCE_DEBUG_NAME_PARAMETER_NO_DEFAULT) :
+			IRenderPass(rhi RHI_RESOURCE_DEBUG_PASS_PARAMETER),
 			mNumberOfColorAttachments(numberOfColorAttachments),
 			mDepthStencilAttachmentTextureFormat(depthStencilAttachmentTextureFormat),
 			mNumberOfMultisamples(numberOfMultisamples)
@@ -2248,8 +2246,8 @@ namespace NullRhi
 		*  @param[in] windowHandle
 		*    Information about the window to render into
 		*/
-		inline SwapChain(Rhi::IRenderPass& renderPass, Rhi::WindowHandle windowHandle) :
-			ISwapChain(renderPass),
+		inline SwapChain(Rhi::IRenderPass& renderPass, Rhi::WindowHandle windowHandle RHI_RESOURCE_DEBUG_NAME_PARAMETER_NO_DEFAULT) :
+			ISwapChain(renderPass RHI_RESOURCE_DEBUG_PASS_PARAMETER),
 			mNativeWindowHandle(windowHandle.nativeWindowHandle)
 		{}
 
@@ -2422,8 +2420,8 @@ namespace NullRhi
 		*  @param[in] renderPass
 		*    Render pass to use, the swap chain keeps a reference to the render pass
 		*/
-		inline explicit Framebuffer(Rhi::IRenderPass& renderPass) :
-			IFramebuffer(renderPass)
+		inline explicit Framebuffer(Rhi::IRenderPass& renderPass RHI_RESOURCE_DEBUG_NAME_PARAMETER_NO_DEFAULT) :
+			IFramebuffer(renderPass RHI_RESOURCE_DEBUG_PASS_PARAMETER)
 		{}
 
 		/**
@@ -2491,8 +2489,8 @@ namespace NullRhi
 		*  @param[in] nullRhi
 		*    Owner null RHI instance
 		*/
-		inline explicit VertexShader(NullRhi& nullRhi) :
-			IVertexShader(nullRhi)
+		inline explicit VertexShader(NullRhi& nullRhi RHI_RESOURCE_DEBUG_NAME_PARAMETER_NO_DEFAULT) :
+			IVertexShader(nullRhi RHI_RESOURCE_DEBUG_PASS_PARAMETER)
 		{}
 
 		/**
@@ -2558,8 +2556,8 @@ namespace NullRhi
 		*  @param[in] nullRhi
 		*    Owner null RHI instance
 		*/
-		inline explicit TessellationControlShader(NullRhi& nullRhi) :
-			ITessellationControlShader(nullRhi)
+		inline explicit TessellationControlShader(NullRhi& nullRhi RHI_RESOURCE_DEBUG_NAME_PARAMETER_NO_DEFAULT) :
+			ITessellationControlShader(nullRhi RHI_RESOURCE_DEBUG_PASS_PARAMETER)
 		{}
 
 		/**
@@ -2625,8 +2623,8 @@ namespace NullRhi
 		*  @param[in] nullRhi
 		*    Owner null RHI instance
 		*/
-		inline explicit TessellationEvaluationShader(NullRhi& nullRhi) :
-			ITessellationEvaluationShader(nullRhi)
+		inline explicit TessellationEvaluationShader(NullRhi& nullRhi RHI_RESOURCE_DEBUG_NAME_PARAMETER_NO_DEFAULT) :
+			ITessellationEvaluationShader(nullRhi RHI_RESOURCE_DEBUG_PASS_PARAMETER)
 		{}
 
 		/**
@@ -2692,8 +2690,8 @@ namespace NullRhi
 		*  @param[in] nullRhi
 		*    Owner null RHI instance
 		*/
-		inline explicit GeometryShader(NullRhi& nullRhi) :
-			IGeometryShader(nullRhi)
+		inline explicit GeometryShader(NullRhi& nullRhi RHI_RESOURCE_DEBUG_NAME_PARAMETER_NO_DEFAULT) :
+			IGeometryShader(nullRhi RHI_RESOURCE_DEBUG_PASS_PARAMETER)
 		{}
 
 		/**
@@ -2759,8 +2757,8 @@ namespace NullRhi
 		*  @param[in] nullRhi
 		*    Owner null RHI instance
 		*/
-		inline explicit FragmentShader(NullRhi& nullRhi) :
-			IFragmentShader(nullRhi)
+		inline explicit FragmentShader(NullRhi& nullRhi RHI_RESOURCE_DEBUG_NAME_PARAMETER_NO_DEFAULT) :
+			IFragmentShader(nullRhi RHI_RESOURCE_DEBUG_PASS_PARAMETER)
 		{}
 
 		/**
@@ -2826,8 +2824,8 @@ namespace NullRhi
 		*  @param[in] nullRhi
 		*    Owner null RHI instance
 		*/
-		inline explicit ComputeShader(NullRhi& nullRhi) :
-			IComputeShader(nullRhi)
+		inline explicit ComputeShader(NullRhi& nullRhi RHI_RESOURCE_DEBUG_NAME_PARAMETER_NO_DEFAULT) :
+			IComputeShader(nullRhi RHI_RESOURCE_DEBUG_PASS_PARAMETER)
 		{}
 
 		/**
@@ -2906,8 +2904,8 @@ namespace NullRhi
 		*  @note
 		*    - The graphics program keeps a reference to the provided shaders and releases it when no longer required
 		*/
-		GraphicsProgram(NullRhi& nullRhi, VertexShader* vertexShader, TessellationControlShader* tessellationControlShader, TessellationEvaluationShader* tessellationEvaluationShader, GeometryShader* geometryShader, FragmentShader* fragmentShader) :
-			IGraphicsProgram(nullRhi)
+		GraphicsProgram(NullRhi& nullRhi, VertexShader* vertexShader, TessellationControlShader* tessellationControlShader, TessellationEvaluationShader* tessellationEvaluationShader, GeometryShader* geometryShader, FragmentShader* fragmentShader RHI_RESOURCE_DEBUG_NAME_PARAMETER_NO_DEFAULT) :
+			IGraphicsProgram(nullRhi RHI_RESOURCE_DEBUG_PASS_PARAMETER)
 		{
 			// We don't keep a reference to the shaders in here
 			// -> Ensure a correct reference counter behaviour
@@ -3012,91 +3010,91 @@ namespace NullRhi
 			return ::detail::NULL_NAME;
 		}
 
-		[[nodiscard]] inline virtual Rhi::IVertexShader* createVertexShaderFromBytecode([[maybe_unused]] const Rhi::VertexAttributes& vertexAttributes, [[maybe_unused]] const Rhi::ShaderBytecode& shaderBytecode RHI_RESOURCE_DEBUG_NAME_MAYBE_UNUSED_PARAMETER) override
+		[[nodiscard]] inline virtual Rhi::IVertexShader* createVertexShaderFromBytecode([[maybe_unused]] const Rhi::VertexAttributes& vertexAttributes, [[maybe_unused]] const Rhi::ShaderBytecode& shaderBytecode RHI_RESOURCE_DEBUG_NAME_PARAMETER) override
 		{
 			// There's no need to check for "Rhi::Capabilities::vertexShader", we know there's vertex shader support
 			NullRhi& nullRhi = static_cast<NullRhi&>(getRhi());
-			return RHI_NEW(nullRhi.getContext(), VertexShader)(nullRhi);
+			return RHI_NEW(nullRhi.getContext(), VertexShader)(nullRhi RHI_RESOURCE_DEBUG_PASS_PARAMETER);
 		}
 
-		[[nodiscard]] inline virtual Rhi::IVertexShader* createVertexShaderFromSourceCode([[maybe_unused]] const Rhi::VertexAttributes& vertexAttributes, [[maybe_unused]] const Rhi::ShaderSourceCode& shaderSourceCode, [[maybe_unused]] Rhi::ShaderBytecode* shaderBytecode = nullptr RHI_RESOURCE_DEBUG_NAME_MAYBE_UNUSED_PARAMETER) override
+		[[nodiscard]] inline virtual Rhi::IVertexShader* createVertexShaderFromSourceCode([[maybe_unused]] const Rhi::VertexAttributes& vertexAttributes, [[maybe_unused]] const Rhi::ShaderSourceCode& shaderSourceCode, [[maybe_unused]] Rhi::ShaderBytecode* shaderBytecode = nullptr RHI_RESOURCE_DEBUG_NAME_PARAMETER) override
 		{
 			// There's no need to check for "Rhi::Capabilities::vertexShader", we know there's vertex shader support
 			NullRhi& nullRhi = static_cast<NullRhi&>(getRhi());
-			return RHI_NEW(nullRhi.getContext(), VertexShader)(nullRhi);
+			return RHI_NEW(nullRhi.getContext(), VertexShader)(nullRhi RHI_RESOURCE_DEBUG_PASS_PARAMETER);
 		}
 
-		[[nodiscard]] inline virtual Rhi::ITessellationControlShader* createTessellationControlShaderFromBytecode([[maybe_unused]] const Rhi::ShaderBytecode& shaderBytecode RHI_RESOURCE_DEBUG_NAME_MAYBE_UNUSED_PARAMETER) override
+		[[nodiscard]] inline virtual Rhi::ITessellationControlShader* createTessellationControlShaderFromBytecode([[maybe_unused]] const Rhi::ShaderBytecode& shaderBytecode RHI_RESOURCE_DEBUG_NAME_PARAMETER) override
 		{
 			// There's no need to check for "Rhi::Capabilities::maximumNumberOfPatchVertices", we know there's tessellation control shader support
 			NullRhi& nullRhi = static_cast<NullRhi&>(getRhi());
-			return RHI_NEW(nullRhi.getContext(), TessellationControlShader)(nullRhi);
+			return RHI_NEW(nullRhi.getContext(), TessellationControlShader)(nullRhi RHI_RESOURCE_DEBUG_PASS_PARAMETER);
 		}
 
-		[[nodiscard]] inline virtual Rhi::ITessellationControlShader* createTessellationControlShaderFromSourceCode([[maybe_unused]] const Rhi::ShaderSourceCode& shaderSourceCode, [[maybe_unused]] Rhi::ShaderBytecode* shaderBytecode = nullptr RHI_RESOURCE_DEBUG_NAME_MAYBE_UNUSED_PARAMETER) override
+		[[nodiscard]] inline virtual Rhi::ITessellationControlShader* createTessellationControlShaderFromSourceCode([[maybe_unused]] const Rhi::ShaderSourceCode& shaderSourceCode, [[maybe_unused]] Rhi::ShaderBytecode* shaderBytecode = nullptr RHI_RESOURCE_DEBUG_NAME_PARAMETER) override
 		{
 			// There's no need to check for "Rhi::Capabilities::maximumNumberOfPatchVertices", we know there's tessellation control shader support
 			NullRhi& nullRhi = static_cast<NullRhi&>(getRhi());
-			return RHI_NEW(nullRhi.getContext(), TessellationControlShader)(nullRhi);
+			return RHI_NEW(nullRhi.getContext(), TessellationControlShader)(nullRhi RHI_RESOURCE_DEBUG_PASS_PARAMETER);
 		}
 
-		[[nodiscard]] inline virtual Rhi::ITessellationEvaluationShader* createTessellationEvaluationShaderFromBytecode([[maybe_unused]] const Rhi::ShaderBytecode& shaderBytecode RHI_RESOURCE_DEBUG_NAME_MAYBE_UNUSED_PARAMETER) override
+		[[nodiscard]] inline virtual Rhi::ITessellationEvaluationShader* createTessellationEvaluationShaderFromBytecode([[maybe_unused]] const Rhi::ShaderBytecode& shaderBytecode RHI_RESOURCE_DEBUG_NAME_PARAMETER) override
 		{
 			// There's no need to check for "Rhi::Capabilities::maximumNumberOfPatchVertices", we know there's tessellation evaluation shader support
 			NullRhi& nullRhi = static_cast<NullRhi&>(getRhi());
-			return RHI_NEW(nullRhi.getContext(), TessellationEvaluationShader)(nullRhi);
+			return RHI_NEW(nullRhi.getContext(), TessellationEvaluationShader)(nullRhi RHI_RESOURCE_DEBUG_PASS_PARAMETER);
 		}
 
-		[[nodiscard]] inline virtual Rhi::ITessellationEvaluationShader* createTessellationEvaluationShaderFromSourceCode([[maybe_unused]] const Rhi::ShaderSourceCode& shaderSourceCode, [[maybe_unused]] Rhi::ShaderBytecode* shaderBytecode = nullptr RHI_RESOURCE_DEBUG_NAME_MAYBE_UNUSED_PARAMETER) override
+		[[nodiscard]] inline virtual Rhi::ITessellationEvaluationShader* createTessellationEvaluationShaderFromSourceCode([[maybe_unused]] const Rhi::ShaderSourceCode& shaderSourceCode, [[maybe_unused]] Rhi::ShaderBytecode* shaderBytecode = nullptr RHI_RESOURCE_DEBUG_NAME_PARAMETER) override
 		{
 			// There's no need to check for "Rhi::Capabilities::maximumNumberOfPatchVertices", we know there's tessellation evaluation shader support
 			NullRhi& nullRhi = static_cast<NullRhi&>(getRhi());
-			return RHI_NEW(nullRhi.getContext(), TessellationEvaluationShader)(nullRhi);
+			return RHI_NEW(nullRhi.getContext(), TessellationEvaluationShader)(nullRhi RHI_RESOURCE_DEBUG_PASS_PARAMETER);
 		}
 
-		[[nodiscard]] inline virtual Rhi::IGeometryShader* createGeometryShaderFromBytecode([[maybe_unused]] const Rhi::ShaderBytecode& shaderBytecode, [[maybe_unused]] Rhi::GsInputPrimitiveTopology gsInputPrimitiveTopology, [[maybe_unused]] Rhi::GsOutputPrimitiveTopology gsOutputPrimitiveTopology, [[maybe_unused]] uint32_t numberOfOutputVertices RHI_RESOURCE_DEBUG_NAME_MAYBE_UNUSED_PARAMETER) override
+		[[nodiscard]] inline virtual Rhi::IGeometryShader* createGeometryShaderFromBytecode([[maybe_unused]] const Rhi::ShaderBytecode& shaderBytecode, [[maybe_unused]] Rhi::GsInputPrimitiveTopology gsInputPrimitiveTopology, [[maybe_unused]] Rhi::GsOutputPrimitiveTopology gsOutputPrimitiveTopology, [[maybe_unused]] uint32_t numberOfOutputVertices RHI_RESOURCE_DEBUG_NAME_PARAMETER) override
 		{
 			// There's no need to check for "Rhi::Capabilities::maximumNumberOfGsOutputVertices", we know there's geometry shader support
 			NullRhi& nullRhi = static_cast<NullRhi&>(getRhi());
-			return RHI_NEW(nullRhi.getContext(), GeometryShader)(nullRhi);
+			return RHI_NEW(nullRhi.getContext(), GeometryShader)(nullRhi RHI_RESOURCE_DEBUG_PASS_PARAMETER);
 		}
 
-		[[nodiscard]] inline virtual Rhi::IGeometryShader* createGeometryShaderFromSourceCode([[maybe_unused]] const Rhi::ShaderSourceCode& shaderSourceCode, [[maybe_unused]] Rhi::GsInputPrimitiveTopology gsInputPrimitiveTopology, [[maybe_unused]] Rhi::GsOutputPrimitiveTopology gsOutputPrimitiveTopology, [[maybe_unused]] uint32_t numberOfOutputVertices, [[maybe_unused]] Rhi::ShaderBytecode* shaderBytecode = nullptr RHI_RESOURCE_DEBUG_NAME_MAYBE_UNUSED_PARAMETER) override
+		[[nodiscard]] inline virtual Rhi::IGeometryShader* createGeometryShaderFromSourceCode([[maybe_unused]] const Rhi::ShaderSourceCode& shaderSourceCode, [[maybe_unused]] Rhi::GsInputPrimitiveTopology gsInputPrimitiveTopology, [[maybe_unused]] Rhi::GsOutputPrimitiveTopology gsOutputPrimitiveTopology, [[maybe_unused]] uint32_t numberOfOutputVertices, [[maybe_unused]] Rhi::ShaderBytecode* shaderBytecode = nullptr RHI_RESOURCE_DEBUG_NAME_PARAMETER) override
 		{
 			// There's no need to check for "Rhi::Capabilities::maximumNumberOfGsOutputVertices", we know there's geometry shader support
 			NullRhi& nullRhi = static_cast<NullRhi&>(getRhi());
-			return RHI_NEW(nullRhi.getContext(), GeometryShader)(nullRhi);
+			return RHI_NEW(nullRhi.getContext(), GeometryShader)(nullRhi RHI_RESOURCE_DEBUG_PASS_PARAMETER);
 		}
 
-		[[nodiscard]] inline virtual Rhi::IFragmentShader* createFragmentShaderFromBytecode([[maybe_unused]] const Rhi::ShaderBytecode& shaderBytecode RHI_RESOURCE_DEBUG_NAME_MAYBE_UNUSED_PARAMETER) override
+		[[nodiscard]] inline virtual Rhi::IFragmentShader* createFragmentShaderFromBytecode([[maybe_unused]] const Rhi::ShaderBytecode& shaderBytecode RHI_RESOURCE_DEBUG_NAME_PARAMETER) override
 		{
 			// There's no need to check for "Rhi::Capabilities::fragmentShader", we know there's fragment shader support
 			NullRhi& nullRhi = static_cast<NullRhi&>(getRhi());
-			return RHI_NEW(nullRhi.getContext(), FragmentShader)(nullRhi);
+			return RHI_NEW(nullRhi.getContext(), FragmentShader)(nullRhi RHI_RESOURCE_DEBUG_PASS_PARAMETER);
 		}
 
-		[[nodiscard]] inline virtual Rhi::IFragmentShader* createFragmentShaderFromSourceCode([[maybe_unused]] const Rhi::ShaderSourceCode& shaderSourceCode, [[maybe_unused]] Rhi::ShaderBytecode* shaderBytecode = nullptr RHI_RESOURCE_DEBUG_NAME_MAYBE_UNUSED_PARAMETER) override
+		[[nodiscard]] inline virtual Rhi::IFragmentShader* createFragmentShaderFromSourceCode([[maybe_unused]] const Rhi::ShaderSourceCode& shaderSourceCode, [[maybe_unused]] Rhi::ShaderBytecode* shaderBytecode = nullptr RHI_RESOURCE_DEBUG_NAME_PARAMETER) override
 		{
 			// There's no need to check for "Rhi::Capabilities::fragmentShader", we know there's fragment shader support
 			NullRhi& nullRhi = static_cast<NullRhi&>(getRhi());
-			return RHI_NEW(nullRhi.getContext(), FragmentShader)(nullRhi);
+			return RHI_NEW(nullRhi.getContext(), FragmentShader)(nullRhi RHI_RESOURCE_DEBUG_PASS_PARAMETER);
 		}
 
-		[[nodiscard]] inline virtual Rhi::IComputeShader* createComputeShaderFromBytecode([[maybe_unused]] const Rhi::ShaderBytecode& shaderBytecode RHI_RESOURCE_DEBUG_NAME_MAYBE_UNUSED_PARAMETER) override
+		[[nodiscard]] inline virtual Rhi::IComputeShader* createComputeShaderFromBytecode([[maybe_unused]] const Rhi::ShaderBytecode& shaderBytecode RHI_RESOURCE_DEBUG_NAME_PARAMETER) override
 		{
 			// There's no need to check for "Rhi::Capabilities::computeShader", we know there's compute shader support
 			NullRhi& nullRhi = static_cast<NullRhi&>(getRhi());
-			return RHI_NEW(nullRhi.getContext(), ComputeShader)(nullRhi);
+			return RHI_NEW(nullRhi.getContext(), ComputeShader)(nullRhi RHI_RESOURCE_DEBUG_PASS_PARAMETER);
 		}
 
-		[[nodiscard]] inline virtual Rhi::IComputeShader* createComputeShaderFromSourceCode([[maybe_unused]] const Rhi::ShaderSourceCode& shaderSourceCode, [[maybe_unused]] Rhi::ShaderBytecode* shaderBytecode = nullptr RHI_RESOURCE_DEBUG_NAME_MAYBE_UNUSED_PARAMETER) override
+		[[nodiscard]] inline virtual Rhi::IComputeShader* createComputeShaderFromSourceCode([[maybe_unused]] const Rhi::ShaderSourceCode& shaderSourceCode, [[maybe_unused]] Rhi::ShaderBytecode* shaderBytecode = nullptr RHI_RESOURCE_DEBUG_NAME_PARAMETER) override
 		{
 			// There's no need to check for "Rhi::Capabilities::computeShader", we know there's compute shader support
 			NullRhi& nullRhi = static_cast<NullRhi&>(getRhi());
-			return RHI_NEW(nullRhi.getContext(), ComputeShader)(nullRhi);
+			return RHI_NEW(nullRhi.getContext(), ComputeShader)(nullRhi RHI_RESOURCE_DEBUG_PASS_PARAMETER);
 		}
 
-		[[nodiscard]] virtual Rhi::IGraphicsProgram* createGraphicsProgram([[maybe_unused]] const Rhi::IRootSignature& rootSignature, [[maybe_unused]] const Rhi::VertexAttributes& vertexAttributes, Rhi::IVertexShader* vertexShader, Rhi::ITessellationControlShader* tessellationControlShader, Rhi::ITessellationEvaluationShader* tessellationEvaluationShader, Rhi::IGeometryShader* geometryShader, Rhi::IFragmentShader* fragmentShader RHI_RESOURCE_DEBUG_NAME_MAYBE_UNUSED_PARAMETER) override
+		[[nodiscard]] virtual Rhi::IGraphicsProgram* createGraphicsProgram([[maybe_unused]] const Rhi::IRootSignature& rootSignature, [[maybe_unused]] const Rhi::VertexAttributes& vertexAttributes, Rhi::IVertexShader* vertexShader, Rhi::ITessellationControlShader* tessellationControlShader, Rhi::ITessellationEvaluationShader* tessellationEvaluationShader, Rhi::IGeometryShader* geometryShader, Rhi::IFragmentShader* fragmentShader RHI_RESOURCE_DEBUG_NAME_PARAMETER) override
 		{
 			NullRhi& nullRhi = static_cast<NullRhi&>(getRhi());
 
@@ -3112,7 +3110,7 @@ namespace NullRhi
 			RHI_ASSERT(nullRhi.getContext(), nullptr == fragmentShader || fragmentShader->getShaderLanguageName() == ::detail::NULL_NAME, "Null fragment shader language mismatch")
 
 			// Create the graphics program
-			return RHI_NEW(nullRhi.getContext(), GraphicsProgram)(nullRhi, static_cast<VertexShader*>(vertexShader), static_cast<TessellationControlShader*>(tessellationControlShader), static_cast<TessellationEvaluationShader*>(tessellationEvaluationShader), static_cast<GeometryShader*>(geometryShader), static_cast<FragmentShader*>(fragmentShader));
+			return RHI_NEW(nullRhi.getContext(), GraphicsProgram)(nullRhi, static_cast<VertexShader*>(vertexShader), static_cast<TessellationControlShader*>(tessellationControlShader), static_cast<TessellationEvaluationShader*>(tessellationEvaluationShader), static_cast<GeometryShader*>(geometryShader), static_cast<FragmentShader*>(fragmentShader) RHI_RESOURCE_DEBUG_PASS_PARAMETER);
 		}
 
 
@@ -3165,8 +3163,8 @@ namespace NullRhi
 		*  @param[in] id
 		*    The unique compact graphics pipeline state ID
 		*/
-		GraphicsPipelineState(NullRhi& nullRhi, const Rhi::GraphicsPipelineState& graphicsPipelineState, uint16_t id) :
-			IGraphicsPipelineState(nullRhi, id),
+		GraphicsPipelineState(NullRhi& nullRhi, const Rhi::GraphicsPipelineState& graphicsPipelineState, uint16_t id RHI_RESOURCE_DEBUG_NAME_PARAMETER_NO_DEFAULT) :
+			IGraphicsPipelineState(nullRhi, id RHI_RESOURCE_DEBUG_PASS_PARAMETER),
 			mRootSignature(graphicsPipelineState.rootSignature),
 			mGraphicsProgram(graphicsPipelineState.graphicsProgram),
 			mRenderPass(graphicsPipelineState.renderPass)
@@ -3253,8 +3251,8 @@ namespace NullRhi
 		*  @param[in] id
 		*    The unique compact compute pipeline state ID
 		*/
-		ComputePipelineState(NullRhi& nullRhi, Rhi::IRootSignature& rootSignature, Rhi::IComputeShader& computeShader, uint16_t id) :
-			IComputePipelineState(nullRhi, id),
+		ComputePipelineState(NullRhi& nullRhi, Rhi::IRootSignature& rootSignature, Rhi::IComputeShader& computeShader, uint16_t id RHI_RESOURCE_DEBUG_NAME_PARAMETER_NO_DEFAULT) :
+			IComputePipelineState(nullRhi, id RHI_RESOURCE_DEBUG_PASS_PARAMETER),
 			mRootSignature(rootSignature),
 			mComputeShader(computeShader)
 		{
@@ -4018,9 +4016,9 @@ namespace NullRhi
 	//[-------------------------------------------------------]
 	//[ Resource creation                                     ]
 	//[-------------------------------------------------------]
-	Rhi::IRenderPass* NullRhi::createRenderPass(uint32_t numberOfColorAttachments, const Rhi::TextureFormat::Enum* colorAttachmentTextureFormats, Rhi::TextureFormat::Enum depthStencilAttachmentTextureFormat, uint8_t numberOfMultisamples RHI_RESOURCE_DEBUG_NAME_MAYBE_UNUSED_PARAMETER_NO_DEFAULT)
+	Rhi::IRenderPass* NullRhi::createRenderPass(uint32_t numberOfColorAttachments, const Rhi::TextureFormat::Enum* colorAttachmentTextureFormats, Rhi::TextureFormat::Enum depthStencilAttachmentTextureFormat, uint8_t numberOfMultisamples RHI_RESOURCE_DEBUG_NAME_PARAMETER_NO_DEFAULT)
 	{
-		return RHI_NEW(mContext, RenderPass)(*this, numberOfColorAttachments, colorAttachmentTextureFormats, depthStencilAttachmentTextureFormat, numberOfMultisamples);
+		return RHI_NEW(mContext, RenderPass)(*this, numberOfColorAttachments, colorAttachmentTextureFormats, depthStencilAttachmentTextureFormat, numberOfMultisamples RHI_RESOURCE_DEBUG_PASS_PARAMETER);
 	}
 
 	Rhi::IQueryPool* NullRhi::createQueryPool([[maybe_unused]] Rhi::QueryType queryType, [[maybe_unused]] uint32_t numberOfQueries RHI_RESOURCE_DEBUG_NAME_MAYBE_UNUSED_PARAMETER_NO_DEFAULT)
@@ -4029,17 +4027,17 @@ namespace NullRhi
 		return nullptr;
 	}
 
-	Rhi::ISwapChain* NullRhi::createSwapChain(Rhi::IRenderPass& renderPass, Rhi::WindowHandle windowHandle, bool RHI_RESOURCE_DEBUG_NAME_MAYBE_UNUSED_PARAMETER_NO_DEFAULT)
+	Rhi::ISwapChain* NullRhi::createSwapChain(Rhi::IRenderPass& renderPass, Rhi::WindowHandle windowHandle, bool RHI_RESOURCE_DEBUG_NAME_PARAMETER_NO_DEFAULT)
 	{
 		// Sanity checks
 		RHI_MATCH_CHECK(*this, renderPass)
 		RHI_ASSERT(mContext, NULL_HANDLE != windowHandle.nativeWindowHandle, "Null: The provided native window handle must not be a null handle")
 
 		// Create the swap chain
-		return RHI_NEW(mContext, SwapChain)(renderPass, windowHandle);
+		return RHI_NEW(mContext, SwapChain)(renderPass, windowHandle RHI_RESOURCE_DEBUG_PASS_PARAMETER);
 	}
 
-	Rhi::IFramebuffer* NullRhi::createFramebuffer(Rhi::IRenderPass& renderPass, const Rhi::FramebufferAttachment* colorFramebufferAttachments, const Rhi::FramebufferAttachment* depthStencilFramebufferAttachment RHI_RESOURCE_DEBUG_NAME_MAYBE_UNUSED_PARAMETER_NO_DEFAULT)
+	Rhi::IFramebuffer* NullRhi::createFramebuffer(Rhi::IRenderPass& renderPass, const Rhi::FramebufferAttachment* colorFramebufferAttachments, const Rhi::FramebufferAttachment* depthStencilFramebufferAttachment RHI_RESOURCE_DEBUG_NAME_PARAMETER_NO_DEFAULT)
 	{
 		// Sanity check
 		RHI_MATCH_CHECK(*this, renderPass)
@@ -4073,7 +4071,7 @@ namespace NullRhi
 		}
 
 		// Create the framebuffer instance
-		return RHI_NEW(mContext, Framebuffer)(renderPass);
+		return RHI_NEW(mContext, Framebuffer)(renderPass RHI_RESOURCE_DEBUG_PASS_PARAMETER);
 	}
 
 	Rhi::IBufferManager* NullRhi::createBufferManager()
@@ -4086,12 +4084,12 @@ namespace NullRhi
 		return RHI_NEW(mContext, TextureManager)(*this);
 	}
 
-	Rhi::IRootSignature* NullRhi::createRootSignature(const Rhi::RootSignature& rootSignature RHI_RESOURCE_DEBUG_NAME_MAYBE_UNUSED_PARAMETER_NO_DEFAULT)
+	Rhi::IRootSignature* NullRhi::createRootSignature(const Rhi::RootSignature& rootSignature RHI_RESOURCE_DEBUG_NAME_PARAMETER_NO_DEFAULT)
 	{
-		return RHI_NEW(mContext, RootSignature)(*this, rootSignature);
+		return RHI_NEW(mContext, RootSignature)(*this, rootSignature RHI_RESOURCE_DEBUG_PASS_PARAMETER);
 	}
 
-	Rhi::IGraphicsPipelineState* NullRhi::createGraphicsPipelineState(const Rhi::GraphicsPipelineState& graphicsPipelineState RHI_RESOURCE_DEBUG_NAME_MAYBE_UNUSED_PARAMETER_NO_DEFAULT)
+	Rhi::IGraphicsPipelineState* NullRhi::createGraphicsPipelineState(const Rhi::GraphicsPipelineState& graphicsPipelineState RHI_RESOURCE_DEBUG_NAME_PARAMETER_NO_DEFAULT)
 	{
 		// Sanity checks
 		RHI_ASSERT(mContext, nullptr != graphicsPipelineState.rootSignature, "Null: Invalid graphics pipeline state root signature")
@@ -4102,7 +4100,7 @@ namespace NullRhi
 		uint16_t id = 0;
 		if (GraphicsPipelineStateMakeId.CreateID(id))
 		{
-			return RHI_NEW(mContext, GraphicsPipelineState)(*this, graphicsPipelineState, id);
+			return RHI_NEW(mContext, GraphicsPipelineState)(*this, graphicsPipelineState, id RHI_RESOURCE_DEBUG_PASS_PARAMETER);
 		}
 
 		// Error: Ensure a correct reference counter behaviour
@@ -4115,7 +4113,7 @@ namespace NullRhi
 		return nullptr;
 	}
 
-	Rhi::IComputePipelineState* NullRhi::createComputePipelineState(Rhi::IRootSignature& rootSignature, Rhi::IComputeShader& computeShader RHI_RESOURCE_DEBUG_NAME_MAYBE_UNUSED_PARAMETER_NO_DEFAULT)
+	Rhi::IComputePipelineState* NullRhi::createComputePipelineState(Rhi::IRootSignature& rootSignature, Rhi::IComputeShader& computeShader RHI_RESOURCE_DEBUG_NAME_PARAMETER_NO_DEFAULT)
 	{
 		// Sanity checks
 		RHI_MATCH_CHECK(*this, rootSignature)
@@ -4125,7 +4123,7 @@ namespace NullRhi
 		uint16_t id = 0;
 		if (ComputePipelineStateMakeId.CreateID(id))
 		{
-			return RHI_NEW(mContext, ComputePipelineState)(*this, rootSignature, computeShader, id);
+			return RHI_NEW(mContext, ComputePipelineState)(*this, rootSignature, computeShader, id RHI_RESOURCE_DEBUG_PASS_PARAMETER);
 		}
 
 		// Error: Ensure a correct reference counter behaviour
@@ -4136,9 +4134,9 @@ namespace NullRhi
 		return nullptr;
 	}
 
-	Rhi::ISamplerState* NullRhi::createSamplerState(const Rhi::SamplerState& RHI_RESOURCE_DEBUG_NAME_MAYBE_UNUSED_PARAMETER_NO_DEFAULT)
+	Rhi::ISamplerState* NullRhi::createSamplerState(const Rhi::SamplerState& RHI_RESOURCE_DEBUG_NAME_PARAMETER_NO_DEFAULT)
 	{
-		return RHI_NEW(mContext, SamplerState)(*this);
+		return RHI_NEW(mContext, SamplerState)(*this RHI_RESOURCE_DEBUG_PASS_PARAMETER);
 	}
 
 

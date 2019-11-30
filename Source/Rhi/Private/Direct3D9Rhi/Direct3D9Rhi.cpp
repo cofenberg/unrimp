@@ -1683,15 +1683,8 @@ namespace Direct3D9Rhi
 	*  @param[in] debugName
 	*    ASCII name for debugging purposes, must be valid (there's no internal null pointer test)
 	*/
-	#define RHI_RESOURCE_DEBUG_NAME_PARAMETER_NO_DEFAULT , [[maybe_unused]] const char* debugName
-	#define RHI_RESOURCE_DEBUG_NAME_MAYBE_UNUSED_PARAMETER , [[maybe_unused]] const char* debugName = ""
-	#define RHI_RESOURCE_DEBUG_NAME_MAYBE_UNUSED_PARAMETER_NO_DEFAULT , [[maybe_unused]] const char* debugName
-
-	/**
-	*  @brief
-	*    Pass resource name for debugging purposes, ignored when not using "RHI_DEBUG"
-	*/
-	#define RHI_RESOURCE_DEBUG_PASS_PARAMETER , debugName
+	#define RHI_RESOURCE_DEBUG_NAME_MAYBE_UNUSED_PARAMETER , [[maybe_unused]] const char debugName[] = ""
+	#define RHI_RESOURCE_DEBUG_NAME_MAYBE_UNUSED_PARAMETER_NO_DEFAULT , [[maybe_unused]] const char debugName[]
 
 	/*
 	*  @brief
@@ -1712,15 +1705,8 @@ namespace Direct3D9Rhi
 	*  @param[in] debugName
 	*    ASCII name for debugging purposes, must be valid (there's no internal null pointer test)
 	*/
-	#define RHI_RESOURCE_DEBUG_NAME_PARAMETER_NO_DEFAULT
 	#define RHI_RESOURCE_DEBUG_NAME_MAYBE_UNUSED_PARAMETER
 	#define RHI_RESOURCE_DEBUG_NAME_MAYBE_UNUSED_PARAMETER_NO_DEFAULT
-
-	/**
-	*  @brief
-	*    Pass resource name for debugging purposes, ignored when not using "RHI_DEBUG"
-	*/
-	#define RHI_RESOURCE_DEBUG_PASS_PARAMETER
 
 	/*
 	*  @brief
@@ -2978,8 +2964,8 @@ namespace Direct3D9Rhi
 		*  @param[in] samplerStates
 		*    If not a null pointer at least "numberOfResources" sampler state pointers, must be valid if there's at least one texture resource, the resource group will keep a reference to the sampler states
 		*/
-		ResourceGroup(Rhi::IRhi& rhi, uint32_t rootParameterIndex, uint32_t numberOfResources, Rhi::IResource** resources, Rhi::ISamplerState** samplerStates) :
-			IResourceGroup(rhi),
+		ResourceGroup(Rhi::IRhi& rhi, uint32_t rootParameterIndex, uint32_t numberOfResources, Rhi::IResource** resources, Rhi::ISamplerState** samplerStates RHI_RESOURCE_DEBUG_NAME_PARAMETER_NO_DEFAULT) :
+			IResourceGroup(rhi RHI_RESOURCE_DEBUG_PASS_PARAMETER),
 			mRootParameterIndex(rootParameterIndex),
 			mNumberOfResources(numberOfResources),
 			mResources(RHI_MALLOC_TYPED(rhi.getContext(), Rhi::IResource*, mNumberOfResources)),
@@ -3135,8 +3121,8 @@ namespace Direct3D9Rhi
 		*  @param[in] rootSignature
 		*    Root signature to use
 		*/
-		RootSignature(Direct3D9Rhi& direct3D9Rhi, const Rhi::RootSignature& rootSignature) :
-			IRootSignature(direct3D9Rhi),
+		RootSignature(Direct3D9Rhi& direct3D9Rhi, const Rhi::RootSignature& rootSignature RHI_RESOURCE_DEBUG_NAME_PARAMETER_NO_DEFAULT) :
+			IRootSignature(direct3D9Rhi RHI_RESOURCE_DEBUG_PASS_PARAMETER),
 			mRootSignature(rootSignature)
 		{
 			const Rhi::Context& context = direct3D9Rhi.getContext();
@@ -3214,7 +3200,7 @@ namespace Direct3D9Rhi
 	//[ Public virtual Rhi::IRootSignature methods            ]
 	//[-------------------------------------------------------]
 	public:
-		[[nodiscard]] virtual Rhi::IResourceGroup* createResourceGroup(uint32_t rootParameterIndex, uint32_t numberOfResources, Rhi::IResource** resources, Rhi::ISamplerState** samplerStates = nullptr RHI_RESOURCE_DEBUG_NAME_MAYBE_UNUSED_PARAMETER) override
+		[[nodiscard]] virtual Rhi::IResourceGroup* createResourceGroup(uint32_t rootParameterIndex, uint32_t numberOfResources, Rhi::IResource** resources, Rhi::ISamplerState** samplerStates = nullptr RHI_RESOURCE_DEBUG_NAME_PARAMETER) override
 		{
 			Rhi::IRhi& rhi = getRhi();
 
@@ -3224,7 +3210,7 @@ namespace Direct3D9Rhi
 			RHI_ASSERT(rhi.getContext(), nullptr != resources, "The Direct3D 9 resource pointers must be valid")
 
 			// Create resource group
-			return RHI_NEW(rhi.getContext(), ResourceGroup)(rhi, rootParameterIndex, numberOfResources, resources, samplerStates);
+			return RHI_NEW(rhi.getContext(), ResourceGroup)(rhi, rootParameterIndex, numberOfResources, resources, samplerStates RHI_RESOURCE_DEBUG_PASS_PARAMETER);
 		}
 
 
@@ -3287,7 +3273,7 @@ namespace Direct3D9Rhi
 		*    Indication of the buffer usage
 		*/
 		VertexBuffer(Direct3D9Rhi& direct3D9Rhi, uint32_t numberOfBytes, const void* data, Rhi::BufferUsage bufferUsage RHI_RESOURCE_DEBUG_NAME_PARAMETER) :
-			IVertexBuffer(direct3D9Rhi),
+			IVertexBuffer(direct3D9Rhi RHI_RESOURCE_DEBUG_PASS_PARAMETER),
 			mDirect3DVertexBuffer9(nullptr)
 		{
 			// Create the Direct3D 9 vertex buffer
@@ -3400,7 +3386,7 @@ namespace Direct3D9Rhi
 		*    Index buffer data format
 		*/
 		IndexBuffer(Direct3D9Rhi& direct3D9Rhi, uint32_t numberOfBytes, const void* data, Rhi::BufferUsage bufferUsage, Rhi::IndexBufferFormat::Enum indexBufferFormat RHI_RESOURCE_DEBUG_NAME_PARAMETER) :
-			IIndexBuffer(direct3D9Rhi),
+			IIndexBuffer(direct3D9Rhi RHI_RESOURCE_DEBUG_PASS_PARAMETER),
 			mDirect3DIndexBuffer9(nullptr)
 		{
 			// "Rhi::IndexBufferFormat::UNSIGNED_CHAR" is not supported by Direct3D 9
@@ -3522,8 +3508,8 @@ namespace Direct3D9Rhi
 		*  @param[in] id
 		*    The unique compact vertex array ID
 		*/
-		VertexArray(Direct3D9Rhi& direct3D9Rhi, const Rhi::VertexAttributes& vertexAttributes, uint32_t numberOfVertexBuffers, const Rhi::VertexArrayVertexBuffer* vertexBuffers, IndexBuffer* indexBuffer, uint16_t id) :
-			IVertexArray(direct3D9Rhi, id),
+		VertexArray(Direct3D9Rhi& direct3D9Rhi, const Rhi::VertexAttributes& vertexAttributes, uint32_t numberOfVertexBuffers, const Rhi::VertexArrayVertexBuffer* vertexBuffers, IndexBuffer* indexBuffer, uint16_t id RHI_RESOURCE_DEBUG_NAME_PARAMETER_NO_DEFAULT) :
+			IVertexArray(direct3D9Rhi, id RHI_RESOURCE_DEBUG_PASS_PARAMETER),
 			mDirect3DDevice9(direct3D9Rhi.getDirect3DDevice9()),
 			mIndexBuffer(indexBuffer),
 			mNumberOfSlots(numberOfVertexBuffers),
@@ -3717,8 +3703,8 @@ namespace Direct3D9Rhi
 		*  @param[in] indirectBufferFlags
 		*    Indirect buffer flags, see "Rhi::IndirectBufferFlag"
 		*/
-		IndirectBuffer(Direct3D9Rhi& direct3D9Rhi, uint32_t numberOfBytes, const void* data, [[maybe_unused]] uint32_t indirectBufferFlags) :
-			IIndirectBuffer(direct3D9Rhi),
+		IndirectBuffer(Direct3D9Rhi& direct3D9Rhi, uint32_t numberOfBytes, const void* data, [[maybe_unused]] uint32_t indirectBufferFlags RHI_RESOURCE_DEBUG_NAME_PARAMETER_NO_DEFAULT) :
+			IIndirectBuffer(direct3D9Rhi RHI_RESOURCE_DEBUG_PASS_PARAMETER),
 			mNumberOfBytes(numberOfBytes),
 			mData(nullptr)
 		{
@@ -3858,7 +3844,7 @@ namespace Direct3D9Rhi
 			return RHI_NEW(direct3D9Rhi.getContext(), IndexBuffer)(direct3D9Rhi, numberOfBytes, data, bufferUsage, indexBufferFormat RHI_RESOURCE_DEBUG_PASS_PARAMETER);
 		}
 
-		[[nodiscard]] inline virtual Rhi::IVertexArray* createVertexArray(const Rhi::VertexAttributes& vertexAttributes, uint32_t numberOfVertexBuffers, const Rhi::VertexArrayVertexBuffer* vertexBuffers, Rhi::IIndexBuffer* indexBuffer = nullptr RHI_RESOURCE_DEBUG_NAME_MAYBE_UNUSED_PARAMETER) override
+		[[nodiscard]] inline virtual Rhi::IVertexArray* createVertexArray(const Rhi::VertexAttributes& vertexAttributes, uint32_t numberOfVertexBuffers, const Rhi::VertexArrayVertexBuffer* vertexBuffers, Rhi::IIndexBuffer* indexBuffer = nullptr RHI_RESOURCE_DEBUG_NAME_PARAMETER) override
 		{
 			Direct3D9Rhi& direct3D9Rhi = static_cast<Direct3D9Rhi&>(getRhi());
 
@@ -3878,7 +3864,7 @@ namespace Direct3D9Rhi
 			uint16_t id = 0;
 			if (direct3D9Rhi.VertexArrayMakeId.CreateID(id))
 			{
-				return RHI_NEW(direct3D9Rhi.getContext(), VertexArray)(direct3D9Rhi, vertexAttributes, numberOfVertexBuffers, vertexBuffers, static_cast<IndexBuffer*>(indexBuffer), id);
+				return RHI_NEW(direct3D9Rhi.getContext(), VertexArray)(direct3D9Rhi, vertexAttributes, numberOfVertexBuffers, vertexBuffers, static_cast<IndexBuffer*>(indexBuffer), id RHI_RESOURCE_DEBUG_PASS_PARAMETER);
 			}
 
 			// Error: Ensure a correct reference counter behaviour
@@ -3908,10 +3894,10 @@ namespace Direct3D9Rhi
 			return nullptr;
 		}
 
-		[[nodiscard]] inline virtual Rhi::IIndirectBuffer* createIndirectBuffer(uint32_t numberOfBytes, const void* data = nullptr, uint32_t indirectBufferFlags = 0, [[maybe_unused]] Rhi::BufferUsage bufferUsage = Rhi::BufferUsage::STATIC_DRAW RHI_RESOURCE_DEBUG_NAME_MAYBE_UNUSED_PARAMETER) override
+		[[nodiscard]] inline virtual Rhi::IIndirectBuffer* createIndirectBuffer(uint32_t numberOfBytes, const void* data = nullptr, uint32_t indirectBufferFlags = 0, [[maybe_unused]] Rhi::BufferUsage bufferUsage = Rhi::BufferUsage::STATIC_DRAW RHI_RESOURCE_DEBUG_NAME_PARAMETER) override
 		{
 			Direct3D9Rhi& direct3D9Rhi = static_cast<Direct3D9Rhi&>(getRhi());
-			return RHI_NEW(direct3D9Rhi.getContext(), IndirectBuffer)(direct3D9Rhi, numberOfBytes, data, indirectBufferFlags);
+			return RHI_NEW(direct3D9Rhi.getContext(), IndirectBuffer)(direct3D9Rhi, numberOfBytes, data, indirectBufferFlags RHI_RESOURCE_DEBUG_PASS_PARAMETER);
 		}
 
 		[[nodiscard]] inline virtual Rhi::IUniformBuffer* createUniformBuffer(uint32_t, const void*, Rhi::BufferUsage RHI_RESOURCE_DEBUG_NAME_MAYBE_UNUSED_PARAMETER) override
@@ -3977,7 +3963,7 @@ namespace Direct3D9Rhi
 		*    Indication of the texture usage
 		*/
 		Texture1D(Direct3D9Rhi& direct3D9Rhi, uint32_t width, Rhi::TextureFormat::Enum textureFormat, const void* data, uint32_t textureFlags, Rhi::TextureUsage textureUsage RHI_RESOURCE_DEBUG_NAME_PARAMETER) :
-			ITexture1D(direct3D9Rhi, width),
+			ITexture1D(direct3D9Rhi, width RHI_RESOURCE_DEBUG_PASS_PARAMETER),
 			mDirect3DTexture9(nullptr)
 		{
 			// Sanity checks
@@ -4186,7 +4172,7 @@ namespace Direct3D9Rhi
 		*    Indication of the texture usage
 		*/
 		Texture2D(Direct3D9Rhi& direct3D9Rhi, uint32_t width, uint32_t height, Rhi::TextureFormat::Enum textureFormat, const void* data, uint32_t textureFlags, Rhi::TextureUsage textureUsage RHI_RESOURCE_DEBUG_NAME_PARAMETER) :
-			ITexture2D(direct3D9Rhi, width, height),
+			ITexture2D(direct3D9Rhi, width, height RHI_RESOURCE_DEBUG_PASS_PARAMETER),
 			mDirect3DTexture9(nullptr)
 		{
 			// Sanity checks
@@ -4411,8 +4397,8 @@ namespace Direct3D9Rhi
 		*  @param[in] textureUsage
 		*    Indication of the texture usage
 		*/
-		Texture3D(Direct3D9Rhi& direct3D9Rhi, uint32_t width, uint32_t height, uint32_t depth, [[maybe_unused]] Rhi::TextureFormat::Enum textureFormat, [[maybe_unused]] const void* data, [[maybe_unused]] uint32_t textureFlags, [[maybe_unused]] Rhi::TextureUsage textureUsage RHI_RESOURCE_DEBUG_NAME_MAYBE_UNUSED_PARAMETER) :
-			ITexture3D(direct3D9Rhi, width, height, depth),
+		Texture3D(Direct3D9Rhi& direct3D9Rhi, uint32_t width, uint32_t height, uint32_t depth, [[maybe_unused]] Rhi::TextureFormat::Enum textureFormat, [[maybe_unused]] const void* data, [[maybe_unused]] uint32_t textureFlags, [[maybe_unused]] Rhi::TextureUsage textureUsage RHI_RESOURCE_DEBUG_NAME_PARAMETER) :
+			ITexture3D(direct3D9Rhi, width, height, depth RHI_RESOURCE_DEBUG_PASS_PARAMETER),
 			mDirect3DTexture9(nullptr)
 		{
 			// TODO(co) Implement Direct3D 9 volume texture
@@ -4624,8 +4610,8 @@ namespace Direct3D9Rhi
 		*  @param[in] textureUsage
 		*    Indication of the texture usage
 		*/
-		TextureCube(Direct3D9Rhi& direct3D9Rhi, uint32_t width, uint32_t height, [[maybe_unused]] Rhi::TextureFormat::Enum textureFormat, [[maybe_unused]] const void* data, [[maybe_unused]] uint32_t textureFlags, [[maybe_unused]] Rhi::TextureUsage textureUsage RHI_RESOURCE_DEBUG_NAME_MAYBE_UNUSED_PARAMETER) :
-			ITextureCube(direct3D9Rhi, width, height),
+		TextureCube(Direct3D9Rhi& direct3D9Rhi, uint32_t width, uint32_t height, [[maybe_unused]] Rhi::TextureFormat::Enum textureFormat, [[maybe_unused]] const void* data, [[maybe_unused]] uint32_t textureFlags, [[maybe_unused]] Rhi::TextureUsage textureUsage RHI_RESOURCE_DEBUG_NAME_PARAMETER) :
+			ITextureCube(direct3D9Rhi, width, height RHI_RESOURCE_DEBUG_PASS_PARAMETER),
 			mDirect3DTexture9(nullptr)
 		{
 			// TODO(co) Implement Direct3D 9 cube texture
@@ -4945,8 +4931,8 @@ namespace Direct3D9Rhi
 		*  @param[in] samplerState
 		*    Sampler state to use
 		*/
-		SamplerState(Direct3D9Rhi& direct3D9Rhi, const Rhi::SamplerState& samplerState) :
-			ISamplerState(direct3D9Rhi),
+		SamplerState(Direct3D9Rhi& direct3D9Rhi, const Rhi::SamplerState& samplerState RHI_RESOURCE_DEBUG_NAME_PARAMETER_NO_DEFAULT) :
+			ISamplerState(direct3D9Rhi RHI_RESOURCE_DEBUG_PASS_PARAMETER),
 			mDirect3D9MagFilterMode(Mapping::getDirect3D9MagFilterMode(direct3D9Rhi.getContext(), samplerState.filter)),
 			mDirect3D9MinFilterMode(Mapping::getDirect3D9MinFilterMode(direct3D9Rhi.getContext(), samplerState.filter)),
 			mDirect3D9MipFilterMode((0.0f == samplerState.maxLod) ? D3DTEXF_NONE : Mapping::getDirect3D9MipFilterMode(direct3D9Rhi.getContext(), samplerState.filter)),	// In case "Rhi::SamplerState::maxLod" is zero, disable mipmapping in order to ensure a correct behaviour when using Direct3D 9, float equal check is valid in here
@@ -5407,8 +5393,8 @@ namespace Direct3D9Rhi
 		*  @param[in] numberOfMultisamples
 		*    The number of multisamples per pixel (valid values: 1, 2, 4, 8)
 		*/
-		RenderPass(Rhi::IRhi& rhi, uint32_t numberOfColorAttachments, const Rhi::TextureFormat::Enum* colorAttachmentTextureFormats, Rhi::TextureFormat::Enum depthStencilAttachmentTextureFormat, uint8_t numberOfMultisamples) :
-			IRenderPass(rhi),
+		RenderPass(Rhi::IRhi& rhi, uint32_t numberOfColorAttachments, const Rhi::TextureFormat::Enum* colorAttachmentTextureFormats, Rhi::TextureFormat::Enum depthStencilAttachmentTextureFormat, uint8_t numberOfMultisamples RHI_RESOURCE_DEBUG_NAME_PARAMETER_NO_DEFAULT) :
+			IRenderPass(rhi RHI_RESOURCE_DEBUG_PASS_PARAMETER),
 			mNumberOfColorAttachments(numberOfColorAttachments),
 			mDepthStencilAttachmentTextureFormat(depthStencilAttachmentTextureFormat),
 			mNumberOfMultisamples(numberOfMultisamples)
@@ -5535,7 +5521,7 @@ namespace Direct3D9Rhi
 		*    Information about the window to render into
 		*/
 		SwapChain(Rhi::IRenderPass& renderPass, Rhi::WindowHandle windowHandle RHI_RESOURCE_DEBUG_NAME_PARAMETER) :
-			ISwapChain(renderPass),
+			ISwapChain(renderPass RHI_RESOURCE_DEBUG_PASS_PARAMETER),
 			mDirect3DSwapChain9(nullptr),
 			mDirect3DSurface9RenderTarget(nullptr),
 			mDirect3DSurface9DepthStencil(nullptr),
@@ -5987,8 +5973,8 @@ namespace Direct3D9Rhi
 		*  @note
 		*    - The framebuffer keeps a reference to the provided texture instances
 		*/
-		Framebuffer(Rhi::IRenderPass& renderPass, const Rhi::FramebufferAttachment* colorFramebufferAttachments, const Rhi::FramebufferAttachment* depthStencilFramebufferAttachment) :
-			IFramebuffer(renderPass),
+		Framebuffer(Rhi::IRenderPass& renderPass, const Rhi::FramebufferAttachment* colorFramebufferAttachments, const Rhi::FramebufferAttachment* depthStencilFramebufferAttachment RHI_RESOURCE_DEBUG_NAME_PARAMETER_NO_DEFAULT) :
+			IFramebuffer(renderPass RHI_RESOURCE_DEBUG_PASS_PARAMETER),
 			mNumberOfColorTextures(static_cast<RenderPass&>(renderPass).getNumberOfColorAttachments()),
 			mColorTextures(nullptr),	// Set below
 			mDepthStencilTexture(nullptr),
@@ -6306,8 +6292,8 @@ namespace Direct3D9Rhi
 		*  @param[in] shaderBytecode
 		*    Shader bytecode
 		*/
-		VertexShaderHlsl(Direct3D9Rhi& direct3D9Rhi, const Rhi::ShaderBytecode& shaderBytecode) :
-			IVertexShader(direct3D9Rhi),
+		VertexShaderHlsl(Direct3D9Rhi& direct3D9Rhi, const Rhi::ShaderBytecode& shaderBytecode RHI_RESOURCE_DEBUG_NAME_PARAMETER_NO_DEFAULT) :
+			IVertexShader(direct3D9Rhi RHI_RESOURCE_DEBUG_PASS_PARAMETER),
 			mDirect3DVertexShader9(nullptr),
 			mD3DXConstantTable(nullptr)
 		{
@@ -6325,8 +6311,8 @@ namespace Direct3D9Rhi
 		*  @param[in] sourceCode
 		*    Shader ASCII source code, must be valid
 		*/
-		VertexShaderHlsl(Direct3D9Rhi& direct3D9Rhi, const char* sourceCode, Rhi::IShaderLanguage::OptimizationLevel optimizationLevel, Rhi::ShaderBytecode* shaderBytecode) :
-			IVertexShader(direct3D9Rhi),
+		VertexShaderHlsl(Direct3D9Rhi& direct3D9Rhi, const char* sourceCode, Rhi::IShaderLanguage::OptimizationLevel optimizationLevel, Rhi::ShaderBytecode* shaderBytecode RHI_RESOURCE_DEBUG_NAME_PARAMETER_NO_DEFAULT) :
+			IVertexShader(direct3D9Rhi RHI_RESOURCE_DEBUG_PASS_PARAMETER),
 			mDirect3DVertexShader9(nullptr),
 			mD3DXConstantTable(nullptr)
 		{
@@ -6457,8 +6443,8 @@ namespace Direct3D9Rhi
 		*  @param[in] shaderBytecode
 		*    Shader bytecode
 		*/
-		FragmentShaderHlsl(Direct3D9Rhi& direct3D9Rhi, const Rhi::ShaderBytecode& shaderBytecode) :
-			IFragmentShader(direct3D9Rhi),
+		FragmentShaderHlsl(Direct3D9Rhi& direct3D9Rhi, const Rhi::ShaderBytecode& shaderBytecode RHI_RESOURCE_DEBUG_NAME_PARAMETER_NO_DEFAULT) :
+			IFragmentShader(direct3D9Rhi RHI_RESOURCE_DEBUG_PASS_PARAMETER),
 			mDirect3DPixelShader9(nullptr),
 			mD3DXConstantTable(nullptr)
 		{
@@ -6476,8 +6462,8 @@ namespace Direct3D9Rhi
 		*  @param[in] sourceCode
 		*    Shader ASCII source code, must be valid
 		*/
-		FragmentShaderHlsl(Direct3D9Rhi& direct3D9Rhi, const char* sourceCode, Rhi::IShaderLanguage::OptimizationLevel optimizationLevel, Rhi::ShaderBytecode* shaderBytecode) :
-			IFragmentShader(direct3D9Rhi),
+		FragmentShaderHlsl(Direct3D9Rhi& direct3D9Rhi, const char* sourceCode, Rhi::IShaderLanguage::OptimizationLevel optimizationLevel, Rhi::ShaderBytecode* shaderBytecode RHI_RESOURCE_DEBUG_NAME_PARAMETER_NO_DEFAULT) :
+			IFragmentShader(direct3D9Rhi RHI_RESOURCE_DEBUG_PASS_PARAMETER),
 			mDirect3DPixelShader9(nullptr),
 			mD3DXConstantTable(nullptr)
 		{
@@ -6613,8 +6599,8 @@ namespace Direct3D9Rhi
 		*  @note
 		*    - The graphics program keeps a reference to the provided shaders and releases it when no longer required
 		*/
-		GraphicsProgramHlsl(Direct3D9Rhi& direct3D9Rhi, VertexShaderHlsl* vertexShaderHlsl, FragmentShaderHlsl* fragmentShaderHlsl) :
-			IGraphicsProgram(direct3D9Rhi),
+		GraphicsProgramHlsl(Direct3D9Rhi& direct3D9Rhi, VertexShaderHlsl* vertexShaderHlsl, FragmentShaderHlsl* fragmentShaderHlsl RHI_RESOURCE_DEBUG_NAME_PARAMETER_NO_DEFAULT) :
+			IGraphicsProgram(direct3D9Rhi RHI_RESOURCE_DEBUG_PASS_PARAMETER),
 			mDirect3D9Rhi(&direct3D9Rhi),
 			mVertexShaderHlsl(vertexShaderHlsl),
 			mFragmentShaderHlsl(fragmentShaderHlsl),
@@ -6886,7 +6872,7 @@ namespace Direct3D9Rhi
 			return ::detail::HLSL_NAME;
 		}
 
-		[[nodiscard]] inline virtual Rhi::IVertexShader* createVertexShaderFromBytecode([[maybe_unused]] const Rhi::VertexAttributes& vertexAttributes, const Rhi::ShaderBytecode& shaderBytecode RHI_RESOURCE_DEBUG_NAME_MAYBE_UNUSED_PARAMETER) override
+		[[nodiscard]] inline virtual Rhi::IVertexShader* createVertexShaderFromBytecode([[maybe_unused]] const Rhi::VertexAttributes& vertexAttributes, const Rhi::ShaderBytecode& shaderBytecode RHI_RESOURCE_DEBUG_NAME_PARAMETER) override
 		{
 			Direct3D9Rhi& direct3D9Rhi = static_cast<Direct3D9Rhi&>(getRhi());
 
@@ -6895,15 +6881,15 @@ namespace Direct3D9Rhi
 
 			// There's no need to check for "Rhi::Capabilities::vertexShader", we know there's vertex shader support
 			// -> Resource debug name: "IDirect3DVertexShader9" and "ID3DXConstantTable" are not derived from "IDirect3DResource9", meaning we can't use the "IDirect3DResource9::SetPrivateData()"-method
-			return RHI_NEW(direct3D9Rhi.getContext(), VertexShaderHlsl)(direct3D9Rhi, shaderBytecode);
+			return RHI_NEW(direct3D9Rhi.getContext(), VertexShaderHlsl)(direct3D9Rhi, shaderBytecode RHI_RESOURCE_DEBUG_PASS_PARAMETER);
 		}
 
-		[[nodiscard]] inline virtual Rhi::IVertexShader* createVertexShaderFromSourceCode([[maybe_unused]] const Rhi::VertexAttributes& vertexAttributes, const Rhi::ShaderSourceCode& shaderSourceCode, Rhi::ShaderBytecode* shaderBytecode = nullptr RHI_RESOURCE_DEBUG_NAME_MAYBE_UNUSED_PARAMETER) override
+		[[nodiscard]] inline virtual Rhi::IVertexShader* createVertexShaderFromSourceCode([[maybe_unused]] const Rhi::VertexAttributes& vertexAttributes, const Rhi::ShaderSourceCode& shaderSourceCode, Rhi::ShaderBytecode* shaderBytecode = nullptr RHI_RESOURCE_DEBUG_NAME_PARAMETER) override
 		{
 			// There's no need to check for "Rhi::Capabilities::vertexShader", we know there's vertex shader support
 			// -> Resource debug name: "IDirect3DVertexShader9" and "ID3DXConstantTable" are not derived from "IDirect3DResource9", meaning we can't use the "IDirect3DResource9::SetPrivateData()"-method
 			Direct3D9Rhi& direct3D9Rhi = static_cast<Direct3D9Rhi&>(getRhi());
-			return RHI_NEW(direct3D9Rhi.getContext(), VertexShaderHlsl)(direct3D9Rhi, shaderSourceCode.sourceCode, getOptimizationLevel(), shaderBytecode);
+			return RHI_NEW(direct3D9Rhi.getContext(), VertexShaderHlsl)(direct3D9Rhi, shaderSourceCode.sourceCode, getOptimizationLevel(), shaderBytecode RHI_RESOURCE_DEBUG_PASS_PARAMETER);
 		}
 
 		[[nodiscard]] inline virtual Rhi::ITessellationControlShader* createTessellationControlShaderFromBytecode([[maybe_unused]] const Rhi::ShaderBytecode& shaderBytecode RHI_RESOURCE_DEBUG_NAME_MAYBE_UNUSED_PARAMETER) override
@@ -6942,7 +6928,7 @@ namespace Direct3D9Rhi
 			return nullptr;
 		}
 
-		[[nodiscard]] inline virtual Rhi::IFragmentShader* createFragmentShaderFromBytecode(const Rhi::ShaderBytecode& shaderBytecode RHI_RESOURCE_DEBUG_NAME_MAYBE_UNUSED_PARAMETER) override
+		[[nodiscard]] inline virtual Rhi::IFragmentShader* createFragmentShaderFromBytecode(const Rhi::ShaderBytecode& shaderBytecode RHI_RESOURCE_DEBUG_NAME_PARAMETER) override
 		{
 			Direct3D9Rhi& direct3D9Rhi = static_cast<Direct3D9Rhi&>(getRhi());
 
@@ -6951,15 +6937,15 @@ namespace Direct3D9Rhi
 
 			// There's no need to check for "Rhi::Capabilities::fragmentShader", we know there's fragment shader support
 			// -> Resource debug name: "IDirect3DPixelShader9" and "ID3DXConstantTable" are not derived from "IDirect3DResource9", meaning we can't use the "IDirect3DResource9::SetPrivateData()"-method
-			return RHI_NEW(direct3D9Rhi.getContext(), FragmentShaderHlsl)(direct3D9Rhi, shaderBytecode);
+			return RHI_NEW(direct3D9Rhi.getContext(), FragmentShaderHlsl)(direct3D9Rhi, shaderBytecode RHI_RESOURCE_DEBUG_PASS_PARAMETER);
 		}
 
-		[[nodiscard]] inline virtual Rhi::IFragmentShader* createFragmentShaderFromSourceCode(const Rhi::ShaderSourceCode& shaderSourceCode, Rhi::ShaderBytecode* shaderBytecode = nullptr RHI_RESOURCE_DEBUG_NAME_MAYBE_UNUSED_PARAMETER) override
+		[[nodiscard]] inline virtual Rhi::IFragmentShader* createFragmentShaderFromSourceCode(const Rhi::ShaderSourceCode& shaderSourceCode, Rhi::ShaderBytecode* shaderBytecode = nullptr RHI_RESOURCE_DEBUG_NAME_PARAMETER) override
 		{
 			// There's no need to check for "Rhi::Capabilities::fragmentShader", we know there's fragment shader support
 			// -> Resource debug name: "IDirect3DPixelShader9" and "ID3DXConstantTable" are not derived from "IDirect3DResource9", meaning we can't use the "IDirect3DResource9::SetPrivateData()"-method
 			Direct3D9Rhi& direct3D9Rhi = static_cast<Direct3D9Rhi&>(getRhi());
-			return RHI_NEW(direct3D9Rhi.getContext(), FragmentShaderHlsl)(direct3D9Rhi, shaderSourceCode.sourceCode, getOptimizationLevel(), shaderBytecode);
+			return RHI_NEW(direct3D9Rhi.getContext(), FragmentShaderHlsl)(direct3D9Rhi, shaderSourceCode.sourceCode, getOptimizationLevel(), shaderBytecode RHI_RESOURCE_DEBUG_PASS_PARAMETER);
 		}
 
 		[[nodiscard]] inline virtual Rhi::IComputeShader* createComputeShaderFromBytecode(const Rhi::ShaderBytecode& RHI_RESOURCE_DEBUG_NAME_MAYBE_UNUSED_PARAMETER) override
@@ -6974,7 +6960,7 @@ namespace Direct3D9Rhi
 			return nullptr;
 		}
 
-		[[nodiscard]] virtual Rhi::IGraphicsProgram* createGraphicsProgram([[maybe_unused]] const Rhi::IRootSignature& rootSignature, [[maybe_unused]] const Rhi::VertexAttributes& vertexAttributes, [[maybe_unused]] Rhi::IVertexShader* vertexShader, [[maybe_unused]] Rhi::ITessellationControlShader* tessellationControlShader, [[maybe_unused]] Rhi::ITessellationEvaluationShader* tessellationEvaluationShader, [[maybe_unused]] Rhi::IGeometryShader* geometryShader, Rhi::IFragmentShader* fragmentShader RHI_RESOURCE_DEBUG_NAME_MAYBE_UNUSED_PARAMETER) override
+		[[nodiscard]] virtual Rhi::IGraphicsProgram* createGraphicsProgram([[maybe_unused]] const Rhi::IRootSignature& rootSignature, [[maybe_unused]] const Rhi::VertexAttributes& vertexAttributes, [[maybe_unused]] Rhi::IVertexShader* vertexShader, [[maybe_unused]] Rhi::ITessellationControlShader* tessellationControlShader, [[maybe_unused]] Rhi::ITessellationEvaluationShader* tessellationEvaluationShader, [[maybe_unused]] Rhi::IGeometryShader* geometryShader, Rhi::IFragmentShader* fragmentShader RHI_RESOURCE_DEBUG_NAME_PARAMETER) override
 		{
 			Direct3D9Rhi& direct3D9Rhi = static_cast<Direct3D9Rhi&>(getRhi());
 
@@ -6990,7 +6976,7 @@ namespace Direct3D9Rhi
 			RHI_ASSERT(direct3D9Rhi.getContext(), nullptr == fragmentShader || fragmentShader->getShaderLanguageName() == ::detail::HLSL_NAME, "Direct3D 9 fragment shader language mismatch")
 
 			// Create the graphics program
-			return RHI_NEW(direct3D9Rhi.getContext(), GraphicsProgramHlsl)(direct3D9Rhi, static_cast<VertexShaderHlsl*>(vertexShader), static_cast<FragmentShaderHlsl*>(fragmentShader));
+			return RHI_NEW(direct3D9Rhi.getContext(), GraphicsProgramHlsl)(direct3D9Rhi, static_cast<VertexShaderHlsl*>(vertexShader), static_cast<FragmentShaderHlsl*>(fragmentShader) RHI_RESOURCE_DEBUG_PASS_PARAMETER);
 		}
 
 
@@ -7043,8 +7029,8 @@ namespace Direct3D9Rhi
 		*  @param[in] id
 		*    The unique compact graphics pipeline state ID
 		*/
-		GraphicsPipelineState(Direct3D9Rhi& direct3D9Rhi, const Rhi::GraphicsPipelineState& graphicsPipelineState, uint16_t id) :
-			IGraphicsPipelineState(direct3D9Rhi, id),
+		GraphicsPipelineState(Direct3D9Rhi& direct3D9Rhi, const Rhi::GraphicsPipelineState& graphicsPipelineState, uint16_t id RHI_RESOURCE_DEBUG_NAME_PARAMETER_NO_DEFAULT) :
+			IGraphicsPipelineState(direct3D9Rhi, id RHI_RESOURCE_DEBUG_PASS_PARAMETER),
 			mDirect3DDevice9(direct3D9Rhi.getDirect3DDevice9()),
 			mPrimitiveTopology(graphicsPipelineState.primitiveTopology),
 			mGraphicsProgram(graphicsPipelineState.graphicsProgram),
@@ -8624,9 +8610,9 @@ namespace Direct3D9Rhi
 	//[-------------------------------------------------------]
 	//[ Resource creation                                     ]
 	//[-------------------------------------------------------]
-	Rhi::IRenderPass* Direct3D9Rhi::createRenderPass(uint32_t numberOfColorAttachments, const Rhi::TextureFormat::Enum* colorAttachmentTextureFormats, Rhi::TextureFormat::Enum depthStencilAttachmentTextureFormat, uint8_t numberOfMultisamples RHI_RESOURCE_DEBUG_NAME_MAYBE_UNUSED_PARAMETER_NO_DEFAULT)
+	Rhi::IRenderPass* Direct3D9Rhi::createRenderPass(uint32_t numberOfColorAttachments, const Rhi::TextureFormat::Enum* colorAttachmentTextureFormats, Rhi::TextureFormat::Enum depthStencilAttachmentTextureFormat, uint8_t numberOfMultisamples RHI_RESOURCE_DEBUG_NAME_PARAMETER_NO_DEFAULT)
 	{
-		return RHI_NEW(mContext, RenderPass)(*this, numberOfColorAttachments, colorAttachmentTextureFormats, depthStencilAttachmentTextureFormat, numberOfMultisamples);
+		return RHI_NEW(mContext, RenderPass)(*this, numberOfColorAttachments, colorAttachmentTextureFormats, depthStencilAttachmentTextureFormat, numberOfMultisamples RHI_RESOURCE_DEBUG_PASS_PARAMETER);
 	}
 
 	Rhi::IQueryPool* Direct3D9Rhi::createQueryPool([[maybe_unused]] Rhi::QueryType queryType, [[maybe_unused]] uint32_t numberOfQueries RHI_RESOURCE_DEBUG_NAME_MAYBE_UNUSED_PARAMETER_NO_DEFAULT)
@@ -8645,13 +8631,13 @@ namespace Direct3D9Rhi
 		return RHI_NEW(mContext, SwapChain)(renderPass, windowHandle RHI_RESOURCE_DEBUG_PASS_PARAMETER);
 	}
 
-	Rhi::IFramebuffer* Direct3D9Rhi::createFramebuffer(Rhi::IRenderPass& renderPass, const Rhi::FramebufferAttachment* colorFramebufferAttachments, const Rhi::FramebufferAttachment* depthStencilFramebufferAttachment RHI_RESOURCE_DEBUG_NAME_MAYBE_UNUSED_PARAMETER_NO_DEFAULT)
+	Rhi::IFramebuffer* Direct3D9Rhi::createFramebuffer(Rhi::IRenderPass& renderPass, const Rhi::FramebufferAttachment* colorFramebufferAttachments, const Rhi::FramebufferAttachment* depthStencilFramebufferAttachment RHI_RESOURCE_DEBUG_NAME_PARAMETER_NO_DEFAULT)
 	{
 		// Sanity check
 		RHI_MATCH_CHECK(*this, renderPass)
 
 		// Create the framebuffer
-		return RHI_NEW(mContext, Framebuffer)(renderPass, colorFramebufferAttachments, depthStencilFramebufferAttachment);
+		return RHI_NEW(mContext, Framebuffer)(renderPass, colorFramebufferAttachments, depthStencilFramebufferAttachment RHI_RESOURCE_DEBUG_PASS_PARAMETER);
 	}
 
 	Rhi::IBufferManager* Direct3D9Rhi::createBufferManager()
@@ -8664,12 +8650,12 @@ namespace Direct3D9Rhi
 		return RHI_NEW(mContext, TextureManager)(*this);
 	}
 
-	Rhi::IRootSignature* Direct3D9Rhi::createRootSignature(const Rhi::RootSignature& rootSignature RHI_RESOURCE_DEBUG_NAME_MAYBE_UNUSED_PARAMETER_NO_DEFAULT)
+	Rhi::IRootSignature* Direct3D9Rhi::createRootSignature(const Rhi::RootSignature& rootSignature RHI_RESOURCE_DEBUG_NAME_PARAMETER_NO_DEFAULT)
 	{
-		return RHI_NEW(mContext, RootSignature)(*this, rootSignature);
+		return RHI_NEW(mContext, RootSignature)(*this, rootSignature RHI_RESOURCE_DEBUG_PASS_PARAMETER);
 	}
 
-	Rhi::IGraphicsPipelineState* Direct3D9Rhi::createGraphicsPipelineState(const Rhi::GraphicsPipelineState& graphicsPipelineState RHI_RESOURCE_DEBUG_NAME_MAYBE_UNUSED_PARAMETER_NO_DEFAULT)
+	Rhi::IGraphicsPipelineState* Direct3D9Rhi::createGraphicsPipelineState(const Rhi::GraphicsPipelineState& graphicsPipelineState RHI_RESOURCE_DEBUG_NAME_PARAMETER_NO_DEFAULT)
 	{
 		// Sanity checks
 		RHI_ASSERT(mContext, nullptr != graphicsPipelineState.rootSignature, "Direct3D 9: Invalid graphics pipeline state root signature")
@@ -8681,7 +8667,7 @@ namespace Direct3D9Rhi
 		if (GraphicsPipelineStateMakeId.CreateID(id))
 		{
 			// Resource debug name: "IDirect3DVertexDeclaration9" is not derived from "IDirect3DResource9", meaning we can't use the "IDirect3DResource9::SetPrivateData()"-method
-			return RHI_NEW(mContext, GraphicsPipelineState)(*this, graphicsPipelineState, id);
+			return RHI_NEW(mContext, GraphicsPipelineState)(*this, graphicsPipelineState, id RHI_RESOURCE_DEBUG_PASS_PARAMETER);
 		}
 
 		// Error: Ensure a correct reference counter behaviour
@@ -8710,9 +8696,9 @@ namespace Direct3D9Rhi
 		return nullptr;
 	}
 
-	Rhi::ISamplerState* Direct3D9Rhi::createSamplerState(const Rhi::SamplerState& samplerState RHI_RESOURCE_DEBUG_NAME_MAYBE_UNUSED_PARAMETER_NO_DEFAULT)
+	Rhi::ISamplerState* Direct3D9Rhi::createSamplerState(const Rhi::SamplerState& samplerState RHI_RESOURCE_DEBUG_NAME_PARAMETER_NO_DEFAULT)
 	{
-		return RHI_NEW(mContext, SamplerState)(*this, samplerState);
+		return RHI_NEW(mContext, SamplerState)(*this, samplerState RHI_RESOURCE_DEBUG_PASS_PARAMETER);
 	}
 
 

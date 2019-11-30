@@ -228,7 +228,7 @@ namespace Renderer
 	//[-------------------------------------------------------]
 	//[ Public methods                                        ]
 	//[-------------------------------------------------------]
-	RenderQueue::RenderQueue(IndirectBufferManager& indirectBufferManager, uint8_t minimumRenderQueueIndex, uint8_t maximumRenderQueueIndex, bool transparentPass, bool doSort) :
+	RenderQueue::RenderQueue(IndirectBufferManager& indirectBufferManager, uint8_t minimumRenderQueueIndex, uint8_t maximumRenderQueueIndex, bool positionOnlyPass, bool transparentPass, bool doSort) :
 		mRenderer(indirectBufferManager.getRenderer()),
 		mIndirectBufferManager(indirectBufferManager),
 		mNumberOfNullDrawCalls(0),
@@ -236,6 +236,7 @@ namespace Renderer
 		mNumberOfDrawCalls(0),
 		mMinimumRenderQueueIndex(minimumRenderQueueIndex),
 		mMaximumRenderQueueIndex(maximumRenderQueueIndex),
+		mPositionOnlyPass(positionOnlyPass),
 		mTransparentPass(transparentPass),
 		mDoSort(doSort)
 	{
@@ -412,7 +413,7 @@ namespace Renderer
 								{
 									const uint16_t pipelineStateId = foundPipelineState->getId();
 									const uint16_t resourceGroupId = 0;	// TODO(co) Add resource group sorting
-									const uint32_t vertexArrayId = (nullptr != renderable.getVertexArrayPtr()) ? renderable.getVertexArrayPtr()->getId() : 0u;
+									const uint32_t vertexArrayId = mPositionOnlyPass ? ((nullptr != renderable.getPositionOnlyVertexArrayPtrWithFallback()) ? renderable.getPositionOnlyVertexArrayPtrWithFallback()->getId() : 0u) : ((nullptr != renderable.getVertexArrayPtr()) ? renderable.getVertexArrayPtr()->getId() : 0u);
 
 									// Define helper macros
 									#define RENDER_QUEUE_MAKE_MASK(x) ((1u << (x)) - 1u)
@@ -506,7 +507,7 @@ namespace Renderer
 			Rhi::Command::SetGraphicsPipelineState::create(commandBuffer, &foundGraphicsPipelineState);
 
 			// Setup input assembly (IA): Set the used vertex array
-			Rhi::Command::SetGraphicsVertexArray::create(commandBuffer, renderable.getVertexArrayPtr());
+			Rhi::Command::SetGraphicsVertexArray::create(commandBuffer, mPositionOnlyPass ? renderable.getPositionOnlyVertexArrayPtrWithFallback() : renderable.getVertexArrayPtr());
 
 			{ // Fill the pass buffer manager
 				PassBufferManager* passBufferManager = materialBlueprintResource.getPassBufferManager();
@@ -639,7 +640,7 @@ namespace Renderer
 						}
 
 						{ // Setup input assembly (IA): Set the used vertex array
-							const Rhi::IVertexArrayPtr& vertexArrayPtr = renderable.getVertexArrayPtr();
+							const Rhi::IVertexArrayPtr& vertexArrayPtr = mPositionOnlyPass ? renderable.getPositionOnlyVertexArrayPtrWithFallback() : renderable.getVertexArrayPtr();
 							if (!vertexArraySet || currentVertexArray != vertexArrayPtr)
 							{
 								vertexArraySet = true;

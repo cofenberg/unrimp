@@ -89,13 +89,42 @@ namespace Renderer
 	//[-------------------------------------------------------]
 	public:
 		RENDERER_API_EXPORT Renderable();
-		RENDERER_API_EXPORT Renderable(RenderableManager& renderableManager, const Rhi::IVertexArrayPtr& vertexArrayPtr, const MaterialResourceManager& materialResourceManager, MaterialResourceId materialResourceId, SkeletonResourceId skeletonResourceId, bool drawIndexed, uint32_t startIndexLocation, uint32_t numberOfIndices, uint32_t instanceCount = 1);
-		RENDERER_API_EXPORT Renderable(RenderableManager& renderableManager, const Rhi::IVertexArrayPtr& vertexArrayPtr, const MaterialResourceManager& materialResourceManager, MaterialResourceId materialResourceId, SkeletonResourceId skeletonResourceId, bool drawIndexed, const Rhi::IIndirectBufferPtr& indirectBufferPtr, uint32_t indirectBufferOffset = 0, uint32_t numberOfDraws = 1);
+		RENDERER_API_EXPORT Renderable(RenderableManager& renderableManager, const Rhi::IVertexArrayPtr& vertexArrayPtr, const MaterialResourceManager& materialResourceManager, MaterialResourceId materialResourceId, SkeletonResourceId skeletonResourceId, bool drawIndexed, uint32_t startIndexLocation, uint32_t numberOfIndices, uint32_t instanceCount = 1 RHI_RESOURCE_DEBUG_NAME_PARAMETER);
+		RENDERER_API_EXPORT Renderable(RenderableManager& renderableManager, const Rhi::IVertexArrayPtr& vertexArrayPtr, const MaterialResourceManager& materialResourceManager, MaterialResourceId materialResourceId, SkeletonResourceId skeletonResourceId, bool drawIndexed, const Rhi::IIndirectBufferPtr& indirectBufferPtr, uint32_t indirectBufferOffset = 0, uint32_t numberOfDraws = 1 RHI_RESOURCE_DEBUG_NAME_PARAMETER);
+		RENDERER_API_EXPORT Renderable(RenderableManager& renderableManager, const Rhi::IVertexArrayPtr& vertexArrayPtr, const Rhi::IVertexArrayPtr& positionOnlyVertexArrayPtr, const MaterialResourceManager& materialResourceManager, MaterialResourceId materialResourceId, SkeletonResourceId skeletonResourceId, bool drawIndexed, uint32_t startIndexLocation, uint32_t numberOfIndices, uint32_t instanceCount = 1 RHI_RESOURCE_DEBUG_NAME_PARAMETER);
+		RENDERER_API_EXPORT Renderable(RenderableManager& renderableManager, const Rhi::IVertexArrayPtr& vertexArrayPtr, const Rhi::IVertexArrayPtr& positionOnlyVertexArrayPtr, const MaterialResourceManager& materialResourceManager, MaterialResourceId materialResourceId, SkeletonResourceId skeletonResourceId, bool drawIndexed, const Rhi::IIndirectBufferPtr& indirectBufferPtr, uint32_t indirectBufferOffset = 0, uint32_t numberOfDraws = 1 RHI_RESOURCE_DEBUG_NAME_PARAMETER);
 
 		inline ~Renderable()
 		{
 			unsetMaterialResourceIdInternal();
 		}
+
+		//[-------------------------------------------------------]
+		//[ Debug                                                 ]
+		//[-------------------------------------------------------]
+		#ifdef RHI_DEBUG
+			/**
+			*  @brief
+			*    Return the renderable debug name
+			*
+			*  @return
+			*    The renderable debug name, never a null pointer and at least an empty string
+			*
+			*  @note
+			*    - If possible, the renderable debug name should use the following convention: "<filename>?[<attribute 0>][<attribute n>]" (for "?" see "Renderer::IFileManager::INVALID_CHARACTER")
+			*/
+			[[nodiscard]] inline const char* getDebugName() const
+			{
+				return mDebugName;
+			}
+
+			inline void setDebugName(const char debugName[])
+			{
+				ASSERT((strlen(debugName) < 256) && "Renderable debug name is not allowed to exceed 255 characters");
+				strncpy(mDebugName, debugName, 256);
+				mDebugName[255] = '\0';
+			}
+		#endif
 
 		//[-------------------------------------------------------]
 		//[ Data                                                  ]
@@ -110,9 +139,21 @@ namespace Renderer
 			return mVertexArrayPtr;
 		}
 
-		inline void setVertexArrayPtr(const Rhi::IVertexArrayPtr& vertexArrayPtr)
+		[[nodiscard]] inline const Rhi::IVertexArrayPtr& getPositionOnlyVertexArrayPtr() const
+		{
+			return mPositionOnlyVertexArrayPtr;
+		}
+
+		[[nodiscard]] inline const Rhi::IVertexArrayPtr& getPositionOnlyVertexArrayPtrWithFallback() const
+		{
+			// In case an alpha map is used, usage of the position-only vertex array object (VAO) can result in visual artifacts since also a texture coordinate is needed for sampling
+			return (!mUseAlphaMap && mPositionOnlyVertexArrayPtr != nullptr) ? mPositionOnlyVertexArrayPtr : mVertexArrayPtr;
+		}
+
+		inline void setVertexArrayPtr(const Rhi::IVertexArrayPtr& vertexArrayPtr, const Rhi::IVertexArrayPtr& positionOnlyVertexArrayPtr = Rhi::IVertexArrayPtr())
 		{
 			mVertexArrayPtr = vertexArrayPtr;
+			mPositionOnlyVertexArrayPtr = positionOnlyVertexArrayPtr;
 		}
 
 		[[nodiscard]] inline const Rhi::IIndirectBufferPtr& getIndirectBufferPtr() const
@@ -220,6 +261,11 @@ namespace Renderer
 			return mCastShadows;
 		}
 
+		[[nodiscard]] inline bool getUseAlphaMap() const
+		{
+			return mUseAlphaMap;
+		}
+
 
 	//[-------------------------------------------------------]
 	//[ Private methods                                       ]
@@ -256,27 +302,33 @@ namespace Renderer
 	//[ Private data                                          ]
 	//[-------------------------------------------------------]
 	private:
+		// Debug
+		#ifdef RHI_DEBUG
+			char						mDebugName[256];				///< Debug name for easier renderable identification when debugging, contains terminating zero, first member variable by intent to see it at once during introspection (debug memory layout change is no problem here)
+		#endif
 		// Data
 		RenderableManager&				mRenderableManager;
-		Rhi::IVertexArrayPtr			mVertexArrayPtr;		///< Optional vertex array object (VAO), can be a null pointer
-		Rhi::IIndirectBufferPtr			mIndirectBufferPtr;		///< Optional indirect buffer, can be a null pointer
+		Rhi::IVertexArrayPtr			mVertexArrayPtr;				///< Optional vertex array object (VAO), can be a null pointer
+		Rhi::IVertexArrayPtr			mPositionOnlyVertexArrayPtr;	///< Optional position-only vertex array object (VAO) which can reduce the number of processed vertices up to half, can be a null pointer, can be used for position-only rendering (e.g. shadow map rendering) using the same vertex data that the original vertex array object (VAO) uses
+		Rhi::IIndirectBufferPtr			mIndirectBufferPtr;				///< Optional indirect buffer, can be a null pointer
 		union
 		{
-			uint32_t					mStartIndexLocation;	///< Used in case there's no indirect buffer
-			uint32_t					mIndirectBufferOffset;	///< Used in case there's an indirect buffer
+			uint32_t					mStartIndexLocation;			///< Used in case there's no indirect buffer
+			uint32_t					mIndirectBufferOffset;			///< Used in case there's an indirect buffer
 		};
-		uint32_t						mNumberOfIndices;		///< If there's an indirect buffer set, this value is unused
+		uint32_t						mNumberOfIndices;				///< If there's an indirect buffer set, this value is unused
 		union
 		{
-			uint32_t					mInstanceCount;			///< Used in case there's no indirect buffer
-			uint32_t					mNumberOfDraws;			///< Used in case there's an indirect buffer
+			uint32_t					mInstanceCount;					///< Used in case there's no indirect buffer
+			uint32_t					mNumberOfDraws;					///< Used in case there's an indirect buffer
 		};
 		MaterialResourceId				mMaterialResourceId;
 		SkeletonResourceId				mSkeletonResourceId;
-		bool							mDrawIndexed;			///< Placed at this location due to padding
+		bool							mDrawIndexed;					///< Placed at this location due to padding
 		// Cached material data
 		uint8_t							mRenderQueueIndex;
 		bool							mCastShadows;
+		bool							mUseAlphaMap;					///< Relevant e.g. in combination with cast shadows in which the optional position-only vertex array object (VAO) can't be used in case an alpha mask is used
 		PipelineStateCaches				mPipelineStateCaches;
 		// Internal data
 		const MaterialResourceManager*	mMaterialResourceManager;

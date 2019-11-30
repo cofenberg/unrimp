@@ -535,6 +535,7 @@ namespace RendererToolkit
 			const char* valueAsString = rapidJsonValueValue.GetString();
 			const rapidjson::SizeType valueStringLength = rapidJsonValueValue.GetStringLength();
 
+			// Figure out the property value
 			if (strncmp(valueAsString, "FALSE", valueStringLength) == 0)
 			{
 				value = false;
