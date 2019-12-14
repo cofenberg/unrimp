@@ -79,6 +79,16 @@ namespace Renderer
 	//[ Public methods                                        ]
 	//[-------------------------------------------------------]
 	public:
+		[[nodiscard]] inline uint8_t getNumberOfTopMeshLodsToRemove() const
+		{
+			return mNumberOfTopMeshLodsToRemove;
+		}
+
+		inline void setNumberOfTopMeshLodsToRemove(uint8_t numberOfTopMeshLodsToRemove)
+		{
+			mNumberOfTopMeshLodsToRemove = numberOfTopMeshLodsToRemove;
+		}
+
 		[[nodiscard]] RENDERER_API_EXPORT MeshResource* getMeshResourceByAssetId(AssetId assetId) const;	// Considered to be inefficient, avoid method whenever possible
 		RENDERER_API_EXPORT void loadMeshResourceByAssetId(AssetId assetId, MeshResourceId& meshResourceId, IResourceListener* resourceListener = nullptr, bool reload = false, ResourceLoaderTypeId resourceLoaderTypeId = getInvalid<ResourceLoaderTypeId>());	// Asynchronous
 		[[nodiscard]] RENDERER_API_EXPORT MeshResourceId createEmptyMeshResourceByAssetId(AssetId assetId);	// Mesh resource is not allowed to exist, yet, prefer asynchronous mesh resource loading over this method
@@ -128,9 +138,10 @@ namespace Renderer
 	//[ Private data                                          ]
 	//[-------------------------------------------------------]
 	private:
+		uint8_t				  mNumberOfTopMeshLodsToRemove;	///< The number of top mesh LODs to remove, only has an impact while rendering and not on loading (amount of needed memory is not influenced)
 		ResourceManagerTemplate<MeshResource, IMeshResourceLoader, MeshResourceId, 4096>* mInternalResourceManager;
-		Rhi::IVertexBufferPtr mDrawIdVertexBufferPtr;	///< Draw ID vertex buffer, see "17/11/2012 Surviving without gl_DrawID" - https://www.g-truc.net/post-0518.html
-		Rhi::IVertexArrayPtr  mDrawIdVertexArrayPtr;	///< Draw ID vertex array, see "17/11/2012 Surviving without gl_DrawID" - https://www.g-truc.net/post-0518.html
+		Rhi::IVertexBufferPtr mDrawIdVertexBufferPtr;		///< Draw ID vertex buffer, see "17/11/2012 Surviving without gl_DrawID" - https://www.g-truc.net/post-0518.html
+		Rhi::IVertexArrayPtr  mDrawIdVertexArrayPtr;		///< Draw ID vertex array, see "17/11/2012 Surviving without gl_DrawID" - https://www.g-truc.net/post-0518.html
 
 
 	};

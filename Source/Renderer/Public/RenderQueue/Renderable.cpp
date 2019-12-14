@@ -61,6 +61,10 @@ namespace Renderer
 	//[ Public methods                                        ]
 	//[-------------------------------------------------------]
 	Renderable::Renderable() :
+		// Debug
+		#ifdef RHI_DEBUG
+			mDebugName{},
+		#endif
 		// Data
 		mRenderableManager(::detail::NullRenderableManager),
 		mStartIndexLocation(0),
@@ -81,6 +85,10 @@ namespace Renderer
 	}
 
 	Renderable::Renderable(RenderableManager& renderableManager, const Rhi::IVertexArrayPtr& vertexArrayPtr, const MaterialResourceManager& materialResourceManager, MaterialResourceId materialResourceId, SkeletonResourceId skeletonResourceId, bool drawIndexed, uint32_t startIndexLocation, uint32_t numberOfIndices, uint32_t instanceCount RHI_RESOURCE_DEBUG_NAME_PARAMETER_NO_DEFAULT) :
+		// Debug
+		#ifdef RHI_DEBUG
+			mDebugName{},
+		#endif
 		// Data
 		mRenderableManager(renderableManager),
 		mVertexArrayPtr(vertexArrayPtr),
@@ -111,6 +119,10 @@ namespace Renderer
 	}
 
 	Renderable::Renderable(RenderableManager& renderableManager, const Rhi::IVertexArrayPtr& vertexArrayPtr, const MaterialResourceManager& materialResourceManager, MaterialResourceId materialResourceId, SkeletonResourceId skeletonResourceId, bool drawIndexed, const Rhi::IIndirectBufferPtr& indirectBufferPtr, uint32_t indirectBufferOffset, uint32_t numberOfDraws RHI_RESOURCE_DEBUG_NAME_PARAMETER_NO_DEFAULT) :
+		// Debug
+		#ifdef RHI_DEBUG
+			mDebugName{},
+		#endif
 		// Data
 		mRenderableManager(renderableManager),
 		mVertexArrayPtr(vertexArrayPtr),
@@ -142,6 +154,10 @@ namespace Renderer
 	}
 
 	Renderable::Renderable(RenderableManager& renderableManager, const Rhi::IVertexArrayPtr& vertexArrayPtr, const Rhi::IVertexArrayPtr& positionOnlyVertexArrayPtr, const MaterialResourceManager& materialResourceManager, MaterialResourceId materialResourceId, SkeletonResourceId skeletonResourceId, bool drawIndexed, uint32_t startIndexLocation, uint32_t numberOfIndices, uint32_t instanceCount RHI_RESOURCE_DEBUG_NAME_PARAMETER_NO_DEFAULT) :
+		// Debug
+		#ifdef RHI_DEBUG
+			mDebugName{},
+		#endif
 		// Data
 		mRenderableManager(renderableManager),
 		mVertexArrayPtr(vertexArrayPtr),
@@ -173,6 +189,10 @@ namespace Renderer
 	}
 
 	Renderable::Renderable(RenderableManager& renderableManager, const Rhi::IVertexArrayPtr& vertexArrayPtr, const Rhi::IVertexArrayPtr& positionOnlyVertexArrayPtr, const MaterialResourceManager& materialResourceManager, MaterialResourceId materialResourceId, SkeletonResourceId skeletonResourceId, bool drawIndexed, const Rhi::IIndirectBufferPtr& indirectBufferPtr, uint32_t indirectBufferOffset, uint32_t numberOfDraws RHI_RESOURCE_DEBUG_NAME_PARAMETER_NO_DEFAULT) :
+		// Debug
+		#ifdef RHI_DEBUG
+			mDebugName{},
+		#endif
 		// Data
 		mRenderableManager(renderableManager),
 		mVertexArrayPtr(vertexArrayPtr),

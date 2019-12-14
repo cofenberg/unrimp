@@ -60,6 +60,7 @@ namespace RendererToolkit
 {
 	class Context;
 	class CacheManager;
+	class IRendererToolkit;
 	class ProjectAssetMonitor;
 	class RendererToolkitImpl;
 }
@@ -110,6 +111,11 @@ namespace RendererToolkit
 		*    Destructor
 		*/
 		virtual ~ProjectImpl() override;
+
+		[[nodiscard]] inline const IRendererToolkit& getRendererToolkit() const
+		{
+			return (const IRendererToolkit&)mRendererToolkitImpl;
+		}
 
 		[[nodiscard]] inline const Context& getContext() const
 		{

@@ -483,10 +483,15 @@ namespace RendererToolkit
 					RHI_LOG(mContext, INFORMATION, "Compiling asset %u of %u", i + 1, numberOfAssets)
 					const Renderer::Asset& asset = sortedAssetVector[i];
 					compileAsset(asset, rhiTarget, outputAssetPackage);
-
-					// Call "Renderer::IRenderer::reloadResourceByAssetId()" directly after an asset has been compiled to see changes as early as possible
 					if (nullptr != mProjectAssetMonitor)
 					{
+						// In case a shutdown was requested while we're compiling the changed assets, shutdown immediately
+						if (mProjectAssetMonitor->mShutdownThread)
+						{
+							break;
+						}
+
+						// Call "Renderer::IRenderer::reloadResourceByAssetId()" directly after an asset has been compiled to see changes as early as possible
 						const Renderer::AssetId sourceAssetId = asset.assetId;
 						if (std::find(changedAssetIds.cbegin(), changedAssetIds.cend(), sourceAssetId) != changedAssetIds.cend())
 						{
@@ -514,10 +519,15 @@ namespace RendererToolkit
 					}
 					RHI_LOG(mContext, INFORMATION, "Compiling asset %u of %u", i + 1, numberOfChangedAssets)
 					compileAsset(*asset, rhiTarget, outputAssetPackage);
-
-					// Call "Renderer::IRenderer::reloadResourceByAssetId()" directly after an asset has been compiled to see changes as early as possible
 					if (nullptr != mProjectAssetMonitor)
 					{
+						// In case a shutdown was requested while we're compiling the changed assets, shutdown immediately
+						if (mProjectAssetMonitor->mShutdownThread)
+						{
+							break;
+						}
+
+						// Call "Renderer::IRenderer::reloadResourceByAssetId()" directly after an asset has been compiled to see changes as early as possible
 						SourceAssetIdToCompiledAssetId::const_iterator iterator = mSourceAssetIdToCompiledAssetId.find(sourceAssetId);
 						if (iterator == mSourceAssetIdToCompiledAssetId.cend())
 						{

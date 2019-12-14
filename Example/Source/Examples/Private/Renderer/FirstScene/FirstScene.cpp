@@ -154,6 +154,7 @@ FirstScene::FirstScene() :
 	mSoftParticles(true),
 	mCurrentTextureFiltering(static_cast<int>(TextureFiltering::ANISOTROPIC_4)),
 	mNumberOfTopTextureMipmapsToRemove(0),
+	mNumberOfTopMeshLodsToRemove(0),
 	mTerrainTessellatedTriangleWidth(16),
 	// Environment
 	mCloudsIntensity(1.0f),
@@ -702,6 +703,9 @@ void FirstScene::applyCurrentSettings(Rhi::IRenderTarget& mainRenderTarget)
 		}
 		renderer.getTextureResourceManager().setNumberOfTopMipmapsToRemove(static_cast<uint8_t>(mNumberOfTopTextureMipmapsToRemove));
 
+		// Update mesh related settings
+		renderer.getMeshResourceManager().setNumberOfTopMeshLodsToRemove(static_cast<uint8_t>(mNumberOfTopMeshLodsToRemove));
+
 		{ // Update compositor workspace
 			const uint8_t maximumNumberOfMultisamples = renderer.getRhi().getCapabilities().maximumNumberOfMultisamples;
 
@@ -941,7 +945,8 @@ void FirstScene::createDebugGui([[maybe_unused]] Rhi::IRenderTarget& mainRenderT
 							static constexpr const char* items[] = { "Point", "Bilinear", "Trilinear", "2x Anisotropic", "4x Anisotropic", "8x Anisotropic", "16x Anisotropic" };
 							ImGui::Combo("Texture Filtering", &mCurrentTextureFiltering, items, static_cast<int>(GLM_COUNTOF(items)));
 						}
-						ImGui::SliderInt("Mipmaps to Remove", &mNumberOfTopTextureMipmapsToRemove, 0, 8);
+						ImGui::SliderInt("Texture Mipmaps to Remove", &mNumberOfTopTextureMipmapsToRemove, 0, 8);
+						ImGui::SliderInt("Mesh LODs to Remove", &mNumberOfTopMeshLodsToRemove, 0, 4);
 						ImGui::SliderInt("Terrain Tessellated Triangle Width", &mTerrainTessellatedTriangleWidth, 0, 64);
 						if (ImGui::IsItemHovered())
 						{
@@ -1060,7 +1065,7 @@ void FirstScene::trySetCustomMaterialResource()
 				Renderer::MeshSceneItem* meshSceneItem = static_cast<Renderer::MeshSceneItem*>(sceneItem);
 				if (Renderer::IResource::LoadingState::LOADED == getRendererSafe().getMeshResourceManager().getResourceByResourceId(meshSceneItem->getMeshResourceId()).getLoadingState())
 				{
-					meshSceneItem->setMaterialResourceIdOfAllSubMeshes(mCloneMaterialResourceId);
+					meshSceneItem->setMaterialResourceIdOfAllSubMeshesAndLods(mCloneMaterialResourceId);
 					mCustomMaterialResourceSet = true;
 				}
 			}

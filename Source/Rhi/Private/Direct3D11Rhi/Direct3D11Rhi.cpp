@@ -4803,7 +4803,7 @@ namespace Direct3D11Rhi
 				{ // Gather slot related data
 					const Rhi::VertexAttribute* attribute = vertexAttributes.attributes;
 					const Rhi::VertexAttribute* attributesEnd = attribute + vertexAttributes.numberOfAttributes;
-					for (; attribute < attributesEnd;  ++attribute)
+					for (; attribute < attributesEnd; ++attribute)
 					{
 						mStrides[attribute->inputSlot] = attribute->strideInBytes;
 					}

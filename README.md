@@ -150,7 +150,9 @@ Renderer (e.g. "The Game")
 	- Types: Directional, point and spot
 	- High-level sunlight controlled via time-of-day
 	- Support for [Illuminating Engineering Society (IES) light profiles](http://www.cgarena.com/freestuff/tutorials/max/ieslights/) (photometric light data, use e.g. [IESviewer](http://photometricviewer.com/) as viewer)
-- Mesh with optional position-only vertex array object (VAO) which can reduce the number of processed vertices up to half, can be used for position-only rendering (e.g. shadow map rendering) using the same vertex data that the original vertex array object (VAO) uses
+- Mesh
+	- Level of detail (LOD) support
+	- Optional position-only vertex array object (VAO) which can reduce the number of processed vertices up to half, can be used for position-only rendering (e.g. shadow map rendering) using the same vertex data that the original vertex array object (VAO) uses
 - Skeleton animation
 	- [ACL](https://github.com/nfrechette/acl) compressed skeleton animation clip
 	- GPU dual quaternion skinning (DQS), linear blend skinning (LBS) using matrices path is available as well
@@ -180,9 +182,9 @@ Renderer Toolkit (e.g. "The Editor")
 	- Strips comments from shader source codes
 	- Checks the material blueprint resources for valid uniform buffer packing rules
 - Mesh compiler
-	- Using [Assimp](http://www.assimp.org/) (Open Asset Import Library) for mesh import and post processing like joining identical vertices, vertex cache optimization etc.
+	- Using [Assimp](http://www.assimp.org/) (Open Asset Import Library) for mesh import and post processing like joining identical vertices
 	- Using [mikktspace](https://wiki.blender.org/index.php/Dev:Shading/Tangent_Space_Normal_Maps) by Morten S. Mikkelsen for semi-standard mesh tangent space generation
-	- Using [meshoptimizer](https://github.com/zeux/meshoptimizer) for mesh optimization
+	- Using [meshoptimizer](https://github.com/zeux/meshoptimizer) for mesh optimization and LOD generation
 - Texture compiler
 	- Using enhanced [Unity Crunch](https://github.com/Unity-Technologies/crunch/tree/unity) (better encoder performance and ETC2 support) version of [Crunch](https://github.com/BinomialLLC/crunch) for mipmap generation and compression
 	- Support for [normal map compression](http://www.nvidia.com/object/real-time-normal-map-dxt-compression.html)
@@ -262,6 +264,7 @@ Terminology and Acronyms
 	- Material and shader blueprint: High-level rendering description
 	- Material: Just a property-set used as shader input
 	- HMD: Head mounted display
+	- LOD: Level of detail
 
 
 Microsoft Windows: First Example Kickoff

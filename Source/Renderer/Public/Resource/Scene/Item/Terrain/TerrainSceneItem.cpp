@@ -132,6 +132,9 @@ namespace Renderer
 	{
 		// Setup renderable manager: Instancing is used
 		// -> One tiles is one instance and the index buffer describes all the NxN patches within one tile
+		#ifdef RHI_DEBUG
+			mRenderableManager.setDebugName("Terrain tile rings");
+		#endif
 		RenderableManager::Renderables& renderables = mRenderableManager.getRenderables();
 		renderables.reserve(static_cast<size_t>(mNumberOfTerrainTileRings));
 		const MaterialResourceManager& materialResourceManager = getSceneResource().getRenderer().getMaterialResourceManager();

@@ -58,6 +58,10 @@ namespace Renderer
 	//[ Public methods                                        ]
 	//[-------------------------------------------------------]
 	RenderableManager::RenderableManager() :
+		#ifdef RHI_DEBUG
+			mDebugName{},
+		#endif
+		mNumberOfLods(1),
 		mTransform(&::detail::IdentityTransform),
 		mVisible(true),
 		mCachedDistanceToCamera(getInvalid<float>()),

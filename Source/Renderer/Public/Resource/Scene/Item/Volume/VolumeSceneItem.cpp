@@ -168,7 +168,11 @@ namespace Renderer
 	void VolumeSceneItem::onMaterialResourceCreated()
 	{
 		// Setup renderable manager
-		mRenderableManager.getRenderables().emplace_back(mRenderableManager, ::detail::VolumeVertexArrayPtr, getSceneResource().getRenderer().getMaterialResourceManager(), getMaterialResourceId(), getInvalid<SkeletonResourceId>(), true, 0, 36, 1 RHI_RESOURCE_DEBUG_NAME("Volume"));
+		#ifdef RHI_DEBUG
+			const char* debugName = "Volume";
+			mRenderableManager.setDebugName(debugName);
+		#endif
+		mRenderableManager.getRenderables().emplace_back(mRenderableManager, ::detail::VolumeVertexArrayPtr, getSceneResource().getRenderer().getMaterialResourceManager(), getMaterialResourceId(), getInvalid<SkeletonResourceId>(), true, 0, 36, 1 RHI_RESOURCE_DEBUG_NAME(debugName));
 		mRenderableManager.updateCachedRenderablesData();
 	}
 

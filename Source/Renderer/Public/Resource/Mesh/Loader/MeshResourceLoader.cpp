@@ -69,12 +69,14 @@ namespace Renderer
 		RHI_ASSERT(mRenderer.getContext(), 0 != meshHeader.numberOfVertices, "Invalid mesh which has no vertices")
 		RHI_ASSERT(mRenderer.getContext(), 0 != meshHeader.numberOfVertexAttributes, "Invalid mesh which has no vertex attributes")
 		RHI_ASSERT(mRenderer.getContext(), 0 != meshHeader.numberOfSubMeshes, "Invalid mesh which has no sub-meshes")
+		RHI_ASSERT(mRenderer.getContext(), 0 != meshHeader.numberOfLods, "Invalid mesh which has no LODs: There must always be at least one LOD, namely the original none reduced version")
 
 		// Set basic mesh resource data
 		mMeshResource->setBoundingBoxPosition(meshHeader.minimumBoundingBoxPosition, meshHeader.maximumBoundingBoxPosition);
 		mMeshResource->setBoundingSpherePositionRadius(meshHeader.boundingSpherePosition, meshHeader.boundingSphereRadius);
 		mMeshResource->setNumberOfVertices(meshHeader.numberOfVertices);
 		mMeshResource->setNumberOfIndices(meshHeader.numberOfIndices);
+		mMeshResource->setNumberOfLods(meshHeader.numberOfLods);
 
 		{ // Read in the vertex buffer
 			// Allocate memory for the local vertex buffer data

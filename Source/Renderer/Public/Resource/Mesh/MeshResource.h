@@ -179,7 +179,7 @@ namespace Renderer
 		}
 
 		//[-------------------------------------------------------]
-		//[ Sub-meshes                                            ]
+		//[ Sub-meshes and LODs                                   ]
 		//[-------------------------------------------------------]
 		[[nodiscard]] inline const SubMeshes& getSubMeshes() const
 		{
@@ -189,6 +189,16 @@ namespace Renderer
 		[[nodiscard]] inline SubMeshes& getSubMeshes()
 		{
 			return mSubMeshes;
+		}
+
+		[[nodiscard]] inline uint8_t getNumberOfLods() const
+		{
+			return mNumberOfLods;
+		}
+
+		inline void setNumberOfLods(uint8_t numberOfLods)
+		{
+			mNumberOfLods = numberOfLods;
 		}
 
 		//[-------------------------------------------------------]
@@ -218,6 +228,8 @@ namespace Renderer
 			// Vertex and index data
 			mNumberOfVertices(0),
 			mNumberOfIndices(0),
+			// Sub-meshes and LODs
+			mNumberOfLods(0),
 			// Optional skeleton
 			mSkeletonResourceId(getInvalid<SkeletonResourceId>())
 		{
@@ -236,6 +248,7 @@ namespace Renderer
 			ASSERT(nullptr == mVertexArray.getPointer());
 			ASSERT(nullptr == mPositionOnlyVertexArray.getPointer());
 			ASSERT(mSubMeshes.empty());
+			ASSERT(0 == mNumberOfIndices);
 			ASSERT(isInvalid(mSkeletonResourceId));
 		}
 
@@ -257,6 +270,7 @@ namespace Renderer
 			ASSERT(nullptr == mVertexArray.getPointer());
 			ASSERT(nullptr == mPositionOnlyVertexArray.getPointer());
 			ASSERT(mSubMeshes.empty());
+			ASSERT(0 == mNumberOfIndices);
 			ASSERT(isInvalid(mSkeletonResourceId));
 
 			// Call base implementation
@@ -281,6 +295,7 @@ namespace Renderer
 			mVertexArray = nullptr;
 			mPositionOnlyVertexArray = nullptr;
 			mSubMeshes.clear();
+			mNumberOfIndices = 0;
 			setInvalid(mSkeletonResourceId);
 
 			// Call base implementation
@@ -300,10 +315,11 @@ namespace Renderer
 		// Vertex and index data
 		uint32_t			 mNumberOfVertices;			///< Number of vertices
 		uint32_t			 mNumberOfIndices;			///< Number of indices
-		Rhi::IVertexArrayPtr mVertexArray;				///< Vertex array object (VAO), can be a null pointer
-		Rhi::IVertexArrayPtr mPositionOnlyVertexArray;	///< Optional position-only vertex array object (VAO) which can reduce the number of processed vertices up to half, can be a null pointer, can be used for position-only rendering (e.g. shadow map rendering) using the same vertex data that the original vertex array object (VAO) uses
-		// Sub-meshes
-		SubMeshes			 mSubMeshes;			///< Sub-meshes
+		Rhi::IVertexArrayPtr mVertexArray;				///< Vertex array object (VAO), can be a null pointer, directly containing also the index data of all LODs
+		Rhi::IVertexArrayPtr mPositionOnlyVertexArray;	///< Optional position-only vertex array object (VAO) which can reduce the number of processed vertices up to half, can be a null pointer, can be used for position-only rendering (e.g. shadow map rendering) using the same vertex data that the original vertex array object (VAO) uses, directly containing also the index data of all LODs
+		// Sub-meshes and LODs
+		SubMeshes			 mSubMeshes;			///< Sub-meshes, directly containing also the sub-meshes of all LODs, each LOD has the same number of sub-meshes
+		uint8_t				 mNumberOfLods;			///< Number of LODs, there's always at least one LOD, namely the original none reduced version
 		// Optional skeleton
 		SkeletonResourceId	 mSkeletonResourceId;	///< Resource ID of the used skeleton, can be invalid
 

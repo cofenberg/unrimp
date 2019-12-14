@@ -285,13 +285,28 @@ namespace Renderer
 		// -> Transparent: Sort from back to front to have correct alpha blending
 		const uint32_t quantizedDepth = ::detail::depthToBits(mTransparentPass ? -renderableManager.getCachedDistanceToCamera() : renderableManager.getCachedDistanceToCamera(), DEPTH_NUMBER_OF_BITS);
 
+		// Optionally adjust and check the LOD index
+		uint8_t lodIndex = mRenderer.getMeshResourceManager().getNumberOfTopMeshLodsToRemove();
+		RHI_ASSERT(mRenderer.getContext(), 0 != renderableManager.getNumberOfLods(), "Invalid renderable manager which has no LODs: There must always be at least one LOD, namely the original none reduced version")
+		const uint8_t numberOfLods = renderableManager.getNumberOfLods();
+		if (lodIndex >= numberOfLods)
+		{
+			// Silently clamp to maximum LOD
+			lodIndex = static_cast<uint8_t>(static_cast<int>(numberOfLods) - 1);
+		}
+
 		// Register the renderables inside our renderables queue
 		const MaterialResourceManager& materialResourceManager = mRenderer.getMaterialResourceManager();
 		const MaterialBlueprintResourceManager& materialBlueprintResourceManager = mRenderer.getMaterialBlueprintResourceManager();
 		const MaterialProperties& globalMaterialProperties = materialBlueprintResourceManager.getGlobalMaterialProperties();
 		const bool singlePassStereoInstancing = compositorContextData.getSinglePassStereoInstancing();
-		for (const Renderable& renderable : renderableManager.getRenderables())
+		const RenderableManager::Renderables& renderables = renderableManager.getRenderables();
+		const uint32_t numberOfRenderablesPerLod = static_cast<uint32_t>(renderables.size()) / numberOfLods;	// Each LOD has the same number of renderables
+		uint32_t renderableIndex = numberOfRenderablesPerLod * lodIndex;
+		uint32_t renderableEndIndex = renderableIndex + numberOfRenderablesPerLod;
+		for (; renderableIndex < renderableEndIndex; ++renderableIndex)
 		{
+			const Renderable& renderable = renderables[renderableIndex];
 			if (!castShadows || renderable.getCastShadows())
 			{
 				// It's valid if one or more renderables inside a renderable manager don't fall into the range processed by this render queue

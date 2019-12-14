@@ -55,9 +55,10 @@ namespace Renderer
 	// Mesh file format content:
 	// - File format header
 	// - Mesh header
-	// - Vertex and index buffer data
+	// - Vertex and index buffer data (directly containing also the index data of all LODs)
 	// - Vertex array attribute definitions
-	// - Sub-meshes
+	// - Sub-meshes and LODs
+	// - Optional skeleton
 	namespace v1Mesh
 	{
 
@@ -66,7 +67,7 @@ namespace Renderer
 		//[ Definitions                                           ]
 		//[-------------------------------------------------------]
 		static constexpr uint32_t FORMAT_TYPE	 = STRING_ID("Mesh");
-		static constexpr uint32_t FORMAT_VERSION = 8;
+		static constexpr uint32_t FORMAT_VERSION = 9;
 
 		#pragma pack(push)
 		#pragma pack(1)
@@ -84,8 +85,9 @@ namespace Renderer
 				uint32_t numberOfIndices;
 				uint8_t  numberOfVertexAttributes;
 				bool	 hasPositionOnlyIndices;
-				// Sub-meshes
+				// Sub-meshes and LODs
 				uint16_t numberOfSubMeshes;
+				uint8_t  numberOfLods;	// There's always at least one LOD, namely the original none reduced version
 				// Optional skeleton
 				uint8_t  numberOfBones;
 			};

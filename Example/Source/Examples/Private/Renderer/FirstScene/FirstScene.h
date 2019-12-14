@@ -212,6 +212,7 @@ private:
 	bool		  mSoftParticles;
 	int			  mCurrentTextureFiltering;
 	int			  mNumberOfTopTextureMipmapsToRemove;
+	int			  mNumberOfTopMeshLodsToRemove;
 	int			  mTerrainTessellatedTriangleWidth;
 	// Environment
 	float mCloudsIntensity;

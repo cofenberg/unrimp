@@ -118,7 +118,11 @@ namespace Renderer
 	void SkySceneItem::onMaterialResourceCreated()
 	{
 		// Setup renderable manager
-		mRenderableManager.getRenderables().emplace_back(mRenderableManager, ::detail::SkyVertexArrayPtr, getSceneResource().getRenderer().getMaterialResourceManager(), getMaterialResourceId(), getInvalid<SkeletonResourceId>(), true, 0, 36, 1 RHI_RESOURCE_DEBUG_NAME("Sky"));
+		#ifdef RHI_DEBUG
+			const char* debugName = "Sky";
+			mRenderableManager.setDebugName(debugName);
+		#endif
+		mRenderableManager.getRenderables().emplace_back(mRenderableManager, ::detail::SkyVertexArrayPtr, getSceneResource().getRenderer().getMaterialResourceManager(), getMaterialResourceId(), getInvalid<SkeletonResourceId>(), true, 0, 36, 1 RHI_RESOURCE_DEBUG_NAME(debugName));
 		mRenderableManager.updateCachedRenderablesData();
 	}
 

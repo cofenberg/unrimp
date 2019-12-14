@@ -840,6 +840,9 @@ namespace RendererToolkit
 
 				// "meshoptimizer", in-place is supported internally so we don't need to create own vertex and index buffer copies
 				std::vector<uint32_t> positionOnlyIndexBufferData;
+				uint32_t numberOfLods = 1;	// There's always at least one LOD, namely the original none reduced version
+				std::vector<uint32_t> lodIndexOffsets;
+				std::vector<uint32_t> lodNumberOfIndices;
 				{
 					static constexpr float OVERDRAW_THRESHOLD = 1.01f;	// Allow up to 1% worse ACMR to get more reordering opportunities for overdraw
 
@@ -847,19 +850,116 @@ namespace RendererToolkit
 					meshoptimizer::allocator = &input.context.getAllocator();
 					meshopt_setAllocator(&meshoptimizer::allocate, &meshoptimizer::deallocate);
 
-					// Handle multiple ranges for multiple draw calls
-					for (const Renderer::v1Mesh::SubMesh& subMesh : subMeshes)
+					// Mesh level of detail (LOD) via "meshoptimizer"
+					// TODO(co) Enable LOD generation by default
+					JsonHelper::optionalIntegerProperty(rapidJsonValueMeshAssetCompiler, "NumberOfLods", numberOfLods);
+					if (0 == numberOfLods)
 					{
-						uint32_t* currentIndexBufferData = &indexBufferData[0] + subMesh.startIndexLocation;
+						throw std::runtime_error("There must always be at least one LOD, namely the original none reduced version");
+					}
+					if (255 < numberOfLods)
+					{
+						throw std::runtime_error("The maximum number of supported LODs is 255");
+					}
+					lodIndexOffsets.resize(numberOfLods);
+					lodNumberOfIndices.resize(numberOfLods);
+					if (numberOfLods > 1)
+					{
+						// Generate the LOD levels, with each subsequent LOD using 70% triangles, note that each LOD uses the same (shared) vertex buffer
+						std::vector<std::vector<uint32_t>> lods;
+						lods.resize(numberOfLods);
+						lods[0] = indexBufferData;
+						for (size_t i = 1; i < numberOfLods; ++i)
+						{
+							std::vector<unsigned int>& lod = lods[i];
 
-						// Vertex cache optimization should go first as it provides starting order for overdraw
-						meshopt_optimizeVertexCache(currentIndexBufferData, currentIndexBufferData, subMesh.numberOfIndices, numberOfVertices);
+							const float threshold = powf(0.7f, float(i));
+							size_t targetNumberOfIndices = size_t(numberOfIndices * threshold) / 3 * 3;
+							static constexpr float TARGET_ERROR = 1e-2f;
 
-						// Reorder indices for overdraw, balancing overdraw and vertex cache efficiency
-						meshopt_optimizeOverdraw(currentIndexBufferData, currentIndexBufferData, subMesh.numberOfIndices, reinterpret_cast<const float*>(vertexBufferData), numberOfVertices, numberOfBytesPerVertex, OVERDRAW_THRESHOLD);
+							// We can simplify all the way from base level or from the last result simplifying from the base level sometimes produces better results, but simplifying from last level is faster
+							const std::vector<unsigned int>& source = lods[i - 1];
+							if (source.size() < targetNumberOfIndices)
+							{
+								targetNumberOfIndices = source.size();
+							}
+
+							// TODO(co) Handle multiple ranges for multiple draw calls
+							lod.resize(source.size());
+							lod.resize(meshopt_simplify(&lod[0], &source[0], source.size(), reinterpret_cast<const float*>(vertexBufferData), numberOfVertices, numberOfBytesPerVertex, targetNumberOfIndices, TARGET_ERROR));
+						}
+
+						// Optimize each individual LOD for vertex cache & overdraw
+						for (size_t i = 0; i < numberOfLods; ++i)
+						{
+							std::vector<unsigned int>& lod = lods[i];
+							// TODO(co) Handle multiple ranges for multiple draw calls
+							meshopt_optimizeVertexCache(&lod[0], &lod[0], lod.size(), numberOfVertices);
+							meshopt_optimizeOverdraw(&lod[0], &lod[0], lod.size(), reinterpret_cast<const float*>(vertexBufferData), numberOfVertices, numberOfBytesPerVertex, OVERDRAW_THRESHOLD);
+						}
+
+						// Concatenate all LODs into one index buffer
+						// Note: The order of concatenation is important - since we optimize the entire index buffer for vertex fetch, putting coarse LODs first makes sure that the
+						// vertex range referenced by them is as small as possible. Some GPUs process the entire range referenced by the index buffer region so doing this optimizes
+						// the vertex transform cost for coarse LODs. This order also produces much better vertex fetch cache coherency for coarse LODs (since they're essentially
+						// optimized first). Somewhat surprisingly, the vertex fetch cache coherency for fine LODs doesn't seem to suffer that much.
+						uint32_t totalNumberOfIndices = 0;
+						for (int lodIndex = static_cast<int>(numberOfLods) - 1; lodIndex >= 0; --lodIndex)
+						{
+							const uint32_t i = static_cast<uint32_t>(lodIndex);
+							lodIndexOffsets[i] = totalNumberOfIndices;
+							lodNumberOfIndices[i] = static_cast<uint32_t>(lods[i].size());
+							totalNumberOfIndices += static_cast<uint32_t>(lods[i].size());
+						}
+						indexBufferData.resize(totalNumberOfIndices);
+						for (uint32_t lodIndex = 0; lodIndex < numberOfLods; ++lodIndex)
+						{
+							memcpy(&indexBufferData[lodIndexOffsets[lodIndex]], &lods[lodIndex][0], lods[lodIndex].size() * sizeof(lods[lodIndex][0]));
+						}
+						numberOfIndices = static_cast<uint32_t>(indexBufferData.size());
+
+						// Adjust sub-meshes of the first LOD
+						const uint32_t numberOfSubMeshesPerLod = static_cast<uint32_t>(subMeshes.size());
+						for (uint32_t subMeshIndex = 0; subMeshIndex < numberOfSubMeshesPerLod; ++subMeshIndex)
+						{
+							Renderer::v1Mesh::SubMesh& subMesh = subMeshes[subMeshIndex];
+							subMesh.startIndexLocation = lodIndexOffsets[0];
+							subMesh.numberOfIndices	   = lodNumberOfIndices[0];
+						}
+
+						// Add sub-meshes for the LODs
+						for (uint32_t lodIndex = 1; lodIndex < numberOfLods; ++lodIndex)
+						{
+							for (uint32_t subMeshIndex = 0; subMeshIndex < numberOfSubMeshesPerLod; ++subMeshIndex)
+							{
+								const Renderer::v1Mesh::SubMesh& originalSubMesh = subMeshes[subMeshIndex];
+								Renderer::v1Mesh::SubMesh subMesh;
+								subMesh.materialAssetId	   = originalSubMesh.materialAssetId;	// TODO(co) Add support for changing the material asset ID of LOD sub-meshes for material LOD
+								subMesh.startIndexLocation = lodIndexOffsets[lodIndex];
+								subMesh.numberOfIndices	   = lodNumberOfIndices[lodIndex];
+								subMeshes.push_back(subMesh);
+							}
+						}
+					}
+					else
+					{
+						lodIndexOffsets[0] = 0;
+						lodNumberOfIndices[0] = numberOfIndices;
+
+						// Handle multiple ranges for multiple draw calls
+						for (const Renderer::v1Mesh::SubMesh& subMesh : subMeshes)
+						{
+							uint32_t* currentIndexBufferData = &indexBufferData[0] + subMesh.startIndexLocation;
+
+							// Vertex cache optimization should go first as it provides starting order for overdraw
+							meshopt_optimizeVertexCache(currentIndexBufferData, currentIndexBufferData, subMesh.numberOfIndices, numberOfVertices);
+
+							// Reorder indices for overdraw, balancing overdraw and vertex cache efficiency
+							meshopt_optimizeOverdraw(currentIndexBufferData, currentIndexBufferData, subMesh.numberOfIndices, reinterpret_cast<const float*>(vertexBufferData), numberOfVertices, numberOfBytesPerVertex, OVERDRAW_THRESHOLD);
+						}
 					}
 
-					// Vertex fetch optimization should go last as it depends on the final index order
+					// Vertex fetch optimization should go last as it depends on the final index order, note that the order of LODs above affects vertex fetch results
 					meshopt_optimizeVertexFetch(vertexBufferData, &indexBufferData[0], numberOfIndices, vertexBufferData, numberOfVertices, numberOfBytesPerVertex);
 
 					{ // Optional position-only index buffer (can reduce the number of processed vertices up to half)
@@ -905,20 +1005,32 @@ namespace RendererToolkit
 										currentVertexBufferData += sizeof(uint8_t) * 8;
 									}
 								}
-								meshopt_generateShadowIndexBuffer(&positionOnlyIndexBufferData[0], &indexBufferData[0], numberOfIndices, temporaryVertexBufferData, numberOfVertices, NUMBER_OF_BYTES_PER_VERTEX, NUMBER_OF_BYTES_PER_VERTEX);
+								for (uint32_t lodIndex = 0; lodIndex < numberOfLods; ++lodIndex)
+								{
+									const uint32_t lodIndexOffset = lodIndexOffsets[lodIndex];
+									meshopt_generateShadowIndexBuffer(&positionOnlyIndexBufferData[lodIndexOffset], &indexBufferData[lodIndexOffset], lodNumberOfIndices[lodIndex], temporaryVertexBufferData, numberOfVertices, NUMBER_OF_BYTES_PER_VERTEX, NUMBER_OF_BYTES_PER_VERTEX);
+								}
 								delete [] temporaryVertexBufferData;
 							}
 							else
 							{
 								// Number of bytes per position-only vertex (3 float position) = 12 bytes
-								meshopt_generateShadowIndexBuffer(&positionOnlyIndexBufferData[0], &indexBufferData[0], numberOfIndices, vertexBufferData, numberOfVertices, 12, numberOfBytesPerVertex);
+								for (uint32_t lodIndex = 0; lodIndex < numberOfLods; ++lodIndex)
+								{
+									const uint32_t lodIndexOffset = lodIndexOffsets[lodIndex];
+									meshopt_generateShadowIndexBuffer(&positionOnlyIndexBufferData[lodIndexOffset], &indexBufferData[lodIndexOffset], lodNumberOfIndices[lodIndex], vertexBufferData, numberOfVertices, 12, numberOfBytesPerVertex);
+								}
 							}
 
 							// While you can't optimize the vertex data after shadow index buffer was constructed, you can and should optimize the shadow index buffer for vertex cache this is valuable even if the original indices array was optimized for vertex cache
-							meshopt_optimizeVertexCache(&positionOnlyIndexBufferData[0], &positionOnlyIndexBufferData[0], numberOfIndices, numberOfVertices);
+							for (uint32_t lodIndex = 0; lodIndex < numberOfLods; ++lodIndex)
+							{
+								const uint32_t lodIndexOffset = lodIndexOffsets[lodIndex];
+								meshopt_optimizeVertexCache(&positionOnlyIndexBufferData[lodIndexOffset], &positionOnlyIndexBufferData[lodIndexOffset], lodNumberOfIndices[lodIndex], numberOfVertices);
+							}
 
-							/*
 							// Don't remove this comment: For testing or verbose logging how many vertices the position-only index buffer saves one can do the following:
+							/*
 							std::unordered_set<uint32_t> vertexIndices;
 							for (uint32_t vertexIndex : indexBufferData)
 							{
@@ -935,75 +1047,6 @@ namespace RendererToolkit
 							*/
 						}
 					}
-
-					/*
-					{ // TODO(co) Add support for mesh level of detail (LOD), the following is a quick'n'dirty test basing on "meshoptimizer\demo\main.cpp"
-						static const size_t numberOfLods = 5;
-
-						// Generate 4 LOD levels (1-4), with each subsequent LOD using 70% triangles, note that each LOD uses the same (shared) vertex buffer
-						std::vector<uint32_t> lods[numberOfLods];
-						lods[0] = indexBufferData;
-						for (size_t i = 1; i < numberOfLods; ++i)
-						{
-							std::vector<unsigned int>& lod = lods[i];
-
-							const float threshold = powf(0.7f, float(i));
-							size_t targetNumberOfIndices = size_t(numberOfIndices * threshold) / 3 * 3;
-							static constexpr float TARGET_ERROR = 1e-2f;
-
-							// We can simplify all the way from base level or from the last result simplifying from the base level sometimes produces better results, but simplifying from last level is faster
-							const std::vector<unsigned int>& source = lods[i - 1];
-							if (source.size() < targetNumberOfIndices)
-							{
-								targetNumberOfIndices = source.size();
-							}
-
-							// TODO(co) Handle multiple ranges for multiple draw calls
-							lod.resize(source.size());
-							lod.resize(meshopt_simplify(&lod[0], &source[0], source.size(), reinterpret_cast<const float*>(vertexBufferData), numberOfVertices, numberOfBytesPerVertex, targetNumberOfIndices, TARGET_ERROR));
-						}
-
-						// Optimize each individual LOD for vertex cache & overdraw
-						for (size_t i = 0; i < numberOfLods; ++i)
-						{
-							std::vector<unsigned int>& lod = lods[i];
-							// TODO(co) Handle multiple ranges for multiple draw calls
-							meshopt_optimizeVertexCache(&lod[0], &lod[0], lod.size(), numberOfVertices);
-							meshopt_optimizeOverdraw(&lod[0], &lod[0], lod.size(), reinterpret_cast<const float*>(vertexBufferData), numberOfVertices, numberOfBytesPerVertex, OVERDRAW_THRESHOLD);
-						}
-
-						// Concatenate all LODs into one index buffer
-						// note: the order of concatenation is important - since we optimize the entire IB for vertex fetch,
-						// putting coarse LODs first makes sure that the vertex range referenced by them is as small as possible
-						// some GPUs process the entire range referenced by the index buffer region so doing this optimizes the vertex transform
-						// cost for coarse LODs
-						// this order also produces much better vertex fetch cache coherency for coarse LODs (since they're essentially optimized first)
-						// somewhat surprisingly, the vertex fetch cache coherency for fine LODs doesn't seem to suffer that much.
-						size_t lodIndexOffsets[numberOfLods] = {};
-						size_t lodNumberOfIndices[numberOfLods] = {};
-						size_t totalNumberOfIndices = 0;
-						for (int i = numberOfLods - 1; i >= 0; --i)
-						{
-							lodIndexOffsets[i] = totalNumberOfIndices;
-							lodNumberOfIndices[i] = lods[i].size();
-							totalNumberOfIndices += lods[i].size();
-						}
-						std::vector<unsigned int> indices(totalNumberOfIndices);
-						for (size_t i = 0; i < numberOfLods; ++i)
-						{
-							memcpy(&indices[lodIndexOffsets[i]], &lods[i][0], lods[i].size() * sizeof(lods[i][0]));
-						}
-
-						// Vertex fetch optimization should go last as it depends on the final index order, note that the order of LODs above affects vertex fetch results
-						//std::vector<Vertex> vertices = mesh.vertices;
-						//meshopt_optimizeVertexFetch(&vertices[0], &indices[0], indices.size(), &vertices[0], vertices.size(), sizeof(Vertex));
-
-						indexBufferData = lods[numberOfLods - 1];
-						numberOfIndices = static_cast<uint32_t>(indexBufferData.size());
-					}
-					*/
-
-
 				}
 
 				{ // Write down the mesh header
@@ -1024,8 +1067,9 @@ namespace RendererToolkit
 					meshHeader.numberOfVertexAttributes = static_cast<uint8_t>(vertexAttributes.numberOfAttributes);
 					meshHeader.hasPositionOnlyIndices	= !positionOnlyIndexBufferData.empty();
 
-					// Sub-meshes
+					// Sub-meshes and LODs
 					meshHeader.numberOfSubMeshes = static_cast<uint16_t>(subMeshes.size());
+					meshHeader.numberOfLods = static_cast<uint8_t>(numberOfLods);
 
 					// Optional skeleton
 					meshHeader.numberOfBones = skeleton.numberOfBones;
@@ -1034,14 +1078,14 @@ namespace RendererToolkit
 					memoryFile.write(&meshHeader, sizeof(Renderer::v1Mesh::MeshHeader));
 				}
 
-				// Write down the vertex and index buffer
+				// Write down the vertex and index buffer (directly containing also the index data of all LODs)
 				memoryFile.write(vertexBufferData, numberOfBytesPerVertex * numberOfVertices);
 				if (numberOfIndices > 0)
 				{
 					::detail::writeIndexBufferData(indexBufferFormat, indexBufferData, temporaryShortIndexBufferData, memoryFile);
 				}
 
-				// Write down the optional position-only index buffer
+				// Write down the optional position-only index buffer (directly containing also the index data of all LODs)
 				if (!positionOnlyIndexBufferData.empty())
 				{
 					::detail::writeIndexBufferData(indexBufferFormat, positionOnlyIndexBufferData, temporaryShortIndexBufferData, memoryFile);

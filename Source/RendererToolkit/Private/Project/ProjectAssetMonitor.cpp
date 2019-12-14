@@ -23,6 +23,7 @@
 //[-------------------------------------------------------]
 #include "RendererToolkit/Private/Project/ProjectAssetMonitor.h"
 #include "RendererToolkit/Private/Project/ProjectImpl.h"
+#include "RendererToolkit/Private/IRendererToolkit.h"
 #include "RendererToolkit/Private/Context.h"
 
 #include <Renderer/Public/IRenderer.h>
@@ -186,6 +187,10 @@ namespace RendererToolkit
 	ProjectAssetMonitor::~ProjectAssetMonitor()
 	{
 		mShutdownThread = true;
+		if (mProjectImpl.getRendererToolkit().getState() != IRendererToolkit::State::IDLE)
+		{
+			RHI_LOG(mProjectImpl.getContext(), INFORMATION, "Shutdown of project asset monitor while still in busy state, the thread join might take a moment, please wait")
+		}
 		mThread.join();
 	}
 

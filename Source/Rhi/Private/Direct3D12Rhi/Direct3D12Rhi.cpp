@@ -5862,7 +5862,7 @@ namespace Direct3D12Rhi
 				{ // Gather slot related data
 					const Rhi::VertexAttribute* attribute = vertexAttributes.attributes;
 					const Rhi::VertexAttribute* attributesEnd = attribute + vertexAttributes.numberOfAttributes;
-					for (; attribute < attributesEnd;  ++attribute)
+					for (; attribute < attributesEnd; ++attribute)
 					{
 						mD3D12VertexBufferViews[attribute->inputSlot].StrideInBytes = attribute->strideInBytes;
 					}

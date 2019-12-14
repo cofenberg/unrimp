@@ -17,7 +17,8 @@
 			"MaterialNameToAssetId":
 			{
 				"08 - Default": "./M_Cerberus.asset"
-			}
+			},
+			"NumberOfLods": "5"
 		}
 	}
 }

@@ -180,7 +180,10 @@ namespace Renderer
 		}
 
 		// Setup renderable manager using attribute-less rendering
-		mRenderableManager.getRenderables().emplace_back(mRenderableManager, Rhi::IVertexArrayPtr(), materialResourceManager, mMaterialResourceId, getInvalid<SkeletonResourceId>(), false, 0, 3);
+		#ifdef RHI_DEBUG
+			mRenderableManager.setDebugName(materialResource.getDebugName());
+		#endif
+		mRenderableManager.getRenderables().emplace_back(mRenderableManager, Rhi::IVertexArrayPtr(), materialResourceManager, mMaterialResourceId, getInvalid<SkeletonResourceId>(), false, 0, 3, 1 RHI_RESOURCE_DEBUG_NAME(materialResource.getDebugName()));
 	}
 
 

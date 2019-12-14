@@ -178,7 +178,8 @@ namespace Renderer
 	//[-------------------------------------------------------]
 	//[ Private methods                                       ]
 	//[-------------------------------------------------------]
-	MeshResourceManager::MeshResourceManager(IRenderer& renderer)
+	MeshResourceManager::MeshResourceManager(IRenderer& renderer) :
+		mNumberOfTopMeshLodsToRemove(0)
 	{
 		mInternalResourceManager = new ResourceManagerTemplate<MeshResource, IMeshResourceLoader, MeshResourceId, 4096>(renderer, *this);
 

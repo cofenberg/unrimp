@@ -3555,7 +3555,7 @@ namespace Direct3D9Rhi
 					// TODO(co) This will not work when multiple attributes using the same slot, but with a different setting. On the other hand, Direct3D 9 is totally out-of-date and this is just a proof-of-concept.
 					const Rhi::VertexAttribute* attribute = vertexAttributes.attributes;
 					const Rhi::VertexAttribute* attributesEnd = attribute + vertexAttributes.numberOfAttributes;
-					for (; attribute < attributesEnd;  ++attribute)
+					for (; attribute < attributesEnd; ++attribute)
 					{
 						mStrides[attribute->inputSlot] = attribute->strideInBytes;
 						mInstancesPerElement[attribute->inputSlot] = attribute->instancesPerElement;

@@ -80,17 +80,25 @@ namespace Renderer
 
 		[[nodiscard]] inline uint32_t getNumberOfSubMeshes() const
 		{
-			return static_cast<uint32_t>(mRenderableManager.getRenderables().size());
+			// The renderables contain all LODs, each LOD has the same number of renderables
+			return static_cast<uint32_t>(mRenderableManager.getRenderables().size() / mRenderableManager.getNumberOfLods());
 		}
 
-		[[nodiscard]] inline MaterialResourceId getMaterialResourceIdOfSubMesh(uint32_t subMeshIndex) const
+		[[nodiscard]] inline uint8_t getNumberOfLods() const
 		{
-			RHI_ASSERT(getContext(), subMeshIndex < mRenderableManager.getRenderables().size(), "Invalid sub mesh index")
-			return mRenderableManager.getRenderables()[subMeshIndex].getMaterialResourceId();
+			return mRenderableManager.getNumberOfLods();
 		}
 
-		RENDERER_API_EXPORT void setMaterialResourceIdOfSubMesh(uint32_t subMeshIndex, MaterialResourceId materialResourceId);
-		RENDERER_API_EXPORT void setMaterialResourceIdOfAllSubMeshes(MaterialResourceId materialResourceId);
+		[[nodiscard]] inline MaterialResourceId getMaterialResourceIdOfSubMeshLod(uint32_t subMeshIndex, uint8_t lodIndex) const
+		{
+			// The renderables contain all LODs, each LOD has the same number of renderables
+			RHI_ASSERT(getContext(), subMeshIndex < getNumberOfSubMeshes(), "Invalid sub mesh index")
+			RHI_ASSERT(getContext(), lodIndex < mRenderableManager.getNumberOfLods(), "Invalid LOD index")
+			return mRenderableManager.getRenderables()[subMeshIndex + lodIndex * getNumberOfSubMeshes()].getMaterialResourceId();
+		}
+
+		RENDERER_API_EXPORT void setMaterialResourceIdOfSubMeshLod(uint32_t subMeshIndex, uint8_t lodIndex, MaterialResourceId materialResourceId);
+		RENDERER_API_EXPORT void setMaterialResourceIdOfAllSubMeshesAndLods(MaterialResourceId materialResourceId);
 
 
 	//[-------------------------------------------------------]

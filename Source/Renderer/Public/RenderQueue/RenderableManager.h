@@ -80,6 +80,33 @@ namespace Renderer
 		}
 
 		//[-------------------------------------------------------]
+		//[ Debug                                                 ]
+		//[-------------------------------------------------------]
+		#ifdef RHI_DEBUG
+			/**
+			*  @brief
+			*    Return the renderable manager debug name
+			*
+			*  @return
+			*    The renderable manager debug name, never a null pointer and at least an empty string
+			*
+			*  @note
+			*    - If possible, the renderable manager debug name should use the following convention: "<filename>?[<attribute 0>][<attribute n>]" (for "?" see "Renderer::IFileManager::INVALID_CHARACTER")
+			*/
+			[[nodiscard]] inline const char* getDebugName() const
+			{
+				return mDebugName;
+			}
+
+			inline void setDebugName(const char debugName[])
+			{
+				ASSERT((strlen(debugName) < 256) && "Renderable manager debug name is not allowed to exceed 255 characters");
+				strncpy(mDebugName, debugName, 256);
+				mDebugName[255] = '\0';
+			}
+		#endif
+
+		//[-------------------------------------------------------]
 		//[ Data                                                  ]
 		//[-------------------------------------------------------]
 		[[nodiscard]] inline const Renderables& getRenderables() const
@@ -90,6 +117,16 @@ namespace Renderer
 		[[nodiscard]] inline Renderables& getRenderables()	// Don't forget to call "Renderer::RenderableManager::updateCachedRenderablesData()" if you changed something relevant in here
 		{
 			return mRenderables;
+		}
+
+		[[nodiscard]] inline uint8_t getNumberOfLods() const
+		{
+			return mNumberOfLods;
+		}
+
+		inline void setNumberOfLods(uint8_t numberOfLods)
+		{
+			mNumberOfLods = numberOfLods;
 		}
 
 		[[nodiscard]] inline const Transform& getTransform() const
@@ -193,8 +230,13 @@ namespace Renderer
 	//[ Private data                                          ]
 	//[-------------------------------------------------------]
 	private:
+		// Debug
+		#ifdef RHI_DEBUG
+			char		 mDebugName[256];			///< Debug name for easier renderable manager identification when debugging, contains terminating zero, first member variable by intent to see it at once during introspection (debug memory layout change is no problem here)
+		#endif
 		// Data
-		Renderables		 mRenderables;				///< Renderables
+		Renderables		 mRenderables;				///< Renderables, directly containing also the renderables of all LODs, each LOD has the same number of renderables
+		uint8_t			 mNumberOfLods;				///< Number of LODs, there's always at least one LOD, namely the original none reduced version
 		const Transform* mTransform;				///< Transform instance, always valid, just shared meaning doesn't own the instance so don't delete it
 		bool			 mVisible;
 		// Cached data
