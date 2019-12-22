@@ -1047,6 +1047,9 @@ namespace RendererToolkit
 							*/
 						}
 					}
+
+					// "meshoptimizer" vertex/index buffer compression isn't used by intent. As of 22 December 2019 there's no 16-bit index support when using index compression and
+					// a quick'n'dirty test showed that when using vertex compression the resulting file got actually bigger instead of smaller (we're using LZ4 compressed files).
 				}
 
 				{ // Write down the mesh header
