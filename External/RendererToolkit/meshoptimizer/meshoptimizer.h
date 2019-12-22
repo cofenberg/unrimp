@@ -1,5 +1,5 @@
 /**
- * meshoptimizer - version 0.11
+ * meshoptimizer - version 0.13
  *
  * Copyright (C) 2016-2019, by Arseny Kapoulkine (arseny.kapoulkine@gmail.com)
  * Report bugs and download new versions at https://github.com/zeux/meshoptimizer
@@ -12,7 +12,7 @@
 #include <stddef.h>
 
 /* Version macro; major * 1000 + minor * 10 + patch */
-#define MESHOPTIMIZER_VERSION 120
+#define MESHOPTIMIZER_VERSION 130
 
 /* If no API is defined, assume default */
 #ifndef MESHOPTIMIZER_API
@@ -214,6 +214,18 @@ MESHOPTIMIZER_EXPERIMENTAL size_t meshopt_simplify(unsigned int* destination, co
  * vertex_positions should have float3 position in the first 12 bytes of each vertex - similar to glVertexPointer
  */
 MESHOPTIMIZER_EXPERIMENTAL size_t meshopt_simplifySloppy(unsigned int* destination, const unsigned int* indices, size_t index_count, const float* vertex_positions, size_t vertex_count, size_t vertex_positions_stride, size_t target_index_count);
+
+/**
+ * Experimental: Point cloud simplifier
+ * Reduces the number of points in the cloud to reach the given target
+ * Returns the number of points after simplification, with destination containing new index data
+ * The resulting index buffer references vertices from the original vertex buffer.
+ * If the original vertex data isn't required, creating a compact vertex buffer using meshopt_optimizeVertexFetch is recommended.
+ *
+ * destination must contain enough space for the target index buffer
+ * vertex_positions should have float3 position in the first 12 bytes of each vertex - similar to glVertexPointer
+ */
+MESHOPTIMIZER_EXPERIMENTAL size_t meshopt_simplifyPoints(unsigned int* destination, const float* vertex_positions, size_t vertex_count, size_t vertex_positions_stride, size_t target_vertex_count);
 
 /**
  * Mesh stripifier

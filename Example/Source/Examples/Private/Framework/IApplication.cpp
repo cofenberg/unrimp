@@ -27,7 +27,7 @@
 #elif defined _WIN32
 	#include "Examples/Private/Framework/ApplicationImplWindows.h"
 #elif defined __ANDROID__
-	#warning TODO(co) The Android support is work-in-progress
+	#warning "TODO(co) The Android support is work-in-progress"
 #elif defined LINUX
 	#include "Examples/Private/Framework/Linux/ApplicationImplLinux.h"
 #endif
@@ -91,7 +91,7 @@ IApplication::IApplication(const char* windowTitle) :
 	#elif defined _WIN32
 		mApplicationImpl = new ApplicationImplWindows(*this, windowTitle);
 	#elif defined __ANDROID__
-		#warning TODO(co) The Android support is work-in-progress
+		#warning "TODO(co) The Android support is work-in-progress"
 	#elif defined LINUX
 		mApplicationImpl = new ApplicationImplLinux(*this, windowTitle);
 	#else

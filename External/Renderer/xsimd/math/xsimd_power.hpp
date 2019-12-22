@@ -1,5 +1,7 @@
 /***************************************************************************
-* Copyright (c) 2016, Johan Mabille and Sylvain Corlay                     *
+* Copyright (c) Johan Mabille, Sylvain Corlay, Wolf Vollprecht and         *
+* Martin Renou                                                             *
+* Copyright (c) QuantStack                                                 *
 *                                                                          *
 * Distributed under the terms of the BSD 3-Clause License.                 *
 *                                                                          *
@@ -209,11 +211,11 @@ namespace xsimd
                 i_type e;
                 B x = frexp(z, e);
                 x = horner<B,
-                           0x3fd9c0c12122a4fell,
-                           0x3ff23d6ee505873all,
-                           0xbfee8a4ca3ba37b8ll,
-                           0x3fe17e1fc7e59d58ll,
-                           0xbfc13c93386fdff6ll>(x);
+                           0x3fd9c0c12122a4feull,
+                           0x3ff23d6ee505873aull,
+                           0xbfee8a4ca3ba37b8ull,
+                           0x3fe17e1fc7e59d58ull,
+                           0xbfc13c93386fdff6ull>(x);
                 auto flag = e >= zero<i_type>();
                 i_type e1 = abs(e);
                 i_type rem = e1;

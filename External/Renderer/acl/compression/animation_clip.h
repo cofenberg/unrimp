@@ -27,14 +27,15 @@
 #include "acl/compression/animation_track.h"
 #include "acl/compression/skeleton.h"
 #include "acl/core/additive_utils.h"
-#include "acl/core/compiler_utils.h"
+#include "acl/core/impl/compiler_utils.h"
 #include "acl/core/error_result.h"
 #include "acl/core/interpolation_utils.h"
 #include "acl/core/string.h"
 #include "acl/core/utils.h"
-#include "acl/math/quat_32.h"
-#include "acl/math/vector4_32.h"
-#include "acl/math/transform_32.h"
+
+#include <rtm/quatf.h>
+#include <rtm/qvvf.h>
+#include <rtm/vector4f.h>
 
 #include <cstdint>
 
@@ -84,7 +85,7 @@ namespace acl
 		//    - num_samples: The number of samples per track
 		//    - sample_rate: The rate at which samples are recorded (e.g. 30 means 30 FPS)
 		//    - name: Name of the clip (used for debugging purposes only)
-		AnimationClip(IAllocator& allocator, const RigidSkeleton& skeleton, uint32_t num_samples, uint32_t sample_rate, const String &name)
+		AnimationClip(IAllocator& allocator, const RigidSkeleton& skeleton, uint32_t num_samples, float sample_rate, const String &name)
 			: m_allocator(allocator)
 			, m_skeleton(skeleton)
 			, m_bones()
@@ -92,7 +93,7 @@ namespace acl
 			, m_sample_rate(sample_rate)
 			, m_num_bones(skeleton.get_num_bones())
 			, m_additive_base_clip(nullptr)
-			, m_additive_format(AdditiveClipFormat8::None)
+			, m_additive_format(additive_clip_format8::none)
 			, m_name(allocator, name)
 		{
 			m_bones = allocate_type_array<AnimatedBone>(allocator, m_num_bones);
@@ -106,6 +107,20 @@ namespace acl
 			}
 		}
 
+		AnimationClip(AnimationClip&& other)
+			: m_allocator(other.m_allocator)
+			, m_skeleton(other.m_skeleton)
+			, m_bones(other.m_bones)
+			, m_num_samples(other.m_num_samples)
+			, m_sample_rate(other.m_sample_rate)
+			, m_num_bones(other.m_num_bones)
+			, m_additive_base_clip(other.m_additive_base_clip)
+			, m_additive_format(other.m_additive_format)
+			, m_name(std::move(other.m_name))
+		{
+			other.m_bones = nullptr;
+		}
+
 		~AnimationClip()
 		{
 			deallocate_type_array(m_allocator, m_bones, m_num_bones);
@@ -113,6 +128,7 @@ namespace acl
 
 		AnimationClip(const AnimationClip&) = delete;
 		AnimationClip& operator=(const AnimationClip&) = delete;
+		AnimationClip& operator=(AnimationClip&&) = delete;
 
 		//////////////////////////////////////////////////////////////////////////
 		// Returns the rigid skeleton this clip was created with
@@ -149,7 +165,7 @@ namespace acl
 
 		//////////////////////////////////////////////////////////////////////////
 		// Returns the sample rate of this clip
-		uint32_t get_sample_rate() const { return m_sample_rate; }
+		float get_sample_rate() const { return m_sample_rate; }
 
 		//////////////////////////////////////////////////////////////////////////
 		// Returns the clip playback duration in seconds
@@ -165,7 +181,7 @@ namespace acl
 		//    - rounding_policy: The rounding policy to use when sampling
 		//    - out_local_pose: An array of at least 'num_transforms' to output the data in
 		//    - num_transforms: The number of transforms in the output array
-		void sample_pose(float sample_time, SampleRoundingPolicy rounding_policy, Transform_32* out_local_pose, uint16_t num_transforms) const
+		void sample_pose(float sample_time, sample_rounding_policy rounding_policy, rtm::qvvf* out_local_pose, uint16_t num_transforms) const
 		{
 			ACL_ASSERT(m_num_bones > 0, "Invalid number of bones: %u", m_num_bones);
 			ACL_ASSERT(m_num_bones == num_transforms, "Number of transforms does not match the number of bones: %u != %u", num_transforms, m_num_bones);
@@ -174,30 +190,30 @@ namespace acl
 			const float clip_duration = get_duration();
 
 			// Clamp for safety, the caller should normally handle this but in practice, it often isn't the case
-			sample_time = clamp(sample_time, 0.0f, clip_duration);
+			sample_time = rtm::scalar_clamp(sample_time, 0.0F, clip_duration);
 
 			uint32_t sample_index0;
 			uint32_t sample_index1;
 			float interpolation_alpha;
-			find_linear_interpolation_samples(m_num_samples, clip_duration, sample_time, rounding_policy, sample_index0, sample_index1, interpolation_alpha);
+			find_linear_interpolation_samples_with_sample_rate(m_num_samples, m_sample_rate, sample_time, rounding_policy, sample_index0, sample_index1, interpolation_alpha);
 
 			for (uint16_t bone_index = 0; bone_index < m_num_bones; ++bone_index)
 			{
 				const AnimatedBone& bone = m_bones[bone_index];
 
-				const Quat_32 rotation0 = quat_normalize(quat_cast(bone.rotation_track.get_sample(sample_index0)));
-				const Quat_32 rotation1 = quat_normalize(quat_cast(bone.rotation_track.get_sample(sample_index1)));
-				const Quat_32 rotation = quat_lerp(rotation0, rotation1, interpolation_alpha);
+				const rtm::quatf rotation0 = rtm::quat_normalize(quat_cast(bone.rotation_track.get_sample(sample_index0)));
+				const rtm::quatf rotation1 = rtm::quat_normalize(quat_cast(bone.rotation_track.get_sample(sample_index1)));
+				const rtm::quatf rotation = rtm::quat_lerp(rotation0, rotation1, interpolation_alpha);
 
-				const Vector4_32 translation0 = vector_cast(bone.translation_track.get_sample(sample_index0));
-				const Vector4_32 translation1 = vector_cast(bone.translation_track.get_sample(sample_index1));
-				const Vector4_32 translation = vector_lerp(translation0, translation1, interpolation_alpha);
+				const rtm::vector4f translation0 = rtm::vector_cast(bone.translation_track.get_sample(sample_index0));
+				const rtm::vector4f translation1 = rtm::vector_cast(bone.translation_track.get_sample(sample_index1));
+				const rtm::vector4f translation = rtm::vector_lerp(translation0, translation1, interpolation_alpha);
 
-				const Vector4_32 scale0 = vector_cast(bone.scale_track.get_sample(sample_index0));
-				const Vector4_32 scale1 = vector_cast(bone.scale_track.get_sample(sample_index1));
-				const Vector4_32 scale = vector_lerp(scale0, scale1, interpolation_alpha);
+				const rtm::vector4f scale0 = rtm::vector_cast(bone.scale_track.get_sample(sample_index0));
+				const rtm::vector4f scale1 = rtm::vector_cast(bone.scale_track.get_sample(sample_index1));
+				const rtm::vector4f scale = rtm::vector_lerp(scale0, scale1, interpolation_alpha);
 
-				out_local_pose[bone_index] = transform_set(rotation, translation, scale);
+				out_local_pose[bone_index] = rtm::qvv_set(rotation, translation, scale);
 			}
 		}
 
@@ -206,9 +222,9 @@ namespace acl
 		//    - sample_time: The time at which to sample the clip
 		//    - out_local_pose: An array of at least 'num_transforms' to output the data in
 		//    - num_transforms: The number of transforms in the output array
-		void sample_pose(float sample_time, Transform_32* out_local_pose, uint16_t num_transforms) const
+		void sample_pose(float sample_time, rtm::qvvf* out_local_pose, uint16_t num_transforms) const
 		{
-			sample_pose(sample_time, SampleRoundingPolicy::None, out_local_pose, num_transforms);
+			sample_pose(sample_time, sample_rounding_policy::none, out_local_pose, num_transforms);
 		}
 
 		//////////////////////////////////////////////////////////////////////////
@@ -226,7 +242,7 @@ namespace acl
 
 		//////////////////////////////////////////////////////////////////////////
 		// Sets the base animation clip and marks this instance as an additive clip of the provided format
-		void set_additive_base(const AnimationClip* base_clip, AdditiveClipFormat8 additive_format) { m_additive_base_clip = base_clip; m_additive_format = additive_format; }
+		void set_additive_base(const AnimationClip* base_clip, additive_clip_format8 additive_format) { m_additive_base_clip = base_clip; m_additive_format = additive_format; }
 
 		//////////////////////////////////////////////////////////////////////////
 		// Returns the additive base clip, if any
@@ -234,7 +250,7 @@ namespace acl
 
 		//////////////////////////////////////////////////////////////////////////
 		// Returns the additive format of this clip, if any
-		AdditiveClipFormat8 get_additive_format() const { return m_additive_format; }
+		additive_clip_format8 get_additive_format() const { return m_additive_format; }
 
 		//////////////////////////////////////////////////////////////////////////
 		// Checks if the instance of this clip is valid and returns an error if it isn't
@@ -246,8 +262,11 @@ namespace acl
 			if (m_num_samples == 0)
 				return ErrorResult("Clip has no samples");
 
-			if (m_sample_rate == 0)
-				return ErrorResult("Clip has no sample rate");
+			if (m_num_samples == 0xFFFFFFFFU)
+				return ErrorResult("Clip has too many samples");
+
+			if (m_sample_rate <= 0.0F)
+				return ErrorResult("Clip has an invalid sample rate");
 
 			uint16_t num_output_bones = 0;
 			for (uint16_t bone_index = 0; bone_index < m_num_bones; ++bone_index)
@@ -298,6 +317,47 @@ namespace acl
 			return ErrorResult();
 		}
 
+		//////////////////////////////////////////////////////////////////////////
+		// Returns whether this clip has scale or not. A clip has scale if at least one
+		// bone has a scale sample that isn't equivalent to the default scale.
+		bool has_scale(float threshold) const
+		{
+			const rtm::vector4f default_scale = get_default_scale(m_additive_format);
+
+			for (uint16_t bone_index = 0; bone_index < m_num_bones; ++bone_index)
+			{
+				const AnimatedBone& bone = m_bones[bone_index];
+				const uint32_t num_samples = bone.scale_track.get_num_samples();
+				if (num_samples != 0)
+				{
+					const rtm::vector4f scale = rtm::vector_cast(bone.scale_track.get_sample(0));
+
+					rtm::vector4f min = scale;
+					rtm::vector4f max = scale;
+
+					for (uint32_t sample_index = 1; sample_index < num_samples; ++sample_index)
+					{
+						const rtm::vector4f sample = rtm::vector_cast(bone.scale_track.get_sample(sample_index));
+
+						min = rtm::vector_min(min, sample);
+						max = rtm::vector_max(max, sample);
+					}
+
+					const rtm::vector4f extent = rtm::vector_sub(max, min);
+					const bool is_constant = rtm::vector_all_less_than3(rtm::vector_abs(extent), rtm::vector_set(threshold));
+					if (!is_constant)
+						return true;	// Not constant means we have scale
+
+					const bool is_default = rtm::vector_all_near_equal3(scale, default_scale, threshold);
+					if (!is_default)
+						return true;	// Constant but not default means we have scale
+				}
+			}
+
+			// We have no tracks with non-default scale
+			return false;
+		}
+
 	private:
 		// The allocator instance used to allocate and free memory by this clip instance
 		IAllocator&				m_allocator;
@@ -312,7 +372,7 @@ namespace acl
 		uint32_t				m_num_samples;
 
 		// The rate at which the samples were recorded
-		uint32_t				m_sample_rate;
+		float					m_sample_rate;
 
 		// The number of bones in this clip
 		uint16_t				m_num_bones;
@@ -321,12 +381,18 @@ namespace acl
 		const AnimationClip*	m_additive_base_clip;
 
 		// If we have an additive base, this is the format we are in
-		AdditiveClipFormat8		m_additive_format;
+		additive_clip_format8	m_additive_format;
 
 		// The name of the clip
 		String					m_name;
 	};
 
+	//////////////////////////////////////////////////////////////////////////
+	// Allocates an array of integers that correspond to the output bone mapping: result[output_index] = bone_index
+	//    - allocator: The allocator instance to use to allocate and free memory
+	//    - clip: The animation clip that dictates the bone output
+	//    - out_num_output_bones: The number of output bones
+	//////////////////////////////////////////////////////////////////////////
 	inline uint16_t* create_output_bone_mapping(IAllocator& allocator, const AnimationClip& clip, uint16_t& out_num_output_bones)
 	{
 		const uint16_t num_bones = clip.get_num_bones();

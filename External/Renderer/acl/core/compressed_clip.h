@@ -25,7 +25,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 
 #include "acl/core/algorithm_versions.h"
-#include "acl/core/compiler_utils.h"
+#include "acl/core/impl/compiler_utils.h"
 #include "acl/core/error_result.h"
 #include "acl/core/hash.h"
 #include "acl/core/memory_utils.h"
@@ -39,6 +39,14 @@ ACL_IMPL_FILE_PRAGMA_PUSH
 
 namespace acl
 {
+	class CompressedClip;
+
+	namespace acl_impl
+	{
+		CompressedClip* make_compressed_clip(void* buffer, uint32_t size, algorithm_type8 type);
+		void finalize_compressed_clip(CompressedClip& compressed_clip);
+	}
+
 	////////////////////////////////////////////////////////////////////////////////
 	// An instance of a compressed clip.
 	// The compressed data immediately follows the clip instance.
@@ -48,7 +56,7 @@ namespace acl
 	public:
 		////////////////////////////////////////////////////////////////////////////////
 		// Returns the algorithm type used to compress the clip.
-		AlgorithmType8 get_algorithm_type() const { return m_type; }
+		algorithm_type8 get_algorithm_type() const { return m_type; }
 
 		////////////////////////////////////////////////////////////////////////////////
 		// Returns the size in bytes of the compressed clip.
@@ -99,7 +107,7 @@ namespace acl
 
 		////////////////////////////////////////////////////////////////////////////////
 		// Constructs a compressed clip instance
-		CompressedClip(uint32_t size, AlgorithmType8 type)
+		CompressedClip(uint32_t size, algorithm_type8 type)
 			: m_size(size)
 			, m_hash(hash32(safe_ptr_cast<const uint8_t>(this) + k_hash_skip_size, size - k_hash_skip_size))
 			, m_tag(k_compressed_clip_tag)
@@ -131,7 +139,7 @@ namespace acl
 		uint16_t		m_version;
 
 		// Algorithm type used to compress the clip.
-		AlgorithmType8	m_type;
+		algorithm_type8	m_type;
 
 		// Unused memory left as padding
 		uint8_t			m_padding;
@@ -139,11 +147,11 @@ namespace acl
 		////////////////////////////////////////////////////////////////////////////////
 		// Friend function used to construct compressed clip instances. Should only
 		// be called by encoders.
-		friend CompressedClip* make_compressed_clip(void* buffer, uint32_t size, AlgorithmType8 type);
+		friend CompressedClip* acl_impl::make_compressed_clip(void* buffer, uint32_t size, algorithm_type8 type);
 
 		////////////////////////////////////////////////////////////////////////////////
 		// Friend function to finalize a compressed clip once all memory has been written within.
-		friend void finalize_compressed_clip(CompressedClip& compressed_clip);
+		friend void acl_impl::finalize_compressed_clip(CompressedClip& compressed_clip);
 	};
 
 	static_assert(alignof(CompressedClip) == 16, "Invalid alignment for CompressedClip");
@@ -155,9 +163,6 @@ namespace acl
 	////////////////////////////////////////////////////////////////////////////////
 	struct SegmentHeader
 	{
-		// Number of samples the segment was constructed from per track.
-		uint32_t				num_samples;
-
 		// Number of bits used by a fully animated pose (excludes default/constant tracks).
 		uint32_t				animated_pose_bit_size;						// TODO: Calculate from bitsets and formats?
 
@@ -184,13 +189,9 @@ namespace acl
 		uint16_t				num_segments;
 
 		// The rotation/translation/scale format used.
-		RotationFormat8			rotation_format;
-		VectorFormat8			translation_format;
-		VectorFormat8			scale_format;								// TODO: Make this optional?
-
-		// The clip/segment range reduction format used.
-		RangeReductionFlags8	clip_range_reduction;
-		RangeReductionFlags8	segment_range_reduction;
+		rotation_format8		rotation_format;
+		vector_format8			translation_format;
+		vector_format8			scale_format;								// TODO: Make this optional?
 
 		// Whether or not we have scale (bool).
 		uint8_t					has_scale;
@@ -198,13 +199,16 @@ namespace acl
 		// Whether the default scale is 0,0,0 or 1,1,1 (bool/bit).
 		uint8_t					default_scale;
 
+		uint8_t padding[3];
+
 		// The total number of samples per track our clip contained.
 		uint32_t				num_samples;
 
 		// The clip sample rate.
-		uint32_t				sample_rate;								// TODO: Store duration as float instead
+		float					sample_rate;								// TODO: Store duration as float instead
 
 		// Offset to the segment headers data.
+		PtrOffset16<uint32_t>		segment_start_indices_offset;
 		PtrOffset16<SegmentHeader>	segment_headers_offset;
 
 		// Offsets to the default/constant tracks bitsets.
@@ -219,6 +223,9 @@ namespace acl
 
 		//////////////////////////////////////////////////////////////////////////
 		// Utility functions that return pointers from their respective offsets.
+
+		uint32_t*		get_segment_start_indices()			{ return segment_start_indices_offset.safe_add_to(this); }
+		const uint32_t*	get_segment_start_indices() const	{ return segment_start_indices_offset.safe_add_to(this); }
 
 		SegmentHeader*			get_segment_headers()		{ return segment_headers_offset.add_to(this); }
 		const SegmentHeader*	get_segment_headers() const	{ return segment_headers_offset.add_to(this); }

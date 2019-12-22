@@ -26,7 +26,7 @@
 
 #if defined(SJSON_CPP_PARSER)
 
-#include "acl/core/compiler_utils.h"
+#include "acl/core/impl/compiler_utils.h"
 
 #include <cstdint>
 
@@ -44,6 +44,8 @@ namespace acl
 			UnsignedIntegerExpected,
 			InvalidCompressionSetting,
 			InvalidAdditiveClipFormat,
+			PositiveValueExpected,
+			InvalidTrackType,
 		};
 
 		ClipReaderError()
@@ -73,6 +75,10 @@ namespace acl
 				return "Invalid compression settings provided";
 			case InvalidAdditiveClipFormat:
 				return "Invalid additive clip format provided";
+			case PositiveValueExpected:
+				return "A positive value is expected here";
+			case InvalidTrackType:
+				return "Invalid raw track type";
 			default:
 				return sjson::ParserError::get_description();
 			}

@@ -1,5 +1,7 @@
 /***************************************************************************
-* Copyright (c) 2016, Johan Mabille and Sylvain Corlay                     *
+* Copyright (c) Johan Mabille, Sylvain Corlay, Wolf Vollprecht and         *
+* Martin Renou                                                             *
+* Copyright (c) QuantStack                                                 *
 *                                                                          *
 * Distributed under the terms of the BSD 3-Clause License.                 *
 *                                                                          *
@@ -78,6 +80,7 @@ namespace xsimd
         static constexpr std::size_t size = 8;
         using batch_bool_type = batch_bool<int32_t, 8>;
         static constexpr std::size_t align = 32;
+        using storage_type = __m256i;
     };
 
     template <>
@@ -87,6 +90,7 @@ namespace xsimd
         static constexpr std::size_t size = 8;
         using batch_bool_type = batch_bool<uint32_t, 8>;
         static constexpr std::size_t align = 32;
+        using storage_type = __m256i;
     };
 
     template <>
@@ -133,24 +137,24 @@ namespace xsimd
 
     inline batch<int32_t, 8>& batch<int32_t, 8>::load_aligned(const float* src)
     {
-        m_value = _mm256_cvtps_epi32(_mm256_load_ps(src));
+        this->m_value = _mm256_cvtps_epi32(_mm256_load_ps(src));
         return *this;
     }
 
     inline batch<int32_t, 8>& batch<int32_t, 8>::load_unaligned(const float* src)
     {
-        m_value = _mm256_cvtps_epi32(_mm256_loadu_ps(src));
+        this->m_value = _mm256_cvtps_epi32(_mm256_loadu_ps(src));
         return *this;
     }
 
     inline void batch<int32_t, 8>::store_aligned(float* dst) const
     {
-        _mm256_store_ps(dst, _mm256_cvtepi32_ps(m_value));
+        _mm256_store_ps(dst, _mm256_cvtepi32_ps(this->m_value));
     }
 
     inline void batch<int32_t, 8>::store_unaligned(float* dst) const
     {
-        _mm256_storeu_ps(dst, _mm256_cvtepi32_ps(m_value));
+        _mm256_storeu_ps(dst, _mm256_cvtepi32_ps(this->m_value));
     }
 
     XSIMD_DEFINE_LOAD_STORE(int32_t, 8, int8_t, 32)
@@ -411,9 +415,22 @@ namespace xsimd
             static batch_bool_type lt(const batch_type& lhs, const batch_type& rhs)
             {
 #if XSIMD_X86_INSTR_SET >= XSIMD_X86_AVX2_VERSION
-                return _mm256_cmpgt_epi32(rhs, lhs);
+                auto xor_lhs = _mm256_xor_si256(lhs, _mm256_set1_epi32(std::numeric_limits<int32_t>::lowest()));
+                auto xor_rhs = _mm256_xor_si256(rhs, _mm256_set1_epi32(std::numeric_limits<int32_t>::lowest()));
+                return _mm256_cmpgt_epi32(xor_rhs, xor_lhs);
 #else
-                XSIMD_APPLY_SSE_FUNCTION(_mm_cmpgt_epi32, rhs, lhs);
+                // Note we could also use _mm256_xor_ps here but it might be slower
+                // as it would go to the floating point device
+                XSIMD_SPLIT_AVX(lhs);
+                XSIMD_SPLIT_AVX(rhs);
+                auto xer = _mm_set1_epi32(std::numeric_limits<int32_t>::lowest());
+                lhs_low  = _mm_xor_si128(lhs_low,  xer);
+                lhs_high = _mm_xor_si128(lhs_high, xer);
+                rhs_low  = _mm_xor_si128(rhs_low,  xer);
+                rhs_high = _mm_xor_si128(rhs_high, xer);
+                __m128i res_low =  _mm_cmpgt_epi32(rhs_low,  lhs_low);
+                __m128i res_high = _mm_cmpgt_epi32(rhs_high, lhs_high);
+                XSIMD_RETURN_MERGED_SSE(res_low, res_high);
 #endif
             }
 

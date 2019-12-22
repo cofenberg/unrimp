@@ -1,5 +1,7 @@
 /***************************************************************************
-* Copyright (c) 2016, Johan Mabille and Sylvain Corlay                     *
+* Copyright (c) Johan Mabille, Sylvain Corlay, Wolf Vollprecht and         *
+* Martin Renou                                                             *
+* Copyright (c) QuantStack                                                 *
 *                                                                          *
 * Distributed under the terms of the BSD 3-Clause License.                 *
 *                                                                          *
@@ -11,6 +13,7 @@
 
 #include <cstddef>
 #include <complex>
+#include <iterator>
 #include <ostream>
 #include <type_traits>
 
@@ -20,26 +23,21 @@
 
 #include "../memory/xsimd_alignment.hpp"
 #include "xsimd_utils.hpp"
+#include "xsimd_base_bool.hpp"
 
 namespace xsimd
 {
+    template <class X>
+    class simd_base;
+
     template <class T, size_t N>
     class batch;
-
-    template <class T, std::size_t N>
-    class batch_bool;
 
     namespace detail
     {
         template <class T, std::size_t N>
-        struct batch_bool_kernel;
-
-        template <class T, std::size_t N>
         struct batch_kernel;
     }
-
-    template <class X>
-    struct simd_batch_traits;
 
     template <class X>
     struct simd_batch_inner_types
@@ -77,125 +75,16 @@ namespace xsimd
     template <class T>
     using real_batch_type_t = typename detail::get_real_batch_type<typename T::batch_type>::batch_type;
 
-    /**************
-     * bool_proxy *
-     **************/
-
-    template <class T>
-    class bool_proxy
+    namespace detail
     {
-    public:
-
-        bool_proxy(T& ref);
-        
-        bool_proxy(const bool_proxy&) = default;
-        bool_proxy& operator=(const bool_proxy&) = default;
-
-        bool_proxy(bool_proxy&&) = default;
-        bool_proxy& operator=(bool_proxy&&) = default;
-
-        bool_proxy& operator=(bool rhs);
-        operator bool() const;
-
-    private:
-
-        T& m_ref;
-    };
-
-    /*******************
-     * simd_batch_bool *
-     *******************/
-
-    /**
-     * @class simd_batch_bool
-     * @brief Base class for batch of boolean values.
-     *
-     * The simd_batch_bool class is the base class for all classes representing
-     * a batch of boolean values. Batch of boolean values is meant for operations
-     * that may involve batches of integer or floating point values. Thus,
-     * the boolean values are stored as integer or floating point values, and each
-     * type of batch has its dedicated type of boolean batch.
-     *
-     * @tparam X The derived type
-     * @sa simd_batch
-     */
-    template <class X>
-    class simd_batch_bool
-    {
-    public:
-
-        using value_type = typename simd_batch_traits<X>::value_type;
-        static constexpr std::size_t size = simd_batch_traits<X>::size;
-
-        X& operator&=(const X& rhs);
-        X& operator|=(const X& rhs);
-        X& operator^=(const X& rhs);
-
-        X& operator()();
-        const X& operator()() const;
-
-    protected:
-
-        simd_batch_bool() = default;
-        ~simd_batch_bool() = default;
-
-        simd_batch_bool(const simd_batch_bool&) = default;
-        simd_batch_bool& operator=(const simd_batch_bool&) = default;
-
-        simd_batch_bool(simd_batch_bool&&) = default;
-        simd_batch_bool& operator=(simd_batch_bool&&) = default;
-    };
+        template <class X>
+        struct is_simd_type : std::is_base_of<simd_base<X>, X>
+        {
+        };
+    }
 
     template <class X>
-    X operator&(const simd_batch_bool<X>& lhs, const simd_batch_bool<X>&rhs);
-
-    template <class X>
-    X operator|(const simd_batch_bool<X>& lhs, const simd_batch_bool<X>&rhs);
-
-    template <class X>
-    X operator^(const simd_batch_bool<X>& lhs, const simd_batch_bool<X>&rhs);
-
-    template <class X>
-    X operator~(const simd_batch_bool<X>& rhs);
-
-    template <class X>
-    X bitwise_andnot(const simd_batch_bool<X>& lhs, const simd_batch_bool<X>&rhs);
-
-    template <class X>
-    X operator==(const simd_batch_bool<X>& lhs, const simd_batch_bool<X>&rhs);
-
-    template <class X>
-    X operator!=(const simd_batch_bool<X>& lhs, const simd_batch_bool<X>&rhs);
-
-    template <class X>
-    bool all(const simd_batch_bool<X>& rhs);
-
-    template <class X>
-    bool any(const simd_batch_bool<X>& rhs);
-
-    template <class X>
-    X operator&&(const simd_batch_bool<X>& lhs, const simd_batch_bool<X>& rhs);
-
-    template <class X>
-    X operator&&(const simd_batch_bool<X>& lhs, bool rhs);
-
-    template <class X>
-    X operator&&(bool lhs, const simd_batch_bool<X>& rhs);
-
-    template <class X>
-    X operator||(const simd_batch_bool<X>& lhs, const simd_batch_bool<X>& rhs);
-
-    template <class X>
-    X operator||(const simd_batch_bool<X>& lhs, bool rhs);
-
-    template <class X>
-    X operator||(bool lhs, const simd_batch_bool<X>& rhs);
-
-    template <class X>
-    X operator!(const simd_batch_bool<X>& rhs);
-
-    template <class X>
-    std::ostream& operator<<(std::ostream& out, const simd_batch_bool<X>& rhs);
+    using enable_if_simd_t = typename std::enable_if<detail::is_simd_type<X>::value, batch_type_t<X>>::type;
 
     /*************
      * simd_base *
@@ -255,6 +144,12 @@ namespace xsimd
         using batch_type = X;
         using value_type = typename simd_batch_traits<X>::value_type;
         static constexpr std::size_t size = simd_batch_traits<X>::size;
+        using storage_type = typename simd_batch_traits<X>::storage_type;
+
+        using iterator = value_type*;
+        using const_iterator = const value_type*;
+        using reverse_iterator = std::reverse_iterator<iterator>;
+        using const_reverse_iterator = std::reverse_iterator<const_iterator>;
 
         X& operator+=(const X& rhs);
         X& operator+=(const value_type& rhs);
@@ -287,6 +182,23 @@ namespace xsimd
         batch_reference get();
         const_batch_reference get() const;
 
+        value_type& operator[](std::size_t index);
+        const value_type& operator[](std::size_t index) const;
+
+        iterator begin();
+        iterator end();
+        const_iterator begin() const;
+        const_iterator end() const;
+        const_iterator cbegin() const;
+        const_iterator cend() const;
+
+        reverse_iterator rbegin();
+        reverse_iterator rend();
+        const_reverse_iterator rbegin() const;
+        const_reverse_iterator rend() const;
+        const_reverse_iterator crbegin() const;
+        const_reverse_iterator crend() const;
+
     protected:
 
         simd_batch() = default;
@@ -298,96 +210,19 @@ namespace xsimd
         simd_batch(simd_batch&&) = default;
         simd_batch& operator=(simd_batch&&) = default;
 
+        simd_batch(storage_type value);
+
         using char_itype =
             typename std::conditional<std::is_signed<char>::value, int8_t, uint8_t>::type;
+
+        union
+        {
+            storage_type m_value;
+            value_type m_array[size];
+        };
     };
 
-#define XSIMD_UNARY_OP(OP, FUNC)                                                                   \
-    template <class X>                                                                             \
-    inline batch_type_t<X> operator OP(const simd_base<X>& rhs)                                    \
-    {                                                                                              \
-        using value_type = typename simd_batch_traits<X>::value_type;                              \
-        using kernel = detail::batch_kernel<value_type, simd_batch_traits<X>::size>;               \
-        return kernel::FUNC(rhs());                                                                \
-    }
 
-#define XSIMD_BINARY_OP(OP, FUNC)                                                                  \
-    template <class X, class Y>                                                                    \
-    inline batch_type_t<X> operator OP(const simd_base<X>& lhs, const simd_base<Y>& rhs)           \
-    {                                                                                              \
-        using value_type = typename simd_batch_traits<X>::value_type;                              \
-        using kernel = detail::batch_kernel<value_type, simd_batch_traits<X>::size>;               \
-        return kernel::FUNC(lhs(), rhs());                                                         \
-    }                                                                                              \
-                                                                                                   \
-    template <class X>                                                                             \
-    inline batch_type_t<X> operator OP(const typename simd_batch_traits<X>::value_type& lhs,       \
-                                       const simd_base<X>& rhs)                                    \
-    {                                                                                              \
-        return batch_type_t<X>(lhs) OP rhs();                                                      \
-    }                                                                                              \
-                                                                                                   \
-    template <class X>                                                                             \
-    inline batch_type_t<X> operator OP(const simd_base<X>& lhs,                                    \
-                                       const typename simd_batch_traits<X>::value_type& rhs)       \
-    {                                                                                              \
-        return lhs() OP batch_type_t<X>(rhs);                                                      \
-    }
-
-#define XSIMD_BINARY_BOOL_OP(OP, FUNC)                                                             \
-    template <class X>                                                                             \
-    inline typename simd_batch_traits<X>::batch_bool_type operator OP(const simd_base<X>& lhs,     \
-                                                                      const simd_base<X>& rhs)     \
-    {                                                                                              \
-        using value_type = typename simd_batch_traits<X>::value_type;                              \
-        using kernel = detail::batch_kernel<value_type, simd_batch_traits<X>::size>;               \
-        return kernel::FUNC(lhs(), rhs());                                                         \
-    }                                                                                              \
-                                                                                                   \
-    template <class X>                                                                             \
-    inline typename simd_batch_traits<X>::batch_bool_type operator OP(                             \
-        const typename simd_batch_traits<X>::value_type& lhs, const simd_base<X>& rhs)             \
-    {                                                                                              \
-        return batch_type_t<X>(lhs) OP rhs();                                                      \
-    }                                                                                              \
-                                                                                                   \
-    template <class X>                                                                             \
-    inline typename simd_batch_traits<X>::batch_bool_type operator OP(                             \
-        const simd_base<X>& lhs, const typename simd_batch_traits<X>::value_type& rhs)             \
-    {                                                                                              \
-        return lhs() OP batch_type_t<X>(rhs);                                                      \
-    }
-
-#define XSIMD_BINARY_BOOL_OP_DERIVED(OP, FUNC)                                                     \
-    template <class X>                                                                             \
-    inline typename simd_batch_traits<X>::batch_bool_type operator OP(const simd_base<X>& lhs,     \
-                                                                      const simd_base<X>& rhs)     \
-    {                                                                                              \
-        return FUNC;                                                                               \
-    }                                                                                              \
-                                                                                                   \
-    template <class X>                                                                             \
-    inline typename simd_batch_traits<X>::batch_bool_type operator OP(                             \
-        const typename simd_batch_traits<X>::value_type& lhs, const simd_base<X>& rhs)             \
-    {                                                                                              \
-        return FUNC;                                                                               \
-    }                                                                                              \
-                                                                                                   \
-    template <class X>                                                                             \
-    inline typename simd_batch_traits<X>::batch_bool_type operator OP(                             \
-        const simd_base<X>& lhs, const typename simd_batch_traits<X>::value_type& rhs)             \
-    {                                                                                              \
-        return FUNC;                                                                               \
-    }
-
-#define XSIMD_KERNEL_FUNC_BINARY(FUNC)                                                             \
-    template <class X>                                                                             \
-    inline batch_type_t<X> FUNC(const simd_base<X>& lhs, const simd_base<X>& rhs)                  \
-    {                                                                                              \
-        using value_type = typename simd_batch_traits<X>::value_type;                              \
-        using kernel = detail::batch_kernel<value_type, simd_batch_traits<X>::size>;               \
-        return kernel::FUNC(lhs(), rhs());                                                         \
-    }
 
     template <class X>
     typename simd_batch_traits<X>::batch_bool_type
@@ -431,7 +266,7 @@ namespace xsimd
     hadd(const simd_base<X>& rhs);
 
     template <class X>
-    batch_type_t<X> haddp(const simd_base<X>* row);
+    enable_if_simd_t<X> haddp(const X* row);
 
     template <class X>
     batch_type_t<X> select(const typename simd_batch_traits<X>::batch_bool_type& cond, const simd_base<X>& a, const simd_base<X>& b);
@@ -687,7 +522,7 @@ namespace xsimd
     inline batch<TYPE, N> bitwise_cast(const batch_bool<TYPE, N>& src)         \
     {                                                                          \
         TYPE z(0);                                                             \
-        return select(src, batch<TYPE, N>(~z), batch<TYPE, N>(z));             \
+        return select(src, batch<TYPE, N>(TYPE(~z)), batch<TYPE, N>(z));       \
     }
 
 #define XSIMD_DEFINE_BITWISE_CAST_FLOAT(TYPE, N)                               \
@@ -710,393 +545,6 @@ namespace xsimd
     XSIMD_DEFINE_BITWISE_CAST(uint16_t, NMIN * 4)                              \
     XSIMD_DEFINE_BITWISE_CAST(int8_t, NMIN * 8)                                \
     XSIMD_DEFINE_BITWISE_CAST(uint8_t, NMIN * 8)
-
-    /*****************************
-     * bool_proxy implementation *
-     *****************************/
-
-    template <class T>
-    inline bool_proxy<T>::bool_proxy(T& ref)
-        : m_ref(ref)
-    {
-    }
-
-    template <class T>
-    inline bool_proxy<T>& bool_proxy<T>::operator=(bool rhs)
-    {
-        m_ref = static_cast<T>(rhs);
-        return *this;
-    }
-
-    template <class T>
-    inline bool_proxy<T>::operator bool() const
-    {
-        return static_cast<bool>(m_ref);
-    }
-
-    /**********************************
-     * simd_batch_bool implementation *
-     **********************************/
-
-    /**
-     * @name Bitwise computed assignement
-     */
-    //@{
-    /**
-     * Assigns the bitwise and of \c rhs and \c this.
-     * @param rhs the batch involved in the operation.
-     * @return a reference to \c this.
-     */
-    template <class X>
-    inline X& simd_batch_bool<X>::operator&=(const X& rhs)
-    {
-        (*this)() = (*this)() & rhs;
-        return (*this)();
-    }
-
-    /**
-     * Assigns the bitwise or of \c rhs and \c this.
-     * @param rhs the batch involved in the operation.
-     * @return a reference to \c this.
-     */
-    template <class X>
-    inline X& simd_batch_bool<X>::operator|=(const X& rhs)
-    {
-        (*this)() = (*this)() | rhs;
-        return (*this)();
-    }
-
-    /**
-     * Assigns the bitwise xor of \c rhs and \c this.
-     * @param rhs the batch involved in the operation.
-     * @return a reference to \c this.
-     */
-    template <class X>
-    inline X& simd_batch_bool<X>::operator^=(const X& rhs)
-    {
-        (*this)() = (*this)() ^ rhs;
-        return (*this)();
-    }
-    //@}
-
-    /**
-     * @name Static downcast functions
-     */
-    //@{
-    /**
-     * Returns a reference to the actual derived type of the simd_batch_bool.
-     */
-    template <class X>
-    inline X& simd_batch_bool<X>::operator()()
-    {
-        return *static_cast<X*>(this);
-    }
-
-    /**
-     * Returns a constant reference to the actual derived type of the simd_batch_bool.
-     */
-    template <class X>
-    const X& simd_batch_bool<X>::operator()() const
-    {
-        return *static_cast<const X*>(this);
-    }
-    //@}
-
-    /**
-    * @defgroup simd_batch_bool_bitwise Bitwise functions
-    */
-
-    /**
-     * @ingroup simd_batch_bool_bitwise
-     *
-     * Computes the bitwise and of batches \c lhs and \c rhs.
-     * @tparam X the actual type of boolean batch.
-     * @param lhs batch involved in the operation.
-     * @param rhs batch involved in the operation.
-     * @return the result of the bitwise and.
-     */
-    template <class X>
-    inline X operator&(const simd_batch_bool<X>& lhs, const simd_batch_bool<X>&rhs)
-    {
-        using value_type = typename simd_batch_traits<X>::value_type;
-        using kernel = detail::batch_bool_kernel<value_type, simd_batch_traits<X>::size>;
-        return kernel::bitwise_and(lhs(), rhs());
-    }
-
-    /**
-     * @ingroup simd_batch_bool_bitwise
-     *
-     * Computes the bitwise or of batches \c lhs and \c rhs.
-     * @tparam X the actual type of boolean batch.
-     * @param lhs batch involved in the operation.
-     * @param rhs batch involved in the operation.
-     * @return the result of the bitwise or.
-     */
-    template <class X>
-    inline X operator|(const simd_batch_bool<X>& lhs, const simd_batch_bool<X>&rhs)
-    {
-        using value_type = typename simd_batch_traits<X>::value_type;
-        using kernel = detail::batch_bool_kernel<value_type, simd_batch_traits<X>::size>;
-        return kernel::bitwise_or(lhs(), rhs());
-    }
-
-    /**
-     * @ingroup simd_batch_bool_bitwise
-     *
-     * Computes the bitwise xor of batches \c lhs and \c rhs.
-     * @tparam X the actual type of boolean batch.
-     * @param lhs batch involved in the operation.
-     * @param rhs batch involved in the operation.
-     * @return the result of the bitwise xor.
-     */
-    template <class X>
-    inline X operator^(const simd_batch_bool<X>& lhs, const simd_batch_bool<X>&rhs)
-    {
-        using value_type = typename simd_batch_traits<X>::value_type;
-        using kernel = detail::batch_bool_kernel<value_type, simd_batch_traits<X>::size>;
-        return kernel::bitwise_xor(lhs(), rhs());
-    }
-
-    /**
-     * @ingroup simd_batch_bool_bitwise
-     *
-     * Computes the bitwise not of batch \c rhs.
-     * @tparam X the actual type of boolean batch.
-     * @param rhs batch involved in the operation.
-     * @return the result of the bitwise not.
-     */
-    template <class X>
-    inline X operator~(const simd_batch_bool<X>& rhs)
-    {
-        using value_type = typename simd_batch_traits<X>::value_type;
-        using kernel = detail::batch_bool_kernel<value_type, simd_batch_traits<X>::size>;
-        return kernel::bitwise_not(rhs());
-    }
-
-    /**
-     * @ingroup simd_batch_bool_bitwise
-     *
-     * Computes the bitwise and not of batches \c lhs and \c rhs.
-     * @tparam X the actual type of boolean batch.
-     * @param lhs batch involved in the operation.
-     * @param rhs batch involved in the operation.
-     * @return the result of the bitwise and not.
-     */
-    template <class X>
-    batch_type_t<X> bitwise_andnot(const simd_batch_bool<X>& lhs, const simd_batch_bool<X>& rhs)
-    {
-        using value_type = typename simd_batch_traits<X>::value_type;
-        using kernel = detail::batch_bool_kernel<value_type, simd_batch_traits<X>::size>;
-        return kernel::bitwise_andnot(lhs(), rhs());
-    }
-
-    /**
-     * @defgroup simd_batch_bool_comparison Comparison operators
-     */
-
-    /**
-     * @ingroup simd_batch_bool_comparison
-     *
-     * Element-wise equality of batches \c lhs and \c rhs.
-     * @param lhs batch involved in the comparison.
-     * @param rhs batch involved in the comparison.
-     * @return the result of the equality comparison.
-     */
-    template <class X>
-    inline X operator==(const simd_batch_bool<X>& lhs, const simd_batch_bool<X>&rhs)
-    {
-        using value_type = typename simd_batch_traits<X>::value_type;
-        using kernel = detail::batch_bool_kernel<value_type, simd_batch_traits<X>::size>;
-        return kernel::equal(lhs(), rhs());
-    }
-
-    /**
-     * @ingroup simd_batch_bool_comparison
-     *
-     * Element-wise inequality of batches \c lhs and \c rhs.
-     * @param lhs batch involved in the comparison.
-     * @param rhs batch involved in the comparison.
-     * @return the result of the inequality comparison.
-     */
-    template <class X>
-    inline X operator!=(const simd_batch_bool<X>& lhs, const simd_batch_bool<X>&rhs)
-    {
-        using value_type = typename simd_batch_traits<X>::value_type;
-        using kernel = detail::batch_bool_kernel<value_type, simd_batch_traits<X>::size>;
-        return kernel::not_equal(lhs(), rhs());
-    }
-
-    /**
-     * @defgroup simd_batch_bool_reducers Reducers
-     */
-
-    /**
-     * @ingroup simd_batch_bool_reducers
-     *
-     * Returns true if all the boolean values in the batch are true,
-     * false otherwise.
-     * @param rhs the batch to reduce.
-     * @return a boolean scalar.
-     */
-    template <class X>
-    inline bool all(const simd_batch_bool<X>& rhs)
-    {
-        using value_type = typename simd_batch_traits<X>::value_type;
-        using kernel = detail::batch_bool_kernel<value_type, simd_batch_traits<X>::size>;
-        return kernel::all(rhs());
-    }
-
-    /**
-     * @ingroup simd_batch_bool_reducers
-     *
-     * Return true if any of the boolean values in the batch is true,
-     * false otherwise.
-     * @param rhs the batch to reduce.
-     * @return a boolean scalar.
-     */
-    template <class X>
-    inline bool any(const simd_batch_bool<X>& rhs)
-    {
-        using value_type = typename simd_batch_traits<X>::value_type;
-        using kernel = detail::batch_bool_kernel<value_type, simd_batch_traits<X>::size>;
-        return kernel::any(rhs());
-    }
-
-    /**
-     * @defgroup simd_batch_bool_logical Logical functions
-     */
-
-    /**
-     * @ingroup simd_batch_bool_logical
-     *
-     * Computes the logical and of batches \c lhs and \c rhs.
-     * @tparam X the actual type of boolean batch.
-     * @param lhs batch involved in the operation.
-     * @param rhs batch involved in the operation.
-     * @return the result of the logical and.
-     */
-    template <class X>
-    inline X operator&&(const simd_batch_bool<X>& lhs, const simd_batch_bool<X>& rhs)
-    {
-        return lhs() & rhs();
-    }
-
-    /**
-     * @ingroup simd_batch_bool_logical
-     *
-     * Computes the logical and of the batch \c lhs and the scalar \c rhs.
-     * Equivalent to the logical and of two boolean batches, where all the
-     * values of the second one are initialized to \c rhs.
-     * @tparam X the actual type of boolean batch.
-     * @param lhs batch involved in the operation.
-     * @param rhs boolean involved in the operation.
-     * @return the result of the logical and.
-     */
-    template <class X>
-    inline X operator&&(const simd_batch_bool<X>& lhs, bool rhs)
-    {
-        return lhs() & X(rhs);
-    }
-
-    /**
-     * @ingroup simd_batch_bool_logical
-     *
-     * Computes the logical and of the scalar \c lhs and the batch \c rhs.
-     * Equivalent to the logical and of two boolean batches, where all the
-     * values of the first one are initialized to \c lhs.
-     * @tparam X the actual type of boolean batch.
-     * @param lhs boolean involved in the operation.
-     * @param rhs batch involved in the operation.
-     * @return the result of the logical and.
-     */
-    template <class X>
-    inline X operator&&(bool lhs, const simd_batch_bool<X>& rhs)
-    {
-        return X(lhs) & rhs();
-    }
-
-    /**
-     * @ingroup simd_batch_bool_logical
-     *
-     * Computes the logical or of batches \c lhs and \c rhs.
-     * @tparam X the actual type of boolean batch.
-     * @param lhs batch involved in the operation.
-     * @param rhs batch involved in the operation.
-     * @return the result of the logical or.
-     */
-    template <class X>
-    inline X operator||(const simd_batch_bool<X>& lhs, const simd_batch_bool<X>& rhs)
-    {
-        return lhs() | rhs();
-    }
-
-    /**
-     * @ingroup simd_batch_bool_logical
-     *
-     * Computes the logical or of the batch \c lhs and the scalar \c rhs.
-     * Equivalent to the logical or of two boolean batches, where all the
-     * values of the second one are initialized to \c rhs.
-     * @tparam X the actual type of boolean batch.
-     * @param lhs batch involved in the operation.
-     * @param rhs boolean involved in the operation.
-     * @return the result of the logical or.
-     */
-    template <class X>
-    inline X operator||(const simd_batch_bool<X>& lhs, bool rhs)
-    {
-        return lhs() | X(rhs);
-    }
-
-    /**
-     * @ingroup simd_batch_bool_logical
-     *
-     * Computes the logical or of the scalar \c lhs and the batch \c rhs.
-     * Equivalent to the logical or of two boolean batches, where all the
-     * values of the first one are initialized to \c lhs.
-     * @tparam X the actual type of boolean batch.
-     * @param lhs boolean involved in the operation.
-     * @param rhs batch involved in the operation.
-     * @return the result of the logical or.
-     */
-    template <class X>
-    inline X operator||(bool lhs, const simd_batch_bool<X>& rhs)
-    {
-        return X(lhs) | rhs();
-    }
-
-    /*
-     * @ingroup simd_batch_bool_logical
-     *
-     * Computes the logical not of \c rhs.
-     * @tparam X the actual type of boolean batch.
-     * @param rhs batch involved in the operation.
-     * @return the result og the logical not.
-     */
-    template <class X>
-    inline X operator!(const simd_batch_bool<X>& rhs)
-    {
-        return rhs() == X(false);
-    }
-
-    /**
-     * Insert the batch \c rhs into the stream \c out.
-     * @tparam X the actual type of batch.
-     * @param out the output stream.
-     * @param rhs the batch to output.
-     * @return the output stream.
-     */
-    template <class X>
-    inline std::ostream& operator<<(std::ostream& out, const simd_batch_bool<X>& rhs)
-    {
-        out << '(';
-        std::size_t s = simd_batch_bool<X>::size;
-        for (std::size_t i = 0; i < s - 1; ++i)
-        {
-            out << (rhs()[i] ? 'T' : 'F') << ", ";
-        }
-        out << (rhs()[s - 1] ? 'T' : 'F') << ')';
-        return out;
-    }
 
     /****************************
      * simd_base implementation *
@@ -1146,6 +594,12 @@ namespace xsimd
     /*****************************
      * simd_batch implementation *
      *****************************/
+
+    template <class X>
+    inline simd_batch<X>::simd_batch(storage_type value)
+        : m_value(value)
+    {
+    }
 
     /**
      * @name Arithmetic computed assignment
@@ -1375,6 +829,168 @@ namespace xsimd
         return this->derived_cast();
     }
     
+    template <class X>
+    inline auto simd_batch<X>::operator[](std::size_t index) -> value_type&
+    {
+        return m_array[index & (size - 1)];
+    }
+
+    template <class X>
+    inline auto simd_batch<X>::operator[](std::size_t index) const -> const value_type&
+    {
+        return m_array[index & (size - 1)];
+    }
+
+    template <class X>
+    inline auto simd_batch<X>::begin() -> iterator
+    {
+        return m_array;
+    }
+
+    template <class X>
+    inline auto simd_batch<X>::end() -> iterator
+    {
+        return m_array + size;
+    }
+
+    template <class X>
+    inline auto simd_batch<X>::begin() const -> const_iterator
+    {
+        return cbegin();
+    }
+
+    template <class X>
+    inline auto simd_batch<X>::end() const -> const_iterator
+    {
+        return cend();
+    }
+
+    template <class X>
+    inline auto simd_batch<X>::cbegin() const -> const_iterator
+    {
+        return m_array;
+    }
+
+    template <class X>
+    inline auto simd_batch<X>::cend() const -> const_iterator
+    {
+        return m_array + size;
+    }
+
+    template <class X>
+    inline auto simd_batch<X>::rbegin() -> reverse_iterator
+    {
+        return reverse_iterator(end());
+    }
+
+    template <class X>
+    inline auto simd_batch<X>::rend() -> reverse_iterator
+    {
+        return reverse_iterator(begin());
+    }
+
+    template <class X>
+    inline auto simd_batch<X>::rbegin() const -> const_reverse_iterator
+    {
+        return crbegin();
+    }
+
+    template <class X>
+    inline auto simd_batch<X>::rend() const -> const_reverse_iterator
+    {
+        return crend();
+    }
+
+    template <class X>
+    inline auto simd_batch<X>::crbegin() const -> const_reverse_iterator
+    {
+        return const_reverse_iterator(end());
+    }
+
+    template <class X>
+    inline auto simd_batch<X>::crend() const -> const_reverse_iterator
+    {
+        return const_reverse_iterator(begin());
+    }
+
+#define XSIMD_UNARY_OP(OP, FUNC)                                                                   \
+    template <class X>                                                                             \
+    inline batch_type_t<X> operator OP(const simd_base<X>& rhs)                                    \
+    {                                                                                              \
+        using value_type = typename simd_batch_traits<X>::value_type;                              \
+        using kernel = detail::batch_kernel<value_type, simd_batch_traits<X>::size>;               \
+        return kernel::FUNC(rhs());                                                                \
+    }
+
+#define XSIMD_BINARY_OP(OP, FUNC)                                                                  \
+    template <class X, class Y>                                                                    \
+    inline batch_type_t<X> operator OP(const simd_base<X>& lhs, const simd_base<Y>& rhs)           \
+    {                                                                                              \
+        using value_type = typename simd_batch_traits<X>::value_type;                              \
+        using kernel = detail::batch_kernel<value_type, simd_batch_traits<X>::size>;               \
+        return kernel::FUNC(lhs(), rhs());                                                         \
+    }                                                                                              \
+                                                                                                   \
+    template <class X>                                                                             \
+    inline batch_type_t<X> operator OP(const typename simd_batch_traits<X>::value_type& lhs,       \
+                                       const simd_base<X>& rhs)                                    \
+    {                                                                                              \
+        return batch_type_t<X>(lhs) OP rhs();                                                      \
+    }                                                                                              \
+                                                                                                   \
+    template <class X>                                                                             \
+    inline batch_type_t<X> operator OP(const simd_base<X>& lhs,                                    \
+                                       const typename simd_batch_traits<X>::value_type& rhs)       \
+    {                                                                                              \
+        return lhs() OP batch_type_t<X>(rhs);                                                      \
+    }
+
+#define XSIMD_BINARY_BOOL_OP(OP, FUNC)                                                             \
+    template <class X>                                                                             \
+    inline typename simd_batch_traits<X>::batch_bool_type operator OP(const simd_base<X>& lhs,     \
+                                                                      const simd_base<X>& rhs)     \
+    {                                                                                              \
+        using value_type = typename simd_batch_traits<X>::value_type;                              \
+        using kernel = detail::batch_kernel<value_type, simd_batch_traits<X>::size>;               \
+        return kernel::FUNC(lhs(), rhs());                                                         \
+    }                                                                                              \
+                                                                                                   \
+    template <class X>                                                                             \
+    inline typename simd_batch_traits<X>::batch_bool_type operator OP(                             \
+        const typename simd_batch_traits<X>::value_type& lhs, const simd_base<X>& rhs)             \
+    {                                                                                              \
+        return batch_type_t<X>(lhs) OP rhs();                                                      \
+    }                                                                                              \
+                                                                                                   \
+    template <class X>                                                                             \
+    inline typename simd_batch_traits<X>::batch_bool_type operator OP(                             \
+        const simd_base<X>& lhs, const typename simd_batch_traits<X>::value_type& rhs)             \
+    {                                                                                              \
+        return lhs() OP batch_type_t<X>(rhs);                                                      \
+    }
+
+#define XSIMD_BINARY_BOOL_OP_DERIVED(OP, BASE_OP)                                                  \
+    template <class X>                                                                             \
+    inline typename simd_batch_traits<X>::batch_bool_type operator OP(const simd_base<X>& lhs,     \
+                                                                      const simd_base<X>& rhs)     \
+    {                                                                                              \
+        return rhs() BASE_OP lhs();                                                                \
+    }                                                                                              \
+                                                                                                   \
+    template <class X>                                                                             \
+    inline typename simd_batch_traits<X>::batch_bool_type operator OP(                             \
+        const typename simd_batch_traits<X>::value_type& lhs, const simd_base<X>& rhs)             \
+    {                                                                                              \
+        return rhs() BASE_OP batch_type_t<X>(lhs);                                                 \
+    }                                                                                              \
+                                                                                                   \
+    template <class X>                                                                             \
+    inline typename simd_batch_traits<X>::batch_bool_type operator OP(                             \
+        const simd_base<X>& lhs, const typename simd_batch_traits<X>::value_type& rhs)             \
+    {                                                                                              \
+        return batch_type_t<X>(rhs) BASE_OP lhs();                                                 \
+    }
+
     /**
      * @defgroup simd_batch_arithmetic Arithmetic operators
      */
@@ -1390,7 +1006,7 @@ namespace xsimd
     template <class X>
     inline batch_type_t<X> operator-(const simd_base<X>& rhs);
 
-    XSIMD_UNARY_OP(-, neg);
+    XSIMD_UNARY_OP(-, neg)
 
     /**
      * @ingroup simd_batch_arithmetic
@@ -1446,7 +1062,7 @@ namespace xsimd
     template <class X>
     batch_type_t<X> operator+(const typename simd_batch_traits<X>::value_type& lhs, const simd_base<X>& rhs);
 
-    XSIMD_BINARY_OP(+, add);
+    XSIMD_BINARY_OP(+, add)
 
     /**
      * @ingroup simd_batch_arithmetic
@@ -1613,7 +1229,7 @@ namespace xsimd
     template <class X>
     batch_type_t<X> operator%(const typename simd_batch_traits<X>::value_type& lhs, const simd_base<X>& rhs);
 
-    XSIMD_BINARY_OP(%, mod);
+    XSIMD_BINARY_OP(%, mod)
 
     /**
      * @defgroup simd_batch_comparison Comparison operators
@@ -1631,7 +1247,7 @@ namespace xsimd
     typename simd_batch_traits<X>::batch_bool_type
     operator==(const simd_base<X>& lhs, const simd_base<X>& rhs);
 
-    XSIMD_BINARY_BOOL_OP(==, eq);
+    XSIMD_BINARY_BOOL_OP(==, eq)
 
     /**
      * @ingroup simd_batch_comparison
@@ -1645,7 +1261,7 @@ namespace xsimd
     typename simd_batch_traits<X>::batch_bool_type
     operator!=(const simd_base<X>& lhs, const simd_base<X>& rhs);
 
-    XSIMD_BINARY_BOOL_OP(!=, neq);
+    XSIMD_BINARY_BOOL_OP(!=, neq)
 
     /**
      * @ingroup simd_batch_comparison
@@ -1659,7 +1275,7 @@ namespace xsimd
     typename simd_batch_traits<X>::batch_bool_type
     operator<(const simd_base<X>& lhs, const simd_base<X>& rhs);
 
-    XSIMD_BINARY_BOOL_OP(<, lt);
+    XSIMD_BINARY_BOOL_OP(<, lt)
 
     /**
      * @ingroup simd_batch_comparison
@@ -1673,7 +1289,7 @@ namespace xsimd
     typename simd_batch_traits<X>::batch_bool_type
     operator<=(const simd_base<X>& lhs, const simd_base<X>& rhs);
 
-    XSIMD_BINARY_BOOL_OP(<=, lte);
+    XSIMD_BINARY_BOOL_OP(<=, lte)
 
     /**
      * @ingroup simd_batch_comparison
@@ -1688,7 +1304,7 @@ namespace xsimd
     typename simd_batch_traits<X>::batch_bool_type
     operator>(const simd_base<X>& lhs, const simd_base<X>& rhs);
 
-    XSIMD_BINARY_BOOL_OP_DERIVED(>, rhs() < lhs());
+    XSIMD_BINARY_BOOL_OP_DERIVED(>, <)
 
     /**
      * @ingroup simd_batch_comparison
@@ -1703,7 +1319,7 @@ namespace xsimd
     typename simd_batch_traits<X>::batch_bool_type
     operator>=(const simd_base<X>& lhs, const simd_base<X>& rhs);
 
-    XSIMD_BINARY_BOOL_OP_DERIVED(>=, rhs() <= lhs());
+    XSIMD_BINARY_BOOL_OP_DERIVED(>=, <=)
 
     /**
      * @defgroup simd_batch_bitwise Bitwise operators
@@ -1720,7 +1336,7 @@ namespace xsimd
     template <class X, class Y>
     inline batch_type_t<X> operator&(const simd_base<X>& lhs, const simd_base<Y>& rhs);
 
-    XSIMD_BINARY_OP(&, bitwise_and);
+    XSIMD_BINARY_OP(&, bitwise_and)
 
     /**
      * @ingroup simd_batch_bitwise
@@ -1733,7 +1349,7 @@ namespace xsimd
     template <class X, class Y>
     inline batch_type_t<X> operator|(const simd_base<X>& lhs, const simd_base<Y>& rhs);
 
-    XSIMD_BINARY_OP(|, bitwise_or);
+    XSIMD_BINARY_OP(|, bitwise_or)
 
     /**
      * @ingroup simd_batch_bitwise
@@ -1746,7 +1362,7 @@ namespace xsimd
     template <class X, class Y>
     inline batch_type_t<X> operator^(const simd_base<X>& lhs, const simd_base<Y>& rhs);
 
-    XSIMD_BINARY_OP(^, bitwise_xor);
+    XSIMD_BINARY_OP(^, bitwise_xor)
 
     /**
      * @ingroup simd_batch_bitwise
@@ -1758,7 +1374,7 @@ namespace xsimd
     template <class X>
     batch_type_t<X> operator~(const simd_base<X>& rhs);
 
-    XSIMD_UNARY_OP(~, bitwise_not);
+    XSIMD_UNARY_OP(~, bitwise_not)
 
     /**
      * @ingroup simd_batch_bitwise
@@ -1769,9 +1385,12 @@ namespace xsimd
      * @return the result of the bitwise andnot.
      */
     template <class X>
-    inline batch_type_t<X> bitwise_andnot(const simd_batch<X>& lhs, const simd_batch<X>& rhs);
-
-    XSIMD_KERNEL_FUNC_BINARY(bitwise_andnot);
+    inline batch_type_t<X> bitwise_andnot(const simd_batch<X>& lhs, const simd_batch<X>& rhs)
+    {
+        using value_type = typename simd_batch_traits<X>::value_type;                              \
+        using kernel = detail::batch_kernel<value_type, simd_batch_traits<X>::size>;               \
+        return kernel::bitwise_andnot(lhs(), rhs());      
+    }
 
     /**
      * Element-wise not of \c rhs.
@@ -1783,8 +1402,9 @@ namespace xsimd
     inline typename simd_batch_traits<X>::batch_bool_type
     operator!(const simd_base<X>& rhs)
     {
-        using b_type = typename simd_batch_traits<X>::batch_type;
-        return rhs() == b_type(0);
+        using b_type = typename X::batch_type;
+        using value_type = typename simd_batch_traits<b_type>::value_type;
+        return rhs() == b_type(value_type(0));
     }
 
     /**
@@ -1972,7 +1592,7 @@ namespace xsimd
      * @return the result of the reduction.
      */
     template <class X>
-    inline batch_type_t<X> haddp(const simd_batch<X>* row)
+    enable_if_simd_t<X> haddp(const X* row)
     {
         using value_type = typename simd_batch_traits<X>::value_type;
         using kernel = detail::batch_kernel<value_type, simd_batch_traits<X>::size>;
@@ -2114,6 +1734,37 @@ namespace xsimd
     {
         return batch<T, N>(src.get_value());
     }
+
+
+    /***********************************
+     * Workaround for Clang on Windows *
+     ***********************************/
+
+#if defined(_WIN32) && defined(__clang__)
+    /**
+     * On Windows, the return type of fma is the promote type of its
+     * arguments if they are integral or floating point types, float
+     * otherwise. The implementation does not rely on SFINAE to
+     * remove it from the overload resolution set when the argument
+     * types are neither integral types nor floating point type.
+     *
+     * The fma overload defined xsimd accepts simd_base<batch<T, N>>
+     * arguments, not batch<T, N>. Thus a call to this latter is not
+     * more specialized than a call to the STL overload, which is
+     * considered. Since there is no mean to convert batch<double, 2>
+     * to float for instance, this results in a compilation error.
+     */
+
+    template <class T, std::size_t N>
+    inline batch<T, N> fma(const batch<T, N>& a, const batch<T, N>& b, const batch<T, N>& c)
+    {
+        using base_type = simd_base<batch<T, N>>;
+        const base_type& sba = a;
+        const base_type& sbb = b;
+        const base_type& sbc = c;
+        return fma(sba, sbb, sbc);
+    }
+#endif
 }
 
 #endif

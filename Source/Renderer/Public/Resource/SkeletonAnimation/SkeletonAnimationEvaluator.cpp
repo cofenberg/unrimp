@@ -28,7 +28,9 @@
 
 // Disable warnings in external headers, we can't fix them
 PRAGMA_WARNING_PUSH
+	PRAGMA_WARNING_DISABLE_MSVC(4061)	// warning C4061: enumerator 'rtm::mix4::b' in switch of enum 'rtm::mix4' is not explicitly handled by a case label
 	PRAGMA_WARNING_DISABLE_MSVC(4365)	// warning C4365: 'initializing': conversion from 'int' to 'uint8_t', signed/unsigned mismatch
+	PRAGMA_WARNING_DISABLE_MSVC(5027)	// warning C5027: 'rtm::rtm_impl::matrix_caster<rtm::matrix3x3f>': move assignment operator was implicitly defined as deleted
 	#include <acl/algorithm/uniformly_sampled/decoder.h>
 PRAGMA_WARNING_POP
 
@@ -155,20 +157,20 @@ namespace Renderer
 		{
 			timeInSeconds -= duration;
 		}
-		static_cast<::detail::AclDecompressionContext*>(mAclDecompressionContext)->seek(timeInSeconds, acl::SampleRoundingPolicy::None);
+		static_cast<::detail::AclDecompressionContext*>(mAclDecompressionContext)->seek(timeInSeconds, acl::sample_rounding_policy::none);
 		for (uint8_t i = 0; i < numberOfChannels; ++i)
 		{
-			acl::Quat_32 rotation;
-			acl::Vector4_32 translation;
-			acl::Vector4_32 scale;
+			rtm::quatf rotation;
+			rtm::vector4f translation;
+			rtm::vector4f scale;
 			aclDecompressionContext->decompress_bone(i, &rotation, &translation, &scale);
 
 			// Build a transformation matrix from it
 			// TODO(co) Handle case of no scale
 			// TODO(co) Review temporary matrix instances on the C-runtime stack
-			glm::quat presentRotation(acl::quat_get_w(rotation), acl::quat_get_x(rotation), acl::quat_get_y(rotation), acl::quat_get_z(rotation));
-			glm::vec3 presentPosition(acl::vector_get_x(translation), acl::vector_get_y(translation), acl::vector_get_z(translation));
-			glm::vec3 presentScale(acl::vector_get_x(scale), acl::vector_get_y(scale), acl::vector_get_z(scale));
+			glm::quat presentRotation(rtm::quat_get_w(rotation), rtm::quat_get_x(rotation), rtm::quat_get_y(rotation), rtm::quat_get_z(rotation));
+			glm::vec3 presentPosition(rtm::vector_get_x(translation), rtm::vector_get_y(translation), rtm::vector_get_z(translation));
+			glm::vec3 presentScale(rtm::vector_get_x(scale), rtm::vector_get_y(scale), rtm::vector_get_z(scale));
 			mTransformMatrices[i] = glm::translate(Math::MAT4_IDENTITY, presentPosition) * glm::toMat4(presentRotation) * glm::scale(Math::MAT4_IDENTITY, presentScale);
 		}
 	}

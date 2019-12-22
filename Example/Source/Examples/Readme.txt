@@ -175,9 +175,12 @@ Standalone renderer examples.
 
 
 == Dependencies ==
+- RHI
 - Renderer
 - Renderer toolkit for hot-reloading support
 - PhysicsFS (directly compiled and linked in)
+- Remotery (directly compiled and linked in)
+- RenderDoc (header only library)
 - Optional SDL2 ( https://www.libsdl.org/ )
 
 

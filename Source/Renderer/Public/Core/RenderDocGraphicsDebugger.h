@@ -123,35 +123,39 @@ namespace Renderer
 			pRENDERDOC_GetAPI RENDERDOC_GetAPI = nullptr;
 			#ifdef _WIN32
 			{
-				HMODULE hModule = GetModuleHandleA("renderdoc.dll");
-				if (nullptr == hModule)
-				{
-					// RenderDoc isn't already running, so we have to explicitly load the dll
-					char renderDocFilename[256] = "C:\\Program Files\\RenderDoc\\renderdoc.dll";	// TODO(co) Get this dynamically by using e.g. the registry key "HKEY_LOCAL_MACHINE\SOFTWARE\Classes\RenderDoc.RDCCapture.1\DefaultIcon\", also handle x86/x64
-					mRenderDocSharedLibrary = ::LoadLibraryExA(renderDocFilename, nullptr, LOAD_WITH_ALTERED_SEARCH_PATH);
-					if (nullptr != mRenderDocSharedLibrary)
+				#ifdef ARCHITECTURE_X64
+					HMODULE hModule = GetModuleHandleA("renderdoc.dll");
+					if (nullptr == hModule)
 					{
-						hModule = static_cast<HMODULE>(mRenderDocSharedLibrary);
+						// RenderDoc isn't already running, so we have to explicitly load the dll
+						char renderDocFilename[256] = "C:\\Program Files\\RenderDoc\\renderdoc.dll";	// TODO(co) Get this dynamically by using e.g. the registry key "HKEY_LOCAL_MACHINE\SOFTWARE\Classes\RenderDoc.RDCCapture.1\DefaultIcon\", also handle x86/x64
+						mRenderDocSharedLibrary = ::LoadLibraryExA(renderDocFilename, nullptr, LOAD_WITH_ALTERED_SEARCH_PATH);
+						if (nullptr != mRenderDocSharedLibrary)
+						{
+							hModule = static_cast<HMODULE>(mRenderDocSharedLibrary);
+						}
+						else
+						{
+							// Error!
+							RHI_LOG(context, CRITICAL, "Failed to locate the shared x64 RenderDoc library \"%s\"", renderDocFilename)
+						}
 					}
-					else
+					if (nullptr != hModule)
 					{
-						// Error!
-						RHI_LOG(context, CRITICAL, "Failed to locate the entry point \"RENDERDOC_GetAPI\" within the shared RenderDoc library \"%s\"", renderDocFilename)
+						void* symbol = ::GetProcAddress(hModule, "RENDERDOC_GetAPI");
+						if (nullptr != symbol)
+						{
+							RENDERDOC_GetAPI = static_cast<pRENDERDOC_GetAPI>(symbol);
+						}
+						else
+						{
+							// Error!
+							RHI_LOG(context, CRITICAL, "Failed to locate the entry point \"RENDERDOC_GetAPI\" within the shared x64 RenderDoc library \"renderdoc.dll\"")
+						}
 					}
-				}
-				if (nullptr != hModule)
-				{
-					void* symbol = ::GetProcAddress(hModule, "RENDERDOC_GetAPI");
-					if (nullptr != symbol)
-					{
-						RENDERDOC_GetAPI = static_cast<pRENDERDOC_GetAPI>(symbol);
-					}
-					else
-					{
-						// Error!
-						RHI_LOG(context, CRITICAL, "Failed to locate the entry point \"RENDERDOC_GetAPI\" within the shared RenderDoc library \"renderdoc.dll\"")
-					}
-				}
+				#else
+					#pragma message("The RenderDoc graphics debugger is only supported for x64 (\"RENDERER_GRAPHICS_DEBUGGER\" preprocessor directive)")
+				#endif
 			}
 			#elif defined LINUX
 			{

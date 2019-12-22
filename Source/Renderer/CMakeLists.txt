@@ -57,6 +57,7 @@ endif()
 include_directories(${CMAKE_SOURCE_DIR}/Source)
 include_directories(${CMAKE_SOURCE_DIR}/External/Renderer)	# For "glm", "lz4", "xsimd", "MojoShader", "mikktspace", "acl", "ImGui", "ImGuizmo" and "OpenVR"
 include_directories(${CMAKE_SOURCE_DIR}/External/Renderer/crunch/inc)
+include_directories(${CMAKE_SOURCE_DIR}/External/Renderer/acl)
 
 
 ##################################################
@@ -84,7 +85,6 @@ endif()
 set(SOURCE_CODES
 	${EXTERNAL_SOURCE_CODES}
 	RendererUnityBuild.cpp
-	Public/Resource/Scene/Culling/SceneCullingManager.cpp
 )
 
 # Disable warnings in external libraries, we can't fix them

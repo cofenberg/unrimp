@@ -24,12 +24,13 @@
 // SOFTWARE.
 ////////////////////////////////////////////////////////////////////////////////
 
-#include "acl/core/compiler_utils.h"
+#include "acl/core/impl/compiler_utils.h"
 #include "acl/core/iallocator.h"
 #include "acl/core/error.h"
 #include "acl/core/track_types.h"
-#include "acl/math/quat_64.h"
-#include "acl/math/vector4_64.h"
+
+#include <rtm/quatd.h>
+#include <rtm/vector4d.h>
 
 #include <cstdint>
 #include <utility>
@@ -67,8 +68,8 @@ namespace acl
 			: m_allocator(nullptr)
 			, m_sample_data(nullptr)
 			, m_num_samples(0)
-			, m_sample_rate(0)
-			, m_type(AnimationTrackType8::Rotation)
+			, m_sample_rate(0.0F)
+			, m_type(animation_track_type8::rotation)
 		{}
 
 		AnimationTrack(AnimationTrack&& other)
@@ -88,9 +89,9 @@ namespace acl
 		//    - num_samples: The number of samples in this track
 		//    - sample_rate: The rate at which samples are recorded (e.g. 30 means 30 FPS)
 		//    - type: The track type
-		AnimationTrack(IAllocator& allocator, uint32_t num_samples, uint32_t sample_rate, AnimationTrackType8 type)
+		AnimationTrack(IAllocator& allocator, uint32_t num_samples, float sample_rate, animation_track_type8 type)
 			: m_allocator(&allocator)
-			, m_sample_data(allocate_type_array_aligned<double>(allocator, size_t(num_samples) * get_animation_track_sample_size(type), alignof(Vector4_64)))
+			, m_sample_data(allocate_type_array_aligned<double>(allocator, size_t(num_samples) * get_animation_track_sample_size(type), alignof(rtm::vector4d)))
 			, m_num_samples(num_samples)
 			, m_sample_rate(sample_rate)
 			, m_type(type)
@@ -118,14 +119,14 @@ namespace acl
 		//////////////////////////////////////////////////////////////////////////
 		// Returns the number of values per sample
 		// TODO: constexpr
-		static uint32_t get_animation_track_sample_size(AnimationTrackType8 type)
+		static uint32_t get_animation_track_sample_size(animation_track_type8 type)
 		{
 			switch (type)
 			{
 			default:
-			case AnimationTrackType8::Rotation:		return 4;
-			case AnimationTrackType8::Translation:	return 3;
-			case AnimationTrackType8::Scale:		return 3;
+			case animation_track_type8::rotation:		return 4;
+			case animation_track_type8::translation:	return 3;
+			case animation_track_type8::scale:		return 3;
 			}
 		}
 
@@ -139,34 +140,33 @@ namespace acl
 		uint32_t						m_num_samples;
 
 		// The rate at which the samples were recorded
-		uint32_t						m_sample_rate;
+		float							m_sample_rate;
 
 		// The track type
-		AnimationTrackType8				m_type;
+		animation_track_type8				m_type;
 	};
 
 	//////////////////////////////////////////////////////////////////////////
 	// A raw rotation track.
 	//
-	// Holds a track made of 'Quat_64' entries.
+	// Holds a track made of 'rtm::quatd' entries.
 	//////////////////////////////////////////////////////////////////////////
-	class AnimationRotationTrack : public AnimationTrack
+	class AnimationRotationTrack final : public AnimationTrack
 	{
 	public:
-		AnimationRotationTrack()
-			: AnimationTrack()
-		{}
+		AnimationRotationTrack() : AnimationTrack() {}
+		~AnimationRotationTrack() = default;
 
 		//////////////////////////////////////////////////////////////////////////
 		// Constructs a new rotation track instance
 		//    - allocator: The allocator instance to use to allocate and free memory
 		//    - num_samples: The number of samples in this track
 		//    - sample_rate: The rate at which samples are recorded (e.g. 30 means 30 FPS)
-		AnimationRotationTrack(IAllocator& allocator, uint32_t num_samples, uint32_t sample_rate)
-			: AnimationTrack(allocator, num_samples, sample_rate, AnimationTrackType8::Rotation)
+		AnimationRotationTrack(IAllocator& allocator, uint32_t num_samples, float sample_rate)
+			: AnimationTrack(allocator, num_samples, sample_rate, animation_track_type8::rotation)
 		{
-			Quat_64* samples = safe_ptr_cast<Quat_64>(&m_sample_data[0]);
-			std::fill(samples, samples + num_samples, quat_identity_64());
+			rtm::quatd* samples = safe_ptr_cast<rtm::quatd>(&m_sample_data[0]);
+			std::fill(samples, samples + num_samples, rtm::quat_identity());
 		}
 
 		AnimationRotationTrack(AnimationRotationTrack&& other)
@@ -181,23 +181,23 @@ namespace acl
 
 		//////////////////////////////////////////////////////////////////////////
 		// Sets a sample value at a particular index
-		VS2015_HACK_NO_INLINE void set_sample(uint32_t sample_index, const Quat_64& rotation)
+		VS2015_HACK_NO_INLINE void set_sample(uint32_t sample_index, const rtm::quatd& rotation)
 		{
 			ACL_ASSERT(is_initialized(), "Track is not initialized");
 			ACL_ASSERT(sample_index < m_num_samples, "Invalid sample index. %u >= %u", sample_index, m_num_samples);
-			ACL_ASSERT(quat_is_finite(rotation), "Invalid rotation: [%f, %f, %f, %f]", quat_get_x(rotation), quat_get_y(rotation), quat_get_z(rotation), quat_get_w(rotation));
-			ACL_ASSERT(quat_is_normalized(rotation), "Rotation not normalized: [%f, %f, %f, %f]", quat_get_x(rotation), quat_get_y(rotation), quat_get_z(rotation), quat_get_w(rotation));
+			ACL_ASSERT(rtm::quat_is_finite(rotation), "Invalid rotation: [%f, %f, %f, %f]", rtm::quat_get_x(rotation), rtm::quat_get_y(rotation), rtm::quat_get_z(rotation), rtm::quat_get_w(rotation));
+			ACL_ASSERT(rtm::quat_is_normalized(rotation), "Rotation not normalized: [%f, %f, %f, %f]", rtm::quat_get_x(rotation), rtm::quat_get_y(rotation), rtm::quat_get_z(rotation), rtm::quat_get_w(rotation));
 
 			const uint32_t sample_size = get_animation_track_sample_size(m_type);
 			ACL_ASSERT(sample_size == 4, "Invalid sample size. %u != 4", sample_size);
 
 			double* sample = &m_sample_data[sample_index * sample_size];
-			quat_unaligned_write(rotation, sample);
+			rtm::quat_store(rotation, sample);
 		}
 
 		//////////////////////////////////////////////////////////////////////////
 		// Retrieves a sample value at a particular index
-		Quat_64 get_sample(uint32_t sample_index) const
+		rtm::quatd get_sample(uint32_t sample_index) const
 		{
 			ACL_ASSERT(is_initialized(), "Track is not initialized");
 			ACL_ASSERT(sample_index < m_num_samples, "Invalid sample index. %u >= %u", sample_index, m_num_samples);
@@ -205,7 +205,7 @@ namespace acl
 			const uint32_t sample_size = get_animation_track_sample_size(m_type);
 
 			const double* sample = &m_sample_data[sample_index * sample_size];
-			return quat_unaligned_load(sample);
+			return rtm::quat_load(sample);
 		}
 
 		AnimationRotationTrack(const AnimationRotationTrack&) = delete;
@@ -217,20 +217,19 @@ namespace acl
 	//
 	// Holds a track made of 3x 'double' entries.
 	//////////////////////////////////////////////////////////////////////////
-	class AnimationTranslationTrack : public AnimationTrack
+	class AnimationTranslationTrack final : public AnimationTrack
 	{
 	public:
-		AnimationTranslationTrack()
-			: AnimationTrack()
-		{}
+		AnimationTranslationTrack() : AnimationTrack() {}
+		~AnimationTranslationTrack() = default;
 
 		//////////////////////////////////////////////////////////////////////////
 		// Constructs a new translation track instance
 		//    - allocator: The allocator instance to use to allocate and free memory
 		//    - num_samples: The number of samples in this track
 		//    - sample_rate: The rate at which samples are recorded (e.g. 30 means 30 FPS)
-		AnimationTranslationTrack(IAllocator& allocator, uint32_t num_samples, uint32_t sample_rate)
-			: AnimationTrack(allocator, num_samples, sample_rate, AnimationTrackType8::Translation)
+		AnimationTranslationTrack(IAllocator& allocator, uint32_t num_samples, float sample_rate)
+			: AnimationTrack(allocator, num_samples, sample_rate, animation_track_type8::translation)
 		{
 			std::fill(m_sample_data, m_sample_data + (num_samples * 3), 0.0);
 		}
@@ -247,22 +246,22 @@ namespace acl
 
 		//////////////////////////////////////////////////////////////////////////
 		// Sets a sample value at a particular index
-		void set_sample(uint32_t sample_index, const Vector4_64& translation)
+		void set_sample(uint32_t sample_index, const rtm::vector4d& translation)
 		{
 			ACL_ASSERT(is_initialized(), "Track is not initialized");
 			ACL_ASSERT(sample_index < m_num_samples, "Invalid sample index. %u >= %u", sample_index, m_num_samples);
-			ACL_ASSERT(vector_is_finite3(translation), "Invalid translation: [%f, %f, %f]", vector_get_x(translation), vector_get_y(translation), vector_get_z(translation));
+			ACL_ASSERT(rtm::vector_is_finite3(translation), "Invalid translation: [%f, %f, %f]", rtm::vector_get_x(translation), rtm::vector_get_y(translation), rtm::vector_get_z(translation));
 
 			const uint32_t sample_size = get_animation_track_sample_size(m_type);
 			ACL_ASSERT(sample_size == 3, "Invalid sample size. %u != 3", sample_size);
 
 			double* sample = &m_sample_data[sample_index * sample_size];
-			vector_unaligned_write3(translation, sample);
+			rtm::vector_store3(translation, sample);
 		}
 
 		//////////////////////////////////////////////////////////////////////////
 		// Retrieves a sample value at a particular index
-		Vector4_64 get_sample(uint32_t sample_index) const
+		rtm::vector4d get_sample(uint32_t sample_index) const
 		{
 			ACL_ASSERT(is_initialized(), "Track is not initialized");
 			ACL_ASSERT(sample_index < m_num_samples, "Invalid sample index. %u >= %u", sample_index, m_num_samples);
@@ -270,7 +269,7 @@ namespace acl
 			const uint32_t sample_size = get_animation_track_sample_size(m_type);
 
 			const double* sample = &m_sample_data[sample_index * sample_size];
-			return vector_unaligned_load3(sample);
+			return rtm::vector_load3(sample);
 		}
 
 		AnimationTranslationTrack(const AnimationTranslationTrack&) = delete;
@@ -282,24 +281,23 @@ namespace acl
 	//
 	// Holds a track made of 3x 'double' entries.
 	//////////////////////////////////////////////////////////////////////////
-	class AnimationScaleTrack : public AnimationTrack
+	class AnimationScaleTrack final : public AnimationTrack
 	{
 	public:
-		AnimationScaleTrack()
-			: AnimationTrack()
-		{}
+		AnimationScaleTrack() : AnimationTrack() {}
+		~AnimationScaleTrack() = default;
 
 		//////////////////////////////////////////////////////////////////////////
 		// Constructs a new scale track instance
 		//    - allocator: The allocator instance to use to allocate and free memory
 		//    - num_samples: The number of samples in this track
 		//    - sample_rate: The rate at which samples are recorded (e.g. 30 means 30 FPS)
-		AnimationScaleTrack(IAllocator& allocator, uint32_t num_samples, uint32_t sample_rate)
-			: AnimationTrack(allocator, num_samples, sample_rate, AnimationTrackType8::Scale)
+		AnimationScaleTrack(IAllocator& allocator, uint32_t num_samples, float sample_rate)
+			: AnimationTrack(allocator, num_samples, sample_rate, animation_track_type8::scale)
 		{
-			Vector4_64 defaultScale = vector_set(1.0);
+			rtm::vector4d defaultScale = rtm::vector_set(1.0);
 			for (uint32_t sample_index = 0; sample_index < num_samples; ++sample_index)
-				vector_unaligned_write3(defaultScale, m_sample_data + (sample_index * 3));
+				rtm::vector_store3(defaultScale, m_sample_data + (sample_index * 3));
 		}
 
 		AnimationScaleTrack(AnimationScaleTrack&& other)
@@ -314,22 +312,22 @@ namespace acl
 
 		//////////////////////////////////////////////////////////////////////////
 		// Sets a sample value at a particular index
-		VS2015_HACK_NO_INLINE void set_sample(uint32_t sample_index, const Vector4_64& scale)
+		VS2015_HACK_NO_INLINE void set_sample(uint32_t sample_index, const rtm::vector4d& scale)
 		{
 			ACL_ASSERT(is_initialized(), "Track is not initialized");
 			ACL_ASSERT(sample_index < m_num_samples, "Invalid sample index. %u >= %u", sample_index, m_num_samples);
-			ACL_ASSERT(vector_is_finite3(scale), "Invalid scale: [%f, %f, %f]", vector_get_x(scale), vector_get_y(scale), vector_get_z(scale));
+			ACL_ASSERT(rtm::vector_is_finite3(scale), "Invalid scale: [%f, %f, %f]", rtm::vector_get_x(scale), rtm::vector_get_y(scale), rtm::vector_get_z(scale));
 
 			const uint32_t sample_size = get_animation_track_sample_size(m_type);
 			ACL_ASSERT(sample_size == 3, "Invalid sample size. %u != 3", sample_size);
 
 			double* sample = &m_sample_data[sample_index * sample_size];
-			vector_unaligned_write3(scale, sample);
+			rtm::vector_store3(scale, sample);
 		}
 
 		//////////////////////////////////////////////////////////////////////////
 		// Retrieves a sample value at a particular index
-		Vector4_64 get_sample(uint32_t sample_index) const
+		rtm::vector4d get_sample(uint32_t sample_index) const
 		{
 			ACL_ASSERT(is_initialized(), "Track is not initialized");
 			ACL_ASSERT(sample_index < m_num_samples, "Invalid sample index. %u >= %u", sample_index, m_num_samples);
@@ -337,7 +335,7 @@ namespace acl
 			const uint32_t sample_size = get_animation_track_sample_size(m_type);
 
 			const double* sample = &m_sample_data[sample_index * sample_size];
-			return vector_unaligned_load3(sample);
+			return rtm::vector_load3(sample);
 		}
 
 		AnimationScaleTrack(const AnimationScaleTrack&) = delete;

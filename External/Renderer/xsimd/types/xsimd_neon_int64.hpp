@@ -1,5 +1,7 @@
 /***************************************************************************
-* Copyright (c) 2016, Wolf Vollprecht, Johan Mabille and Sylvain Corlay    *
+* Copyright (c) Johan Mabille, Sylvain Corlay, Wolf Vollprecht and         *
+* Martin Renou                                                             *
+* Copyright (c) QuantStack                                                 *
 *                                                                          *
 * Distributed under the terms of the BSD 3-Clause License.                 *
 *                                                                          *
@@ -25,6 +27,7 @@ namespace xsimd
         static constexpr std::size_t size = 2;
         using batch_bool_type = batch_bool<int64_t, 2>;
         static constexpr std::size_t align = XSIMD_DEFAULT_ALIGNMENT;
+        using storage_type = int64x2_t;
     };
 
     template <>
@@ -34,7 +37,7 @@ namespace xsimd
 
         using self_type = batch<int64_t, 2>;
         using base_type = simd_batch<self_type>;
-        using simd_type = int64x2_t;
+        using storage_type = typename base_type::storage_type;
 
         batch();
         explicit batch(int64_t src);
@@ -46,10 +49,10 @@ namespace xsimd
         batch(const int64_t* src, aligned_mode);
         batch(const int64_t* src, unaligned_mode);
 
-        batch(const simd_type& rhs);
-        batch& operator=(const simd_type& rhs);
+        batch(const storage_type& rhs);
+        batch& operator=(const storage_type& rhs);
 
-        operator simd_type() const;
+        operator storage_type() const;
 
         XSIMD_DECLARE_LOAD_STORE_ALL(int64_t, 2)
         XSIMD_DECLARE_LOAD_STORE_LONG(int64_t, 2)
@@ -58,17 +61,6 @@ namespace xsimd
         using base_type::load_unaligned;
         using base_type::store_aligned;
         using base_type::store_unaligned;
-
-        int64_t& operator[](std::size_t index);
-        const int64_t& operator[](std::size_t index) const;
-
-    private:
-
-        union
-        {
-            simd_type m_value;
-            int64_t m_array[2];
-        };
     };
 
     batch<int64_t, 2> operator<<(const batch<int64_t, 2>& lhs, int64_t rhs);
@@ -84,18 +76,18 @@ namespace xsimd
     }
 
     inline batch<int64_t, 2>::batch(int64_t src)
-        : m_value(vdupq_n_s64(src))
+        : base_type(vdupq_n_s64(src))
     {
     }
 
     template <class... Args, class>
     inline batch<int64_t, 2>::batch(Args... args)
-        : m_value{static_cast<int64_t>(args)...}
+        : base_type(storage_type{static_cast<int64_t>(args)...})
     {
     }
 
     inline batch<int64_t, 2>::batch(const int64_t* src)
-        : m_value(vld1q_s64(src))
+        : base_type(vld1q_s64(src))
     {
     }
 
@@ -109,14 +101,14 @@ namespace xsimd
     {
     }
 
-    inline batch<int64_t, 2>::batch(const simd_type& rhs)
-        : m_value(rhs)
+    inline batch<int64_t, 2>::batch(const storage_type& rhs)
+        : base_type(rhs)
     {
     }
 
-    inline batch<int64_t, 2>& batch<int64_t, 2>::operator=(const simd_type& rhs)
+    inline batch<int64_t, 2>& batch<int64_t, 2>::operator=(const storage_type& rhs)
     {
-        m_value = rhs;
+        this->m_value = rhs;
         return *this;
     }
 
@@ -128,7 +120,7 @@ namespace xsimd
     inline batch<int64_t, 2>& batch<int64_t, 2>::load_aligned(const int32_t* src)
     {
         int32x2_t tmp = vld1_s32(src);
-        m_value = vmovl_s32(tmp);
+        this->m_value = vmovl_s32(tmp);
         return *this;
     }
 
@@ -140,7 +132,7 @@ namespace xsimd
     inline batch<int64_t, 2>& batch<int64_t, 2>::load_aligned(const uint32_t* src)
     {
         uint32x2_t tmp = vld1_u32(src);
-        m_value = vreinterpretq_s64_u64(vmovl_u32(tmp));
+        this->m_value = vreinterpretq_s64_u64(vmovl_u32(tmp));
         return *this;
     }
 
@@ -151,7 +143,7 @@ namespace xsimd
 
     inline batch<int64_t, 2>& batch<int64_t, 2>::load_aligned(const int64_t* src)
     {
-        m_value = vld1q_s64(src);
+        this->m_value = vld1q_s64(src);
         return *this;
     }
 
@@ -162,7 +154,7 @@ namespace xsimd
 
     inline batch<int64_t, 2>& batch<int64_t, 2>::load_aligned(const uint64_t* src)
     {
-        m_value = vreinterpretq_s64_u64(vld1q_u64(src));
+        this->m_value = vreinterpretq_s64_u64(vld1q_u64(src));
         return *this;
     }
 
@@ -176,9 +168,9 @@ namespace xsimd
     inline batch<int64_t, 2>& batch<int64_t, 2>::load_aligned(const float* src)
     {
     #if XSIMD_ARM_INSTR_SET >= XSIMD_ARM8_64_NEON_VERSION
-        m_value = vcvtq_s64_f64(vcvt_f64_f32(vld1_f32(src)));
+        this->m_value = vcvtq_s64_f64(vcvt_f64_f32(vld1_f32(src)));
     #else
-        m_value = int64x2_t{static_cast<int64_t>(src[0]),
+        this->m_value = int64x2_t{static_cast<int64_t>(src[0]),
                             static_cast<int64_t>(src[1])};
     #endif
         return *this;
@@ -186,15 +178,15 @@ namespace xsimd
 
     inline batch<int64_t, 2>& batch<int64_t, 2>::load_unaligned(const float* src)
     {
-        return load_unaligned(src);
+        return load_aligned(src);
     }
 
     inline batch<int64_t, 2>& batch<int64_t, 2>::load_aligned(const double* src)
     {
     #if XSIMD_ARM_INSTR_SET >= XSIMD_ARM8_64_NEON_VERSION
-        m_value = vcvtq_s64_f64(vld1q_f64(src));
+        this->m_value = vcvtq_s64_f64(vld1q_f64(src));
     #else
-        m_value = int64x2_t{static_cast<int64_t>(src[0]),
+        this->m_value = int64x2_t{static_cast<int64_t>(src[0]),
                             static_cast<int64_t>(src[1])};
     #endif
         return *this;
@@ -207,7 +199,7 @@ namespace xsimd
 
     inline void batch<int64_t, 2>::store_aligned(int32_t* dst) const
     {
-        int32x2_t tmp = vmovn_s64(m_value);
+        int32x2_t tmp = vmovn_s64(this->m_value);
         vst1_s32((int32_t*)dst, tmp);
     }
 
@@ -218,7 +210,7 @@ namespace xsimd
 
     inline void batch<int64_t, 2>::store_aligned(uint32_t* dst) const
     {
-        uint32x2_t tmp = vmovn_u64(vreinterpretq_u64_s64(m_value));
+        uint32x2_t tmp = vmovn_u64(vreinterpretq_u64_s64(this->m_value));
         vst1_u32((uint32_t*)dst, tmp);
     }
 
@@ -229,7 +221,7 @@ namespace xsimd
 
     inline void batch<int64_t, 2>::store_aligned(int64_t* dst) const
     {
-        vst1q_s64(dst, m_value);
+        vst1q_s64(dst, this->m_value);
     }
 
     inline void batch<int64_t, 2>::store_unaligned(int64_t* dst) const
@@ -239,7 +231,7 @@ namespace xsimd
 
     inline void batch<int64_t, 2>::store_aligned(uint64_t* dst) const
     {
-        vst1q_u64(dst, vreinterpretq_u64_s64(m_value));
+        vst1q_u64(dst, vreinterpretq_u64_s64(this->m_value));
     }
 
     inline void batch<int64_t, 2>::store_unaligned(uint64_t* dst) const
@@ -250,10 +242,10 @@ namespace xsimd
     inline void batch<int64_t, 2>::store_aligned(float* dst) const
     {
     #if XSIMD_ARM_INSTR_SET >= XSIMD_ARM8_64_NEON_VERSION
-        vst1_f32(dst, vcvt_f32_f64(vcvtq_f64_s64(m_value)));
+        vst1_f32(dst, vcvt_f32_f64(vcvtq_f64_s64(this->m_value)));
     #else
-        dst[0] = static_cast<float>(m_value[0]);
-        dst[1] = static_cast<float>(m_value[1]);
+        dst[0] = static_cast<float>(this->m_value[0]);
+        dst[1] = static_cast<float>(this->m_value[1]);
     #endif
     }
 
@@ -265,10 +257,10 @@ namespace xsimd
     inline void batch<int64_t, 2>::store_aligned(double* dst) const
     {
     #if XSIMD_ARM_INSTR_SET >= XSIMD_ARM8_64_NEON_VERSION
-        vst1q_f64(dst, vcvtq_f64_s64(m_value));
+        vst1q_f64(dst, vcvtq_f64_s64(this->m_value));
     #else
-        dst[0] = static_cast<double>(m_value[0]);
-        dst[1] = static_cast<double>(m_value[1]);
+        dst[0] = static_cast<double>(this->m_value[0]);
+        dst[1] = static_cast<double>(this->m_value[1]);
     #endif
     }
 
@@ -277,19 +269,9 @@ namespace xsimd
         store_aligned(dst);
     }
 
-    inline batch<int64_t, 2>::operator simd_type() const
+    inline batch<int64_t, 2>::operator storage_type() const
     {
-        return m_value;
-    }
-
-    inline int64_t& batch<int64_t, 2>::operator[](std::size_t index)
-    {
-        return m_array[index & 1];
-    }
-
-    inline const int64_t& batch<int64_t, 2>::operator[](std::size_t index) const
-    {
-        return m_array[index & 1];
+        return this->m_value;
     }
 
     namespace detail

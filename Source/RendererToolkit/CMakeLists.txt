@@ -37,6 +37,7 @@ unrimp_add_conditional_rhi_definitions()
 include_directories(${CMAKE_SOURCE_DIR}/Source)
 include_directories(${CMAKE_SOURCE_DIR}/External/Renderer)	# For "glm", "mikktspace" and "acl"
 include_directories(${CMAKE_SOURCE_DIR}/External/Renderer/crunch/inc)
+include_directories(${CMAKE_SOURCE_DIR}/External/Renderer/acl)
 include_directories(${CMAKE_SOURCE_DIR}/External/RendererToolkit)	# For "SimpleFileWatcher" and "ies"
 include_directories(${CMAKE_SOURCE_DIR}/External/RendererToolkit/RapidJSON/configuration)	# RapidJSON configuration and assert to exception
 include_directories(${CMAKE_SOURCE_DIR}/External/RendererToolkit/RapidJSON/include)

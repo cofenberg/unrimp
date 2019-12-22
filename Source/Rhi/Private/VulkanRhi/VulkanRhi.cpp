@@ -2034,7 +2034,7 @@ namespace VulkanRhi
 			#ifdef VK_USE_PLATFORM_WIN32_KHR
 				return &mVkAllocationCallbacks;
 			#else
-				#warning TODO(co) The "Rhi::DefaultAllocator" implementation is currently only tested on MS Window, since Vulkan is using aligment it must be sure the custom standard implemtation runs fine
+				#warning "TODO(co) The \"Rhi::DefaultAllocator\" implementation is currently only tested on MS Window, since Vulkan is using aligment it must be sure the custom standard implemtation runs fine"
 				return nullptr;
 			#endif
 		}

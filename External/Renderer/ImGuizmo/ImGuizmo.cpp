@@ -64,7 +64,91 @@ namespace ImGuizmo
       r[15] = a[12] * b[3] + a[13] * b[7] + a[14] * b[11] + a[15] * b[15];
    }
 
-   //template <typename T> T LERP(T x, T y, float z) { return (x + (y - x)*z); }
+   void Frustum(float left, float right, float bottom, float top, float znear, float zfar, float* m16)
+   {
+      float temp, temp2, temp3, temp4;
+      temp = 2.0f * znear;
+      temp2 = right - left;
+      temp3 = top - bottom;
+      temp4 = zfar - znear;
+      m16[0] = temp / temp2;
+      m16[1] = 0.0;
+      m16[2] = 0.0;
+      m16[3] = 0.0;
+      m16[4] = 0.0;
+      m16[5] = temp / temp3;
+      m16[6] = 0.0;
+      m16[7] = 0.0;
+      m16[8] = (right + left) / temp2;
+      m16[9] = (top + bottom) / temp3;
+      m16[10] = (-zfar - znear) / temp4;
+      m16[11] = -1.0f;
+      m16[12] = 0.0;
+      m16[13] = 0.0;
+      m16[14] = (-temp * zfar) / temp4;
+      m16[15] = 0.0;
+   }
+
+   void Perspective(float fovyInDegrees, float aspectRatio, float znear, float zfar, float* m16)
+   {
+      float ymax, xmax;
+      ymax = znear * tanf(fovyInDegrees * DEG2RAD);
+      xmax = ymax * aspectRatio;
+      Frustum(-xmax, xmax, -ymax, ymax, znear, zfar, m16);
+   }
+
+   void Cross(const float* a, const float* b, float* r)
+   {
+      r[0] = a[1] * b[2] - a[2] * b[1];
+      r[1] = a[2] * b[0] - a[0] * b[2];
+      r[2] = a[0] * b[1] - a[1] * b[0];
+   }
+
+   float Dot(const float* a, const float* b)
+   {
+      return a[0] * b[0] + a[1] * b[1] + a[2] * b[2];
+   }
+
+   void Normalize(const float* a, float* r)
+   {
+      float il = 1.f / (sqrtf(Dot(a, a)) + FLT_EPSILON);
+      r[0] = a[0] * il;
+      r[1] = a[1] * il;
+      r[2] = a[2] * il;
+   }
+
+   void LookAt(const float* eye, const float* at, const float* up, float* m16)
+   {
+      float X[3], Y[3], Z[3], tmp[3];
+
+      tmp[0] = eye[0] - at[0];
+      tmp[1] = eye[1] - at[1];
+      tmp[2] = eye[2] - at[2];
+      Normalize(tmp, Z);
+      Normalize(up, Y);
+      Cross(Y, Z, tmp);
+      Normalize(tmp, X);
+      Cross(Z, X, tmp);
+      Normalize(tmp, Y);
+
+      m16[0] = X[0];
+      m16[1] = Y[0];
+      m16[2] = Z[0];
+      m16[3] = 0.0f;
+      m16[4] = X[1];
+      m16[5] = Y[1];
+      m16[6] = Z[1];
+      m16[7] = 0.0f;
+      m16[8] = X[2];
+      m16[9] = Y[2];
+      m16[10] = Z[2];
+      m16[11] = 0.0f;
+      m16[12] = -Dot(X, eye);
+      m16[13] = -Dot(Y, eye);
+      m16[14] = -Dot(Z, eye);
+      m16[15] = 1.0f;
+   }
+
    template <typename T> T Clamp(T x, T y, T z) { return ((x<y) ? y : ((x>z) ? z : x)); }
    template <typename T> T max(T x, T y) { return (x > y) ? x : y; }
    template <typename T> T min(T x, T y) { return (x < y) ? x : y; }
@@ -610,29 +694,29 @@ namespace ImGuizmo
    static int GetRotateType();
    static int GetScaleType();
 
-   static ImVec2 worldToPos(const vec_t& worldPos, const matrix_t& mat)
+   static ImVec2 worldToPos(const vec_t& worldPos, const matrix_t& mat, ImVec2 position = ImVec2(gContext.mX, gContext.mY), ImVec2 size = ImVec2(gContext.mWidth, gContext.mHeight))
    {
       vec_t trans;
       trans.TransformPoint(worldPos, mat);
       trans *= 0.5f / trans.w;
       trans += makeVect(0.5f, 0.5f);
       trans.y = 1.f - trans.y;
-      trans.x *= gContext.mWidth;
-      trans.y *= gContext.mHeight;
-      trans.x += gContext.mX;
-      trans.y += gContext.mY;
+      trans.x *= size.x;
+      trans.y *= size.y;
+      trans.x += position.x;
+      trans.y += position.y;
       return ImVec2(trans.x, trans.y);
    }
 
-   static void ComputeCameraRay(vec_t &rayOrigin, vec_t &rayDir)
+   static void ComputeCameraRay(vec_t &rayOrigin, vec_t &rayDir, ImVec2 position = ImVec2(gContext.mX, gContext.mY), ImVec2 size = ImVec2(gContext.mWidth, gContext.mHeight))
    {
       ImGuiIO& io = ImGui::GetIO();
 
       matrix_t mViewProjInverse;
       mViewProjInverse.Inverse(gContext.mViewMat * gContext.mProjectionMat);
 
-      float mox = ((io.MousePos.x - gContext.mX) / gContext.mWidth) * 2.f - 1.f;
-      float moy = (1.f - ((io.MousePos.y - gContext.mY) / gContext.mHeight)) * 2.f - 1.f;
+      float mox = ((io.MousePos.x - position.x) / size.x) * 2.f - 1.f;
+      float moy = (1.f - ((io.MousePos.y - position.y) / size.y)) * 2.f - 1.f;
 
       rayOrigin.Transform(makeVect(mox, moy, 0.f, 1.f), mViewProjInverse);
       rayOrigin *= 1.f / rayOrigin.w;
@@ -740,13 +824,19 @@ namespace ImGuizmo
       ImGuiIO& io = ImGui::GetIO();
 
       const ImU32 flags = ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoInputs | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoBringToFrontOnFocus;
+    
+#ifdef IMGUI_HAS_VIEWPORT
+      ImGui::SetNextWindowSize(ImGui::GetMainViewport()->Size);
+      ImGui::SetNextWindowPos(ImGui::GetMainViewport()->Pos);
+#else
       ImGui::SetNextWindowSize(io.DisplaySize);
       ImGui::SetNextWindowPos(ImVec2(0, 0));
-      
+#endif
+
       ImGui::PushStyleColor(ImGuiCol_WindowBg, 0);
       ImGui::PushStyleColor(ImGuiCol_Border, 0);
       ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
-     
+
       ImGui::Begin("gizmo", NULL, flags);
       gContext.mDrawList = ImGui::GetWindowDrawList();
       ImGui::End();
@@ -1437,6 +1527,9 @@ namespace ImGuizmo
          vec_t dirPlaneX, dirPlaneY, dirAxis;
          bool belowAxisLimit, belowPlaneLimit;
          ComputeTripodAxisAndVisibility(i, dirAxis, dirPlaneX, dirPlaneY, belowAxisLimit, belowPlaneLimit);
+         dirAxis.TransformVector(gContext.mModel);
+         dirPlaneX.TransformVector(gContext.mModel);
+         dirPlaneY.TransformVector(gContext.mModel);
 
        const float len = IntersectRayPlane(gContext.mRayOrigin, gContext.mRayVector, BuildPlan(gContext.mModel.v.position, dirAxis));
        vec_t posOnPlan = gContext.mRayOrigin + gContext.mRayVector * len;
@@ -1914,8 +2007,8 @@ namespace ImGuizmo
    {
       matrix_t viewInverse;
       viewInverse.Inverse(*(matrix_t*)view);
-      const matrix_t& model = *(matrix_t*)matrix;
       matrix_t res = *(matrix_t*)matrix * *(matrix_t*)view * *(matrix_t*)projection;
+      matrix_t modelView = *(matrix_t*)matrix * *(matrix_t*)view;
 
       for (int iFace = 0; iFace < 6; iFace++)
       {
@@ -1948,16 +2041,35 @@ namespace ImGuizmo
          // 3D->2D
          ImVec2 faceCoordsScreen[4];
          for (unsigned int iCoord = 0; iCoord < 4; iCoord++)
+         {
             faceCoordsScreen[iCoord] = worldToPos(faceCoords[iCoord] * 0.5f * invert, res);
+         }
 
          // back face culling
+
+         const vec_t n = directionUnary[normalIndex] * invert;
+         vec_t viewSpaceNormal = n;
+         vec_t viewSpacePoint = n * 0.5f;
+         viewSpaceNormal.TransformVector(modelView);
+         viewSpaceNormal.Normalize();
+         viewSpacePoint.TransformPoint(modelView);
+         const vec_t viewSpaceFacePlan = BuildPlan(viewSpacePoint, viewSpaceNormal);
+
+         // back face culling
+         if (viewSpaceFacePlan.w > 0.f)
+         {
+            continue;
+         }
+         /*
          vec_t cullPos, cullNormal;
          cullPos.TransformPoint(faceCoords[0] * 0.5f * invert, model);
          cullNormal.TransformVector(directionUnary[normalIndex] * invert, model);
          float dt = Dot(Normalized(cullPos - viewInverse.v.position), Normalized(cullNormal));
          if (dt>0.f)
+         {
             continue;
-
+         }
+         */
          // draw face with lighter color
          gContext.mDrawList->AddConvexPolyFilled(faceCoordsScreen, 4, directionColor[normalIndex] | 0x808080);
       }

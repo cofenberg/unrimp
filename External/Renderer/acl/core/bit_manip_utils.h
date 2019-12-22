@@ -24,20 +24,31 @@
 // SOFTWARE.
 ////////////////////////////////////////////////////////////////////////////////
 
-#include "acl/core/compiler_utils.h"
+#include "acl/core/impl/compiler_utils.h"
 #include "acl/core/error.h"
+
+#include <rtm/math.h>
 
 #include <cstdint>
 
-#if defined(ACL_USE_POPCOUNT)
-	#if defined(_MSC_VER)
-		#include <nmmintrin.h>
+#if !defined(ACL_USE_POPCOUNT) && !defined(RTM_NO_INTRINSICS)
+	// TODO: Enable this for PlayStation 4 as well, what is the define and can we use it in public code?
+	#if defined(_DURANGO) || defined(_XBOX_ONE)
+		// Enable pop-count type instructions on Xbox One
+		#define ACL_USE_POPCOUNT
 	#endif
 #endif
 
-#if defined(ACL_AVX_INTRINSICS)
+#if defined(ACL_USE_POPCOUNT)
+	#include <nmmintrin.h>
+#endif
+
+#if defined(RTM_AVX_INTRINSICS)
 	// Use BMI
-	#include <immintrin.h>
+	#include <ammintrin.h>		// MSVC uses this header for _andn_u32 BMI intrinsic
+	#include <immintrin.h>		// Intel documentation says _andn_u32 and others are here
+
+	#define ACL_BMI_INTRINSICS
 #endif
 
 ACL_IMPL_FILE_PRAGMA_PUSH
@@ -46,10 +57,10 @@ namespace acl
 {
 	inline uint8_t count_set_bits(uint8_t value)
 	{
-#if defined(ACL_USE_POPCOUNT) && defined(_MSC_VER)
+#if defined(ACL_USE_POPCOUNT)
 		return (uint8_t)_mm_popcnt_u32(value);
-#elif defined(ACL_USE_POPCOUNT) && (defined(__GNUC__) || defined(__clang__))
-		return (uint8_t)__builtin_popcount(value);
+#elif defined(RTM_NEON_INTRINSICS)
+		return (uint8_t)vget_lane_u64(vcnt_u8(vcreate_u8(value)), 0);
 #else
 		value = value - ((value >> 1) & 0x55);
 		value = (value & 0x33) + ((value >> 2) & 0x33);
@@ -59,10 +70,10 @@ namespace acl
 
 	inline uint16_t count_set_bits(uint16_t value)
 	{
-#if defined(ACL_USE_POPCOUNT) && defined(_MSC_VER)
+#if defined(ACL_USE_POPCOUNT)
 		return (uint16_t)_mm_popcnt_u32(value);
-#elif defined(ACL_USE_POPCOUNT) && (defined(__GNUC__) || defined(__clang__))
-		return (uint16_t)__builtin_popcount(value);
+#elif defined(RTM_NEON_INTRINSICS)
+		return (uint16_t)vget_lane_u64(vpaddl_u8(vcnt_u8(vcreate_u8(value))), 0);
 #else
 		value = value - ((value >> 1) & 0x5555);
 		value = (value & 0x3333) + ((value >> 2) & 0x3333);
@@ -72,10 +83,10 @@ namespace acl
 
 	inline uint32_t count_set_bits(uint32_t value)
 	{
-#if defined(ACL_USE_POPCOUNT) && defined(_MSC_VER)
+#if defined(ACL_USE_POPCOUNT)
 		return _mm_popcnt_u32(value);
-#elif defined(ACL_USE_POPCOUNT) && (defined(__GNUC__) || defined(__clang__))
-		return __builtin_popcount(value);
+#elif defined(RTM_NEON_INTRINSICS)
+		return (uint32_t)vget_lane_u64(vpaddl_u16(vpaddl_u8(vcnt_u8(vcreate_u8(value)))), 0);
 #else
 		value = value - ((value >> 1) & 0x55555555);
 		value = (value & 0x33333333) + ((value >> 2) & 0x33333333);
@@ -85,14 +96,14 @@ namespace acl
 
 	inline uint64_t count_set_bits(uint64_t value)
 	{
-#if defined(ACL_USE_POPCOUNT) && defined(_MSC_VER)
+#if defined(ACL_USE_POPCOUNT)
 		return _mm_popcnt_u64(value);
-#elif defined(ACL_USE_POPCOUNT) && (defined(__GNUC__) || defined(__clang__))
-		return __builtin_popcountll(value);
+#elif defined(RTM_NEON_INTRINSICS)
+		return vget_lane_u64(vpaddl_u32(vpaddl_u16(vpaddl_u8(vcnt_u8(vcreate_u8(value))))), 0);
 #else
-		value = value - ((value >> 1) & 0x5555555555555555ull);
-		value = (value & 0x3333333333333333ull) + ((value >> 2) & 0x3333333333333333ull);
-		return (((value + (value >> 4)) & 0x0F0F0F0F0F0F0F0Full) * 0x0101010101010101ull) >> 56;
+		value = value - ((value >> 1) & 0x5555555555555555ULL);
+		value = (value & 0x3333333333333333ULL) + ((value >> 2) & 0x3333333333333333ULL);
+		return (((value + (value >> 4)) & 0x0F0F0F0F0F0F0F0FULL) * 0x0101010101010101ULL) >> 56;
 #endif
 	}
 
@@ -107,9 +118,13 @@ namespace acl
 
 	inline uint32_t and_not(uint32_t not_value, uint32_t and_value)
 	{
-#if defined(ACL_AVX_INTRINSICS)
+#if defined(ACL_BMI_INTRINSICS)
 		// Use BMI
+#if defined(__GNUC__) && !defined(__clang__) && !defined(_andn_u32)
+		return __andn_u32(not_value, and_value);	// GCC doesn't define the right intrinsic symbol
+#else
 		return _andn_u32(not_value, and_value);
+#endif
 #else
 		return ~not_value & and_value;
 #endif

@@ -83,7 +83,7 @@ Rhi::handle getNativeWindowHandle(SDL_Window& sdlWindow)
 					ASSERT(false);
 					break;
 			#elif defined __ANDROID__
-				#warning TODO(co) The Android support is work-in-progress
+				#warning "TODO(co) The Android support is work-in-progress"
 			#elif defined LINUX
 				case SDL_SYSWM_UNKNOWN:
 				case SDL_SYSWM_WINDOWS:

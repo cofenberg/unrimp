@@ -23,14 +23,12 @@ Renderer toolkit.
 
 
 == Dependencies ==
-- GLM (header only library)
+- Unrimp renderer
+- Assimp (directly compiled and linked in)
+- ies (directly compiled and linked in)
+- meshoptimizer (directly compiled and linked in)
 - RapidJSON (header only library)
 - SimpleFileWatcher (directly compiled and linked in)
-- Assimp (directly compiled and linked in)
-- meshoptimizer (directly compiled and linked in)
-- mikktspace (directly compiled and linked in)
-- crunch (directly compiled and linked in)
-- ies (directly compiled and linked in)
 
 
 == Preprocessor Definitions ==

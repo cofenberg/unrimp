@@ -24,11 +24,12 @@
 // SOFTWARE.
 ////////////////////////////////////////////////////////////////////////////////
 
-#include "acl/core/compiler_utils.h"
+#include "acl/core/impl/compiler_utils.h"
 #include "acl/core/error.h"
 #include "acl/core/bit_manip_utils.h"
 
 #include <cstdint>
+#include <limits>
 
 ACL_IMPL_FILE_PRAGMA_PUSH
 
@@ -96,6 +97,12 @@ namespace acl
 	//////////////////////////////////////////////////////////////////////////
 	struct BitSetIndexRef
 	{
+		BitSetIndexRef()
+			: desc()
+			, offset(0)
+			, mask(0)
+		{}
+
 		BitSetIndexRef(BitSetDescription desc_, uint32_t bit_index)
 			: desc(desc_)
 			, offset(bit_index / 32)
@@ -184,11 +191,25 @@ namespace acl
 	{
 		const uint32_t size = desc.get_size();
 
+		// TODO: Optimize for NEON by using the intrinsic directly and unrolling the loop to
+		// reduce the number of pairwise add instructions.
 		uint32_t num_set_bits = 0;
 		for (uint32_t offset = 0; offset < size; ++offset)
 			num_set_bits += count_set_bits(bitset[offset]);
 
 		return num_set_bits;
+	}
+
+	//////////////////////////////////////////////////////////////////////////
+	// Performs the operation: result = ~not_value & and_value
+	// Bit sets must have the same description
+	// Bit sets can alias
+	inline void bitset_and_not(uint32_t* bitset_result, const uint32_t* bitset_not_value, const uint32_t* bitset_and_value, BitSetDescription desc)
+	{
+		const uint32_t size = desc.get_size();
+
+		for (uint32_t offset = 0; offset < size; ++offset)
+			bitset_result[offset] = and_not(bitset_not_value[offset], bitset_and_value[offset]);
 	}
 }
 

@@ -26,16 +26,19 @@
 
 #include "acl/core/bitset.h"
 #include "acl/core/bit_manip_utils.h"
-#include "acl/core/compiler_utils.h"
+#include "acl/core/impl/compiler_utils.h"
 #include "acl/core/compressed_clip.h"
+#include "acl/core/floating_point_exceptions.h"
 #include "acl/core/iallocator.h"
 #include "acl/core/interpolation_utils.h"
 #include "acl/core/range_reduction_types.h"
-#include "acl/math/quat_32.h"
-#include "acl/math/vector4_32.h"
+#include "acl/core/utils.h"
 #include "acl/math/quat_packing.h"
-#include "acl/decompression/decompress_data.h"
+#include "acl/decompression/impl/decompress_data.h"
 #include "acl/decompression/output_writer.h"
+
+#include <rtm/quatf.h>
+#include <rtm/vector4f.h>
 
 #include <cstdint>
 
@@ -66,7 +69,7 @@ namespace acl
 		// For the track id method to be more compact, an unreasonable small number of tracks would need to be
 		// animated or constant compared to the total possible number of tracks. Those are likely to be rare.
 
-		namespace impl
+		namespace acl_impl
 		{
 			constexpr size_t k_cache_line_size = 64;
 
@@ -74,70 +77,91 @@ namespace acl
 			{
 				// Clip related data							//   offsets
 				const CompressedClip* clip;						//   0 |   0
-				const SegmentHeader* segment_headers;			//   4 |   8
 
-				const uint32_t* constant_tracks_bitset;			//   8 |  16
-				const uint8_t* constant_track_data;				//  12 |  24
-				const uint32_t* default_tracks_bitset;			//  16 |  32
+				const uint32_t* constant_tracks_bitset;			//   4 |   8
+				const uint8_t* constant_track_data;				//   8 |  16
+				const uint32_t* default_tracks_bitset;			//  12 |  24
 
-				const uint8_t* clip_range_data;					//  20 |  40
+				const uint8_t* clip_range_data;					//  16 |  32
 
-				float clip_duration;							//  24 |  48
+				float clip_duration;							//  20 |  40
 
-				BitSetDescription bitset_desc;					//  28 |  52
+				BitSetDescription bitset_desc;					//  24 |  44
 
-				uint32_t clip_hash;								//  32 |  56
+				uint32_t clip_hash;								//  28 |  48
 
-				uint8_t num_rotation_components;				//  36 |  60
-				uint8_t has_mixed_packing;						//  37 |  61
+				range_reduction_flags8 range_reduction;			//  32 |  52
+				uint8_t num_rotation_components;				//  33 |  53
 
-				uint8_t padding0[2];							//  38 |  62
+				uint8_t padding0[2];							//  34 |  54
 
 				// Seeking related data
-				const uint8_t* format_per_track_data[2];		//  40 |  64
-				const uint8_t* segment_range_data[2];			//  48 |  80
-				const uint8_t* animated_track_data[2];			//  56 |  96
+				const uint8_t* format_per_track_data[2];		//  36 |  56
+				const uint8_t* segment_range_data[2];			//  44 |  72
+				const uint8_t* animated_track_data[2];			//  52 |  88
 
-				uint32_t key_frame_byte_offsets[2];				//  64 | 112	// Fixed quantization
-				uint32_t key_frame_bit_offsets[2];				//  72 | 120	// Variable quantization
+				uint32_t key_frame_bit_offsets[2];				//  60 | 104
 
-				float interpolation_alpha;						//  80 | 128
-				float sample_time;								//  84 | 132
+				float interpolation_alpha;						//  68 | 112
+				float sample_time;								//  76 | 120
 
-				uint8_t padding1[sizeof(void*) == 4 ? 40 : 56];	//  88 | 136
+				uint8_t padding1[sizeof(void*) == 4 ? 52 : 4];	//  80 | 124
 
-				//									Total size:	   128 | 192
+				//									Total size:	   128 | 128
 			};
+
+			static_assert(sizeof(DecompressionContext) == 128, "Unexpected size");
 
 			struct alignas(k_cache_line_size) SamplingContext
 			{
 				static constexpr size_t k_num_samples_to_interpolate = 2;
 
-				inline static Quat_32 interpolate_rotation(const Quat_32 rotations[k_num_samples_to_interpolate], float interpolation_alpha)
+				inline static rtm::quatf RTM_SIMD_CALL interpolate_rotation(rtm::quatf_arg0 rotation0, rtm::quatf_arg1 rotation1, float interpolation_alpha)
 				{
-					return quat_lerp(rotations[0], rotations[1], interpolation_alpha);
+					return rtm::quat_lerp(rotation0, rotation1, interpolation_alpha);
 				}
 
-				inline static Vector4_32 interpolate_vector4(const Vector4_32 vectors[k_num_samples_to_interpolate], float interpolation_alpha)
+				inline static rtm::quatf RTM_SIMD_CALL interpolate_rotation(rtm::quatf_arg0 rotation0, rtm::quatf_arg1 rotation1, rtm::quatf_arg2 rotation2, rtm::quatf_arg3 rotation3, float interpolation_alpha)
 				{
-					return vector_lerp(vectors[0], vectors[1], interpolation_alpha);
+					(void)rotation1;
+					(void)rotation2;
+					(void)rotation3;
+					(void)interpolation_alpha;
+					return rotation0;	// Not implemented, we use linear interpolation
 				}
 
-				//												//   offsets
-				uint32_t track_index;							//   0 |   0
-				uint32_t constant_track_data_offset;			//   4 |   4
-				uint32_t clip_range_data_offset;				//   8 |   8
+				inline static rtm::vector4f RTM_SIMD_CALL interpolate_vector4(rtm::vector4f_arg0 vector0, rtm::vector4f_arg1 vector1, float interpolation_alpha)
+				{
+					return rtm::vector_lerp(vector0, vector1, interpolation_alpha);
+				}
 
-				uint32_t format_per_track_data_offset;			//  12 |  12
-				uint32_t segment_range_data_offset;				//  16 |  16
+				inline static rtm::vector4f RTM_SIMD_CALL interpolate_vector4(rtm::vector4f_arg0 vector0, rtm::vector4f_arg1 vector1, rtm::vector4f_arg2 vector2, rtm::vector4f_arg3 vector3, float interpolation_alpha)
+				{
+					(void)vector1;
+					(void)vector2;
+					(void)vector3;
+					(void)interpolation_alpha;
+					return vector0;		// Not implemented, we use linear interpolation
+				}
 
-				uint32_t key_frame_byte_offsets[2];				//  20 |  20	// Fixed quantization
-				uint32_t key_frame_bit_offsets[2];				//  28 |  28	// Variable quantization
+				//														//   offsets
+				uint32_t track_index;									//   0 |   0
+				uint32_t constant_track_data_offset;					//   4 |   4
+				uint32_t clip_range_data_offset;						//   8 |   8
 
-				uint8_t padding[28];							//  36 |  36
+				uint32_t format_per_track_data_offset;					//  12 |  12
+				uint32_t segment_range_data_offset;						//  16 |  16
 
-				//									Total size:	    64 |  64
+				uint32_t key_frame_bit_offsets[2];						//  20 |  20
+
+				uint8_t padding[4];										//  28 |  28
+
+				rtm::vector4f vectors[k_num_samples_to_interpolate];	//  32 |  32
+
+				//											Total size:	    64 |  64
 			};
+
+			static_assert(sizeof(SamplingContext) == 64, "Unexpected size");
 
 			// We use adapters to wrap the DecompressionSettings
 			// This allows us to re-use the code for skipping and decompressing Vector3 samples
@@ -145,17 +169,13 @@ namespace acl
 			template<class SettingsType>
 			struct TranslationDecompressionSettingsAdapter
 			{
-				TranslationDecompressionSettingsAdapter(const SettingsType& settings_) : settings(settings_) {}
+				explicit TranslationDecompressionSettingsAdapter(const SettingsType& settings_) : settings(settings_) {}
 
-				constexpr RangeReductionFlags8 get_range_reduction_flag() const { return RangeReductionFlags8::Translations; }
-				inline Vector4_32 ACL_SIMD_CALL get_default_value() const { return vector_zero_32(); }
-				constexpr VectorFormat8 get_vector_format(const ClipHeader& header) const { return settings.get_translation_format(header.translation_format); }
-				constexpr bool is_vector_format_supported(VectorFormat8 format) const { return settings.is_translation_format_supported(format); }
-
-				// Just forward the calls
-				constexpr RangeReductionFlags8 get_clip_range_reduction(RangeReductionFlags8 flags) const { return settings.get_clip_range_reduction(flags); }
-				constexpr RangeReductionFlags8 get_segment_range_reduction(RangeReductionFlags8 flags) const { return settings.get_segment_range_reduction(flags); }
-				constexpr bool supports_mixed_packing() const { return settings.supports_mixed_packing(); }
+				constexpr range_reduction_flags8 get_range_reduction_flag() const { return range_reduction_flags8::translations; }
+				rtm::vector4f RTM_SIMD_CALL get_default_value() const { return rtm::vector_zero(); }
+				vector_format8 get_vector_format(const ClipHeader& header) const { return settings.get_translation_format(header.translation_format); }
+				bool is_vector_format_supported(vector_format8 format) const { return settings.is_translation_format_supported(format); }
+				bool are_range_reduction_flags_supported(range_reduction_flags8 flags) const { return settings.are_range_reduction_flags_supported(flags); }
 
 				SettingsType settings;
 			};
@@ -163,24 +183,20 @@ namespace acl
 			template<class SettingsType>
 			struct ScaleDecompressionSettingsAdapter
 			{
-				ScaleDecompressionSettingsAdapter(const SettingsType& settings_, const ClipHeader& header)
+				explicit ScaleDecompressionSettingsAdapter(const SettingsType& settings_, const ClipHeader& header)
 					: settings(settings_)
-					, default_scale(header.default_scale ? vector_set(1.0f) : vector_zero_32())
+					, default_scale(header.default_scale ? rtm::vector_set(1.0F) : rtm::vector_zero())
 				{}
 
-				constexpr RangeReductionFlags8 get_range_reduction_flag() const { return RangeReductionFlags8::Scales; }
-				inline Vector4_32 ACL_SIMD_CALL get_default_value() const { return default_scale; }
-				constexpr VectorFormat8 get_vector_format(const ClipHeader& header) const { return settings.get_scale_format(header.scale_format); }
-				constexpr bool is_vector_format_supported(VectorFormat8 format) const { return settings.is_scale_format_supported(format); }
-
-				// Just forward the calls
-				constexpr RangeReductionFlags8 get_clip_range_reduction(RangeReductionFlags8 flags) const { return settings.get_clip_range_reduction(flags); }
-				constexpr RangeReductionFlags8 get_segment_range_reduction(RangeReductionFlags8 flags) const { return settings.get_segment_range_reduction(flags); }
-				constexpr bool supports_mixed_packing() const { return settings.supports_mixed_packing(); }
+				constexpr range_reduction_flags8 get_range_reduction_flag() const { return range_reduction_flags8::scales; }
+				rtm::vector4f RTM_SIMD_CALL get_default_value() const { return default_scale; }
+				vector_format8 get_vector_format(const ClipHeader& header) const { return settings.get_scale_format(header.scale_format); }
+				bool is_vector_format_supported(vector_format8 format) const { return settings.is_scale_format_supported(format); }
+				bool are_range_reduction_flags_supported(range_reduction_flags8 flags) const { return settings.are_range_reduction_flags_supported(flags); }
 
 				SettingsType settings;
-				uint8_t padding[get_required_padding<SettingsType, Vector4_32>()];
-				Vector4_32 default_scale;
+				uint8_t padding[get_required_padding<SettingsType, rtm::vector4f>()];
+				rtm::vector4f default_scale;
 			};
 		}
 
@@ -196,47 +212,46 @@ namespace acl
 		//////////////////////////////////////////////////////////////////////////
 		struct DecompressionSettings
 		{
-			constexpr bool is_rotation_format_supported(RotationFormat8 /*format*/) const { return true; }
-			constexpr bool is_translation_format_supported(VectorFormat8 /*format*/) const { return true; }
-			constexpr bool is_scale_format_supported(VectorFormat8 /*format*/) const { return true; }
-			constexpr RotationFormat8 get_rotation_format(RotationFormat8 format) const { return format; }
-			constexpr VectorFormat8 get_translation_format(VectorFormat8 format) const { return format; }
-			constexpr VectorFormat8 get_scale_format(VectorFormat8 format) const { return format; }
+			constexpr bool is_rotation_format_supported(rotation_format8 /*format*/) const { return true; }
+			constexpr bool is_translation_format_supported(vector_format8 /*format*/) const { return true; }
+			constexpr bool is_scale_format_supported(vector_format8 /*format*/) const { return true; }
+			constexpr rotation_format8 get_rotation_format(rotation_format8 format) const { return format; }
+			constexpr vector_format8 get_translation_format(vector_format8 format) const { return format; }
+			constexpr vector_format8 get_scale_format(vector_format8 format) const { return format; }
 
-			constexpr bool are_clip_range_reduction_flags_supported(RangeReductionFlags8 /*flags*/) const { return true; }
-			constexpr bool are_segment_range_reduction_flags_supported(RangeReductionFlags8 /*flags*/) const { return true; }
-			constexpr RangeReductionFlags8 get_clip_range_reduction(RangeReductionFlags8 flags) const { return flags; }
-			constexpr RangeReductionFlags8 get_segment_range_reduction(RangeReductionFlags8 flags) const { return flags; }
+			constexpr bool are_range_reduction_flags_supported(range_reduction_flags8 /*flags*/) const { return true; }
+			constexpr range_reduction_flags8 get_range_reduction(range_reduction_flags8 flags) const { return flags; }
 
-			// Whether tracks must all be variable or all fixed width, or if they can be mixed and require padding
-			constexpr bool supports_mixed_packing() const { return true; }
+			// Whether to explicitly disable floating point exceptions during decompression.
+			// This has a cost, exceptions are usually disabled globally and do not need to be
+			// explicitly disabled during decompression.
+			// We assume that floating point exceptions are already disabled by the caller.
+			constexpr bool disable_fp_exeptions() const { return false; }
 		};
 
 		//////////////////////////////////////////////////////////////////////////
 		// These are debug settings, everything is enabled and nothing is stripped.
 		// It will have the worst performance but allows every feature.
 		//////////////////////////////////////////////////////////////////////////
-		struct DebugDecompressionSettings : public DecompressionSettings {};
+		struct DebugDecompressionSettings : DecompressionSettings {};
 
 		//////////////////////////////////////////////////////////////////////////
 		// These are the default settings. Only the generally optimal settings
 		// are enabled and will offer the overall best performance.
 		//
-		// Note: Segment range reduction supports AllTracks or None because it can
+		// Note: Segment range reduction supports all_tracks or none because it can
 		// be disabled if there is a single segment.
 		//////////////////////////////////////////////////////////////////////////
-		struct DefaultDecompressionSettings : public DecompressionSettings
+		struct DefaultDecompressionSettings : DecompressionSettings
 		{
-			constexpr bool is_rotation_format_supported(RotationFormat8 format) const { return format == RotationFormat8::QuatDropW_Variable; }
-			constexpr bool is_translation_format_supported(VectorFormat8 format) const { return format == VectorFormat8::Vector3_Variable; }
-			constexpr bool is_scale_format_supported(VectorFormat8 format) const { return format == VectorFormat8::Vector3_Variable; }
-			constexpr RotationFormat8 get_rotation_format(RotationFormat8 /*format*/) const { return RotationFormat8::QuatDropW_Variable; }
-			constexpr VectorFormat8 get_translation_format(VectorFormat8 /*format*/) const { return VectorFormat8::Vector3_Variable; }
-			constexpr VectorFormat8 get_scale_format(VectorFormat8 /*format*/) const { return VectorFormat8::Vector3_Variable; }
+			constexpr bool is_rotation_format_supported(rotation_format8 format) const { return format == rotation_format8::quatf_drop_w_variable; }
+			constexpr bool is_translation_format_supported(vector_format8 format) const { return format == vector_format8::vector3f_variable; }
+			constexpr bool is_scale_format_supported(vector_format8 format) const { return format == vector_format8::vector3f_variable; }
+			constexpr rotation_format8 get_rotation_format(rotation_format8 /*format*/) const { return rotation_format8::quatf_drop_w_variable; }
+			constexpr vector_format8 get_translation_format(vector_format8 /*format*/) const { return vector_format8::vector3f_variable; }
+			constexpr vector_format8 get_scale_format(vector_format8 /*format*/) const { return vector_format8::vector3f_variable; }
 
-			constexpr RangeReductionFlags8 get_clip_range_reduction(RangeReductionFlags8 /*flags*/) const { return RangeReductionFlags8::AllTracks; }
-
-			constexpr bool supports_mixed_packing() const { return false; }
+			constexpr range_reduction_flags8 get_range_reduction(range_reduction_flags8 /*flags*/) const { return range_reduction_flags8::all_tracks; }
 		};
 
 		//////////////////////////////////////////////////////////////////////////
@@ -244,7 +259,7 @@ namespace acl
 		// allows various decompression actions to be performed in a clip.
 		//
 		// Both the constructor and destructor are public because it is safe to place
-		// instances of this context on the stack or as members variables.
+		// instances of this context on the stack or as member variables.
 		//
 		// This compression algorithm is the simplest by far and as such it offers
 		// the fastest compression and decompression. Every sample is retained and
@@ -264,48 +279,48 @@ namespace acl
 			// Constructs a context instance with an optional allocator instance.
 			// The default constructor for the DecompressionSettingsType will be used.
 			// If an allocator is provided, it will be used in `release()` to free the context
-			inline DecompressionContext(IAllocator* allocator = nullptr);
+			explicit DecompressionContext(IAllocator* allocator = nullptr);
 
 			//////////////////////////////////////////////////////////////////////////
 			// Constructs a context instance from a set of static settings and an optional allocator instance.
 			// If an allocator is provided, it will be used in `release()` to free the context
-			inline DecompressionContext(const DecompressionSettingsType& settings, IAllocator* allocator = nullptr);
+			DecompressionContext(const DecompressionSettingsType& settings, IAllocator* allocator = nullptr);
 
 			//////////////////////////////////////////////////////////////////////////
 			// Destructs a context instance
-			inline ~DecompressionContext();
+			~DecompressionContext();
 
 			//////////////////////////////////////////////////////////////////////////
 			// Initializes the context instance to a particular compressed clip
-			inline void initialize(const CompressedClip& clip);
+			void initialize(const CompressedClip& clip);
 
-			inline bool is_dirty(const CompressedClip& clip);
+			bool is_dirty(const CompressedClip& clip);
 
 			//////////////////////////////////////////////////////////////////////////
 			// Seeks within the compressed clip to a particular point in time
-			inline void seek(float sample_time, SampleRoundingPolicy rounding_policy);
+			void seek(float sample_time, sample_rounding_policy rounding_policy);
 
 			//////////////////////////////////////////////////////////////////////////
 			// Decompress a full pose at the current sample time.
 			// The OutputWriterType allows complete control over how the pose is written out
 			template<class OutputWriterType>
-			inline void decompress_pose(OutputWriterType& writer);
+			void decompress_pose(OutputWriterType& writer);
 
 			//////////////////////////////////////////////////////////////////////////
 			// Decompress a single bone at the current sample time.
 			// Each track entry is optional
-			inline void decompress_bone(uint16_t sample_bone_index, Quat_32* out_rotation, Vector4_32* out_translation, Vector4_32* out_scale);
+			void decompress_bone(uint16_t sample_bone_index, rtm::quatf* out_rotation, rtm::vector4f* out_translation, rtm::vector4f* out_scale);
 
 			//////////////////////////////////////////////////////////////////////////
 			// Releases the context instance if it contains an allocator reference
-			inline void release();
+			void release();
 
 		private:
 			DecompressionContext(const DecompressionContext& other) = delete;
 			DecompressionContext& operator=(const DecompressionContext& other) = delete;
 
 			// Internal context data
-			impl::DecompressionContext m_context;
+			acl_impl::DecompressionContext m_context;
 
 			// The static settings used to strip out code at runtime
 			DecompressionSettingsType m_settings;
@@ -360,17 +375,13 @@ namespace acl
 		inline void DecompressionContext<DecompressionSettingsType>::initialize(const CompressedClip& clip)
 		{
 			ACL_ASSERT(clip.is_valid(false).empty(), "CompressedClip is not valid");
-			ACL_ASSERT(clip.get_algorithm_type() == AlgorithmType8::UniformlySampled, "Invalid algorithm type [%s], expected [%s]", get_algorithm_name(clip.get_algorithm_type()), get_algorithm_name(AlgorithmType8::UniformlySampled));
+			ACL_ASSERT(clip.get_algorithm_type() == algorithm_type8::uniformly_sampled, "Invalid algorithm type [%s], expected [%s]", get_algorithm_name(clip.get_algorithm_type()), get_algorithm_name(algorithm_type8::uniformly_sampled));
 
 			const ClipHeader& header = get_clip_header(clip);
 
-			const RotationFormat8 rotation_format = m_settings.get_rotation_format(header.rotation_format);
-			const VectorFormat8 translation_format = m_settings.get_translation_format(header.translation_format);
-			const VectorFormat8 scale_format = m_settings.get_translation_format(header.scale_format);
-
-#if defined(ACL_HAS_ASSERT_CHECKS)
-			const RangeReductionFlags8 clip_range_reduction = m_settings.get_clip_range_reduction(header.clip_range_reduction);
-			const RangeReductionFlags8 segment_range_reduction = m_settings.get_segment_range_reduction(header.segment_range_reduction);
+			const rotation_format8 rotation_format = m_settings.get_rotation_format(header.rotation_format);
+			const vector_format8 translation_format = m_settings.get_translation_format(header.translation_format);
+			const vector_format8 scale_format = m_settings.get_translation_format(header.scale_format);
 
 			ACL_ASSERT(rotation_format == header.rotation_format, "Statically compiled rotation format (%s) differs from the compressed rotation format (%s)!", get_rotation_format_name(rotation_format), get_rotation_format_name(header.rotation_format));
 			ACL_ASSERT(m_settings.is_rotation_format_supported(rotation_format), "Rotation format (%s) isn't statically supported!", get_rotation_format_name(rotation_format));
@@ -378,17 +389,11 @@ namespace acl
 			ACL_ASSERT(m_settings.is_translation_format_supported(translation_format), "Translation format (%s) isn't statically supported!", get_vector_format_name(translation_format));
 			ACL_ASSERT(scale_format == header.scale_format, "Statically compiled scale format (%s) differs from the compressed scale format (%s)!", get_vector_format_name(scale_format), get_vector_format_name(header.scale_format));
 			ACL_ASSERT(m_settings.is_scale_format_supported(scale_format), "Scale format (%s) isn't statically supported!", get_vector_format_name(scale_format));
-			ACL_ASSERT((clip_range_reduction & header.clip_range_reduction) == header.clip_range_reduction, "Statically compiled clip range reduction settings (%u) differs from the compressed settings (%u)!", clip_range_reduction, header.clip_range_reduction);
-			ACL_ASSERT(m_settings.are_clip_range_reduction_flags_supported(clip_range_reduction), "Clip range reduction settings (%u) aren't statically supported!", clip_range_reduction);
-			ACL_ASSERT((segment_range_reduction & header.segment_range_reduction) == header.segment_range_reduction, "Statically compiled segment range reduction settings (%u) differs from the compressed settings (%u)!", segment_range_reduction, header.segment_range_reduction);
-			ACL_ASSERT(m_settings.are_segment_range_reduction_flags_supported(segment_range_reduction), "Segment range reduction settings (%u) aren't statically supported!", segment_range_reduction);
-#endif
 
 			m_context.clip = &clip;
 			m_context.clip_hash = clip.get_hash();
-			m_context.clip_duration = float(header.num_samples - 1) / float(header.sample_rate);
-			m_context.sample_time = -1.0f;
-			m_context.segment_headers = header.get_segment_headers();
+			m_context.clip_duration = calculate_duration(header.num_samples, header.sample_rate);
+			m_context.sample_time = -1.0F;
 			m_context.default_tracks_bitset = header.get_default_tracks_bitset();
 
 			m_context.constant_tracks_bitset = header.get_constant_tracks_bitset();
@@ -404,13 +409,21 @@ namespace acl
 
 			const uint32_t num_tracks_per_bone = header.has_scale ? 3 : 2;
 			m_context.bitset_desc = BitSetDescription::make_from_num_bits(header.num_bones * num_tracks_per_bone);
-			m_context.num_rotation_components = rotation_format == RotationFormat8::Quat_128 ? 4 : 3;
 
-			// If all tracks are variable, no need for any extra padding except at the very end of the data
-			// If our tracks are mixed variable/not variable, we need to add some padding to ensure alignment
-			const bool is_every_format_variable = is_rotation_format_variable(rotation_format) && is_vector_format_variable(translation_format) && is_vector_format_variable(scale_format);
-			const bool is_any_format_variable = is_rotation_format_variable(rotation_format) || is_vector_format_variable(translation_format) || is_vector_format_variable(scale_format);
-			m_context.has_mixed_packing = !is_every_format_variable && is_any_format_variable;
+			range_reduction_flags8 range_reduction = range_reduction_flags8::none;
+			if (is_rotation_format_variable(rotation_format))
+				range_reduction |= range_reduction_flags8::rotations;
+			if (is_vector_format_variable(translation_format))
+				range_reduction |= range_reduction_flags8::translations;
+			if (is_vector_format_variable(scale_format))
+				range_reduction |= range_reduction_flags8::scales;
+
+			m_context.range_reduction = m_settings.get_range_reduction(range_reduction);
+
+			ACL_ASSERT((m_context.range_reduction & range_reduction) == range_reduction, "Statically compiled range reduction flags (%u) differ from the compressed flags (%u)!", m_context.range_reduction, range_reduction);
+			ACL_ASSERT(m_settings.are_range_reduction_flags_supported(m_context.range_reduction), "Range reduction flags (%u) aren't statically supported!", m_context.range_reduction);
+
+			m_context.num_rotation_components = rotation_format == rotation_format8::quatf_full ? 4 : 3;
 		}
 
 		template<class DecompressionSettingsType>
@@ -426,13 +439,13 @@ namespace acl
 		}
 
 		template<class DecompressionSettingsType>
-		inline void DecompressionContext<DecompressionSettingsType>::seek(float sample_time, SampleRoundingPolicy rounding_policy)
+		inline void DecompressionContext<DecompressionSettingsType>::seek(float sample_time, sample_rounding_policy rounding_policy)
 		{
 			ACL_ASSERT(m_context.clip != nullptr, "Context is not initialized");
 
 			// Clamp for safety, the caller should normally handle this but in practice, it often isn't the case
 			// TODO: Make it optional via DecompressionSettingsType?
-			sample_time = clamp(sample_time, 0.0f, m_context.clip_duration);
+			sample_time = rtm::scalar_clamp(sample_time, 0.0F, m_context.clip_duration);
 
 			if (m_context.sample_time == sample_time)
 				return;
@@ -443,45 +456,63 @@ namespace acl
 
 			uint32_t key_frame0;
 			uint32_t key_frame1;
-			find_linear_interpolation_samples(header.num_samples, m_context.clip_duration, sample_time, rounding_policy, key_frame0, key_frame1, m_context.interpolation_alpha);
+			find_linear_interpolation_samples_with_sample_rate(header.num_samples, header.sample_rate, sample_time, rounding_policy, key_frame0, key_frame1, m_context.interpolation_alpha);
 
-			uint32_t segment_key_frame0 = 0;
-			uint32_t segment_key_frame1 = 0;
+			uint32_t segment_key_frame0;
+			uint32_t segment_key_frame1;
 
-			// Find segments
-			// TODO: Use binary search?
-			uint32_t segment_key_frame = 0;
-			const SegmentHeader* segment_header0 = nullptr;
-			const SegmentHeader* segment_header1 = nullptr;
-			for (uint16_t segment_index = 0; segment_index < header.num_segments; ++segment_index)
+			const SegmentHeader* segment_header0;
+			const SegmentHeader* segment_header1;
+
+			const SegmentHeader* segment_headers = header.get_segment_headers();
+			const uint32_t num_segments = header.num_segments;
+
+			if (num_segments == 1)
 			{
-				const SegmentHeader& segment_header = m_context.segment_headers[segment_index];
+				// Key frame 0 and 1 are in the only segment present
+				// This is a really common case and when it happens, we don't store the segment start index (zero)
+				segment_header0 = segment_headers;
+				segment_key_frame0 = key_frame0;
 
-				if (key_frame0 >= segment_key_frame && key_frame0 < segment_key_frame + segment_header.num_samples)
+				segment_header1 = segment_headers;
+				segment_key_frame1 = key_frame1;
+			}
+			else
+			{
+				const uint32_t* segment_start_indices = header.get_segment_start_indices();
+
+				// See segment_streams(..) for implementation details. This implementation is directly tied to it.
+				const uint32_t approx_num_samples_per_segment = header.num_samples / num_segments;	// TODO: Store in header?
+				const uint32_t approx_segment_index = key_frame0 / approx_num_samples_per_segment;
+
+				uint32_t segment_index0 = 0;
+				uint32_t segment_index1 = 0;
+
+				// Our approximate segment guess is just that, a guess. The actual segments we need could be just before or after.
+				// We start looking one segment earlier and up to 2 after. If we have too few segments after, we will hit the
+				// sentinel value of 0xFFFFFFFF and exit the loop.
+				// TODO: Can we do this with SIMD? Load all 4 values, set key_frame0, compare, move mask, count leading zeroes
+				const uint32_t start_segment_index = approx_segment_index > 0 ? (approx_segment_index - 1) : 0;
+				const uint32_t end_segment_index = start_segment_index + 4;
+
+				for (uint32_t segment_index = start_segment_index; segment_index < end_segment_index; ++segment_index)
 				{
-					segment_header0 = &segment_header;
-					segment_key_frame0 = key_frame0 - segment_key_frame;
-
-					if (key_frame1 >= segment_key_frame && key_frame1 < segment_key_frame + segment_header.num_samples)
+					if (key_frame0 < segment_start_indices[segment_index])
 					{
-						segment_header1 = &segment_header;
-						segment_key_frame1 = key_frame1 - segment_key_frame;
+						// We went too far, use previous segment
+						ACL_ASSERT(segment_index > 0, "Invalid segment index: %u", segment_index);
+						segment_index0 = segment_index - 1;
+						segment_index1 = key_frame1 < segment_start_indices[segment_index] ? segment_index0 : segment_index;
+						break;
 					}
-					else
-					{
-						ACL_ASSERT(segment_index + 1 < header.num_segments, "Invalid segment index: %u", segment_index + 1);
-						const SegmentHeader& next_segment_header = m_context.segment_headers[segment_index + 1];
-						segment_header1 = &next_segment_header;
-						segment_key_frame1 = key_frame1 - (segment_key_frame + segment_header.num_samples);
-					}
-
-					break;
 				}
 
-				segment_key_frame += segment_header.num_samples;
-			}
+				segment_header0 = segment_headers + segment_index0;
+				segment_header1 = segment_headers + segment_index1;
 
-			ACL_ASSERT(segment_header0 != nullptr, "Failed to find segment");
+				segment_key_frame0 = key_frame0 - segment_start_indices[segment_index0];
+				segment_key_frame1 = key_frame1 - segment_start_indices[segment_index1];
+			}
 
 			m_context.format_per_track_data[0] = header.get_format_per_track_data(*segment_header0);
 			m_context.format_per_track_data[1] = header.get_format_per_track_data(*segment_header1);
@@ -490,8 +521,6 @@ namespace acl
 			m_context.animated_track_data[0] = header.get_track_data(*segment_header0);
 			m_context.animated_track_data[1] = header.get_track_data(*segment_header1);
 
-			m_context.key_frame_byte_offsets[0] = (segment_key_frame0 * segment_header0->animated_pose_bit_size) / 8;
-			m_context.key_frame_byte_offsets[1] = (segment_key_frame1 * segment_header1->animated_pose_bit_size) / 8;
 			m_context.key_frame_bit_offsets[0] = segment_key_frame0 * segment_header0->animated_pose_bit_size;
 			m_context.key_frame_bit_offsets[1] = segment_key_frame1 * segment_header1->animated_pose_bit_size;
 		}
@@ -502,24 +531,35 @@ namespace acl
 		{
 			static_assert(std::is_base_of<OutputWriter, OutputWriterType>::value, "OutputWriterType must derive from OutputWriter");
 
+			using namespace acl::acl_impl;
+
 			ACL_ASSERT(m_context.clip != nullptr, "Context is not initialized");
 			ACL_ASSERT(m_context.sample_time >= 0.0f, "Context not set to a valid sample time");
 
+			// Due to the SIMD operations, we sometimes overflow in the SIMD lanes not used.
+			// Disable floating point exceptions to avoid issues.
+			fp_environment fp_env;
+			if (m_settings.disable_fp_exeptions())
+				disable_fp_exceptions(fp_env);
+
 			const ClipHeader& header = get_clip_header(*m_context.clip);
 
-			const impl::TranslationDecompressionSettingsAdapter<DecompressionSettingsType> translation_adapter(m_settings);
-			const impl::ScaleDecompressionSettingsAdapter<DecompressionSettingsType> scale_adapter(m_settings, header);
+			const acl_impl::TranslationDecompressionSettingsAdapter<DecompressionSettingsType> translation_adapter(m_settings);
+			const acl_impl::ScaleDecompressionSettingsAdapter<DecompressionSettingsType> scale_adapter(m_settings, header);
 
-			impl::SamplingContext sampling_context;
+			const rtm::vector4f default_scale = scale_adapter.get_default_value();
+
+			acl_impl::SamplingContext sampling_context;
 			sampling_context.track_index = 0;
 			sampling_context.constant_track_data_offset = 0;
 			sampling_context.clip_range_data_offset = 0;
 			sampling_context.format_per_track_data_offset = 0;
 			sampling_context.segment_range_data_offset = 0;
-			sampling_context.key_frame_byte_offsets[0] = m_context.key_frame_byte_offsets[0];
-			sampling_context.key_frame_byte_offsets[1] = m_context.key_frame_byte_offsets[1];
 			sampling_context.key_frame_bit_offsets[0] = m_context.key_frame_bit_offsets[0];
 			sampling_context.key_frame_bit_offsets[1] = m_context.key_frame_bit_offsets[1];
+
+			sampling_context.vectors[0] = default_scale;	// Init with something to avoid GCC warning
+			sampling_context.vectors[1] = default_scale;	// Init with something to avoid GCC warning
 
 			const uint16_t num_bones = header.num_bones;
 			for (uint16_t bone_index = 0; bone_index < num_bones; ++bone_index)
@@ -528,7 +568,7 @@ namespace acl
 					skip_over_rotation(m_settings, header, m_context, sampling_context);
 				else
 				{
-					const Quat_32 rotation = decompress_and_interpolate_rotation(m_settings, header, m_context, sampling_context);
+					const rtm::quatf rotation = decompress_and_interpolate_rotation(m_settings, header, m_context, sampling_context);
 					writer.write_bone_rotation(bone_index, rotation);
 				}
 
@@ -536,7 +576,7 @@ namespace acl
 					skip_over_vector(translation_adapter, header, m_context, sampling_context);
 				else
 				{
-					const Vector4_32 translation = decompress_and_interpolate_vector(translation_adapter, header, m_context, sampling_context);
+					const rtm::vector4f translation = decompress_and_interpolate_vector(translation_adapter, header, m_context, sampling_context);
 					writer.write_bone_translation(bone_index, translation);
 				}
 
@@ -547,36 +587,44 @@ namespace acl
 				}
 				else
 				{
-					const Vector4_32 scale = header.has_scale ? decompress_and_interpolate_vector(scale_adapter, header, m_context, sampling_context) : scale_adapter.get_default_value();
+					const rtm::vector4f scale = header.has_scale ? decompress_and_interpolate_vector(scale_adapter, header, m_context, sampling_context) : default_scale;
 					writer.write_bone_scale(bone_index, scale);
 				}
 			}
+
+			if (m_settings.disable_fp_exeptions())
+				restore_fp_exceptions(fp_env);
 		}
 
 		template<class DecompressionSettingsType>
-		inline void DecompressionContext<DecompressionSettingsType>::decompress_bone(uint16_t sample_bone_index, Quat_32* out_rotation, Vector4_32* out_translation, Vector4_32* out_scale)
+		inline void DecompressionContext<DecompressionSettingsType>::decompress_bone(uint16_t sample_bone_index, rtm::quatf* out_rotation, rtm::vector4f* out_translation, rtm::vector4f* out_scale)
 		{
+			using namespace acl::acl_impl;
+
 			ACL_ASSERT(m_context.clip != nullptr, "Context is not initialized");
 			ACL_ASSERT(m_context.sample_time >= 0.0f, "Context not set to a valid sample time");
 
+			// Due to the SIMD operations, we sometimes overflow in the SIMD lanes not used.
+			// Disable floating point exceptions to avoid issues.
+			fp_environment fp_env;
+			if (m_settings.disable_fp_exeptions())
+				disable_fp_exceptions(fp_env);
+
 			const ClipHeader& header = get_clip_header(*m_context.clip);
 
-			const impl::TranslationDecompressionSettingsAdapter<DecompressionSettingsType> translation_adapter(m_settings);
-			const impl::ScaleDecompressionSettingsAdapter<DecompressionSettingsType> scale_adapter(m_settings, header);
+			const acl_impl::TranslationDecompressionSettingsAdapter<DecompressionSettingsType> translation_adapter(m_settings);
+			const acl_impl::ScaleDecompressionSettingsAdapter<DecompressionSettingsType> scale_adapter(m_settings, header);
 
-			impl::SamplingContext sampling_context;
-			sampling_context.key_frame_byte_offsets[0] = m_context.key_frame_byte_offsets[0];
-			sampling_context.key_frame_byte_offsets[1] = m_context.key_frame_byte_offsets[1];
+			acl_impl::SamplingContext sampling_context;
 			sampling_context.key_frame_bit_offsets[0] = m_context.key_frame_bit_offsets[0];
 			sampling_context.key_frame_bit_offsets[1] = m_context.key_frame_bit_offsets[1];
 
-			const RotationFormat8 rotation_format = m_settings.get_rotation_format(header.rotation_format);
-			const VectorFormat8 translation_format = m_settings.get_translation_format(header.translation_format);
-			const VectorFormat8 scale_format = m_settings.get_translation_format(header.scale_format);
+			const rotation_format8 rotation_format = m_settings.get_rotation_format(header.rotation_format);
+			const vector_format8 translation_format = m_settings.get_translation_format(header.translation_format);
+			const vector_format8 scale_format = m_settings.get_translation_format(header.scale_format);
 
 			const bool are_all_tracks_variable = is_rotation_format_variable(rotation_format) && is_vector_format_variable(translation_format) && is_vector_format_variable(scale_format);
-			const bool has_mixed_padding_or_fixed_quantization = (m_settings.supports_mixed_packing() && m_context.has_mixed_packing) || !are_all_tracks_variable;
-			if (has_mixed_padding_or_fixed_quantization)
+			if (!are_all_tracks_variable)
 			{
 				// Slow path, not optimized yet because it's more complex and shouldn't be used in production anyway
 				sampling_context.track_index = 0;
@@ -683,28 +731,31 @@ namespace acl
 				const uint32_t num_animated_rotations = sample_bone_index - num_constant_rotations;
 				const uint32_t num_animated_translations = sample_bone_index - num_constant_translations;
 
-				const RotationFormat8 packed_rotation_format = is_rotation_format_variable(rotation_format) ? get_highest_variant_precision(get_rotation_variant(rotation_format)) : rotation_format;
+				const rotation_format8 packed_rotation_format = is_rotation_format_variable(rotation_format) ? get_highest_variant_precision(get_rotation_variant(rotation_format)) : rotation_format;
 				const uint32_t packed_rotation_size = get_packed_rotation_size(packed_rotation_format);
 
 				uint32_t constant_track_data_offset = (num_constant_rotations - num_default_rotations) * packed_rotation_size;
-				constant_track_data_offset += (num_constant_translations - num_default_translations) * get_packed_vector_size(VectorFormat8::Vector3_96);
+				constant_track_data_offset += (num_constant_translations - num_default_translations) * get_packed_vector_size(vector_format8::vector3f_full);
 
 				uint32_t clip_range_data_offset = 0;
 				uint32_t segment_range_data_offset = 0;
 
-				const RangeReductionFlags8 clip_range_reduction = m_settings.get_clip_range_reduction(header.clip_range_reduction);
-				const RangeReductionFlags8 segment_range_reduction = m_settings.get_segment_range_reduction(header.segment_range_reduction);
-				if (are_any_enum_flags_set(clip_range_reduction, RangeReductionFlags8::Rotations))
+				const range_reduction_flags8 range_reduction = m_context.range_reduction;
+				if (are_any_enum_flags_set(range_reduction, range_reduction_flags8::rotations) && m_settings.are_range_reduction_flags_supported(range_reduction_flags8::rotations))
+				{
 					clip_range_data_offset += m_context.num_rotation_components * sizeof(float) * 2 * num_animated_rotations;
 
-				if (are_any_enum_flags_set(segment_range_reduction, RangeReductionFlags8::Rotations))
-					segment_range_data_offset += m_context.num_rotation_components * k_segment_range_reduction_num_bytes_per_component * 2 * num_animated_rotations;
+					if (header.num_segments > 1)
+						segment_range_data_offset += m_context.num_rotation_components * k_segment_range_reduction_num_bytes_per_component * 2 * num_animated_rotations;
+				}
 
-				if (are_any_enum_flags_set(clip_range_reduction, RangeReductionFlags8::Translations))
+				if (are_any_enum_flags_set(range_reduction, range_reduction_flags8::translations) && m_settings.are_range_reduction_flags_supported(range_reduction_flags8::translations))
+				{
 					clip_range_data_offset += k_clip_range_reduction_vector3_range_size * num_animated_translations;
 
-				if (are_any_enum_flags_set(segment_range_reduction, RangeReductionFlags8::Translations))
-					segment_range_data_offset += 3 * k_segment_range_reduction_num_bytes_per_component * 2 * num_animated_translations;
+					if (header.num_segments > 1)
+						segment_range_data_offset += 3 * k_segment_range_reduction_num_bytes_per_component * 2 * num_animated_translations;
+				}
 
 				uint32_t num_animated_tracks = num_animated_rotations + num_animated_translations;
 				if (header.has_scale)
@@ -712,13 +763,15 @@ namespace acl
 					const uint32_t num_animated_scales = sample_bone_index - num_constant_scales;
 					num_animated_tracks += num_animated_scales;
 
-					constant_track_data_offset += (num_constant_scales - num_default_scales) * get_packed_vector_size(VectorFormat8::Vector3_96);
+					constant_track_data_offset += (num_constant_scales - num_default_scales) * get_packed_vector_size(vector_format8::vector3f_full);
 
-					if (are_any_enum_flags_set(clip_range_reduction, RangeReductionFlags8::Scales))
+					if (are_any_enum_flags_set(range_reduction, range_reduction_flags8::scales) && m_settings.are_range_reduction_flags_supported(range_reduction_flags8::scales))
+					{
 						clip_range_data_offset += k_clip_range_reduction_vector3_range_size * num_animated_scales;
 
-					if (are_any_enum_flags_set(segment_range_reduction, RangeReductionFlags8::Scales))
-						segment_range_data_offset += 3 * k_segment_range_reduction_num_bytes_per_component * 2 * num_animated_scales;
+						if (header.num_segments > 1)
+							segment_range_data_offset += 3 * k_segment_range_reduction_num_bytes_per_component * 2 * num_animated_scales;
+					}
 				}
 
 				sampling_context.track_index = track_index;
@@ -729,15 +782,22 @@ namespace acl
 
 				for (uint32_t animated_track_index = 0; animated_track_index < num_animated_tracks; ++animated_track_index)
 				{
-					for (size_t i = 0; i < 2; ++i)
-					{
-						const uint8_t bit_rate = m_context.format_per_track_data[i][animated_track_index];
-						const uint8_t num_bits_at_bit_rate = get_num_bits_at_bit_rate(bit_rate) * 3;	// 3 components
+					const uint8_t bit_rate0 = m_context.format_per_track_data[0][animated_track_index];
+					const uint32_t num_bits_at_bit_rate0 = get_num_bits_at_bit_rate(bit_rate0) * 3;	// 3 components
 
-						sampling_context.key_frame_bit_offsets[i] += num_bits_at_bit_rate;
-					}
+					sampling_context.key_frame_bit_offsets[0] += num_bits_at_bit_rate0;
+
+					const uint8_t bit_rate1 = m_context.format_per_track_data[1][animated_track_index];
+					const uint32_t num_bits_at_bit_rate1 = get_num_bits_at_bit_rate(bit_rate1) * 3;	// 3 components
+
+					sampling_context.key_frame_bit_offsets[1] += num_bits_at_bit_rate1;
 				}
 			}
+
+			const rtm::vector4f default_scale = scale_adapter.get_default_value();
+
+			sampling_context.vectors[0] = default_scale;	// Init with something to avoid GCC warning
+			sampling_context.vectors[1] = default_scale;	// Init with something to avoid GCC warning
 
 			if (out_rotation != nullptr)
 				*out_rotation = decompress_and_interpolate_rotation(m_settings, header, m_context, sampling_context);
@@ -753,8 +813,11 @@ namespace acl
 			}
 
 			if (out_scale != nullptr)
-				*out_scale = header.has_scale ? decompress_and_interpolate_vector(scale_adapter, header, m_context, sampling_context) : scale_adapter.get_default_value();
+				*out_scale = header.has_scale ? decompress_and_interpolate_vector(scale_adapter, header, m_context, sampling_context) : default_scale;
 			// No need to skip our last scale, we don't care anymore
+
+			if (m_settings.disable_fp_exeptions())
+				restore_fp_exceptions(fp_env);
 		}
 
 		template<class DecompressionSettingsType>

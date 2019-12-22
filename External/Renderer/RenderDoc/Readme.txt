@@ -1,3 +1,3 @@
-RenderDoc v1.2 - 30 Nov, 2018
+RenderDoc v1.5 - 9 Oct, 2019
 - License: MIT
 - Online: https://renderdoc.org/

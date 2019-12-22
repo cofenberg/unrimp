@@ -45,6 +45,7 @@ PRAGMA_WARNING_PUSH
 	PRAGMA_WARNING_DISABLE_MSVC(4365)	// warning C4365: 'initializing': conversion from 'int' to 'uint8_t', signed/unsigned mismatch
 	PRAGMA_WARNING_DISABLE_MSVC(4625)	// warning C4625: 'acl::String': copy constructor was implicitly defined as deleted
 	PRAGMA_WARNING_DISABLE_MSVC(4626)	// warning C4626: 'acl::String': assignment operator was implicitly defined as deleted
+	PRAGMA_WARNING_DISABLE_MSVC(5027)	// warning C5027: 'rtm::rtm_impl::matrix_caster<rtm::matrix3x3f>': move assignment operator was implicitly defined as deleted
 	#include <acl/algorithm/uniformly_sampled/encoder.h>
 PRAGMA_WARNING_POP
 
@@ -273,7 +274,7 @@ namespace RendererToolkit
 						acl::String name;
 					#endif
 					std::vector<uint32_t> boneIds(numberOfBones);
-					acl::AnimationClip aclAnimationClip(aclAllocator, aclRigidSkeleton, numberOfSamples, static_cast<uint32_t>(assimpAnimation->mTicksPerSecond), name);
+					acl::AnimationClip aclAnimationClip(aclAllocator, aclRigidSkeleton, numberOfSamples, static_cast<float>(assimpAnimation->mTicksPerSecond), name);
 					{
 						// Some Assimp importers like the MD5 one compensate coordinate system differences by setting a root node transform, so we need to take this into account
 						const aiQuaternion assimpQuaternionOffset(aiMatrix3x3(assimpScene->mRootNode->mTransformation));
@@ -297,11 +298,11 @@ namespace RendererToolkit
 									// TODO(co) Somehow there's a flip when loading OGRE/MD5 skeleton animations. Haven't tried other formats, yet.
 									assimpQuaternion.Conjugate();
 								}
-								const acl::Quat_64 aclQuat_64(acl::quat_set(static_cast<double>(assimpQuaternion.x), static_cast<double>(assimpQuaternion.y), static_cast<double>(assimpQuaternion.z), static_cast<double>(assimpQuaternion.w)));
+								const rtm::quatd rtmQuatd(rtm::quat_set(static_cast<double>(assimpQuaternion.x), static_cast<double>(assimpQuaternion.y), static_cast<double>(assimpQuaternion.z), static_cast<double>(assimpQuaternion.w)));
 								acl::AnimationRotationTrack& aclAnimationRotationTrack = aclAnimatedBone.rotation_track;
 								for (uint32_t sampleIndex = 0; sampleIndex < numberOfSamples; ++sampleIndex)
 								{
-									aclAnimationRotationTrack.set_sample(sampleIndex, aclQuat_64);
+									aclAnimationRotationTrack.set_sample(sampleIndex, rtmQuatd);
 								}
 							}
 							else if (assimpNodeAnim->mNumRotationKeys > 0)
@@ -316,7 +317,7 @@ namespace RendererToolkit
 										// TODO(co) Somehow there's a flip when loading OGRE/MD5 skeleton animations. Haven't tried other formats, yet.
 										assimpQuaternion.Conjugate();
 									}
-									aclAnimationRotationTrack.set_sample(sampleIndex, acl::quat_set(static_cast<double>(assimpQuaternion.x), static_cast<double>(assimpQuaternion.y), static_cast<double>(assimpQuaternion.z), static_cast<double>(assimpQuaternion.w)));
+									aclAnimationRotationTrack.set_sample(sampleIndex, rtm::quat_set(static_cast<double>(assimpQuaternion.x), static_cast<double>(assimpQuaternion.y), static_cast<double>(assimpQuaternion.z), static_cast<double>(assimpQuaternion.w)));
 								}
 							}
 
@@ -324,11 +325,11 @@ namespace RendererToolkit
 							if (1 == assimpNodeAnim->mNumPositionKeys)
 							{
 								const aiVectorKey& assimpVectorKey = assimpNodeAnim->mPositionKeys[0];
-								const acl::Vector4_64 aclVector4_64(acl::vector_set(static_cast<double>(assimpVectorKey.mValue.x), static_cast<double>(assimpVectorKey.mValue.y), static_cast<double>(assimpVectorKey.mValue.z), 0.0));
+								const rtm::vector4d rtmVector4d(rtm::vector_set(static_cast<double>(assimpVectorKey.mValue.x), static_cast<double>(assimpVectorKey.mValue.y), static_cast<double>(assimpVectorKey.mValue.z), 0.0));
 								acl::AnimationTranslationTrack& aclAnimationTranslationTrack = aclAnimatedBone.translation_track;
 								for (uint32_t sampleIndex = 0; sampleIndex < numberOfSamples; ++sampleIndex)
 								{
-									aclAnimationTranslationTrack.set_sample(sampleIndex, aclVector4_64);
+									aclAnimationTranslationTrack.set_sample(sampleIndex, rtmVector4d);
 								}
 							}
 							else if (assimpNodeAnim->mNumPositionKeys > 0)
@@ -337,7 +338,7 @@ namespace RendererToolkit
 								for (uint32_t sampleIndex = 0; sampleIndex < numberOfSamples; ++sampleIndex)
 								{
 									const aiVectorKey& assimpVectorKey = assimpNodeAnim->mPositionKeys[sampleIndex];
-									aclAnimationTranslationTrack.set_sample(sampleIndex, acl::vector_set(static_cast<double>(assimpVectorKey.mValue.x), static_cast<double>(assimpVectorKey.mValue.y), static_cast<double>(assimpVectorKey.mValue.z), 0.0));
+									aclAnimationTranslationTrack.set_sample(sampleIndex, rtm::vector_set(static_cast<double>(assimpVectorKey.mValue.x), static_cast<double>(assimpVectorKey.mValue.y), static_cast<double>(assimpVectorKey.mValue.z), 0.0));
 								}
 							}
 
@@ -347,11 +348,11 @@ namespace RendererToolkit
 								if (1 == assimpNodeAnim->mNumScalingKeys)
 								{
 									const aiVectorKey& assimpVectorKey = assimpNodeAnim->mScalingKeys[0];
-									const acl::Vector4_64 aclVector4_64(acl::vector_set(static_cast<double>(assimpVectorKey.mValue.x), static_cast<double>(assimpVectorKey.mValue.y), static_cast<double>(assimpVectorKey.mValue.z), 0.0));
+									const rtm::vector4d rtmVector4d(rtm::vector_set(static_cast<double>(assimpVectorKey.mValue.x), static_cast<double>(assimpVectorKey.mValue.y), static_cast<double>(assimpVectorKey.mValue.z), 0.0));
 									acl::AnimationScaleTrack& aclAnimationScaleTrack = aclAnimatedBone.scale_track;
 									for (uint32_t sampleIndex = 0; sampleIndex < numberOfSamples; ++sampleIndex)
 									{
-										aclAnimationScaleTrack.set_sample(sampleIndex, aclVector4_64);
+										aclAnimationScaleTrack.set_sample(sampleIndex, rtmVector4d);
 									}
 								}
 								else if (assimpNodeAnim->mNumScalingKeys > 0)
@@ -360,7 +361,7 @@ namespace RendererToolkit
 									for (uint32_t sampleIndex = 0; sampleIndex < numberOfSamples; ++sampleIndex)
 									{
 										const aiVectorKey& assimpVectorKey = assimpNodeAnim->mScalingKeys[sampleIndex];
-										aclAnimationScaleTrack.set_sample(sampleIndex, acl::vector_set(static_cast<double>(assimpVectorKey.mValue.x), static_cast<double>(assimpVectorKey.mValue.y), static_cast<double>(assimpVectorKey.mValue.z), 0.0));
+										aclAnimationScaleTrack.set_sample(sampleIndex, rtm::vector_set(static_cast<double>(assimpVectorKey.mValue.x), static_cast<double>(assimpVectorKey.mValue.y), static_cast<double>(assimpVectorKey.mValue.z), 0.0));
 									}
 								}
 							}
@@ -370,13 +371,11 @@ namespace RendererToolkit
 					// Compress ACL raw animation clip
 					// -> See ACL documentation https://github.com/nfrechette/acl/blob/develop/docs/compressing_a_raw_clip.md
 					acl::CompressionSettings aclCompressionSettings;
-					aclCompressionSettings.rotation_format = acl::RotationFormat8::QuatDropW_Variable;
-					aclCompressionSettings.translation_format = acl::VectorFormat8::Vector3_Variable;
-					aclCompressionSettings.scale_format = acl::VectorFormat8::Vector3_Variable;
-					aclCompressionSettings.range_reduction = acl::RangeReductionFlags8::AllTracks;
-					aclCompressionSettings.segmenting.enabled = true;
-					aclCompressionSettings.segmenting.range_reduction = acl::RangeReductionFlags8::AllTracks;
-					acl::TransformErrorMetric aclErrorMetric;
+					aclCompressionSettings.level = acl::compression_level8::highest;
+					aclCompressionSettings.rotation_format = acl::rotation_format8::quatf_drop_w_variable;
+					aclCompressionSettings.translation_format = acl::vector_format8::vector3f_variable;
+					aclCompressionSettings.scale_format = acl::vector_format8::vector3f_variable;
+					acl::qvvf_transform_error_metric aclErrorMetric;
 					aclCompressionSettings.error_metric = &aclErrorMetric;
 					aclCompressionSettings.constant_translation_threshold = CENTIMETER_TO_METER(0.001f);
 					aclCompressionSettings.error_threshold = CENTIMETER_TO_METER(0.01f);

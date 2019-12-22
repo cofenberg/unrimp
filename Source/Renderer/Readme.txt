@@ -23,14 +23,19 @@ Renderer.
 
 
 == Dependencies ==
-- GLM (header only library)
-- lz4 (directly compiled and linked in)
-- MojoShader (directly compiled and linked in)
-- mikktspace (directly compiled and linked in)
+- ACL (directly compiled and linked in)
 - crunch (header only part of the library, doesn't depend on crn compression library)
+- GLM (header only library)
 - ImGui (directly compiled and linked in)
 - ImGuizmo (directly compiled and linked in)
+- lz4 (directly compiled and linked in)
+- mikktspace (directly compiled and linked in)
+- MojoShader (directly compiled and linked in)
 - OpenVR (header with dynamic runtime linking)
+- PhysicsFS (dependency of projects using the provided interface implementation, directly compiled and linked in)
+- Remotery (dependency of projects using the provided interface implementation, directly compiled and linked in)
+- RenderDoc (dependency of projects using the provided interface implementation, header only library)
+- xsimd (header only library)
 
 
 == Preprocessor Definitions ==

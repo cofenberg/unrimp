@@ -119,6 +119,7 @@
 #include "Public/Resource/Scene/SceneResource.cpp"
 #include "Public/Resource/Scene/SceneResourceManager.cpp"
 #include "Public/Resource/Scene/Factory/SceneFactory.cpp"
+#include "Public/Resource/Scene/Culling/SceneCullingManager.cpp"
 #include "Public/Resource/Scene/Item/ISceneItem.cpp"
 #include "Public/Resource/Scene/Item/MaterialSceneItem.cpp"
 #include "Public/Resource/Scene/Item/Camera/CameraSceneItem.cpp"

@@ -29,12 +29,16 @@
 #include "acl/io/clip_reader_error.h"
 #include "acl/compression/animation_clip.h"
 #include "acl/compression/compression_settings.h"
+#include "acl/compression/track_array.h"
 #include "acl/compression/skeleton.h"
 #include "acl/core/algorithm_types.h"
-#include "acl/core/compiler_utils.h"
+#include "acl/core/impl/compiler_utils.h"
 #include "acl/core/iallocator.h"
 #include "acl/core/string.h"
 #include "acl/core/unique_ptr.h"
+
+#include <rtm/quatd.h>
+#include <rtm/vector4d.h>
 
 #include <cstdint>
 
@@ -42,6 +46,36 @@ ACL_IMPL_FILE_PRAGMA_PUSH
 
 namespace acl
 {
+	//////////////////////////////////////////////////////////////////////////
+	// Enum to describe each type of raw content that an SJSON ACL file might contain.
+	enum class sjson_file_type
+	{
+		unknown,
+		raw_clip,
+		raw_track_list,
+	};
+
+	//////////////////////////////////////////////////////////////////////////
+	// A raw clip with transform tracks
+	struct sjson_raw_clip
+	{
+		std::unique_ptr<AnimationClip, Deleter<AnimationClip>> clip;
+		std::unique_ptr<RigidSkeleton, Deleter<RigidSkeleton>> skeleton;
+
+		bool has_settings;
+		algorithm_type8 algorithm_type;
+		CompressionSettings settings;
+	};
+
+	//////////////////////////////////////////////////////////////////////////
+	// A raw track list
+	struct sjson_raw_track_list
+	{
+		track_array track_list;
+	};
+
+	//////////////////////////////////////////////////////////////////////////
+	// An SJSON ACL file reader.
 	class ClipReader
 	{
 	public:
@@ -51,33 +85,75 @@ namespace acl
 			, m_error()
 			, m_version(0)
 			, m_num_samples(0)
-			, m_sample_rate(0)
+			, m_sample_rate(0.0F)
 			, m_is_binary_exact(false)
 		{
 		}
 
-		bool read_settings(bool& out_has_settings, AlgorithmType8& out_algorithm_type, CompressionSettings& out_settings)
+		sjson_file_type get_file_type()
 		{
 			reset_state();
 
-			return read_version() && read_clip_header() && read_settings(&out_has_settings, &out_algorithm_type, &out_settings);
+			if (!read_version())
+				return sjson_file_type::unknown;
+
+			if (m_parser.object_begins("clip"))
+				return sjson_file_type::raw_clip;
+
+			if (m_parser.object_begins("track_list"))
+				return sjson_file_type::raw_track_list;
+
+			return sjson_file_type::unknown;
 		}
 
-		bool read_skeleton(std::unique_ptr<RigidSkeleton, Deleter<RigidSkeleton>>& skeleton)
+		bool read_raw_clip(sjson_raw_clip& out_data)
 		{
 			reset_state();
 
-			return read_version() && read_clip_header() && read_settings(nullptr, nullptr, nullptr) && create_skeleton(skeleton);
+			if (!read_version())
+				return false;
+
+			if (!read_raw_clip_header())
+				return false;
+
+			if (!read_settings(&out_data.has_settings, &out_data.algorithm_type, &out_data.settings))
+				return false;
+
+			if (!create_skeleton(out_data.skeleton))
+				return false;
+
+			if (!create_clip(out_data.clip, *out_data.skeleton))
+				return false;
+
+			if (!read_tracks(*out_data.clip, *out_data.skeleton))
+				return false;
+
+			return nothing_follows();
 		}
 
-		bool read_clip(std::unique_ptr<AnimationClip, Deleter<AnimationClip>>& clip, const RigidSkeleton& skeleton)
+		bool read_raw_track_list(sjson_raw_track_list& out_data)
 		{
 			reset_state();
 
-			return read_version() && read_clip_header() && read_settings(nullptr, nullptr, nullptr) && read_skeleton() && create_clip(clip, skeleton) && read_tracks(*clip, skeleton) && nothing_follows();
+			if (!read_version())
+				return false;
+
+			if (!read_raw_track_list_header())
+				return false;
+
+			bool has_settings;				// Not used
+			algorithm_type8 algorithm_type;	// Not used
+			CompressionSettings settings;	// Not used
+			if (!read_settings(&has_settings, &algorithm_type, &settings))
+				return false;
+
+			if (!create_track_list(out_data.track_list))
+				return false;
+
+			return nothing_follows();
 		}
 
-		ClipReaderError get_error() { return m_error; }
+		ClipReaderError get_error() const { return m_error; }
 
 	private:
 		IAllocator& m_allocator;
@@ -86,13 +162,13 @@ namespace acl
 
 		uint32_t m_version;
 		uint32_t m_num_samples;
-		uint32_t m_sample_rate;
+		float m_sample_rate;
 		sjson::StringView m_clip_name;
 		bool m_is_binary_exact;
-		AdditiveClipFormat8 m_additive_format;
+		additive_clip_format8 m_additive_format;
 		sjson::StringView m_additive_base_name;
 		uint32_t m_additive_base_num_samples;
-		uint32_t m_additive_base_sample_rate;
+		float m_additive_base_sample_rate;
 
 		void reset_state()
 		{
@@ -108,7 +184,7 @@ namespace acl
 				return false;
 			}
 
-			if (m_version > 3)
+			if (m_version > 5)
 			{
 				set_error(ClipReaderError::UnsupportedVersion);
 				return false;
@@ -117,7 +193,7 @@ namespace acl
 			return true;
 		}
 
-		bool read_clip_header()
+		bool read_raw_clip_header()
 		{
 			sjson::StringView additive_format;
 
@@ -142,10 +218,10 @@ namespace acl
 			if (!m_parser.read("sample_rate", sample_rate))
 				goto error;
 
-			m_sample_rate = static_cast<uint32_t>(sample_rate);
-			if (static_cast<double>(m_sample_rate) != sample_rate || m_sample_rate == 0)
+			m_sample_rate = static_cast<float>(sample_rate);
+			if (m_sample_rate <= 0.0F)
 			{
-				set_error(ClipReaderError::UnsignedIntegerExpected);
+				set_error(ClipReaderError::PositiveValueExpected);
 				return false;
 			}
 
@@ -158,7 +234,7 @@ namespace acl
 			m_parser.try_read("is_binary_exact", m_is_binary_exact, false);
 
 			// Optional value
-			m_parser.try_read("additive_format", additive_format, "None");
+			m_parser.try_read("additive_format", additive_format, "none");
 			if (!get_additive_clip_format(additive_format.c_str(), m_additive_format))
 			{
 				set_error(ClipReaderError::InvalidAdditiveClipFormat);
@@ -174,10 +250,10 @@ namespace acl
 				return false;
 			}
 			m_parser.try_read("additive_base_sample_rate", sample_rate, 30.0);
-			m_additive_base_sample_rate = static_cast<uint32_t>(sample_rate);
-			if (static_cast<double>(m_additive_base_sample_rate) != sample_rate || m_additive_base_sample_rate == 0)
+			m_additive_base_sample_rate = static_cast<float>(sample_rate);
+			if (m_additive_base_sample_rate <= 0.0F)
 			{
-				set_error(ClipReaderError::UnsignedIntegerExpected);
+				set_error(ClipReaderError::PositiveValueExpected);
 				return false;
 			}
 
@@ -191,7 +267,49 @@ namespace acl
 			return false;
 		}
 
-		bool read_settings(bool* out_has_settings, AlgorithmType8* out_algorithm_type, CompressionSettings* out_settings)
+		bool read_raw_track_list_header()
+		{
+			if (!m_parser.object_begins("track_list"))
+				goto error;
+
+			m_parser.try_read("name", m_clip_name, "");
+
+			double num_samples;
+			if (!m_parser.read("num_samples", num_samples))
+				goto error;
+
+			m_num_samples = static_cast<uint32_t>(num_samples);
+			if (static_cast<double>(m_num_samples) != num_samples)
+			{
+				set_error(ClipReaderError::UnsignedIntegerExpected);
+				return false;
+			}
+
+			double sample_rate;
+			if (!m_parser.read("sample_rate", sample_rate))
+				goto error;
+
+			m_sample_rate = static_cast<float>(sample_rate);
+			if (m_sample_rate <= 0.0F)
+			{
+				set_error(ClipReaderError::PositiveValueExpected);
+				return false;
+			}
+
+			// Optional value
+			m_parser.try_read("is_binary_exact", m_is_binary_exact, false);
+
+			if (!m_parser.object_ends())
+				goto error;
+
+			return true;
+
+		error:
+			m_error = m_parser.get_error();
+			return false;
+		}
+
+		bool read_settings(bool* out_has_settings, algorithm_type8* out_algorithm_type, CompressionSettings* out_settings)
 		{
 			if (!m_parser.try_object_begins("settings"))
 			{
@@ -205,6 +323,7 @@ namespace acl
 			CompressionSettings default_settings;
 
 			sjson::StringView algorithm_name;
+			sjson::StringView compression_level;
 			sjson::StringView rotation_format;
 			sjson::StringView translation_format;
 			sjson::StringView scale_format;
@@ -216,35 +335,36 @@ namespace acl
 			double constant_scale_threshold;
 			double error_threshold;
 
-			bool segmenting_enabled = default_settings.segmenting.enabled;
 			double segmenting_ideal_num_samples = double(default_settings.segmenting.ideal_num_samples);
 			double segmenting_max_num_samples = double(default_settings.segmenting.max_num_samples);
-			bool segmenting_rotation_range_reduction = are_any_enum_flags_set(default_settings.segmenting.range_reduction, RangeReductionFlags8::Rotations);
-			bool segmenting_translation_range_reduction = are_any_enum_flags_set(default_settings.segmenting.range_reduction, RangeReductionFlags8::Translations);
-			bool segmenting_scale_range_reduction = are_any_enum_flags_set(default_settings.segmenting.range_reduction, RangeReductionFlags8::Scales);
 
-			m_parser.try_read("algorithm_name", algorithm_name, get_algorithm_name(AlgorithmType8::UniformlySampled));
+			m_parser.try_read("algorithm_name", algorithm_name, get_algorithm_name(algorithm_type8::uniformly_sampled));
+			m_parser.try_read("level", compression_level, get_compression_level_name(default_settings.level));
 			m_parser.try_read("rotation_format", rotation_format, get_rotation_format_name(default_settings.rotation_format));
 			m_parser.try_read("translation_format", translation_format, get_vector_format_name(default_settings.translation_format));
 			m_parser.try_read("scale_format", scale_format, get_vector_format_name(default_settings.scale_format));
-			m_parser.try_read("rotation_range_reduction", rotation_range_reduction, are_any_enum_flags_set(default_settings.range_reduction, RangeReductionFlags8::Rotations));
-			m_parser.try_read("translation_range_reduction", translation_range_reduction, are_any_enum_flags_set(default_settings.range_reduction, RangeReductionFlags8::Translations));
-			m_parser.try_read("scale_range_reduction", scale_range_reduction, are_any_enum_flags_set(default_settings.range_reduction, RangeReductionFlags8::Scales));
+			m_parser.try_read("rotation_range_reduction", rotation_range_reduction, false);			// Legacy, no longer used
+			m_parser.try_read("translation_range_reduction", translation_range_reduction, false);	// Legacy, no longer used
+			m_parser.try_read("scale_range_reduction", scale_range_reduction, false);				// Legacy, no longer used
 
 			if (m_parser.try_object_begins("segmenting"))
 			{
-				m_parser.try_read("enabled", segmenting_enabled, default_settings.segmenting.enabled);
+				bool segmenting_enabled;
+				bool segmenting_rotation_range_reduction;
+				bool segmenting_translation_range_reduction;
+				bool segmenting_scale_range_reduction;
+				m_parser.try_read("enabled", segmenting_enabled, false);	// Legacy, no longer used
 				m_parser.try_read("ideal_num_samples", segmenting_ideal_num_samples, double(default_settings.segmenting.ideal_num_samples));
 				m_parser.try_read("max_num_samples", segmenting_max_num_samples, double(default_settings.segmenting.max_num_samples));
-				m_parser.try_read("rotation_range_reduction", segmenting_rotation_range_reduction, are_any_enum_flags_set(default_settings.segmenting.range_reduction, RangeReductionFlags8::Rotations));
-				m_parser.try_read("translation_range_reduction", segmenting_translation_range_reduction, are_any_enum_flags_set(default_settings.segmenting.range_reduction, RangeReductionFlags8::Translations));
-				m_parser.try_read("scale_range_reduction", segmenting_scale_range_reduction, are_any_enum_flags_set(default_settings.segmenting.range_reduction, RangeReductionFlags8::Scales));
+				m_parser.try_read("rotation_range_reduction", segmenting_rotation_range_reduction, false);			// Legacy, no longer used
+				m_parser.try_read("translation_range_reduction", segmenting_translation_range_reduction, false);	// Legacy, no longer used
+				m_parser.try_read("scale_range_reduction", segmenting_scale_range_reduction, false);				// Legacy, no longer used
 
 				if (!m_parser.is_valid() || !m_parser.object_ends())
 					goto parsing_error;
 			}
 
-			m_parser.try_read("constant_rotation_threshold_angle", constant_rotation_threshold_angle, double(default_settings.constant_rotation_threshold_angle));
+			m_parser.try_read("constant_rotation_threshold_angle", constant_rotation_threshold_angle, double(default_settings.constant_rotation_threshold_angle.as_radians()));
 			m_parser.try_read("constant_translation_threshold", constant_translation_threshold, double(default_settings.constant_translation_threshold));
 			m_parser.try_read("constant_scale_threshold", constant_scale_threshold, double(default_settings.constant_scale_threshold));
 			m_parser.try_read("error_threshold", error_threshold, double(default_settings.error_threshold));
@@ -259,6 +379,9 @@ namespace acl
 				if (!get_algorithm_type(algorithm_name.c_str(), *out_algorithm_type))
 					goto invalid_value_error;
 
+				if (!get_compression_level(compression_level.c_str(), out_settings->level))
+					goto invalid_value_error;
+
 				if (!get_rotation_format(rotation_format.c_str(), out_settings->rotation_format))
 					goto invalid_value_error;
 
@@ -268,35 +391,10 @@ namespace acl
 				if (!get_vector_format(scale_format.c_str(), out_settings->scale_format))
 					goto invalid_value_error;
 
-				RangeReductionFlags8 range_reduction = RangeReductionFlags8::None;
-				if (rotation_range_reduction)
-					range_reduction |= RangeReductionFlags8::Rotations;
-
-				if (translation_range_reduction)
-					range_reduction |= RangeReductionFlags8::Translations;
-
-				if (scale_range_reduction)
-					range_reduction |= RangeReductionFlags8::Scales;
-
-				out_settings->range_reduction = range_reduction;
-
-				out_settings->segmenting.enabled = segmenting_enabled;
 				out_settings->segmenting.ideal_num_samples = uint16_t(segmenting_ideal_num_samples);
 				out_settings->segmenting.max_num_samples = uint16_t(segmenting_max_num_samples);
 
-				RangeReductionFlags8 segmenting_range_reduction = RangeReductionFlags8::None;
-				if (rotation_range_reduction)
-					segmenting_range_reduction |= RangeReductionFlags8::Rotations;
-
-				if (translation_range_reduction)
-					segmenting_range_reduction |= RangeReductionFlags8::Translations;
-
-				if (scale_range_reduction)
-					segmenting_range_reduction |= RangeReductionFlags8::Scales;
-
-				out_settings->segmenting.range_reduction = segmenting_range_reduction;
-
-				out_settings->constant_rotation_threshold_angle = float(constant_rotation_threshold_angle);
+				out_settings->constant_rotation_threshold_angle = rtm::radians(float(constant_rotation_threshold_angle));
 				out_settings->constant_translation_threshold = float(constant_translation_threshold);
 				out_settings->constant_scale_threshold = float(constant_scale_threshold);
 				out_settings->error_threshold = float(error_threshold);
@@ -361,14 +459,42 @@ namespace acl
 			return UInt64ToDouble(value_u64).dbl;
 		}
 
-		static Quat_64 hex_to_quat(const sjson::StringView values[4])
+		static float hex_to_float(const sjson::StringView& value)
 		{
-			return quat_set(hex_to_double(values[0]), hex_to_double(values[1]), hex_to_double(values[2]), hex_to_double(values[3]));
+			union UInt32ToFloat
+			{
+				uint32_t u32;
+				float flt;
+
+				constexpr explicit UInt32ToFloat(uint32_t u32_value) : u32(u32_value) {}
+			};
+
+			ACL_ASSERT(value.size() <= 8, "Invalid binary exact float value");
+			uint32_t value_u32 = safe_static_cast<uint32_t>(std::strtoul(value.c_str(), nullptr, 16));
+			return UInt32ToFloat(value_u32).flt;
 		}
 
-		static Vector4_64 hex_to_vector3(const sjson::StringView values[3])
+		static rtm::quatd hex_to_quat(const sjson::StringView values[4])
 		{
-			return vector_set(hex_to_double(values[0]), hex_to_double(values[1]), hex_to_double(values[2]));
+			return rtm::quat_set(hex_to_double(values[0]), hex_to_double(values[1]), hex_to_double(values[2]), hex_to_double(values[3]));
+		}
+
+		static rtm::vector4d hex_to_vector3(const sjson::StringView values[3])
+		{
+			return rtm::vector_set(hex_to_double(values[0]), hex_to_double(values[1]), hex_to_double(values[2]));
+		}
+
+		static rtm::float4f hex_to_float4f(const sjson::StringView values[4], uint32_t num_components)
+		{
+			ACL_ASSERT(num_components <= 4, "Invalid number of components");
+
+			rtm::float4f result = { 0.0F, 0.0F, 0.0F, 0.0F };
+			float* result_ptr = &result.x;
+
+			for (uint32_t component_index = 0; component_index < num_components; ++component_index)
+				result_ptr[component_index] = hex_to_float(values[component_index]);
+
+			return result;
 		}
 
 		bool process_each_bone(RigidBone* bones, uint16_t& num_bones)
@@ -435,17 +561,17 @@ namespace acl
 				}
 				else
 				{
-					double rotation[4];
+					double rotation[4] = { 0.0, 0.0, 0.0, 0.0 };
 					if (m_parser.try_read("bind_rotation", rotation, 4, 0.0) && !counting)
-						bone.bind_transform.rotation = quat_unaligned_load(&rotation[0]);
+						bone.bind_transform.rotation = rtm::quat_load(&rotation[0]);
 
-					double translation[3];
+					double translation[3] = { 0.0, 0.0, 0.0 };
 					if (m_parser.try_read("bind_translation", translation, 3, 0.0) && !counting)
-						bone.bind_transform.translation = vector_unaligned_load3(&translation[0]);
+						bone.bind_transform.translation = rtm::vector_load3(&translation[0]);
 
-					double scale[3];
+					double scale[3] = { 0.0, 0.0, 0.0 };
 					if (m_parser.try_read("bind_scale", scale, 3, 0.0) && !counting)
-						bone.bind_transform.scale = vector_unaligned_load3(&scale[0]);
+						bone.bind_transform.scale = rtm::vector_load3(&scale[0]);
 				}
 
 				if (!m_parser.object_ends())
@@ -475,6 +601,265 @@ namespace acl
 		bool create_clip(std::unique_ptr<AnimationClip, Deleter<AnimationClip>>& clip, const RigidSkeleton& skeleton)
 		{
 			clip = make_unique<AnimationClip>(m_allocator, m_allocator, skeleton, m_num_samples, m_sample_rate, String(m_allocator, m_clip_name.c_str(), m_clip_name.size()));
+			return true;
+		}
+
+		bool process_track_list(track* tracks, uint32_t& num_tracks)
+		{
+			const bool counting = tracks == nullptr;
+			track dummy;
+			track_type8 track_list_type = track_type8::float1f;
+
+			num_tracks = 0;
+
+			if (!m_parser.array_begins("tracks"))
+				goto error;
+
+			for (uint32_t i = 0; !m_parser.try_array_ends(); ++i)
+			{
+				track& track_ = counting ? dummy : tracks[i];
+
+				if (!m_parser.object_begins())
+					goto error;
+
+				sjson::StringView name;
+				m_parser.try_read("name", name, "");
+
+				// TODO: Store track name somewhere for debugging purposes
+
+				sjson::StringView type;
+				if (!m_parser.read("type", type))
+					goto error;
+
+				track_type8 track_type;
+				if (!get_track_type(type.c_str(), track_type))
+				{
+					m_error.error = ClipReaderError::InvalidTrackType;
+					return false;
+				}
+
+				if (num_tracks == 0)
+					track_list_type = track_type;
+				else if (track_type != track_list_type)
+				{
+					m_error.error = ClipReaderError::InvalidTrackType;
+					return false;
+				}
+
+				const uint32_t num_components = get_track_num_sample_elements(track_type);
+				ACL_ASSERT(num_components > 0 && num_components <= 4, "Cannot have 0 or more than 4 components");
+
+				float precision;
+				m_parser.try_read("precision", precision, 0.0001F);
+
+				float constant_threshold;
+				m_parser.try_read("constant_threshold", constant_threshold, 0.00001F);
+
+				uint32_t output_index;
+				m_parser.try_read("output_index", output_index, i);
+
+				track_desc_scalarf scalar_desc;
+				scalar_desc.output_index = output_index;
+				scalar_desc.precision = precision;
+				scalar_desc.constant_threshold = constant_threshold;
+
+				if (!m_parser.array_begins("data"))
+					goto error;
+
+				union track_samples_ptr_union
+				{
+					void*			any;
+					float*			float1f;
+					rtm::float2f*	float2f;
+					rtm::float3f*	float3f;
+					rtm::float4f*	float4f;
+					rtm::vector4f*	vector4f;
+				};
+				track_samples_ptr_union track_samples_typed = { nullptr };
+
+				switch (track_type)
+				{
+				case track_type8::float1f:
+					track_samples_typed.float1f = allocate_type_array<float>(m_allocator, m_num_samples);
+					break;
+				case track_type8::float2f:
+					track_samples_typed.float2f = allocate_type_array<rtm::float2f>(m_allocator, m_num_samples);
+					break;
+				case track_type8::float3f:
+					track_samples_typed.float3f = allocate_type_array<rtm::float3f>(m_allocator, m_num_samples);
+					break;
+				case track_type8::float4f:
+					track_samples_typed.float4f = allocate_type_array<rtm::float4f>(m_allocator, m_num_samples);
+					break;
+				case track_type8::vector4f:
+					track_samples_typed.vector4f = allocate_type_array<rtm::vector4f>(m_allocator, m_num_samples);
+					break;
+				default:
+					ACL_ASSERT(false, "Unsupported track type");
+					break;
+				}
+
+				bool has_error = false;
+				for (uint32_t sample_index = 0; sample_index < m_num_samples; ++sample_index)
+				{
+					if (!m_parser.array_begins())
+					{
+						has_error = true;
+						break;
+					}
+
+					if (m_is_binary_exact)
+					{
+						sjson::StringView values[4];
+						if (m_parser.read(values, num_components))
+						{
+							switch (track_type)
+							{
+							case track_type8::float1f:
+							case track_type8::float2f:
+							case track_type8::float3f:
+							case track_type8::float4f:
+							case track_type8::vector4f:
+							{
+								const rtm::float4f value = hex_to_float4f(values, num_components);
+								std::memcpy(track_samples_typed.float1f + (sample_index * num_components), &value, sizeof(float) * num_components);
+								break;
+							}
+							default:
+								ACL_ASSERT(false, "Unsupported track type");
+								break;
+							}
+						}
+						else
+						{
+							has_error = true;
+							break;
+						}
+					}
+					else
+					{
+						double values[4] = { 0.0, 0.0, 0.0, 0.0 };
+						if (m_parser.read(values, num_components))
+						{
+							switch (track_type)
+							{
+							case track_type8::float1f:
+							case track_type8::float2f:
+							case track_type8::float3f:
+							case track_type8::float4f:
+							case track_type8::vector4f:
+							{
+								const rtm::float4f value = { static_cast<float>(values[0]), static_cast<float>(values[1]), static_cast<float>(values[2]), static_cast<float>(values[3])};
+								std::memcpy(track_samples_typed.float1f + (sample_index * num_components), &value, sizeof(float) * num_components);
+								break;
+							}
+							default:
+								ACL_ASSERT(false, "Unsupported track type");
+								break;
+							}
+						}
+						else
+						{
+							has_error = true;
+							break;
+						}
+					}
+
+					if (!has_error && !m_parser.array_ends())
+					{
+						has_error = true;
+						break;
+					}
+				}
+
+				if (!has_error && !m_parser.array_ends())
+				{
+					has_error = true;
+					break;
+				}
+
+				if (!has_error && !m_parser.object_ends())
+				{
+					has_error = true;
+					break;
+				}
+
+				if (has_error)
+				{
+					switch (track_type)
+					{
+					case track_type8::float1f:
+						deallocate_type_array<float>(m_allocator, track_samples_typed.float1f, m_num_samples);
+						break;
+					case track_type8::float2f:
+						deallocate_type_array<rtm::float2f>(m_allocator, track_samples_typed.float2f, m_num_samples);
+						break;
+					case track_type8::float3f:
+						deallocate_type_array<rtm::float3f>(m_allocator, track_samples_typed.float3f, m_num_samples);
+						break;
+					case track_type8::float4f:
+						deallocate_type_array<rtm::float4f>(m_allocator, track_samples_typed.float4f, m_num_samples);
+						break;
+					case track_type8::vector4f:
+						deallocate_type_array<rtm::vector4f>(m_allocator, track_samples_typed.vector4f, m_num_samples);
+						break;
+					default:
+						ACL_ASSERT(false, "Unsupported track type");
+						break;
+					}
+				}
+				else
+				{
+					switch (track_type)
+					{
+					case track_type8::float1f:
+						track_ = track_float1f::make_owner(scalar_desc, m_allocator, track_samples_typed.float1f, m_num_samples, m_sample_rate);
+						break;
+					case track_type8::float2f:
+						track_ = track_float2f::make_owner(scalar_desc, m_allocator, track_samples_typed.float2f, m_num_samples, m_sample_rate);
+						break;
+					case track_type8::float3f:
+						track_ = track_float3f::make_owner(scalar_desc, m_allocator, track_samples_typed.float3f, m_num_samples, m_sample_rate);
+						break;
+					case track_type8::float4f:
+						track_ = track_float4f::make_owner(scalar_desc, m_allocator, track_samples_typed.float4f, m_num_samples, m_sample_rate);
+						break;
+					case track_type8::vector4f:
+						track_ = track_vector4f::make_owner(scalar_desc, m_allocator, track_samples_typed.vector4f, m_num_samples, m_sample_rate);
+						break;
+					default:
+						ACL_ASSERT(false, "Unsupported track type");
+						break;
+					}
+				}
+
+				num_tracks++;
+			}
+
+			return true;
+
+		error:
+			m_error = m_parser.get_error();
+			return false;
+		}
+
+		bool create_track_list(track_array& track_list)
+		{
+			const sjson::ParserState before_tracks = m_parser.save_state();
+
+			uint32_t num_tracks;
+			if (!process_track_list(nullptr, num_tracks))
+				return false;
+
+			m_parser.restore_state(before_tracks);
+
+			track_list = track_array(m_allocator, num_tracks);
+
+			if (!process_track_list(track_list.begin(), num_tracks))
+				return false;
+
+			ACL_ASSERT(num_tracks == track_list.get_num_tracks(), "Number of tracks read mismatch");
+
 			return true;
 		}
 
@@ -512,7 +897,7 @@ namespace acl
 					else
 					{
 						for (uint32_t sample_index = 0; sample_index < m_additive_base_num_samples; ++sample_index)
-							bone.rotation_track.set_sample(sample_index, quat_identity_64());
+							bone.rotation_track.set_sample(sample_index, rtm::quat_identity());
 					}
 
 					if (m_parser.try_array_begins("translations"))
@@ -523,7 +908,7 @@ namespace acl
 					else
 					{
 						for (uint32_t sample_index = 0; sample_index < m_additive_base_num_samples; ++sample_index)
-							bone.translation_track.set_sample(sample_index, vector_zero_64());
+							bone.translation_track.set_sample(sample_index, rtm::vector_zero());
 					}
 
 					if (m_parser.try_array_begins("scales"))
@@ -534,7 +919,7 @@ namespace acl
 					else
 					{
 						for (uint32_t sample_index = 0; sample_index < m_additive_base_num_samples; ++sample_index)
-							bone.scale_track.set_sample(sample_index, vector_set(1.0));
+							bone.scale_track.set_sample(sample_index, rtm::vector_set(1.0));
 					}
 
 					if (!m_parser.object_ends())
@@ -571,7 +956,7 @@ namespace acl
 				else
 				{
 					for (uint32_t sample_index = 0; sample_index < m_num_samples; ++sample_index)
-						bone.rotation_track.set_sample(sample_index, quat_identity_64());
+						bone.rotation_track.set_sample(sample_index, rtm::quat_identity());
 				}
 
 				if (m_parser.try_array_begins("translations"))
@@ -582,7 +967,7 @@ namespace acl
 				else
 				{
 					for (uint32_t sample_index = 0; sample_index < m_num_samples; ++sample_index)
-						bone.translation_track.set_sample(sample_index, vector_zero_64());
+						bone.translation_track.set_sample(sample_index, rtm::vector_zero());
 				}
 
 				if (m_parser.try_array_begins("scales"))
@@ -593,7 +978,7 @@ namespace acl
 				else
 				{
 					for (uint32_t sample_index = 0; sample_index < m_num_samples; ++sample_index)
-						bone.scale_track.set_sample(sample_index, vector_set(1.0));
+						bone.scale_track.set_sample(sample_index, rtm::vector_set(1.0));
 				}
 
 				if (!m_parser.object_ends())
@@ -616,7 +1001,7 @@ namespace acl
 				if (!m_parser.array_begins())
 					return false;
 
-				Quat_64 rotation;
+				rtm::quatd rotation;
 
 				if (m_is_binary_exact)
 				{
@@ -628,11 +1013,11 @@ namespace acl
 				}
 				else
 				{
-					double values[4];
+					double values[4] = { 0.0, 0.0, 0.0, 0.0 };
 					if (!m_parser.read(values, 4))
 						return false;
 
-					rotation = quat_unaligned_load(values);
+					rotation = rtm::quat_load(values);
 				}
 
 				if (!m_parser.array_ends())
@@ -651,7 +1036,7 @@ namespace acl
 				if (!m_parser.array_begins())
 					return false;
 
-				Vector4_64 translation;
+				rtm::vector4d translation;
 
 				if (m_is_binary_exact)
 				{
@@ -667,7 +1052,7 @@ namespace acl
 					if (!m_parser.read(values, 3))
 						return false;
 
-					translation = vector_unaligned_load3(values);
+					translation = rtm::vector_load3(values);
 				}
 
 				if (!m_parser.array_ends())
@@ -686,7 +1071,7 @@ namespace acl
 				if (!m_parser.array_begins())
 					return false;
 
-				Vector4_64 scale;
+				rtm::vector4d scale;
 
 				if (m_is_binary_exact)
 				{
@@ -702,7 +1087,7 @@ namespace acl
 					if (!m_parser.read(values, 3))
 						return false;
 
-					scale = vector_unaligned_load3(values);
+					scale = rtm::vector_load3(values);
 				}
 
 				if (!m_parser.array_ends())

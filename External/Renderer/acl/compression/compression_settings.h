@@ -24,13 +24,16 @@
 // SOFTWARE.
 ////////////////////////////////////////////////////////////////////////////////
 
-#include "acl/core/compiler_utils.h"
+#include "acl/core/impl/compiler_utils.h"
 #include "acl/core/error_result.h"
 #include "acl/core/hash.h"
 #include "acl/core/track_types.h"
 #include "acl/core/range_reduction_types.h"
+#include "acl/compression/compression_level.h"
 #include "acl/compression/skeleton_error_metric.h"
-#include "acl/math/scalar_32.h"
+
+#include <rtm/anglef.h>
+#include <rtm/scalarf.h>
 
 #include <cstdint>
 
@@ -38,13 +41,14 @@ ACL_IMPL_FILE_PRAGMA_PUSH
 
 namespace acl
 {
+	//////////////////////////////////////////////////////////////////////////
+	// Encapsulates all the compression settings related to segmenting.
+	// Segmenting ensures that large clips are split into smaller segments and
+	// compressed independently to allow a smaller memory footprint as well as
+	// faster compression and decompression.
+	// See also: http://nfrechette.github.io/2016/11/10/anim_compression_uniform_segmenting/
 	struct SegmentingSettings
 	{
-		//////////////////////////////////////////////////////////////////////////
-		// Whether to enable segmenting or not
-		// Defaults to 'false'
-		bool enabled;
-
 		//////////////////////////////////////////////////////////////////////////
 		// How many samples to try and fit in our segments
 		// Defaults to '16'
@@ -55,16 +59,9 @@ namespace acl
 		// Defaults to '31'
 		uint16_t max_num_samples;
 
-		//////////////////////////////////////////////////////////////////////////
-		// Whether to use range reduction or not at the segment level
-		// Defaults to 'None'
-		RangeReductionFlags8 range_reduction;
-
 		SegmentingSettings()
-			: enabled(false)
-			, ideal_num_samples(16)
+			: ideal_num_samples(16)
 			, max_num_samples(31)
-			, range_reduction(RangeReductionFlags8::None)
 		{}
 
 		//////////////////////////////////////////////////////////////////////////
@@ -72,10 +69,8 @@ namespace acl
 		uint32_t get_hash() const
 		{
 			uint32_t hash_value = 0;
-			hash_value = hash_combine(hash_value, hash32(enabled));
 			hash_value = hash_combine(hash_value, hash32(ideal_num_samples));
 			hash_value = hash_combine(hash_value, hash32(max_num_samples));
-			hash_value = hash_combine(hash_value, hash32(range_reduction));
 			return hash_value;
 		}
 
@@ -84,9 +79,6 @@ namespace acl
 		// Returns nullptr if the settings are valid.
 		ErrorResult is_valid() const
 		{
-			if (!enabled)
-				return ErrorResult();
-
 			if (ideal_num_samples < 8)
 				return ErrorResult("ideal_num_samples must be greater or equal to 8");
 
@@ -97,19 +89,22 @@ namespace acl
 		}
 	};
 
+	//////////////////////////////////////////////////////////////////////////
+	// Encapsulates all the compression settings.
 	struct CompressionSettings
 	{
 		//////////////////////////////////////////////////////////////////////////
-		// The rotation, translation, and scale formats to use. See functions get_rotation_format(..) and get_vector_format(..)
-		// Defaults to raw: 'Quat_128' and 'Vector3_96'
-		RotationFormat8 rotation_format;
-		VectorFormat8 translation_format;
-		VectorFormat8 scale_format;
+		// The compression level determines how aggressively we attempt to reduce the memory
+		// footprint. Higher levels will try more permutations and bit rates. The higher
+		// the level, the slower the compression but the smaller the memory footprint.
+		compression_level8 level;
 
 		//////////////////////////////////////////////////////////////////////////
-		// Whether to use range reduction or not at the clip level
-		// Defaults to 'None'
-		RangeReductionFlags8 range_reduction;
+		// The rotation, translation, and scale formats to use. See functions get_rotation_format(..) and get_vector_format(..)
+		// Defaults to raw: 'quatf_full' and 'vector3f_full'
+		rotation_format8 rotation_format;
+		vector_format8 translation_format;
+		vector_format8 scale_format;
 
 		//////////////////////////////////////////////////////////////////////////
 		// Segmenting settings, if used
@@ -118,15 +113,15 @@ namespace acl
 		//////////////////////////////////////////////////////////////////////////
 		// The error metric to use.
 		// Defaults to 'null', this value must be set manually!
-		ISkeletalErrorMetric* error_metric;
+		itransform_error_metric* error_metric;
 
 		//////////////////////////////////////////////////////////////////////////
 		// Threshold angle when detecting if rotation tracks are constant or default.
-		// See the Quat_32 quat_near_identity for details about how the default threshold
+		// See the rtm::quatf quat_near_identity for details about how the default threshold
 		// was chosen. You will typically NEVER need to change this, the value has been
 		// selected to be as safe as possible and is independent of game engine units.
 		// Defaults to '0.00284714461' radians
-		float constant_rotation_threshold_angle;
+		rtm::anglef constant_rotation_threshold_angle;
 
 		//////////////////////////////////////////////////////////////////////////
 		// Threshold value to use when detecting if translation tracks are constant or default.
@@ -147,17 +142,19 @@ namespace acl
 		// Defaults to '0.01' centimeters
 		float error_threshold;
 
+		//////////////////////////////////////////////////////////////////////////
+		// Default constructor sets things up to perform no compression and to leave things raw.
 		CompressionSettings()
-			: rotation_format(RotationFormat8::Quat_128)
-			, translation_format(VectorFormat8::Vector3_96)
-			, scale_format(VectorFormat8::Vector3_96)
-			, range_reduction(RangeReductionFlags8::None)
+			: level(compression_level8::low)
+			, rotation_format(rotation_format8::quatf_full)
+			, translation_format(vector_format8::vector3f_full)
+			, scale_format(vector_format8::vector3f_full)
 			, segmenting()
 			, error_metric(nullptr)
-			, constant_rotation_threshold_angle(0.00284714461f)
-			, constant_translation_threshold(0.001f)
-			, constant_scale_threshold(0.00001f)
-			, error_threshold(0.01f)
+			, constant_rotation_threshold_angle(rtm::radians(0.00284714461F))
+			, constant_translation_threshold(0.001F)
+			, constant_scale_threshold(0.00001F)
+			, error_threshold(0.01F)
 		{}
 
 		//////////////////////////////////////////////////////////////////////////
@@ -165,13 +162,12 @@ namespace acl
 		uint32_t get_hash() const
 		{
 			uint32_t hash_value = 0;
+			hash_value = hash_combine(hash_value, hash32(level));
 			hash_value = hash_combine(hash_value, hash32(rotation_format));
 			hash_value = hash_combine(hash_value, hash32(translation_format));
 			hash_value = hash_combine(hash_value, hash32(scale_format));
-			hash_value = hash_combine(hash_value, hash32(range_reduction));
 
-			if (segmenting.enabled)
-				hash_value = hash_combine(hash_value, segmenting.get_hash());
+			hash_value = hash_combine(hash_value, segmenting.get_hash());
 
 			if (error_metric != nullptr)
 				hash_value = hash_combine(hash_value, error_metric->get_hash());
@@ -190,41 +186,20 @@ namespace acl
 		// Returns nullptr if the settings are valid.
 		ErrorResult is_valid() const
 		{
-			if (translation_format != VectorFormat8::Vector3_96)
-			{
-				const bool has_clip_range_reduction = are_any_enum_flags_set(range_reduction, RangeReductionFlags8::Translations);
-				const bool has_segment_range_reduction = segmenting.enabled && are_any_enum_flags_set(segmenting.range_reduction, RangeReductionFlags8::Translations);
-				if (!has_clip_range_reduction && !has_segment_range_reduction)
-					return ErrorResult("This translation format requires range reduction to be enabled at the clip or segment level");
-			}
-
-			if (scale_format != VectorFormat8::Vector3_96)
-			{
-				const bool has_clip_range_reduction = are_any_enum_flags_set(range_reduction, RangeReductionFlags8::Scales);
-				const bool has_segment_range_reduction = segmenting.enabled && are_any_enum_flags_set(segmenting.range_reduction, RangeReductionFlags8::Scales);
-				if (!has_clip_range_reduction && !has_segment_range_reduction)
-					return ErrorResult("This scale format requires range reduction to be enabled at the clip or segment level");
-			}
-
-			if (segmenting.enabled && segmenting.range_reduction != RangeReductionFlags8::None)
-			{
-				if (range_reduction == RangeReductionFlags8::None)
-					return ErrorResult("Per segment range reduction requires per clip range reduction to be enabled");
-			}
-
 			if (error_metric == nullptr)
 				return ErrorResult("error_metric cannot be NULL");
 
-			if (constant_rotation_threshold_angle < 0.0f || !is_finite(constant_rotation_threshold_angle))
+			const float rotation_threshold_angle = constant_rotation_threshold_angle.as_radians();
+			if (rotation_threshold_angle < 0.0F || !rtm::scalar_is_finite(rotation_threshold_angle))
 				return ErrorResult("Invalid constant_rotation_threshold_angle");
 
-			if (constant_translation_threshold < 0.0f || !is_finite(constant_translation_threshold))
+			if (constant_translation_threshold < 0.0F || !rtm::scalar_is_finite(constant_translation_threshold))
 				return ErrorResult("Invalid constant_translation_threshold");
 
-			if (constant_scale_threshold < 0.0f || !is_finite(constant_scale_threshold))
+			if (constant_scale_threshold < 0.0F || !rtm::scalar_is_finite(constant_scale_threshold))
 				return ErrorResult("Invalid constant_scale_threshold");
 
-			if (error_threshold < 0.0f || !is_finite(error_threshold))
+			if (error_threshold < 0.0F || !rtm::scalar_is_finite(error_threshold))
 				return ErrorResult("Invalid error_threshold");
 
 			return segmenting.is_valid();
@@ -232,19 +207,34 @@ namespace acl
 	};
 
 	//////////////////////////////////////////////////////////////////////////
+	// Returns raw compression settings. No compression is performed and
+	// samples are all retained with full precision.
+	inline CompressionSettings get_raw_compression_settings()
+	{
+		return CompressionSettings();
+	}
+
+	//////////////////////////////////////////////////////////////////////////
 	// Returns the recommended and default compression settings. These have
 	// been tested in a wide range of scenarios and perform best overall.
 	inline CompressionSettings get_default_compression_settings()
 	{
 		CompressionSettings settings;
-		settings.rotation_format = RotationFormat8::QuatDropW_Variable;
-		settings.translation_format = VectorFormat8::Vector3_Variable;
-		settings.scale_format = VectorFormat8::Vector3_Variable;
-		settings.range_reduction = RangeReductionFlags8::AllTracks;
-		settings.segmenting.enabled = true;
-		settings.segmenting.range_reduction = RangeReductionFlags8::AllTracks;
+		settings.level = compression_level8::medium;
+		settings.rotation_format = rotation_format8::quatf_drop_w_variable;
+		settings.translation_format = vector_format8::vector3f_variable;
+		settings.scale_format = vector_format8::vector3f_variable;
 		return settings;
 	}
+
+	//////////////////////////////////////////////////////////////////////////
+	// Encapsulates all the compression settings.
+	// Note: Currently only used by scalar track compression which contain no global settings.
+	struct compression_settings
+	{
+		compression_settings()
+		{}
+	};
 }
 
 ACL_IMPL_FILE_PRAGMA_POP

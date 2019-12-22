@@ -1,3 +1,3 @@
-meshoptimizer v0.12 (latest commit 1e033bd47a43b9dd75224d83b5196c9c7a8e1d7c - September 21, 2019)
+meshoptimizer v0.13 (latest commit b5d5369afc10c786d85e2e3f7002cc85b90f7f62 - December 21, 2019)
 - License: MIT
 - Online: https://github.com/zeux/meshoptimizer

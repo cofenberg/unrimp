@@ -24,7 +24,7 @@
 // SOFTWARE.
 ////////////////////////////////////////////////////////////////////////////////
 
-#include "acl/core/compiler_utils.h"
+#include "acl/core/impl/compiler_utils.h"
 #include "acl/core/iallocator.h"
 #include "acl/core/error.h"
 
@@ -52,7 +52,7 @@ namespace acl
 			{
 #if defined(ACL_HAS_ASSERT_CHECKS) && !defined(NDEBUG)
 				for (size_t i = 0; i < length; ++i)
-					ACL_ASSERT(c_str[i] != '\0', "StringView cannot contain NULL terminators");
+					ACL_ASSERT(c_str[i] != '\0', "String cannot contain NULL terminators");
 #endif
 
 				m_c_str = allocate_type_array<char>(allocator, length + 1);
@@ -88,7 +88,6 @@ namespace acl
 
 		String& operator=(String&& other)
 		{
-			ACL_ASSERT(m_allocator == other.m_allocator || m_allocator == nullptr || other.m_allocator == nullptr, "Allocators must be identical or NULL otherwise the behavior is undefined");
 			std::swap(m_allocator, other.m_allocator);
 			std::swap(m_c_str, other.m_c_str);
 			return *this;
@@ -100,6 +99,9 @@ namespace acl
 			const size_t other_length = c_str == nullptr ? 0 : std::strlen(c_str);
 			if (this_length != other_length)
 				return false;
+
+			if (this_length == 0)
+				return true;
 
 			return std::memcmp(m_c_str, c_str, other_length) == 0;
 		}

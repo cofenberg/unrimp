@@ -205,7 +205,7 @@ handle ApplicationImplSdl2::getNativeWindowHandle() const
 						assert(false);
 						break;
 				#elif defined __ANDROID__
-					#warning TODO(co) The Android support is work-in-progress
+					#warning "TODO(co) The Android support is work-in-progress"
 				#elif defined LINUX
 					case SDL_SYSWM_UNKNOWN:
 					case SDL_SYSWM_WINDOWS:

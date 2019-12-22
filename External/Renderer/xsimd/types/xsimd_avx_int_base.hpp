@@ -1,5 +1,7 @@
 /***************************************************************************
-* Copyright (c) 2016, Wolf Vollprecht, Johan Mabille and Sylvain Corlay    *
+* Copyright (c) Johan Mabille, Sylvain Corlay, Wolf Vollprecht and         *
+* Martin Renou                                                             *
+* Copyright (c) QuantStack                                                 *
 *                                                                          *
 * Distributed under the terms of the BSD 3-Clause License.                 *
 *                                                                          *
@@ -54,11 +56,16 @@ namespace xsimd
 
     private:
 
+        template <class... Args>
+        batch_bool<T, N>& load_values(Args... args);
+
         union
         {
             __m256i m_value;
             T m_array[N];
         };
+
+        friend class simd_batch_bool<batch_bool<T, N>>;
     };
 
     template <class T, std::size_t N>
@@ -98,17 +105,6 @@ namespace xsimd
         using base_type::load_unaligned;
         using base_type::store_aligned;
         using base_type::store_unaligned;
-
-        T& operator[](std::size_t index);
-        const T& operator[](std::size_t index) const;
-
-    protected:
-
-        union
-        {
-            __m256i m_value;
-            T m_array[N];
-        };
     };
 
     namespace avx_detail
@@ -222,6 +218,15 @@ namespace xsimd
         return m_value;
     }
 
+    template <class T, std::size_t N>
+    template <class... Args>
+    inline batch_bool<T, N>& avx_int_batch_bool<T, N>::load_values(Args... args)
+    {
+        m_value = avx_detail::int_init(std::integral_constant<std::size_t, sizeof(T)>{},
+                                       static_cast<T>(args ? typename std::make_signed<T>::type{-1} : 0)...);
+        return (*this)();
+    }
+    
     namespace detail
     {
         template <class T, std::size_t N>
@@ -342,116 +347,104 @@ namespace xsimd
 
     template <class T, std::size_t N>
     inline avx_int_batch<T, N>::avx_int_batch(T i)
-        : m_value(avx_detail::int_set(std::integral_constant<std::size_t, sizeof(T)>{}, i))
+        : base_type(avx_detail::int_set(std::integral_constant<std::size_t, sizeof(T)>{}, i))
     {
     }
 
     template <class T, std::size_t N>
     template <class... Args, class>
     inline avx_int_batch<T, N>::avx_int_batch(Args... args)
-        : m_value(avx_detail::int_init(std::integral_constant<std::size_t, sizeof(T)>{}, args...))
+        : base_type(avx_detail::int_init(std::integral_constant<std::size_t, sizeof(T)>{}, args...))
     {
     }
 
     template <class T, std::size_t N>
     inline avx_int_batch<T, N>::avx_int_batch(const T* src)
-        : m_value(_mm256_loadu_si256((__m256i const*)src))
+        : base_type(_mm256_loadu_si256((__m256i const*)src))
     {
     }
 
     template <class T, std::size_t N>
     inline avx_int_batch<T, N>::avx_int_batch(const T* src, aligned_mode)
-        : m_value(_mm256_load_si256((__m256i const*)src))
+        : base_type(_mm256_load_si256((__m256i const*)src))
     {
     }
 
     template <class T, std::size_t N>
     inline avx_int_batch<T, N>::avx_int_batch(const T* src, unaligned_mode)
-        : m_value(_mm256_loadu_si256((__m256i const*)src))
+        : base_type(_mm256_loadu_si256((__m256i const*)src))
     {
     }
 
     template <class T, std::size_t N>
     inline avx_int_batch<T, N>::avx_int_batch(const __m256i& rhs)
-        : m_value(rhs)
+        : base_type(rhs)
     {
     }
 
     template <class T, std::size_t N>
     inline avx_int_batch<T, N>& avx_int_batch<T, N>::operator=(const __m256i& rhs)
     {
-        m_value = rhs;
+        this->m_value = rhs;
         return *this;
     }
 
     template <class T, std::size_t N>
     inline avx_int_batch<T, N>::operator __m256i() const
     {
-        return m_value;
+        return this->m_value;
     }
 
     template <class T, std::size_t N>
     inline batch<T, N>& avx_int_batch<T, N>::load_aligned(const T* src)
     {
-        m_value = _mm256_load_si256((__m256i const*) src);
+        this->m_value = _mm256_load_si256((__m256i const*) src);
         return (*this)();
     }
 
     template <class T, std::size_t N>
     inline batch<T, N>& avx_int_batch<T, N>::load_unaligned(const T* src)
     {
-        m_value = _mm256_loadu_si256((__m256i const*) src);
+        this->m_value = _mm256_loadu_si256((__m256i const*) src);
         return (*this)();
     }
 
     template <class T, std::size_t N>
     inline batch<T, N>& avx_int_batch<T, N>::load_aligned(const flipped_sign_type_t<T>* src)
     {
-        m_value = _mm256_load_si256((__m256i const*) src);
+        this->m_value = _mm256_load_si256((__m256i const*) src);
         return (*this)();
     }
 
     template <class T, std::size_t N>
     inline batch<T, N>& avx_int_batch<T, N>::load_unaligned(const flipped_sign_type_t<T>* src)
     {
-        m_value = _mm256_loadu_si256((__m256i const*) src);
+        this->m_value = _mm256_loadu_si256((__m256i const*) src);
         return (*this)();
     }
 
     template <class T, std::size_t N>
     inline void avx_int_batch<T, N>::store_aligned(T* dst) const
     {
-        _mm256_store_si256((__m256i*) dst, m_value);
+        _mm256_store_si256((__m256i*) dst, this->m_value);
     }
 
     template <class T, std::size_t N>
     inline void avx_int_batch<T, N>::store_unaligned(T* dst) const
     {
-        _mm256_storeu_si256((__m256i*) dst, m_value);
+        _mm256_storeu_si256((__m256i*) dst, this->m_value);
     }
 
     template <class T, std::size_t N>
     inline void avx_int_batch<T, N>::store_aligned(flipped_sign_type_t<T>* dst) const
     {
-        _mm256_store_si256((__m256i*) dst, m_value);
+        _mm256_store_si256((__m256i*) dst, this->m_value);
     }
 
     template <class T, std::size_t N>
     inline void avx_int_batch<T, N>::store_unaligned(flipped_sign_type_t<T>* dst) const
     {
-        _mm256_storeu_si256((__m256i*) dst, m_value);
-    }
-
-    template <class T, std::size_t N>
-    inline T& avx_int_batch<T, N>::operator[](std::size_t index)
-    {
-        return m_array[index & (N - 1)];
-    }
-
-    template <class T, std::size_t N>
-    inline const T& avx_int_batch<T, N>::operator[](std::size_t index) const
-    {
-        return m_array[index & (N - 1)];
+        _mm256_storeu_si256((__m256i*) dst, this->m_value);
     }
 
     namespace detail

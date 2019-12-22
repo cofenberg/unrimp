@@ -1,5 +1,7 @@
 /***************************************************************************
-* Copyright (c) 2016, Johan Mabille and Sylvain Corlay                     *
+* Copyright (c) Johan Mabille, Sylvain Corlay, Wolf Vollprecht and         *
+* Martin Renou                                                             *
+* Copyright (c) QuantStack                                                 *
 *                                                                          *
 * Distributed under the terms of the BSD 3-Clause License.                 *
 *                                                                          *
@@ -65,6 +67,22 @@
 #include "xsimd_neon_int64.hpp"
 #include "xsimd_neon_uint64.hpp"
 #include "xsimd_neon_complex.hpp"
+#endif
+
+#if !defined(XSIMD_INSTR_SET_AVAILABLE)
+    #if defined(XSIMD_ENABLE_FALLBACK)
+        #ifdef _MSC_VER
+	    #pragma message("Warning: No SIMD instructions set detected, using fallback mode.")
+        #else
+	    #warning "No SIMD instructions set detected, using fallback mode."
+        #endif
+    #else
+        #ifdef _MSC_VER
+	    #pragma message("Warning: No SIMD instructions set detected, please enable SIMD instructions or activate the fallback mode. (e.g. for x86 -march=native or for ARM -mfpu=neon)")
+        #else
+	    #warning "No SIMD instructions set detected, please enable SIMD instructions or activate the fallback mode. (e.g. for x86 -march=native or for ARM -mfpu=neon)"
+	#endif
+    #endif
 #endif
 
 #include "xsimd_utils.hpp"

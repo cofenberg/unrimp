@@ -1,5 +1,7 @@
 /***************************************************************************
-* Copyright (c) 2016, Johan Mabille and Sylvain Corlay                     *
+* Copyright (c) Johan Mabille, Sylvain Corlay, Wolf Vollprecht and         *
+* Martin Renou                                                             *
+* Copyright (c) QuantStack                                                 *
 *                                                                          *
 * Distributed under the terms of the BSD 3-Clause License.                 *
 *                                                                          *
@@ -77,6 +79,7 @@ namespace xsimd
         static constexpr std::size_t size = 2;
         using batch_bool_type = batch_bool<int64_t, 2>;
         static constexpr std::size_t align = 16;
+        using storage_type = __m128i;
     };
 
     template <>
@@ -86,6 +89,7 @@ namespace xsimd
         static constexpr std::size_t size = 2;
         using batch_bool_type = batch_bool<uint64_t, 2>;
         static constexpr std::size_t align = 16;
+        using storage_type = __m128i;
     };
 
     template <>
