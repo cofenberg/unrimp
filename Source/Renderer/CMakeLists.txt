@@ -84,7 +84,7 @@ endif()
 set(SOURCE_CODES
 	${EXTERNAL_SOURCE_CODES}
 	RendererUnityBuild.cpp
-	Public/Resource/Scene/Culling/SceneCullingManager.cpp	# Not compatible with "Advanced Vector Extensions 2" (/arch:AVX2)
+	Public/Resource/Scene/Culling/SceneCullingManager.cpp
 )
 
 # Disable warnings in external libraries, we can't fix them

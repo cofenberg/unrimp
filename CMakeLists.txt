@@ -216,8 +216,8 @@ if(WIN32)
 		"C5045" # Compiler will insert Spectre mitigation for memory load if /Qspectre switch specified - https://blogs.msdn.microsoft.com/vcblog/2018/04/20/spectre-diagnostic-in-visual-studio-2017-version-15-7-preview-4/
 		)
 	string(REPLACE "C" " -wd" MSVC_DISABLED_WARNINGS_STR ${MSVC_DISABLED_WARNINGS_LIST})
-	set(CMAKE_C_FLAGS   "${CMAKE_C_FLAGS} -Wall -WX /MP ${MSVC_DISABLED_WARNINGS_STR}")
-	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -WX /MP ${MSVC_DISABLED_WARNINGS_STR}")
+	set(CMAKE_C_FLAGS   "${CMAKE_C_FLAGS} -Wall -WX /MP /arch:AVX2 ${MSVC_DISABLED_WARNINGS_STR}")
+	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -WX /MP /arch:AVX2 ${MSVC_DISABLED_WARNINGS_STR}")
 	if(${CMAKE_BUILD_TYPE} MATCHES "Debug")
 		# Used debug build options:
 		# - "Debug Information Format" = "Program Database for Edit And Continue (/ZI)" ( "/Z7, /Zi, /ZI (Debug Information Format)"-documentation at https://msdn.microsoft.com/en-us/library/958x11bc.aspx )
