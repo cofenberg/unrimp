@@ -32,7 +32,9 @@
 #include "Renderer/Public/Resource/VertexAttributes/VertexAttributesResourceManager.h"
 #include "Renderer/Public/Resource/VertexAttributes/VertexAttributesResource.h"
 #include "Renderer/Public/Core/Platform/PlatformManager.h"
+#include "Renderer/Public/Asset/AssetManager.h"
 #include "Renderer/Public/IRenderer.h"
+#include "Renderer/Public/Context.h"
 #include "Renderer/Public/Core/Math/Math.h"
 
 
@@ -196,7 +198,7 @@ namespace Renderer
 		const ShaderPieceResourceManager& shaderPieceResourceManager = mRenderer.getShaderPieceResourceManager();
 		ShaderBuilder shaderBuilder(mRenderer.getRhi().getContext());
 
-		RENDERER_SET_CURRENT_THREAD_DEBUG_NAME("PSC: Stage 1", "Renderer: Pipeline state compiler stage: 1. Asynchronous shader building");
+		RENDERER_SET_CURRENT_THREAD_DEBUG_NAME("PSC: Stage 1", "Renderer: Pipeline state compiler stage: 1. Asynchronous shader building")
 		while (!mShutdownBuilderThread)
 		{
 			// Continue as long as there's a compiler request left inside the queue, if it's empty go to sleep
@@ -296,7 +298,7 @@ namespace Renderer
 	{
 		Rhi::IShaderLanguage& shaderLanguage = mRenderer.getRhi().getDefaultShaderLanguage();
 		const MaterialBlueprintResourceManager& materialBlueprintResourceManager = mRenderer.getMaterialBlueprintResourceManager();
-		RENDERER_SET_CURRENT_THREAD_DEBUG_NAME("PSC: Stage 2", "Renderer: Pipeline state compiler stage: 2. Asynchronous shader compilation");
+		RENDERER_SET_CURRENT_THREAD_DEBUG_NAME("PSC: Stage 2", "Renderer: Pipeline state compiler stage: 2. Asynchronous shader compilation")
 		while (!mShutdownCompilerThread)
 		{
 			// Continue as long as there's a compiler request left inside the queue, if it's empty go to sleep

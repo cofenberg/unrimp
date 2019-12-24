@@ -99,10 +99,9 @@ ExampleRunner::ExampleRunner() :
 	)
 {
 	// Sets of supported RHI implementations
-	const std::array<std::string_view, 8> supportsAllRhi		  = {{"Null", "Vulkan", "OpenGL", "OpenGLES3", "Direct3D9", "Direct3D10", "Direct3D11", "Direct3D12"}};
-	const std::array<std::string_view, 7> doesNotSupportOpenGLES3 = {{"Null", "Vulkan", "OpenGL", "Direct3D9", "Direct3D10", "Direct3D11", "Direct3D12"}};
-	const std::array<std::string_view, 6> onlyShaderModel4Plus	  = {{"Null", "Vulkan", "OpenGL", "Direct3D10", "Direct3D11", "Direct3D12"}};
-	const std::array<std::string_view, 5> onlyShaderModel5Plus    = {{"Null", "Vulkan", "OpenGL", "Direct3D11", "Direct3D12"}};
+	const std::array<std::string_view, 8> supportsAllRhi	   = {{"Null", "Vulkan", "OpenGL", "OpenGLES3", "Direct3D9", "Direct3D10", "Direct3D11", "Direct3D12"}};
+	const std::array<std::string_view, 6> onlyShaderModel4Plus = {{"Null", "Vulkan", "OpenGL", "Direct3D10", "Direct3D11", "Direct3D12"}};
+	const std::array<std::string_view, 5> onlyShaderModel5Plus = {{"Null", "Vulkan", "OpenGL", "Direct3D11", "Direct3D12"}};
 
 	// Basics
 	addExample("FirstTriangle",					&runRhiExample<FirstTriangle>,				supportsAllRhi);

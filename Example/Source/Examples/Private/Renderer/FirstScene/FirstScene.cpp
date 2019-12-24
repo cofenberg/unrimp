@@ -54,6 +54,7 @@
 #include <Renderer/Public/Resource/Scene/Item/Light/SunlightSceneItem.h>
 #include <Renderer/Public/Resource/Scene/Item/Mesh/SkeletonMeshSceneItem.h>
 #include <Renderer/Public/Resource/Mesh/MeshResourceManager.h>
+#include <Renderer/Public/Resource/CompositorNode/CompositorNodeInstance.h>
 #include <Renderer/Public/Resource/CompositorNode/Pass/DebugGui/CompositorResourcePassDebugGui.h>
 #include <Renderer/Public/Resource/CompositorNode/Pass/ShadowMap/CompositorInstancePassShadowMap.h>
 #include <Renderer/Public/Resource/CompositorWorkspace/CompositorWorkspaceInstance.h>
@@ -76,7 +77,7 @@
 #include <ini/ini.h>
 
 #ifdef RENDERER_IMGUI
-	#include <imgui/imgui.h>
+	#include <ImGui/imgui.h>
 #endif
 
 // Disable warnings in external headers, we can't fix them
@@ -670,7 +671,7 @@ void FirstScene::applyCurrentSettings(Rhi::IRenderTarget& mainRenderTarget)
 		Renderer::IRenderer& renderer = getRendererSafe();
 		{ // Default texture filtering
 			Renderer::MaterialBlueprintResourceManager& materialBlueprintResourceManager = renderer.getMaterialBlueprintResourceManager();
-			switch (mCurrentTextureFiltering)
+			switch (static_cast<TextureFiltering>(mCurrentTextureFiltering))
 			{
 				case TextureFiltering::POINT:
 					materialBlueprintResourceManager.setDefaultTextureFiltering(Rhi::FilterMode::MIN_MAG_MIP_POINT, 1);

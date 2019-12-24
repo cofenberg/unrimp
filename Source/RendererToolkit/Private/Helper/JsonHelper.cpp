@@ -229,8 +229,8 @@ namespace
 		void hsvToRgb(float h, float s, float v, float& r, float& g, float& b)
 		{
 			const float c = v * s;	// Chroma
-			const float hPrime = static_cast<float>(fmod(h / 60.0, 6));
-			const float x = static_cast<float>(c * (1 - fabs(fmod(hPrime, 2) - 1)));
+			const float hPrime = static_cast<float>(fmod(static_cast<double>(h) / 60.0, 6));
+			const float x = static_cast<float>(static_cast<double>(c) * (1 - fabs(fmod(hPrime, 2) - 1)));
 			const float m = v - c;
 
 			if (0 <= hPrime && hPrime < 1)

@@ -50,9 +50,12 @@ namespace Renderer
 {
 	class Renderable;
 	class IRenderer;
+	class MaterialResource;
+	class MaterialTechnique;
 	class RenderableManager;
 	class CompositorContextData;
 	class IndirectBufferManager;
+	class MaterialBlueprintResource;
 }
 
 
@@ -108,7 +111,7 @@ namespace Renderer
 		*  @param[in] doSort
 		*    Sort renderables?
 		*/
-		RenderQueue(IndirectBufferManager& indirectBufferManager, uint8_t minimumRenderQueueIndex, uint8_t maximumRenderQueueIndex, bool positionOnly, bool transparentPass, bool doSort);
+		RenderQueue(IndirectBufferManager& indirectBufferManager, uint8_t minimumRenderQueueIndex, uint8_t maximumRenderQueueIndex, bool positionOnlyPass, bool transparentPass, bool doSort);
 
 		inline ~RenderQueue()
 		{

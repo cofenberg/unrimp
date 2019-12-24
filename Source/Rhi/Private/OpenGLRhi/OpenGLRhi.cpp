@@ -106,7 +106,7 @@
 	#define NODEFERWINDOWPOS
 	#define NOMCX
 	#define NOCRYPT
-	#include <windows.h>
+	#include <Windows.h>
 
 	// Get rid of some nasty OS macros
 	#undef max
@@ -2216,53 +2216,53 @@ namespace OpenGLRhi
 			bool result = true;	// Success by default
 
 			// Load the entry points
-			IMPORT_FUNC(glGetString);
-			IMPORT_FUNC(glGetIntegerv);
-			IMPORT_FUNC(glBindTexture);
-			IMPORT_FUNC(glClear);
-			IMPORT_FUNC(glClearStencil);
-			IMPORT_FUNC(glClearDepth);
-			IMPORT_FUNC(glClearColor);
-			IMPORT_FUNC(glDrawArrays);
-			IMPORT_FUNC(glDrawElements);
-			IMPORT_FUNC(glColor4f);
-			IMPORT_FUNC(glEnable);
-			IMPORT_FUNC(glDisable);
-			IMPORT_FUNC(glBlendFunc);
-			IMPORT_FUNC(glFrontFace);
-			IMPORT_FUNC(glCullFace);
-			IMPORT_FUNC(glPolygonMode);
-			IMPORT_FUNC(glTexParameteri);
-			IMPORT_FUNC(glGenTextures);
-			IMPORT_FUNC(glDeleteTextures);
-			IMPORT_FUNC(glTexImage1D);
-			IMPORT_FUNC(glTexImage2D);
-			IMPORT_FUNC(glPixelStorei);
-			IMPORT_FUNC(glDepthFunc);
-			IMPORT_FUNC(glDepthMask);
-			IMPORT_FUNC(glViewport);
-			IMPORT_FUNC(glDepthRange);
-			IMPORT_FUNC(glScissor);
-			IMPORT_FUNC(glFlush);
-			IMPORT_FUNC(glFinish);
+			IMPORT_FUNC(glGetString)
+			IMPORT_FUNC(glGetIntegerv)
+			IMPORT_FUNC(glBindTexture)
+			IMPORT_FUNC(glClear)
+			IMPORT_FUNC(glClearStencil)
+			IMPORT_FUNC(glClearDepth)
+			IMPORT_FUNC(glClearColor)
+			IMPORT_FUNC(glDrawArrays)
+			IMPORT_FUNC(glDrawElements)
+			IMPORT_FUNC(glColor4f)
+			IMPORT_FUNC(glEnable)
+			IMPORT_FUNC(glDisable)
+			IMPORT_FUNC(glBlendFunc)
+			IMPORT_FUNC(glFrontFace)
+			IMPORT_FUNC(glCullFace)
+			IMPORT_FUNC(glPolygonMode)
+			IMPORT_FUNC(glTexParameteri)
+			IMPORT_FUNC(glGenTextures)
+			IMPORT_FUNC(glDeleteTextures)
+			IMPORT_FUNC(glTexImage1D)
+			IMPORT_FUNC(glTexImage2D)
+			IMPORT_FUNC(glPixelStorei)
+			IMPORT_FUNC(glDepthFunc)
+			IMPORT_FUNC(glDepthMask)
+			IMPORT_FUNC(glViewport)
+			IMPORT_FUNC(glDepthRange)
+			IMPORT_FUNC(glScissor)
+			IMPORT_FUNC(glFlush)
+			IMPORT_FUNC(glFinish)
 			#ifdef _WIN32
-				IMPORT_FUNC(wglGetCurrentDC);
-				IMPORT_FUNC(wglGetProcAddress);
-				IMPORT_FUNC(wglCreateContext);
-				IMPORT_FUNC(wglDeleteContext);
-				IMPORT_FUNC(wglMakeCurrent);
+				IMPORT_FUNC(wglGetCurrentDC)
+				IMPORT_FUNC(wglGetProcAddress)
+				IMPORT_FUNC(wglCreateContext)
+				IMPORT_FUNC(wglDeleteContext)
+				IMPORT_FUNC(wglMakeCurrent)
 			#elif LINUX
-				IMPORT_FUNC(glXMakeCurrent);
-				IMPORT_FUNC(glXGetProcAddress);
-				IMPORT_FUNC(glXGetProcAddressARB);
-				IMPORT_FUNC(glXChooseVisual);
-				IMPORT_FUNC(glXCreateContext);
-				IMPORT_FUNC(glXDestroyContext);
-				IMPORT_FUNC(glXGetCurrentContext);
-				IMPORT_FUNC(glXQueryExtensionsString);
-				IMPORT_FUNC(glXChooseFBConfig);
-				IMPORT_FUNC(glXSwapBuffers);
-				IMPORT_FUNC(glXGetClientString);
+				IMPORT_FUNC(glXMakeCurrent)
+				IMPORT_FUNC(glXGetProcAddress)
+				IMPORT_FUNC(glXGetProcAddressARB)
+				IMPORT_FUNC(glXChooseVisual)
+				IMPORT_FUNC(glXCreateContext)
+				IMPORT_FUNC(glXDestroyContext)
+				IMPORT_FUNC(glXGetCurrentContext)
+				IMPORT_FUNC(glXQueryExtensionsString)
+				IMPORT_FUNC(glXChooseFBConfig)
+				IMPORT_FUNC(glXSwapBuffers)
+				IMPORT_FUNC(glXGetClientString)
 			#else
 				#error "Unsupported platform"
 			#endif
@@ -2286,11 +2286,11 @@ namespace OpenGLRhi
 			bool result = true;	// Success by default
 
 			// Optional >= OpenGL 4.5: Load the entry points
-			IMPORT_FUNC(glCreateQueries);
+			IMPORT_FUNC(glCreateQueries)
 
 			// Mandatory >= OpenGL 3.0: Load the entry points
 			result = true;	// Success by default
-			IMPORT_FUNC(glGetStringi);
+			IMPORT_FUNC(glGetStringi)
 
 			// Done
 			return result;
@@ -3048,8 +3048,8 @@ namespace OpenGLRhi
 				IMPORT_FUNC(glNamedFramebufferTexture2DEXT)
 				IMPORT_FUNC(glNamedFramebufferTextureLayerEXT)
 				IMPORT_FUNC(glCheckNamedFramebufferStatusEXT)
-				IMPORT_FUNC(glNamedRenderbufferStorageEXT);
-				IMPORT_FUNC(glNamedFramebufferRenderbufferEXT);
+				IMPORT_FUNC(glNamedRenderbufferStorageEXT)
+				IMPORT_FUNC(glNamedFramebufferRenderbufferEXT)
 				mGL_EXT_direct_state_access = result;
 			}
 
@@ -5618,7 +5618,7 @@ namespace OpenGLRhi
 			#ifdef RHI_DEBUG
 				if (openGLRhi.getExtensions().isGL_KHR_debug())
 				{
-					RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "VBO", 6);	// 6 = "VBO: " including terminating zero
+					RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "VBO", 6)	// 6 = "VBO: " including terminating zero
 					glObjectLabel(GL_BUFFER, mOpenGLArrayBuffer, -1, detailedDebugName);
 				}
 			#endif
@@ -5699,7 +5699,7 @@ namespace OpenGLRhi
 			#ifdef RHI_DEBUG
 				if (openGLRhi.getExtensions().isGL_KHR_debug())
 				{
-					RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "VBO", 6);	// 6 = "VBO: " including terminating zero
+					RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "VBO", 6)	// 6 = "VBO: " including terminating zero
 					glObjectLabel(GL_BUFFER, mOpenGLArrayBuffer, -1, detailedDebugName);
 				}
 			#endif
@@ -5898,7 +5898,7 @@ namespace OpenGLRhi
 			#ifdef RHI_DEBUG
 				if (openGLRhi.getExtensions().isGL_KHR_debug())
 				{
-					RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "IBO", 6);	// 6 = "IBO: " including terminating zero
+					RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "IBO", 6)	// 6 = "IBO: " including terminating zero
 					glObjectLabel(GL_BUFFER, mOpenGLElementArrayBuffer, -1, detailedDebugName);
 				}
 			#endif
@@ -5981,7 +5981,7 @@ namespace OpenGLRhi
 			#ifdef RHI_DEBUG
 				if (openGLRhi.getExtensions().isGL_KHR_debug())
 				{
-					RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "IBO", 6);	// 6 = "IBO: " including terminating zero
+					RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "IBO", 6)	// 6 = "IBO: " including terminating zero
 					glObjectLabel(GL_BUFFER, mOpenGLElementArrayBuffer, -1, detailedDebugName);
 				}
 			#endif
@@ -6579,7 +6579,7 @@ namespace OpenGLRhi
 			#ifdef RHI_DEBUG
 				if (openGLRhi.getExtensions().isGL_KHR_debug())
 				{
-					RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "VAO", 6);	// 6 = "VAO: " including terminating zero
+					RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "VAO", 6)	// 6 = "VAO: " including terminating zero
 					glObjectLabel(GL_VERTEX_ARRAY, mOpenGLVertexArray, -1, detailedDebugName);
 				}
 			#endif
@@ -6782,7 +6782,7 @@ namespace OpenGLRhi
 			#ifdef RHI_DEBUG
 				if (openGLRhi.getExtensions().isGL_KHR_debug())
 				{
-					RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "VAO", 6);	// 6 = "VAO: " including terminating zero
+					RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "VAO", 6)	// 6 = "VAO: " including terminating zero
 					glObjectLabel(GL_VERTEX_ARRAY, mOpenGLVertexArray, -1, detailedDebugName);
 				}
 			#endif
@@ -7012,7 +7012,7 @@ namespace OpenGLRhi
 			#ifdef RHI_DEBUG
 				if (openGLRhi.getExtensions().isGL_KHR_debug())
 				{
-					RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "TBO", 6);	// 6 = "TBO: " including terminating zero
+					RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "TBO", 6)	// 6 = "TBO: " including terminating zero
 					glObjectLabel(GL_TEXTURE, mOpenGLTexture, -1, detailedDebugName);
 					glObjectLabel(GL_BUFFER, mOpenGLTextureBuffer, -1, detailedDebugName);
 				}
@@ -7130,7 +7130,7 @@ namespace OpenGLRhi
 			#ifdef RHI_DEBUG
 				if (openGLRhi.getExtensions().isGL_KHR_debug())
 				{
-					RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "TBO", 6);	// 6 = "TBO: " including terminating zero
+					RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "TBO", 6)	// 6 = "TBO: " including terminating zero
 					glObjectLabel(GL_TEXTURE, mOpenGLTexture, -1, detailedDebugName);
 					glObjectLabel(GL_BUFFER, mOpenGLTextureBuffer, -1, detailedDebugName);
 				}
@@ -7298,7 +7298,7 @@ namespace OpenGLRhi
 			#ifdef RHI_DEBUG
 				if (openGLRhi.getExtensions().isGL_KHR_debug())
 				{
-					RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "SBO", 6);	// 6 = "SBO: " including terminating zero
+					RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "SBO", 6)	// 6 = "SBO: " including terminating zero
 					glObjectLabel(GL_BUFFER, mOpenGLStructuredBuffer, -1, detailedDebugName);
 				}
 			#endif
@@ -7380,7 +7380,7 @@ namespace OpenGLRhi
 			#ifdef RHI_DEBUG
 				if (openGLRhi.getExtensions().isGL_KHR_debug())
 				{
-					RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "SBO", 6);	// 6 = "SBO: " including terminating zero
+					RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "SBO", 6)	// 6 = "SBO: " including terminating zero
 					glObjectLabel(GL_BUFFER, mOpenGLStructuredBuffer, -1, detailedDebugName);
 				}
 			#endif
@@ -7557,7 +7557,7 @@ namespace OpenGLRhi
 			#ifdef RHI_DEBUG
 				if (openGLRhi.getExtensions().isGL_KHR_debug())
 				{
-					RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "IndirectBufferObject", 23);	// 23 = "IndirectBufferObject: " including terminating zero
+					RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "IndirectBufferObject", 23)	// 23 = "IndirectBufferObject: " including terminating zero
 					glObjectLabel(GL_BUFFER, mOpenGLIndirectBuffer, -1, detailedDebugName);
 				}
 			#endif
@@ -7638,7 +7638,7 @@ namespace OpenGLRhi
 			#ifdef RHI_DEBUG
 				if (openGLRhi.getExtensions().isGL_KHR_debug())
 				{
-					RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "IndirectBufferObject", 23);	// 23 = "IndirectBufferObject: " including terminating zero
+					RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "IndirectBufferObject", 23)	// 23 = "IndirectBufferObject: " including terminating zero
 					glObjectLabel(GL_BUFFER, mOpenGLIndirectBuffer, -1, detailedDebugName);
 				}
 			#endif
@@ -7807,7 +7807,7 @@ namespace OpenGLRhi
 			#ifdef RHI_DEBUG
 				if (openGLRhi.getExtensions().isGL_KHR_debug())
 				{
-					RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "UBO", 6);	// 6 = "UBO: " including terminating zero
+					RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "UBO", 6)	// 6 = "UBO: " including terminating zero
 					glObjectLabel(GL_BUFFER, mOpenGLUniformBuffer, -1, detailedDebugName);
 				}
 			#endif
@@ -7890,7 +7890,7 @@ namespace OpenGLRhi
 			#ifdef RHI_DEBUG
 				if (openGLRhi.getExtensions().isGL_KHR_debug())
 				{
-					RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "UBO", 6);	// 6 = "UBO: " including terminating zero
+					RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "UBO", 6)	// 6 = "UBO: " including terminating zero
 					glObjectLabel(GL_BUFFER, mOpenGLUniformBuffer, -1, detailedDebugName);
 				}
 			#endif
@@ -8470,7 +8470,7 @@ namespace OpenGLRhi
 			#ifdef RHI_DEBUG
 				if (openGLRhi.getExtensions().isGL_KHR_debug())
 				{
-					RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "1D texture", 13);	// 13 = "1D texture: " including terminating zero
+					RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "1D texture", 13)	// 13 = "1D texture: " including terminating zero
 					glObjectLabel(GL_TEXTURE, mOpenGLTexture, -1, detailedDebugName);
 				}
 			#endif
@@ -8695,7 +8695,7 @@ namespace OpenGLRhi
 			#ifdef RHI_DEBUG
 				if (openGLRhi.getExtensions().isGL_KHR_debug())
 				{
-					RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "1D texture", 13);	// 13 = "1D texture: " including terminating zero
+					RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "1D texture", 13)	// 13 = "1D texture: " including terminating zero
 					glObjectLabel(GL_TEXTURE, mOpenGLTexture, -1, detailedDebugName);
 				}
 			#endif
@@ -8915,7 +8915,7 @@ namespace OpenGLRhi
 			#ifdef RHI_DEBUG
 				if (openGLRhi.getExtensions().isGL_KHR_debug())
 				{
-					RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "1D texture array", 19);	// 19 = "1D texture array: " including terminating zero
+					RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "1D texture array", 19)	// 19 = "1D texture array: " including terminating zero
 					glObjectLabel(GL_TEXTURE, mOpenGLTexture, -1, detailedDebugName);
 				}
 			#endif
@@ -9154,7 +9154,7 @@ namespace OpenGLRhi
 			#ifdef RHI_DEBUG
 				if (openGLRhi.getExtensions().isGL_KHR_debug())
 				{
-					RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "1D texture array", 19);	// 19 = "1D texture array: " including terminating zero
+					RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "1D texture array", 19)	// 19 = "1D texture array: " including terminating zero
 					glObjectLabel(GL_TEXTURE, mOpenGLTexture, -1, detailedDebugName);
 				}
 			#endif
@@ -9500,7 +9500,7 @@ namespace OpenGLRhi
 			#ifdef RHI_DEBUG
 				if (openGLRhi.getExtensions().isGL_KHR_debug())
 				{
-					RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "2D texture", 13);	// 13 = "2D texture: " including terminating zero
+					RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "2D texture", 13)	// 13 = "2D texture: " including terminating zero
 					glObjectLabel(GL_TEXTURE, mOpenGLTexture, -1, detailedDebugName);
 				}
 			#endif
@@ -9802,7 +9802,7 @@ namespace OpenGLRhi
 			#ifdef RHI_DEBUG
 				if (openGLRhi.getExtensions().isGL_KHR_debug())
 				{
-					RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "2D texture", 13);	// 13 = "2D texture: " including terminating zero
+					RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "2D texture", 13)	// 13 = "2D texture: " including terminating zero
 					glObjectLabel(GL_TEXTURE, mOpenGLTexture, -1, detailedDebugName);
 				}
 			#endif
@@ -10060,7 +10060,7 @@ namespace OpenGLRhi
 			#ifdef RHI_DEBUG
 				if (openGLRhi.getExtensions().isGL_KHR_debug())
 				{
-					RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "2D texture array", 19);	// 19 = "2D texture array: " including terminating zero
+					RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "2D texture array", 19)	// 19 = "2D texture array: " including terminating zero
 					glObjectLabel(GL_TEXTURE, mOpenGLTexture, -1, detailedDebugName);
 				}
 			#endif
@@ -10303,7 +10303,7 @@ namespace OpenGLRhi
 			#ifdef RHI_DEBUG
 				if (openGLRhi.getExtensions().isGL_KHR_debug())
 				{
-					RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "2D texture array", 19);	// 19 = "2D texture array: " including terminating zero
+					RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "2D texture array", 19)	// 19 = "2D texture array: " including terminating zero
 					glObjectLabel(GL_TEXTURE, mOpenGLTexture, -1, detailedDebugName);
 				}
 			#endif
@@ -10661,7 +10661,7 @@ namespace OpenGLRhi
 			#ifdef RHI_DEBUG
 				if (openGLRhi.getExtensions().isGL_KHR_debug())
 				{
-					RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "3D texture", 13);	// 13 = "3D texture: " including terminating zero
+					RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "3D texture", 13)	// 13 = "3D texture: " including terminating zero
 					glObjectLabel(GL_TEXTURE, mOpenGLTexture, -1, detailedDebugName);
 				}
 			#endif
@@ -10917,7 +10917,7 @@ namespace OpenGLRhi
 			#ifdef RHI_DEBUG
 				if (openGLRhi.getExtensions().isGL_KHR_debug())
 				{
-					RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "3D texture", 13);	// 13 = "3D texture: " including terminating zero
+					RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "3D texture", 13)	// 13 = "3D texture: " including terminating zero
 					glObjectLabel(GL_TEXTURE, mOpenGLTexture, -1, detailedDebugName);
 				}
 			#endif
@@ -11233,7 +11233,7 @@ namespace OpenGLRhi
 			#ifdef RHI_DEBUG
 				if (openGLRhi.getExtensions().isGL_KHR_debug())
 				{
-					RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "Cube texture", 15);	// 15 = "Cube texture: " including terminating zero
+					RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "Cube texture", 15)	// 15 = "Cube texture: " including terminating zero
 					glObjectLabel(GL_TEXTURE, mOpenGLTexture, -1, detailedDebugName);
 				}
 			#endif
@@ -11507,7 +11507,7 @@ namespace OpenGLRhi
 			#ifdef RHI_DEBUG
 				if (openGLRhi.getExtensions().isGL_KHR_debug())
 				{
-					RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "Cube texture", 15);	// 15 = "Cube texture: " including terminating zero
+					RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "Cube texture", 15)	// 15 = "Cube texture: " including terminating zero
 					glObjectLabel(GL_TEXTURE, mOpenGLTexture, -1, detailedDebugName);
 				}
 			#endif
@@ -12087,7 +12087,7 @@ namespace OpenGLRhi
 			#ifdef RHI_DEBUG
 				if (openGLRhi.getExtensions().isGL_KHR_debug())
 				{
-					RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "Sampler state", 16);	// 16 = "Sampler state: " including terminating zero
+					RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "Sampler state", 16)	// 16 = "Sampler state: " including terminating zero
 					glObjectLabel(GL_SAMPLER, mOpenGLSampler, -1, detailedDebugName);
 				}
 			#endif
@@ -12783,7 +12783,7 @@ namespace OpenGLRhi
 					{
 						case Rhi::QueryType::OCCLUSION:
 						{
-							RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "Occlusion query", 18);	// 18 = "Occlusion query: " including terminating zero
+							RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "Occlusion query", 18)	// 18 = "Occlusion query: " including terminating zero
 							for (uint32_t i = 0; i < mNumberOfQueries; ++i)
 							{
 								glObjectLabel(GL_QUERY, mOpenGLQueries[i], -1, detailedDebugName);
@@ -12797,7 +12797,7 @@ namespace OpenGLRhi
 
 						case Rhi::QueryType::TIMESTAMP:
 						{
-							RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "Timestamp query", 18);	// 18 = "Timestamp query: " including terminating zero
+							RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "Timestamp query", 18)	// 18 = "Timestamp query: " including terminating zero
 							for (uint32_t i = 0; i < mNumberOfQueries; ++i)
 							{
 								glObjectLabel(GL_QUERY, mOpenGLQueries[i], -1, detailedDebugName);
@@ -12928,7 +12928,7 @@ namespace OpenGLRhi
 							}
 
 							// Set debug name
-							RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "Pipeline statistics query", 28);	// 28 = "Pipeline statistics query: " including terminating zero
+							RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "Pipeline statistics query", 28)	// 28 = "Pipeline statistics query: " including terminating zero
 							for (uint32_t i = 0; i < mNumberOfQueries * 11; ++i)
 							{
 								glObjectLabel(GL_QUERY, mVerticesSubmittedOpenGLQueries[i], -1, detailedDebugName);
@@ -13939,7 +13939,7 @@ namespace OpenGLRhi
 			#ifdef RHI_DEBUG
 				if (openGLRhi.getExtensions().isGL_KHR_debug())
 				{
-					RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "FBO", 6);	// 6 = "FBO: " including terminating zero
+					RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "FBO", 6)	// 6 = "FBO: " including terminating zero
 					glObjectLabel(GL_FRAMEBUFFER, mOpenGLFramebuffer, -1, detailedDebugName);
 				}
 			#endif
@@ -14251,7 +14251,7 @@ namespace OpenGLRhi
 			#ifdef RHI_DEBUG
 				if (openGLRhi.getExtensions().isGL_KHR_debug())
 				{
-					RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "FBO", 6);	// 6 = "FBO: " including terminating zero
+					RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "FBO", 6)	// 6 = "FBO: " including terminating zero
 					glObjectLabel(GL_FRAMEBUFFER, mOpenGLFramebuffer, -1, detailedDebugName);
 				}
 			#endif
@@ -14312,7 +14312,7 @@ namespace OpenGLRhi
 			#ifdef RHI_DEBUG
 				if (0 != mOpenGLShader && openGLRhi.getExtensions().isGL_KHR_debug())
 				{
-					RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "VS", 5);	// 5 = "VS: " including terminating zero
+					RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "VS", 5)	// 5 = "VS: " including terminating zero
 					glObjectLabel(GL_SHADER, mOpenGLShader, -1, detailedDebugName);
 				}
 			#endif
@@ -14414,7 +14414,7 @@ namespace OpenGLRhi
 			#ifdef RHI_DEBUG
 				if (0 != mOpenGLShader && openGLRhi.getExtensions().isGL_KHR_debug())
 				{
-					RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "TCS", 6);	// 6 = "TCS: " including terminating zero
+					RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "TCS", 6)	// 6 = "TCS: " including terminating zero
 					glObjectLabel(GL_SHADER, mOpenGLShader, -1, detailedDebugName);
 				}
 			#endif
@@ -14516,7 +14516,7 @@ namespace OpenGLRhi
 			#ifdef RHI_DEBUG
 				if (0 != mOpenGLShader && openGLRhi.getExtensions().isGL_KHR_debug())
 				{
-					RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "TES", 6);	// 6 = "TES: " including terminating zero
+					RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "TES", 6)	// 6 = "TES: " including terminating zero
 					glObjectLabel(GL_SHADER, mOpenGLShader, -1, detailedDebugName);
 				}
 			#endif
@@ -14627,7 +14627,7 @@ namespace OpenGLRhi
 			#ifdef RHI_DEBUG
 				if (0 != mOpenGLShader && openGLRhi.getExtensions().isGL_KHR_debug())
 				{
-					RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "GS", 5);	// 5 = "GS: " including terminating zero
+					RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "GS", 5)	// 5 = "GS: " including terminating zero
 					glObjectLabel(GL_SHADER, mOpenGLShader, -1, detailedDebugName);
 				}
 			#endif
@@ -14768,7 +14768,7 @@ namespace OpenGLRhi
 			#ifdef RHI_DEBUG
 				if (0 != mOpenGLShader && openGLRhi.getExtensions().isGL_KHR_debug())
 				{
-					RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "FS", 5);	// 5 = "FS: " including terminating zero
+					RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "FS", 5)	// 5 = "FS: " including terminating zero
 					glObjectLabel(GL_SHADER, mOpenGLShader, -1, detailedDebugName);
 				}
 			#endif
@@ -14870,7 +14870,7 @@ namespace OpenGLRhi
 			#ifdef RHI_DEBUG
 				if (0 != mOpenGLShader && openGLRhi.getExtensions().isGL_KHR_debug())
 				{
-					RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "CS", 5);	// 5 = "CS: " including terminating zero
+					RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "CS", 5)	// 5 = "CS: " including terminating zero
 					glObjectLabel(GL_SHADER, mOpenGLShader, -1, detailedDebugName);
 				}
 			#endif
@@ -15175,7 +15175,7 @@ namespace OpenGLRhi
 			#ifdef RHI_DEBUG
 				if (0 != mOpenGLProgram && openGLRhi.getExtensions().isGL_KHR_debug())
 				{
-					RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "Graphics program", 19);	// 19 = "Graphics program: " including terminating zero
+					RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "Graphics program", 19)	// 19 = "Graphics program: " including terminating zero
 					glObjectLabel(GL_PROGRAM, mOpenGLProgram, -1, detailedDebugName);
 				}
 			#endif
@@ -15805,7 +15805,7 @@ namespace OpenGLRhi
 			#ifdef RHI_DEBUG
 				if (openGLRhi.getExtensions().isGL_KHR_debug())
 				{
-					RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "Compute PSO", 14);	// 14 = "Compute PSO: " including terminating zero
+					RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "Compute PSO", 14)	// 14 = "Compute PSO: " including terminating zero
 					glObjectLabel(GL_PROGRAM, mOpenGLProgram, -1, detailedDebugName);
 				}
 			#endif
@@ -16137,7 +16137,7 @@ namespace OpenGLRhi
 			#ifdef RHI_DEBUG
 				if (0 != mOpenGLShaderProgram && openGLRhi.getExtensions().isGL_KHR_debug())
 				{
-					RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "VS", 5);	// 5 = "VS: " including terminating zero
+					RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "VS", 5)	// 5 = "VS: " including terminating zero
 					glObjectLabel(GL_PROGRAM, mOpenGLShaderProgram, -1, detailedDebugName);
 				}
 			#endif
@@ -16169,7 +16169,7 @@ namespace OpenGLRhi
 			#ifdef RHI_DEBUG
 				if (0 != mOpenGLShaderProgram && openGLRhi.getExtensions().isGL_KHR_debug())
 				{
-					RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "VS", 5);	// 5 = "VS: " including terminating zero
+					RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "VS", 5)	// 5 = "VS: " including terminating zero
 					glObjectLabel(GL_PROGRAM, mOpenGLShaderProgram, -1, detailedDebugName);
 				}
 			#endif
@@ -16284,7 +16284,7 @@ namespace OpenGLRhi
 			#ifdef RHI_DEBUG
 				if (0 != mOpenGLShaderProgram && openGLRhi.getExtensions().isGL_KHR_debug())
 				{
-					RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "TCS", 6);	// 6 = "TCS: " including terminating zero
+					RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "TCS", 6)	// 6 = "TCS: " including terminating zero
 					glObjectLabel(GL_PROGRAM, mOpenGLShaderProgram, -1, detailedDebugName);
 				}
 			#endif
@@ -16313,7 +16313,7 @@ namespace OpenGLRhi
 			#ifdef RHI_DEBUG
 				if (0 != mOpenGLShaderProgram && openGLRhi.getExtensions().isGL_KHR_debug())
 				{
-					RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "TCS", 6);	// 6 = "TCS: " including terminating zero
+					RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "TCS", 6)	// 6 = "TCS: " including terminating zero
 					glObjectLabel(GL_PROGRAM, mOpenGLShaderProgram, -1, detailedDebugName);
 				}
 			#endif
@@ -16415,7 +16415,7 @@ namespace OpenGLRhi
 			#ifdef RHI_DEBUG
 				if (0 != mOpenGLShaderProgram && openGLRhi.getExtensions().isGL_KHR_debug())
 				{
-					RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "TES", 6);	// 6 = "TES: " including terminating zero
+					RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "TES", 6)	// 6 = "TES: " including terminating zero
 					glObjectLabel(GL_PROGRAM, mOpenGLShaderProgram, -1, detailedDebugName);
 				}
 			#endif
@@ -16444,7 +16444,7 @@ namespace OpenGLRhi
 			#ifdef RHI_DEBUG
 				if (0 != mOpenGLShaderProgram && openGLRhi.getExtensions().isGL_KHR_debug())
 				{
-					RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "TES", 6);	// 6 = "TES: " including terminating zero
+					RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "TES", 6)	// 6 = "TES: " including terminating zero
 					glObjectLabel(GL_PROGRAM, mOpenGLShaderProgram, -1, detailedDebugName);
 				}
 			#endif
@@ -16552,7 +16552,7 @@ namespace OpenGLRhi
 			#ifdef RHI_DEBUG
 				if (0 != mOpenGLShaderProgram && openGLRhi.getExtensions().isGL_KHR_debug())
 				{
-					RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "GS", 5);	// 5 = "GS: " including terminating zero
+					RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "GS", 5)	// 5 = "GS: " including terminating zero
 					glObjectLabel(GL_PROGRAM, mOpenGLShaderProgram, -1, detailedDebugName);
 				}
 			#endif
@@ -16595,7 +16595,7 @@ namespace OpenGLRhi
 			#ifdef RHI_DEBUG
 				if (0 != mOpenGLShaderProgram && openGLRhi.getExtensions().isGL_KHR_debug())
 				{
-					RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "GS", 5);	// 5 = "GS: " including terminating zero
+					RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "GS", 5)	// 5 = "GS: " including terminating zero
 					glObjectLabel(GL_PROGRAM, mOpenGLShaderProgram, -1, detailedDebugName);
 				}
 			#endif
@@ -16697,7 +16697,7 @@ namespace OpenGLRhi
 			#ifdef RHI_DEBUG
 				if (0 != mOpenGLShaderProgram && openGLRhi.getExtensions().isGL_KHR_debug())
 				{
-					RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "FS", 5);	// 5 = "FS: " including terminating zero
+					RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "FS", 5)	// 5 = "FS: " including terminating zero
 					glObjectLabel(GL_PROGRAM, mOpenGLShaderProgram, -1, detailedDebugName);
 				}
 			#endif
@@ -16726,7 +16726,7 @@ namespace OpenGLRhi
 			#ifdef RHI_DEBUG
 				if (0 != mOpenGLShaderProgram && openGLRhi.getExtensions().isGL_KHR_debug())
 				{
-					RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "FS", 5);	// 5 = "FS: " including terminating zero
+					RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "FS", 5)	// 5 = "FS: " including terminating zero
 					glObjectLabel(GL_PROGRAM, mOpenGLShaderProgram, -1, detailedDebugName);
 				}
 			#endif
@@ -16828,7 +16828,7 @@ namespace OpenGLRhi
 			#ifdef RHI_DEBUG
 				if (0 != mOpenGLShaderProgram && openGLRhi.getExtensions().isGL_KHR_debug())
 				{
-					RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "CS", 5);	// 5 = "CS: " including terminating zero
+					RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "CS", 5)	// 5 = "CS: " including terminating zero
 					glObjectLabel(GL_PROGRAM, mOpenGLShaderProgram, -1, detailedDebugName);
 				}
 			#endif
@@ -16857,7 +16857,7 @@ namespace OpenGLRhi
 			#ifdef RHI_DEBUG
 				if (0 != mOpenGLShaderProgram && openGLRhi.getExtensions().isGL_KHR_debug())
 				{
-					RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "CS", 5);	// 5 = "CS: " including terminating zero
+					RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "CS", 5)	// 5 = "CS: " including terminating zero
 					glObjectLabel(GL_PROGRAM, mOpenGLShaderProgram, -1, detailedDebugName);
 				}
 			#endif
@@ -17150,7 +17150,7 @@ namespace OpenGLRhi
 			#ifdef RHI_DEBUG
 				if (0 != mOpenGLProgramPipeline && openGLRhi.getExtensions().isGL_KHR_debug())
 				{
-					RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "Graphics program", 19);	// 19 = "Graphics program: " including terminating zero
+					RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "Graphics program", 19)	// 19 = "Graphics program: " including terminating zero
 					glObjectLabel(GL_PROGRAM_PIPELINE, mOpenGLProgramPipeline, -1, detailedDebugName);
 				}
 			#endif
@@ -17756,7 +17756,7 @@ namespace OpenGLRhi
 			#ifdef RHI_DEBUG
 				if (openGLRhi.getExtensions().isGL_KHR_debug())
 				{
-					RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "Compute PSO", 14);	// 14 = "Compute PSO: " including terminating zero
+					RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "Compute PSO", 14)	// 14 = "Compute PSO: " including terminating zero
 					glObjectLabel(GL_PROGRAM_PIPELINE, mOpenGLProgramPipeline, -1, detailedDebugName);
 				}
 			#endif
@@ -18733,7 +18733,7 @@ namespace
 		//[-------------------------------------------------------]
 		//[ Global definitions                                    ]
 		//[-------------------------------------------------------]
-		static constexpr Rhi::ImplementationDispatchFunction DISPATCH_FUNCTIONS[Rhi::CommandDispatchFunctionIndex::NUMBER_OF_FUNCTIONS] =
+		static constexpr Rhi::ImplementationDispatchFunction DISPATCH_FUNCTIONS[static_cast<uint8_t>(Rhi::CommandDispatchFunctionIndex::NUMBER_OF_FUNCTIONS)] =
 		{
 			// Command buffer
 			&ImplementationDispatch::ExecuteCommandBuffer,
@@ -19138,7 +19138,7 @@ namespace OpenGLRhi
 		// TODO(co) Check for "numberOfViewports" out of range or are the debug events good enough?
 		RHI_ASSERT(mContext, numberOfViewports <= 1, "OpenGL supports only one viewport")
 		glViewport(static_cast<GLint>(viewports->topLeftX), static_cast<GLint>(renderTargetHeight - viewports->topLeftY - viewports->height), static_cast<GLsizei>(viewports->width), static_cast<GLsizei>(viewports->height));
-		glDepthRange(static_cast<GLclampf>(viewports->minDepth), static_cast<GLclampf>(viewports->maxDepth));
+		glDepthRange(static_cast<GLclampd>(viewports->minDepth), static_cast<GLclampd>(viewports->maxDepth));
 	}
 
 	void OpenGLRhi::setGraphicsScissorRectangles([[maybe_unused]] uint32_t numberOfScissorRectangles, const Rhi::ScissorRectangle* scissorRectangles)
@@ -19166,7 +19166,7 @@ namespace OpenGLRhi
 		RHI_ASSERT(mContext, numberOfScissorRectangles <= 1, "OpenGL supports only one scissor rectangle")
 		const GLsizei width  = scissorRectangles->bottomRightX - scissorRectangles->topLeftX;
 		const GLsizei height = scissorRectangles->bottomRightY - scissorRectangles->topLeftY;
-		glScissor(static_cast<GLint>(scissorRectangles->topLeftX), static_cast<GLint>(renderTargetHeight - scissorRectangles->topLeftY - height), width, height);
+		glScissor(static_cast<GLint>(scissorRectangles->topLeftX), static_cast<GLint>(renderTargetHeight - static_cast<uint32_t>(scissorRectangles->topLeftY) - height), width, height);
 	}
 
 	void OpenGLRhi::setGraphicsRenderTarget(Rhi::IRenderTarget* renderTarget)
@@ -19340,7 +19340,7 @@ namespace OpenGLRhi
 			}
 			if (clearFlags & Rhi::ClearFlag::DEPTH)
 			{
-				glClearDepth(z);
+				glClearDepth(static_cast<GLclampd>(z));
 				if (nullptr != mGraphicsPipelineState && Rhi::DepthWriteMask::ALL != mGraphicsPipelineState->getDepthStencilState().depthWriteMask)
 				{
 					glDepthMask(GL_TRUE);

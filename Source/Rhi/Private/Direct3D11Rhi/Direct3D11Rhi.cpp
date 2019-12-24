@@ -72,7 +72,7 @@
 #define NODEFERWINDOWPOS
 #define NOMCX
 #define NOCRYPT
-#include <windows.h>
+#include <Windows.h>
 
 // Get rid of some nasty OS macros
 #undef max
@@ -2547,7 +2547,7 @@ namespace
 				PRAGMA_WARNING_POP
 				if (nullptr != functionPointer)
 				{
-					RTL_OSVERSIONINFOW rovi = { 0 };
+					RTL_OSVERSIONINFOW rovi = { };
 					rovi.dwOSVersionInfoSize = sizeof(rovi);
 					if (0x00000000 == functionPointer(&rovi))
 					{
@@ -2555,7 +2555,7 @@ namespace
 					}
 				}
 			}
-			RTL_OSVERSIONINFOW rovi = { 0 };
+			RTL_OSVERSIONINFOW rovi = { };
 			return rovi;
 		}
 
@@ -3156,16 +3156,16 @@ namespace Direct3D11Rhi
 						{
 							// Get the primary DXGI adapter
 							IDXGIFactory* dxgiFactory = nullptr;
-							FAILED_DEBUG_BREAK(CreateDXGIFactory(__uuidof(IDXGIFactory), (void**)&dxgiFactory));
+							FAILED_DEBUG_BREAK(CreateDXGIFactory(__uuidof(IDXGIFactory), (void**)&dxgiFactory))
 							if (nullptr == dxgiFactory)
 							{
 								// Error!
 								return false;
 							}
 							IDXGIAdapter* dxgiAdapter = nullptr;
-							FAILED_DEBUG_BREAK(dxgiFactory->EnumAdapters(0, &dxgiAdapter));
+							FAILED_DEBUG_BREAK(dxgiFactory->EnumAdapters(0, &dxgiAdapter))
 							DXGI_ADAPTER_DESC dxgiAdapterDesc = {};
-							FAILED_DEBUG_BREAK(dxgiAdapter->GetDesc(&dxgiAdapterDesc));
+							FAILED_DEBUG_BREAK(dxgiAdapter->GetDesc(&dxgiAdapterDesc))
 							if (0x1414 == dxgiAdapterDesc.VendorId)	// 0x1414 = "Capture Adapter" when using Visual Studio graphics debugger
 							{
 								RHI_LOG(mDirect3D11Rhi.getContext(), COMPATIBILITY_WARNING, "Direct3D 11 capture adapter used (e.g. Visual Studio graphics debugger), AMD AGS and NvAPI support disabled")
@@ -3347,7 +3347,7 @@ namespace Direct3D11Rhi
 				}
 
 			// Load the entry points
-			IMPORT_FUNC(CreateDXGIFactory);
+			IMPORT_FUNC(CreateDXGIFactory)
 
 			// Undefine the helper macro
 			#undef IMPORT_FUNC
@@ -3387,7 +3387,7 @@ namespace Direct3D11Rhi
 				}
 
 			// Load the entry points
-			IMPORT_FUNC(D3D11CreateDevice);
+			IMPORT_FUNC(D3D11CreateDevice)
 
 			// Undefine the helper macro
 			#undef IMPORT_FUNC
@@ -3427,8 +3427,8 @@ namespace Direct3D11Rhi
 				}
 
 			// Load the entry points
-			IMPORT_FUNC(D3DCompile);
-			IMPORT_FUNC(D3DCreateBlob);
+			IMPORT_FUNC(D3DCompile)
+			IMPORT_FUNC(D3DCreateBlob)
 
 			// Undefine the helper macro
 			#undef IMPORT_FUNC
@@ -3469,12 +3469,12 @@ namespace Direct3D11Rhi
 					}
 
 				// Load the entry points
-				IMPORT_FUNC(agsInit);
-				IMPORT_FUNC(agsDeInit);
-				IMPORT_FUNC(agsDriverExtensionsDX11_CreateDevice);
-				IMPORT_FUNC(agsDriverExtensionsDX11_DestroyDevice);
-				IMPORT_FUNC(agsDriverExtensionsDX11_MultiDrawInstancedIndirect);
-				IMPORT_FUNC(agsDriverExtensionsDX11_MultiDrawIndexedInstancedIndirect);
+				IMPORT_FUNC(agsInit)
+				IMPORT_FUNC(agsDeInit)
+				IMPORT_FUNC(agsDriverExtensionsDX11_CreateDevice)
+				IMPORT_FUNC(agsDriverExtensionsDX11_DestroyDevice)
+				IMPORT_FUNC(agsDriverExtensionsDX11_MultiDrawInstancedIndirect)
+				IMPORT_FUNC(agsDriverExtensionsDX11_MultiDrawIndexedInstancedIndirect)
 
 				// Undefine the helper macro
 				#undef IMPORT_FUNC
@@ -3536,7 +3536,7 @@ namespace Direct3D11Rhi
 
 			// Load the entry points
 			nvapi_QueryInterface = nullptr;
-			IMPORT_FUNC(nvapi_QueryInterface);
+			IMPORT_FUNC(nvapi_QueryInterface)
 
 			// Query function pointers
 			if (nullptr != nvapi_QueryInterface)
@@ -3997,8 +3997,6 @@ namespace Direct3D11Rhi
 		*
 		*  @param[in] rhi
 		*    Owner RHI instance
-		*  @param[in] rootParameterIndex
-		*    The root parameter index number for binding
 		*  @param[in] numberOfResources
 		*    Number of resources, having no resources is invalid
 		*  @param[in] resources
@@ -4006,9 +4004,8 @@ namespace Direct3D11Rhi
 		*  @param[in] samplerStates
 		*    If not a null pointer at least "numberOfResources" sampler state pointers, must be valid if there's at least one texture resource, the resource group will keep a reference to the sampler states
 		*/
-		ResourceGroup(Rhi::IRhi& rhi, uint32_t rootParameterIndex, uint32_t numberOfResources, Rhi::IResource** resources, Rhi::ISamplerState** samplerStates RHI_RESOURCE_DEBUG_NAME_PARAMETER_NO_DEFAULT) :
+		ResourceGroup(Rhi::IRhi& rhi, uint32_t numberOfResources, Rhi::IResource** resources, Rhi::ISamplerState** samplerStates RHI_RESOURCE_DEBUG_NAME_PARAMETER_NO_DEFAULT) :
 			IResourceGroup(rhi RHI_RESOURCE_DEBUG_PASS_PARAMETER),
-			mRootParameterIndex(rootParameterIndex),
 			mNumberOfResources(numberOfResources),
 			mResources(RHI_MALLOC_TYPED(rhi.getContext(), Rhi::IResource*, mNumberOfResources)),
 			mSamplerStates(nullptr)
@@ -4109,7 +4106,6 @@ namespace Direct3D11Rhi
 	//[ Private data                                          ]
 	//[-------------------------------------------------------]
 	private:
-		uint32_t			 mRootParameterIndex;	///< The root parameter index number for binding
 		uint32_t			 mNumberOfResources;	///< Number of resources this resource group groups together
 		Rhi::IResource**	 mResources;			///< RHI resources, we keep a reference to it
 		Rhi::ISamplerState** mSamplerStates;		///< Sampler states, we keep a reference to it
@@ -4222,7 +4218,7 @@ namespace Direct3D11Rhi
 	//[ Public virtual Rhi::IRootSignature methods            ]
 	//[-------------------------------------------------------]
 	public:
-		[[nodiscard]] virtual Rhi::IResourceGroup* createResourceGroup(uint32_t rootParameterIndex, uint32_t numberOfResources, Rhi::IResource** resources, Rhi::ISamplerState** samplerStates = nullptr RHI_RESOURCE_DEBUG_NAME_PARAMETER) override
+		[[nodiscard]] virtual Rhi::IResourceGroup* createResourceGroup([[maybe_unused]] uint32_t rootParameterIndex, uint32_t numberOfResources, Rhi::IResource** resources, Rhi::ISamplerState** samplerStates = nullptr RHI_RESOURCE_DEBUG_NAME_PARAMETER) override
 		{
 			Rhi::IRhi& rhi = getRhi();
 
@@ -4232,7 +4228,7 @@ namespace Direct3D11Rhi
 			RHI_ASSERT(rhi.getContext(), nullptr != resources, "The Direct3D 11 resource pointers must be valid")
 
 			// Create resource group
-			return RHI_NEW(rhi.getContext(), ResourceGroup)(rhi, rootParameterIndex, numberOfResources, resources, samplerStates RHI_RESOURCE_DEBUG_PASS_PARAMETER);
+			return RHI_NEW(rhi.getContext(), ResourceGroup)(rhi, numberOfResources, resources, samplerStates RHI_RESOURCE_DEBUG_PASS_PARAMETER);
 		}
 
 
@@ -4337,12 +4333,12 @@ namespace Direct3D11Rhi
 				d3d11SubresourceData.SysMemSlicePitch = 0;
 
 				// Create the Direct3D 11 vertex buffer
-				FAILED_DEBUG_BREAK(direct3D11Rhi.getD3D11Device()->CreateBuffer(&d3d11BufferDesc, &d3d11SubresourceData, &mD3D11Buffer));
+				FAILED_DEBUG_BREAK(direct3D11Rhi.getD3D11Device()->CreateBuffer(&d3d11BufferDesc, &d3d11SubresourceData, &mD3D11Buffer))
 			}
 			else
 			{
 				// Create the Direct3D 11 vertex buffer
-				FAILED_DEBUG_BREAK(direct3D11Rhi.getD3D11Device()->CreateBuffer(&d3d11BufferDesc, nullptr, &mD3D11Buffer));
+				FAILED_DEBUG_BREAK(direct3D11Rhi.getD3D11Device()->CreateBuffer(&d3d11BufferDesc, nullptr, &mD3D11Buffer))
 			}
 
 			// Create the Direct3D 11 shader resource view instance
@@ -4357,7 +4353,7 @@ namespace Direct3D11Rhi
 
 				// Create the Direct3D 11 shader resource view instance
 				// -> HLSL usage example: "ByteAddressBuffer InputVertexBuffer : register(t0);"
-				FAILED_DEBUG_BREAK(direct3D11Rhi.getD3D11Device()->CreateShaderResourceView(mD3D11Buffer, &d3d11ShaderResourceViewDesc, &mD3D11ShaderResourceView));
+				FAILED_DEBUG_BREAK(direct3D11Rhi.getD3D11Device()->CreateShaderResourceView(mD3D11Buffer, &d3d11ShaderResourceViewDesc, &mD3D11ShaderResourceView))
 			}
 
 			// Create the Direct3D 11 unordered access view instance
@@ -4372,23 +4368,23 @@ namespace Direct3D11Rhi
 
 				// Create the Direct3D 11 unordered access view instance
 				// -> HLSL usage example: "RWByteAddressBuffer OutputVertexBuffer : register(u0);"
-				FAILED_DEBUG_BREAK(direct3D11Rhi.getD3D11Device()->CreateUnorderedAccessView(mD3D11Buffer, &d3d11UnorderedAccessViewDesc, &mD3D11UnorderedAccessView));
+				FAILED_DEBUG_BREAK(direct3D11Rhi.getD3D11Device()->CreateUnorderedAccessView(mD3D11Buffer, &d3d11UnorderedAccessViewDesc, &mD3D11UnorderedAccessView))
 			}
 
 			// Assign a default name to the resource for debugging purposes
 			#ifdef RHI_DEBUG
-				RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "VBO", 6);	// 6 = "VBO: " including terminating zero
+				RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "VBO", 6)	// 6 = "VBO: " including terminating zero
 				if (nullptr != mD3D11Buffer)
 				{
-					FAILED_DEBUG_BREAK(mD3D11Buffer->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(detailedDebugName)), detailedDebugName));
+					FAILED_DEBUG_BREAK(mD3D11Buffer->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(detailedDebugName)), detailedDebugName))
 				}
 				if (nullptr != mD3D11ShaderResourceView)
 				{
-					FAILED_DEBUG_BREAK(mD3D11ShaderResourceView->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(detailedDebugName)), detailedDebugName));
+					FAILED_DEBUG_BREAK(mD3D11ShaderResourceView->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(detailedDebugName)), detailedDebugName))
 				}
 				if (nullptr != mD3D11UnorderedAccessView)
 				{
-					FAILED_DEBUG_BREAK(mD3D11UnorderedAccessView->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(detailedDebugName)), detailedDebugName));
+					FAILED_DEBUG_BREAK(mD3D11UnorderedAccessView->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(detailedDebugName)), detailedDebugName))
 				}
 			#endif
 		}
@@ -4569,12 +4565,12 @@ namespace Direct3D11Rhi
 					d3d11SubresourceData.SysMemSlicePitch = 0;
 
 					// Create the Direct3D 11 index buffer
-					FAILED_DEBUG_BREAK(direct3D11Rhi.getD3D11Device()->CreateBuffer(&d3d11BufferDesc, &d3d11SubresourceData, &mD3D11Buffer));
+					FAILED_DEBUG_BREAK(direct3D11Rhi.getD3D11Device()->CreateBuffer(&d3d11BufferDesc, &d3d11SubresourceData, &mD3D11Buffer))
 				}
 				else
 				{
 					// Create the Direct3D 11 index buffer
-					FAILED_DEBUG_BREAK(direct3D11Rhi.getD3D11Device()->CreateBuffer(&d3d11BufferDesc, nullptr, &mD3D11Buffer));
+					FAILED_DEBUG_BREAK(direct3D11Rhi.getD3D11Device()->CreateBuffer(&d3d11BufferDesc, nullptr, &mD3D11Buffer))
 				}
 
 				// Create the Direct3D 11 shader resource view instance
@@ -4587,7 +4583,7 @@ namespace Direct3D11Rhi
 					d3d11ShaderResourceViewDesc.Buffer.ElementWidth	 = numberOfBytes / Rhi::IndexBufferFormat::getNumberOfBytesPerElement(indexBufferFormat);
 
 					// Create the Direct3D 11 shader resource view instance
-					FAILED_DEBUG_BREAK(direct3D11Rhi.getD3D11Device()->CreateShaderResourceView(mD3D11Buffer, &d3d11ShaderResourceViewDesc, &mD3D11ShaderResourceView));
+					FAILED_DEBUG_BREAK(direct3D11Rhi.getD3D11Device()->CreateShaderResourceView(mD3D11Buffer, &d3d11ShaderResourceViewDesc, &mD3D11ShaderResourceView))
 				}
 
 				// Create the Direct3D 11 unordered access view instance
@@ -4600,23 +4596,23 @@ namespace Direct3D11Rhi
 					d3d11UnorderedAccessViewDesc.Buffer.NumElements = numberOfBytes / Rhi::IndexBufferFormat::getNumberOfBytesPerElement(indexBufferFormat);
 
 					// Create the Direct3D 11 unordered access view instance
-					FAILED_DEBUG_BREAK(direct3D11Rhi.getD3D11Device()->CreateUnorderedAccessView(mD3D11Buffer, &d3d11UnorderedAccessViewDesc, &mD3D11UnorderedAccessView));
+					FAILED_DEBUG_BREAK(direct3D11Rhi.getD3D11Device()->CreateUnorderedAccessView(mD3D11Buffer, &d3d11UnorderedAccessViewDesc, &mD3D11UnorderedAccessView))
 				}
 
 				// Assign a default name to the resource for debugging purposes
 				#ifdef RHI_DEBUG
-					RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "IBO", 6);	// 6 = "IBO: " including terminating zero
+					RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "IBO", 6)	// 6 = "IBO: " including terminating zero
 					if (nullptr != mD3D11Buffer)
 					{
-						FAILED_DEBUG_BREAK(mD3D11Buffer->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(detailedDebugName)), detailedDebugName));
+						FAILED_DEBUG_BREAK(mD3D11Buffer->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(detailedDebugName)), detailedDebugName))
 					}
 					if (nullptr != mD3D11ShaderResourceView)
 					{
-						FAILED_DEBUG_BREAK(mD3D11ShaderResourceView->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(detailedDebugName)), detailedDebugName));
+						FAILED_DEBUG_BREAK(mD3D11ShaderResourceView->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(detailedDebugName)), detailedDebugName))
 					}
 					if (nullptr != mD3D11UnorderedAccessView)
 					{
-						FAILED_DEBUG_BREAK(mD3D11UnorderedAccessView->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(detailedDebugName)), detailedDebugName));
+						FAILED_DEBUG_BREAK(mD3D11UnorderedAccessView->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(detailedDebugName)), detailedDebugName))
 					}
 				#endif
 			}
@@ -5002,12 +4998,12 @@ namespace Direct3D11Rhi
 					d3d11SubresourceData.SysMemSlicePitch = 0;
 
 					// Create the Direct3D 11 constant buffer
-					FAILED_DEBUG_BREAK(direct3D11Rhi.getD3D11Device()->CreateBuffer(&d3d11BufferDesc, &d3d11SubresourceData, &mD3D11Buffer));
+					FAILED_DEBUG_BREAK(direct3D11Rhi.getD3D11Device()->CreateBuffer(&d3d11BufferDesc, &d3d11SubresourceData, &mD3D11Buffer))
 				}
 				else
 				{
 					// Create the Direct3D 11 constant buffer
-					FAILED_DEBUG_BREAK(direct3D11Rhi.getD3D11Device()->CreateBuffer(&d3d11BufferDesc, nullptr, &mD3D11Buffer));
+					FAILED_DEBUG_BREAK(direct3D11Rhi.getD3D11Device()->CreateBuffer(&d3d11BufferDesc, nullptr, &mD3D11Buffer))
 				}
 			}
 
@@ -5021,7 +5017,7 @@ namespace Direct3D11Rhi
 				d3d11ShaderResourceViewDesc.Buffer.ElementWidth	 = numberOfBytes / Rhi::TextureFormat::getNumberOfBytesPerElement(textureFormat);
 
 				// Create the Direct3D 11 shader resource view instance
-				FAILED_DEBUG_BREAK(direct3D11Rhi.getD3D11Device()->CreateShaderResourceView(mD3D11Buffer, &d3d11ShaderResourceViewDesc, &mD3D11ShaderResourceView));
+				FAILED_DEBUG_BREAK(direct3D11Rhi.getD3D11Device()->CreateShaderResourceView(mD3D11Buffer, &d3d11ShaderResourceViewDesc, &mD3D11ShaderResourceView))
 			}
 
 			// Create the Direct3D 11 unordered access view instance
@@ -5034,23 +5030,23 @@ namespace Direct3D11Rhi
 				d3d11UnorderedAccessViewDesc.Buffer.NumElements = numberOfBytes / Rhi::TextureFormat::getNumberOfBytesPerElement(textureFormat);
 
 				// Create the Direct3D 11 unordered access view instance
-				FAILED_DEBUG_BREAK(direct3D11Rhi.getD3D11Device()->CreateUnorderedAccessView(mD3D11Buffer, &d3d11UnorderedAccessViewDesc, &mD3D11UnorderedAccessView));
+				FAILED_DEBUG_BREAK(direct3D11Rhi.getD3D11Device()->CreateUnorderedAccessView(mD3D11Buffer, &d3d11UnorderedAccessViewDesc, &mD3D11UnorderedAccessView))
 			}
 
 			// Assign a default name to the resource for debugging purposes
 			#ifdef RHI_DEBUG
-				RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "TBO", 6);	// 6 = "TBO: " including terminating zero
+				RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "TBO", 6)	// 6 = "TBO: " including terminating zero
 				if (nullptr != mD3D11Buffer)
 				{
-					FAILED_DEBUG_BREAK(mD3D11Buffer->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(detailedDebugName)), detailedDebugName));
+					FAILED_DEBUG_BREAK(mD3D11Buffer->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(detailedDebugName)), detailedDebugName))
 				}
 				if (nullptr != mD3D11ShaderResourceView)
 				{
-					FAILED_DEBUG_BREAK(mD3D11ShaderResourceView->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(detailedDebugName)), detailedDebugName));
+					FAILED_DEBUG_BREAK(mD3D11ShaderResourceView->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(detailedDebugName)), detailedDebugName))
 				}
 				if (nullptr != mD3D11UnorderedAccessView)
 				{
-					FAILED_DEBUG_BREAK(mD3D11UnorderedAccessView->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(detailedDebugName)), detailedDebugName));
+					FAILED_DEBUG_BREAK(mD3D11UnorderedAccessView->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(detailedDebugName)), detailedDebugName))
 				}
 			#endif
 		}
@@ -5226,12 +5222,12 @@ namespace Direct3D11Rhi
 					d3d11SubresourceData.SysMemSlicePitch = 0;
 
 					// Create the Direct3D 11 constant buffer
-					FAILED_DEBUG_BREAK(direct3D11Rhi.getD3D11Device()->CreateBuffer(&d3d11BufferDesc, &d3d11SubresourceData, &mD3D11Buffer));
+					FAILED_DEBUG_BREAK(direct3D11Rhi.getD3D11Device()->CreateBuffer(&d3d11BufferDesc, &d3d11SubresourceData, &mD3D11Buffer))
 				}
 				else
 				{
 					// Create the Direct3D 11 constant buffer
-					FAILED_DEBUG_BREAK(direct3D11Rhi.getD3D11Device()->CreateBuffer(&d3d11BufferDesc, nullptr, &mD3D11Buffer));
+					FAILED_DEBUG_BREAK(direct3D11Rhi.getD3D11Device()->CreateBuffer(&d3d11BufferDesc, nullptr, &mD3D11Buffer))
 				}
 			}
 
@@ -5245,7 +5241,7 @@ namespace Direct3D11Rhi
 				d3d11ShaderResourceViewDesc.Buffer.ElementWidth	= numberOfBytes / numberOfStructureBytes;
 
 				// Create the Direct3D 11 shader resource view instance
-				FAILED_DEBUG_BREAK(direct3D11Rhi.getD3D11Device()->CreateShaderResourceView(mD3D11Buffer, &d3d11ShaderResourceViewDesc, &mD3D11ShaderResourceView));
+				FAILED_DEBUG_BREAK(direct3D11Rhi.getD3D11Device()->CreateShaderResourceView(mD3D11Buffer, &d3d11ShaderResourceViewDesc, &mD3D11ShaderResourceView))
 			}
 
 			// Create the Direct3D 11 unordered access view instance
@@ -5259,23 +5255,23 @@ namespace Direct3D11Rhi
 				d3d11UnorderedAccessViewDesc.Buffer.NumElements	= numberOfBytes / numberOfStructureBytes;
 
 				// Create the Direct3D 11 unordered access view instance
-				FAILED_DEBUG_BREAK(direct3D11Rhi.getD3D11Device()->CreateUnorderedAccessView(mD3D11Buffer, &d3d11UnorderedAccessViewDesc, &mD3D11UnorderedAccessView));
+				FAILED_DEBUG_BREAK(direct3D11Rhi.getD3D11Device()->CreateUnorderedAccessView(mD3D11Buffer, &d3d11UnorderedAccessViewDesc, &mD3D11UnorderedAccessView))
 			}
 
 			// Assign a default name to the resource for debugging purposes
 			#ifdef RHI_DEBUG
-				RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "SBO", 6);	// 6 = "SBO: " including terminating zero
+				RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "SBO", 6)	// 6 = "SBO: " including terminating zero
 				if (nullptr != mD3D11Buffer)
 				{
-					FAILED_DEBUG_BREAK(mD3D11Buffer->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(detailedDebugName)), detailedDebugName));
+					FAILED_DEBUG_BREAK(mD3D11Buffer->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(detailedDebugName)), detailedDebugName))
 				}
 				if (nullptr != mD3D11ShaderResourceView)
 				{
-					FAILED_DEBUG_BREAK(mD3D11ShaderResourceView->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(detailedDebugName)), detailedDebugName));
+					FAILED_DEBUG_BREAK(mD3D11ShaderResourceView->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(detailedDebugName)), detailedDebugName))
 				}
 				if (nullptr != mD3D11UnorderedAccessView)
 				{
-					FAILED_DEBUG_BREAK(mD3D11UnorderedAccessView->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(detailedDebugName)), detailedDebugName));
+					FAILED_DEBUG_BREAK(mD3D11UnorderedAccessView->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(detailedDebugName)), detailedDebugName))
 				}
 			#endif
 		}
@@ -5454,12 +5450,12 @@ namespace Direct3D11Rhi
 					d3d11SubresourceData.SysMemSlicePitch = 0;
 
 					// Create the Direct3D 11 indirect buffer
-					FAILED_DEBUG_BREAK(direct3D11Rhi.getD3D11Device()->CreateBuffer(&d3d11BufferDesc, &d3d11SubresourceData, &mD3D11Buffer));
+					FAILED_DEBUG_BREAK(direct3D11Rhi.getD3D11Device()->CreateBuffer(&d3d11BufferDesc, &d3d11SubresourceData, &mD3D11Buffer))
 				}
 				else
 				{
 					// Create the Direct3D 11 indirect buffer
-					FAILED_DEBUG_BREAK(direct3D11Rhi.getD3D11Device()->CreateBuffer(&d3d11BufferDesc, nullptr, &mD3D11Buffer));
+					FAILED_DEBUG_BREAK(direct3D11Rhi.getD3D11Device()->CreateBuffer(&d3d11BufferDesc, nullptr, &mD3D11Buffer))
 				}
 			}
 
@@ -5485,12 +5481,12 @@ namespace Direct3D11Rhi
 					d3d11SubresourceData.SysMemSlicePitch = 0;
 
 					// Create the Direct3D 11 indirect buffer
-					FAILED_DEBUG_BREAK(direct3D11Rhi.getD3D11Device()->CreateBuffer(&d3d11BufferDesc, &d3d11SubresourceData, &mStagingD3D11Buffer));
+					FAILED_DEBUG_BREAK(direct3D11Rhi.getD3D11Device()->CreateBuffer(&d3d11BufferDesc, &d3d11SubresourceData, &mStagingD3D11Buffer))
 				}
 				else
 				{
 					// Create the Direct3D 11 indirect buffer
-					FAILED_DEBUG_BREAK(direct3D11Rhi.getD3D11Device()->CreateBuffer(&d3d11BufferDesc, nullptr, &mStagingD3D11Buffer));
+					FAILED_DEBUG_BREAK(direct3D11Rhi.getD3D11Device()->CreateBuffer(&d3d11BufferDesc, nullptr, &mStagingD3D11Buffer))
 				}
 			}
 
@@ -5504,7 +5500,7 @@ namespace Direct3D11Rhi
 				d3d11ShaderResourceViewDesc.Buffer.ElementWidth	 = numberOfBytes / sizeof(uint32_t);
 
 				// Create the Direct3D 11 shader resource view instance
-				FAILED_DEBUG_BREAK(direct3D11Rhi.getD3D11Device()->CreateShaderResourceView(mD3D11Buffer, &d3d11ShaderResourceViewDesc, &mD3D11ShaderResourceView));
+				FAILED_DEBUG_BREAK(direct3D11Rhi.getD3D11Device()->CreateShaderResourceView(mD3D11Buffer, &d3d11ShaderResourceViewDesc, &mD3D11ShaderResourceView))
 			}
 
 			// Create the Direct3D 11 unordered access view instance
@@ -5517,27 +5513,27 @@ namespace Direct3D11Rhi
 				d3d11UnorderedAccessViewDesc.Buffer.NumElements = numberOfBytes / sizeof(uint32_t);
 
 				// Create the Direct3D 11 unordered access view instance
-				FAILED_DEBUG_BREAK(direct3D11Rhi.getD3D11Device()->CreateUnorderedAccessView(mD3D11Buffer, &d3d11UnorderedAccessViewDesc, &mD3D11UnorderedAccessView));
+				FAILED_DEBUG_BREAK(direct3D11Rhi.getD3D11Device()->CreateUnorderedAccessView(mD3D11Buffer, &d3d11UnorderedAccessViewDesc, &mD3D11UnorderedAccessView))
 			}
 
 			// Assign a default name to the resource for debugging purposes
 			#ifdef RHI_DEBUG
-				RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "IndirectBufferObject", 23);	// 23 = "IndirectBufferObject: " including terminating zero
+				RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "IndirectBufferObject", 23)	// 23 = "IndirectBufferObject: " including terminating zero
 				if (nullptr != mD3D11Buffer)
 				{
-					FAILED_DEBUG_BREAK(mD3D11Buffer->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(detailedDebugName)), detailedDebugName));
+					FAILED_DEBUG_BREAK(mD3D11Buffer->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(detailedDebugName)), detailedDebugName))
 				}
 				if (nullptr != mStagingD3D11Buffer)
 				{
-					FAILED_DEBUG_BREAK(mStagingD3D11Buffer->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(detailedDebugName)), detailedDebugName));
+					FAILED_DEBUG_BREAK(mStagingD3D11Buffer->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(detailedDebugName)), detailedDebugName))
 				}
 				if (nullptr != mD3D11ShaderResourceView)
 				{
-					FAILED_DEBUG_BREAK(mD3D11ShaderResourceView->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(detailedDebugName)), detailedDebugName));
+					FAILED_DEBUG_BREAK(mD3D11ShaderResourceView->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(detailedDebugName)), detailedDebugName))
 				}
 				if (nullptr != mD3D11UnorderedAccessView)
 				{
-					FAILED_DEBUG_BREAK(mD3D11UnorderedAccessView->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(detailedDebugName)), detailedDebugName));
+					FAILED_DEBUG_BREAK(mD3D11UnorderedAccessView->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(detailedDebugName)), detailedDebugName))
 				}
 			#endif
 		}
@@ -5723,20 +5719,20 @@ namespace Direct3D11Rhi
 				d3d11SubresourceData.SysMemSlicePitch = 0;
 
 				// Create the Direct3D 11 constant buffer
-				FAILED_DEBUG_BREAK(direct3D11Rhi.getD3D11Device()->CreateBuffer(&d3d11BufferDesc, &d3d11SubresourceData, &mD3D11Buffer));
+				FAILED_DEBUG_BREAK(direct3D11Rhi.getD3D11Device()->CreateBuffer(&d3d11BufferDesc, &d3d11SubresourceData, &mD3D11Buffer))
 			}
 			else
 			{
 				// Create the Direct3D 11 constant buffer
-				FAILED_DEBUG_BREAK(direct3D11Rhi.getD3D11Device()->CreateBuffer(&d3d11BufferDesc, nullptr, &mD3D11Buffer));
+				FAILED_DEBUG_BREAK(direct3D11Rhi.getD3D11Device()->CreateBuffer(&d3d11BufferDesc, nullptr, &mD3D11Buffer))
 			}
 
 			// Assign a default name to the resource for debugging purposes
 			#ifdef RHI_DEBUG
 				if (nullptr != mD3D11Buffer)
 				{
-					RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "UBO", 6);	// 6 = "UBO: " including terminating zero
-					FAILED_DEBUG_BREAK(mD3D11Buffer->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(detailedDebugName)), detailedDebugName));
+					RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "UBO", 6)	// 6 = "UBO: " including terminating zero
+					FAILED_DEBUG_BREAK(mD3D11Buffer->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(detailedDebugName)), detailedDebugName))
 				}
 			#endif
 		}
@@ -6063,12 +6059,12 @@ namespace Direct3D11Rhi
 						width = getHalfSize(width);
 					}
 				}
-				FAILED_DEBUG_BREAK(direct3D11Rhi.getD3D11Device()->CreateTexture1D(&d3d11Texture1DDesc, d3d11SubresourceData, &mD3D11Texture1D));
+				FAILED_DEBUG_BREAK(direct3D11Rhi.getD3D11Device()->CreateTexture1D(&d3d11Texture1DDesc, d3d11SubresourceData, &mD3D11Texture1D))
 			}
 			else
 			{
 				// The user did not provide us with texture data
-				FAILED_DEBUG_BREAK(direct3D11Rhi.getD3D11Device()->CreateTexture1D(&d3d11Texture1DDesc, nullptr, &mD3D11Texture1D));
+				FAILED_DEBUG_BREAK(direct3D11Rhi.getD3D11Device()->CreateTexture1D(&d3d11Texture1DDesc, nullptr, &mD3D11Texture1D))
 			}
 
 			// Create requested views
@@ -6084,7 +6080,7 @@ namespace Direct3D11Rhi
 					d3d11ShaderResourceViewDesc.Texture1D.MipLevels = numberOfMipmaps;
 
 					// Create the Direct3D 11 shader resource view instance
-					FAILED_DEBUG_BREAK(direct3D11Rhi.getD3D11Device()->CreateShaderResourceView(mD3D11Texture1D, &d3d11ShaderResourceViewDesc, &mD3D11ShaderResourceView));
+					FAILED_DEBUG_BREAK(direct3D11Rhi.getD3D11Device()->CreateShaderResourceView(mD3D11Texture1D, &d3d11ShaderResourceViewDesc, &mD3D11ShaderResourceView))
 				}
 
 				// Create the Direct3D 11 unordered access view instance
@@ -6096,7 +6092,7 @@ namespace Direct3D11Rhi
 					d3d11UnorderedAccessViewDesc.ViewDimension = D3D11_UAV_DIMENSION_TEXTURE1D;
 
 					// Create the Direct3D 11 unordered access view instance
-					FAILED_DEBUG_BREAK(direct3D11Rhi.getD3D11Device()->CreateUnorderedAccessView(mD3D11Texture1D, &d3d11UnorderedAccessViewDesc, &mD3D11UnorderedAccessView));
+					FAILED_DEBUG_BREAK(direct3D11Rhi.getD3D11Device()->CreateUnorderedAccessView(mD3D11Texture1D, &d3d11UnorderedAccessViewDesc, &mD3D11UnorderedAccessView))
 				}
 			}
 
@@ -6108,18 +6104,18 @@ namespace Direct3D11Rhi
 
 			// Assign a default name to the resource for debugging purposes
 			#ifdef RHI_DEBUG
-				RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "1D texture", 13);	// 13 = "1D texture: " including terminating zero
+				RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "1D texture", 13)	// 13 = "1D texture: " including terminating zero
 				if (nullptr != mD3D11Texture1D)
 				{
-					FAILED_DEBUG_BREAK(mD3D11Texture1D->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(detailedDebugName)), detailedDebugName));
+					FAILED_DEBUG_BREAK(mD3D11Texture1D->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(detailedDebugName)), detailedDebugName))
 				}
 				if (nullptr != mD3D11ShaderResourceView)
 				{
-					FAILED_DEBUG_BREAK(mD3D11ShaderResourceView->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(detailedDebugName)), detailedDebugName));
+					FAILED_DEBUG_BREAK(mD3D11ShaderResourceView->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(detailedDebugName)), detailedDebugName))
 				}
 				if (nullptr != mD3D11UnorderedAccessView)
 				{
-					FAILED_DEBUG_BREAK(mD3D11UnorderedAccessView->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(detailedDebugName)), detailedDebugName));
+					FAILED_DEBUG_BREAK(mD3D11UnorderedAccessView->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(detailedDebugName)), detailedDebugName))
 				}
 			#endif
 		}
@@ -6394,7 +6390,7 @@ namespace Direct3D11Rhi
 						}
 					}
 				}
-				FAILED_DEBUG_BREAK(direct3D11Rhi.getD3D11Device()->CreateTexture1D(&d3d11Texture1DDesc, d3d11SubresourceData, &mD3D11Texture1D));
+				FAILED_DEBUG_BREAK(direct3D11Rhi.getD3D11Device()->CreateTexture1D(&d3d11Texture1DDesc, d3d11SubresourceData, &mD3D11Texture1D))
 				if (numberOfSlices > MAXIMUM_NUMBER_OF_SLICES)
 				{
 					RHI_FREE(context, d3d11SubresourceData);
@@ -6403,7 +6399,7 @@ namespace Direct3D11Rhi
 			else
 			{
 				// The user did not provide us with texture data
-				FAILED_DEBUG_BREAK(direct3D11Rhi.getD3D11Device()->CreateTexture1D(&d3d11Texture1DDesc, nullptr, &mD3D11Texture1D));
+				FAILED_DEBUG_BREAK(direct3D11Rhi.getD3D11Device()->CreateTexture1D(&d3d11Texture1DDesc, nullptr, &mD3D11Texture1D))
 			}
 
 			// Create requested views
@@ -6420,7 +6416,7 @@ namespace Direct3D11Rhi
 					d3d11ShaderResourceViewDesc.Texture1DArray.ArraySize = numberOfSlices;
 
 					// Create the Direct3D 11 shader resource view instance
-					FAILED_DEBUG_BREAK(direct3D11Rhi.getD3D11Device()->CreateShaderResourceView(mD3D11Texture1D, &d3d11ShaderResourceViewDesc, &mD3D11ShaderResourceView));
+					FAILED_DEBUG_BREAK(direct3D11Rhi.getD3D11Device()->CreateShaderResourceView(mD3D11Texture1D, &d3d11ShaderResourceViewDesc, &mD3D11ShaderResourceView))
 				}
 
 				// Create the Direct3D 11 unordered access view instance
@@ -6433,7 +6429,7 @@ namespace Direct3D11Rhi
 					d3d11UnorderedAccessViewDesc.Texture1DArray.ArraySize = numberOfSlices;
 
 					// Create the Direct3D 11 unordered access view instance
-					FAILED_DEBUG_BREAK(direct3D11Rhi.getD3D11Device()->CreateUnorderedAccessView(mD3D11Texture1D, &d3d11UnorderedAccessViewDesc, &mD3D11UnorderedAccessView));
+					FAILED_DEBUG_BREAK(direct3D11Rhi.getD3D11Device()->CreateUnorderedAccessView(mD3D11Texture1D, &d3d11UnorderedAccessViewDesc, &mD3D11UnorderedAccessView))
 				}
 			}
 
@@ -6445,18 +6441,18 @@ namespace Direct3D11Rhi
 
 			// Assign a default name to the resource for debugging purposes
 			#ifdef RHI_DEBUG
-				RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "1D texture array", 19);	// 19 = "1D texture array: " including terminating zero
+				RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "1D texture array", 19)	// 19 = "1D texture array: " including terminating zero
 				if (nullptr != mD3D11Texture1D)
 				{
-					FAILED_DEBUG_BREAK(mD3D11Texture1D->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(detailedDebugName)), detailedDebugName));
+					FAILED_DEBUG_BREAK(mD3D11Texture1D->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(detailedDebugName)), detailedDebugName))
 				}
 				if (nullptr != mD3D11ShaderResourceView)
 				{
-					FAILED_DEBUG_BREAK(mD3D11ShaderResourceView->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(detailedDebugName)), detailedDebugName));
+					FAILED_DEBUG_BREAK(mD3D11ShaderResourceView->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(detailedDebugName)), detailedDebugName))
 				}
 				if (nullptr != mD3D11UnorderedAccessView)
 				{
-					FAILED_DEBUG_BREAK(mD3D11UnorderedAccessView->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(detailedDebugName)), detailedDebugName));
+					FAILED_DEBUG_BREAK(mD3D11UnorderedAccessView->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(detailedDebugName)), detailedDebugName))
 				}
 			#endif
 		}
@@ -6708,12 +6704,12 @@ namespace Direct3D11Rhi
 						width = getHalfSize(width);
 					}
 				}
-				FAILED_DEBUG_BREAK(direct3D11Rhi.getD3D11Device()->CreateTexture2D(&d3d11Texture2DDesc, d3d11SubresourceData, &mD3D11Texture2D));
+				FAILED_DEBUG_BREAK(direct3D11Rhi.getD3D11Device()->CreateTexture2D(&d3d11Texture2DDesc, d3d11SubresourceData, &mD3D11Texture2D))
 			}
 			else
 			{
 				// The user did not provide us with texture data
-				FAILED_DEBUG_BREAK(direct3D11Rhi.getD3D11Device()->CreateTexture2D(&d3d11Texture2DDesc, nullptr, &mD3D11Texture2D));
+				FAILED_DEBUG_BREAK(direct3D11Rhi.getD3D11Device()->CreateTexture2D(&d3d11Texture2DDesc, nullptr, &mD3D11Texture2D))
 			}
 
 			// Create requested views
@@ -6729,7 +6725,7 @@ namespace Direct3D11Rhi
 					d3d11ShaderResourceViewDesc.Texture2D.MipLevels	= numberOfMipmaps;
 
 					// Create the Direct3D 11 shader resource view instance
-					FAILED_DEBUG_BREAK(direct3D11Rhi.getD3D11Device()->CreateShaderResourceView(mD3D11Texture2D, &d3d11ShaderResourceViewDesc, &mD3D11ShaderResourceView));
+					FAILED_DEBUG_BREAK(direct3D11Rhi.getD3D11Device()->CreateShaderResourceView(mD3D11Texture2D, &d3d11ShaderResourceViewDesc, &mD3D11ShaderResourceView))
 				}
 
 				// Create the Direct3D 11 unordered access view instance
@@ -6741,7 +6737,7 @@ namespace Direct3D11Rhi
 					d3d11UnorderedAccessViewDesc.ViewDimension = D3D11_UAV_DIMENSION_TEXTURE2D;
 
 					// Create the Direct3D 11 unordered access view instance
-					FAILED_DEBUG_BREAK(direct3D11Rhi.getD3D11Device()->CreateUnorderedAccessView(mD3D11Texture2D, &d3d11UnorderedAccessViewDesc, &mD3D11UnorderedAccessView));
+					FAILED_DEBUG_BREAK(direct3D11Rhi.getD3D11Device()->CreateUnorderedAccessView(mD3D11Texture2D, &d3d11UnorderedAccessViewDesc, &mD3D11UnorderedAccessView))
 				}
 			}
 
@@ -6753,18 +6749,18 @@ namespace Direct3D11Rhi
 
 			// Assign a default name to the resource for debugging purposes
 			#ifdef RHI_DEBUG
-				RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "2D texture", 13);	// 13 = "2D texture: " including terminating zero
+				RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "2D texture", 13)	// 13 = "2D texture: " including terminating zero
 				if (nullptr != mD3D11Texture2D)
 				{
-					FAILED_DEBUG_BREAK(mD3D11Texture2D->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(detailedDebugName)), detailedDebugName));
+					FAILED_DEBUG_BREAK(mD3D11Texture2D->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(detailedDebugName)), detailedDebugName))
 				}
 				if (nullptr != mD3D11ShaderResourceView)
 				{
-					FAILED_DEBUG_BREAK(mD3D11ShaderResourceView->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(detailedDebugName)), detailedDebugName));
+					FAILED_DEBUG_BREAK(mD3D11ShaderResourceView->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(detailedDebugName)), detailedDebugName))
 				}
 				if (nullptr != mD3D11UnorderedAccessView)
 				{
-					FAILED_DEBUG_BREAK(mD3D11UnorderedAccessView->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(detailedDebugName)), detailedDebugName));
+					FAILED_DEBUG_BREAK(mD3D11UnorderedAccessView->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(detailedDebugName)), detailedDebugName))
 				}
 			#endif
 		}
@@ -6883,7 +6879,7 @@ namespace Direct3D11Rhi
 				d3d11ShaderResourceViewDesc.Texture2D.MostDetailedMip = minimumMipmapIndex;
 
 				// Create the Direct3D 11 shader resource view instance
-				FAILED_DEBUG_BREAK(static_cast<Direct3D11Rhi&>(getRhi()).getD3D11Device()->CreateShaderResourceView(mD3D11Texture2D, &d3d11ShaderResourceViewDesc, &mD3D11ShaderResourceView));
+				FAILED_DEBUG_BREAK(static_cast<Direct3D11Rhi&>(getRhi()).getD3D11Device()->CreateShaderResourceView(mD3D11Texture2D, &d3d11ShaderResourceViewDesc, &mD3D11ShaderResourceView))
 			}
 		}
 
@@ -7093,7 +7089,7 @@ namespace Direct3D11Rhi
 						height = getHalfSize(height);
 					}
 				}
-				FAILED_DEBUG_BREAK(direct3D11Rhi.getD3D11Device()->CreateTexture2D(&d3d11Texture2DDesc, d3d11SubresourceData, &mD3D11Texture2D));
+				FAILED_DEBUG_BREAK(direct3D11Rhi.getD3D11Device()->CreateTexture2D(&d3d11Texture2DDesc, d3d11SubresourceData, &mD3D11Texture2D))
 				if (numberOfSlices > MAXIMUM_NUMBER_OF_SLICES)
 				{
 					RHI_FREE(context, d3d11SubresourceData);
@@ -7102,7 +7098,7 @@ namespace Direct3D11Rhi
 			else
 			{
 				// The user did not provide us with texture data
-				FAILED_DEBUG_BREAK(direct3D11Rhi.getD3D11Device()->CreateTexture2D(&d3d11Texture2DDesc, nullptr, &mD3D11Texture2D));
+				FAILED_DEBUG_BREAK(direct3D11Rhi.getD3D11Device()->CreateTexture2D(&d3d11Texture2DDesc, nullptr, &mD3D11Texture2D))
 			}
 
 			// Create requested views
@@ -7119,7 +7115,7 @@ namespace Direct3D11Rhi
 					d3d11ShaderResourceViewDesc.Texture2DArray.ArraySize = numberOfSlices;
 
 					// Create the Direct3D 11 shader resource view instance
-					FAILED_DEBUG_BREAK(direct3D11Rhi.getD3D11Device()->CreateShaderResourceView(mD3D11Texture2D, &d3d11ShaderResourceViewDesc, &mD3D11ShaderResourceView));
+					FAILED_DEBUG_BREAK(direct3D11Rhi.getD3D11Device()->CreateShaderResourceView(mD3D11Texture2D, &d3d11ShaderResourceViewDesc, &mD3D11ShaderResourceView))
 				}
 
 				// Create the Direct3D 11 unordered access view instance
@@ -7132,7 +7128,7 @@ namespace Direct3D11Rhi
 					d3d11UnorderedAccessViewDesc.Texture2DArray.ArraySize = numberOfSlices;
 
 					// Create the Direct3D 11 unordered access view instance
-					FAILED_DEBUG_BREAK(direct3D11Rhi.getD3D11Device()->CreateUnorderedAccessView(mD3D11Texture2D, &d3d11UnorderedAccessViewDesc, &mD3D11UnorderedAccessView));
+					FAILED_DEBUG_BREAK(direct3D11Rhi.getD3D11Device()->CreateUnorderedAccessView(mD3D11Texture2D, &d3d11UnorderedAccessViewDesc, &mD3D11UnorderedAccessView))
 				}
 			}
 
@@ -7144,18 +7140,18 @@ namespace Direct3D11Rhi
 
 			// Assign a default name to the resource for debugging purposes
 			#ifdef RHI_DEBUG
-				RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "2D texture array", 19);	// 19 = "2D texture array: " including terminating zero
+				RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "2D texture array", 19)	// 19 = "2D texture array: " including terminating zero
 				if (nullptr != mD3D11Texture2D)
 				{
-					FAILED_DEBUG_BREAK(mD3D11Texture2D->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(detailedDebugName)), detailedDebugName));
+					FAILED_DEBUG_BREAK(mD3D11Texture2D->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(detailedDebugName)), detailedDebugName))
 				}
 				if (nullptr != mD3D11ShaderResourceView)
 				{
-					FAILED_DEBUG_BREAK(mD3D11ShaderResourceView->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(detailedDebugName)), detailedDebugName));
+					FAILED_DEBUG_BREAK(mD3D11ShaderResourceView->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(detailedDebugName)), detailedDebugName))
 				}
 				if (nullptr != mD3D11UnorderedAccessView)
 				{
-					FAILED_DEBUG_BREAK(mD3D11UnorderedAccessView->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(detailedDebugName)), detailedDebugName));
+					FAILED_DEBUG_BREAK(mD3D11UnorderedAccessView->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(detailedDebugName)), detailedDebugName))
 				}
 			#endif
 		}
@@ -7419,12 +7415,12 @@ namespace Direct3D11Rhi
 						height = getHalfSize(height);
 					}
 				}
-				FAILED_DEBUG_BREAK(direct3D11Rhi.getD3D11Device()->CreateTexture3D(&d3d11Texture3DDesc, d3d11SubresourceData, &mD3D11Texture3D));
+				FAILED_DEBUG_BREAK(direct3D11Rhi.getD3D11Device()->CreateTexture3D(&d3d11Texture3DDesc, d3d11SubresourceData, &mD3D11Texture3D))
 			}
 			else
 			{
 				// The user did not provide us with texture data
-				FAILED_DEBUG_BREAK(direct3D11Rhi.getD3D11Device()->CreateTexture3D(&d3d11Texture3DDesc, nullptr, &mD3D11Texture3D));
+				FAILED_DEBUG_BREAK(direct3D11Rhi.getD3D11Device()->CreateTexture3D(&d3d11Texture3DDesc, nullptr, &mD3D11Texture3D))
 			}
 
 			// Create requested views
@@ -7440,7 +7436,7 @@ namespace Direct3D11Rhi
 					d3d11ShaderResourceViewDesc.Texture3D.MipLevels	= numberOfMipmaps;
 
 					// Create the Direct3D 11 shader resource view instance
-					FAILED_DEBUG_BREAK(direct3D11Rhi.getD3D11Device()->CreateShaderResourceView(mD3D11Texture3D, &d3d11ShaderResourceViewDesc, &mD3D11ShaderResourceView));
+					FAILED_DEBUG_BREAK(direct3D11Rhi.getD3D11Device()->CreateShaderResourceView(mD3D11Texture3D, &d3d11ShaderResourceViewDesc, &mD3D11ShaderResourceView))
 				}
 
 				// Create the Direct3D 11 unordered access view instance
@@ -7453,7 +7449,7 @@ namespace Direct3D11Rhi
 					d3d11UnorderedAccessViewDesc.Texture3D.WSize = depth;
 
 					// Create the Direct3D 11 unordered access view instance
-					FAILED_DEBUG_BREAK(direct3D11Rhi.getD3D11Device()->CreateUnorderedAccessView(mD3D11Texture3D, &d3d11UnorderedAccessViewDesc, &mD3D11UnorderedAccessView));
+					FAILED_DEBUG_BREAK(direct3D11Rhi.getD3D11Device()->CreateUnorderedAccessView(mD3D11Texture3D, &d3d11UnorderedAccessViewDesc, &mD3D11UnorderedAccessView))
 				}
 			}
 
@@ -7465,18 +7461,18 @@ namespace Direct3D11Rhi
 
 			// Assign a default name to the resource for debugging purposes
 			#ifdef RHI_DEBUG
-				RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "3D texture", 13);	// 13 = "3D texture: " including terminating zero
+				RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "3D texture", 13)	// 13 = "3D texture: " including terminating zero
 				if (nullptr != mD3D11Texture3D)
 				{
-					FAILED_DEBUG_BREAK(mD3D11Texture3D->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(detailedDebugName)), detailedDebugName));
+					FAILED_DEBUG_BREAK(mD3D11Texture3D->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(detailedDebugName)), detailedDebugName))
 				}
 				if (nullptr != mD3D11ShaderResourceView)
 				{
-					FAILED_DEBUG_BREAK(mD3D11ShaderResourceView->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(detailedDebugName)), detailedDebugName));
+					FAILED_DEBUG_BREAK(mD3D11ShaderResourceView->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(detailedDebugName)), detailedDebugName))
 				}
 				if (nullptr != mD3D11UnorderedAccessView)
 				{
-					FAILED_DEBUG_BREAK(mD3D11UnorderedAccessView->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(detailedDebugName)), detailedDebugName));
+					FAILED_DEBUG_BREAK(mD3D11UnorderedAccessView->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(detailedDebugName)), detailedDebugName))
 				}
 			#endif
 		}
@@ -7750,12 +7746,12 @@ namespace Direct3D11Rhi
 						height = getHalfSize(height);
 					}
 				}
-				FAILED_DEBUG_BREAK(direct3D11Rhi.getD3D11Device()->CreateTexture2D(&d3d11Texture2DDesc, d3d11SubresourceData, &mD3D11TextureCube));
+				FAILED_DEBUG_BREAK(direct3D11Rhi.getD3D11Device()->CreateTexture2D(&d3d11Texture2DDesc, d3d11SubresourceData, &mD3D11TextureCube))
 			}
 			else
 			{
 				// The user did not provide us with texture data
-				FAILED_DEBUG_BREAK(direct3D11Rhi.getD3D11Device()->CreateTexture2D(&d3d11Texture2DDesc, nullptr, &mD3D11TextureCube));
+				FAILED_DEBUG_BREAK(direct3D11Rhi.getD3D11Device()->CreateTexture2D(&d3d11Texture2DDesc, nullptr, &mD3D11TextureCube))
 			}
 
 			// Create requested views
@@ -7772,7 +7768,7 @@ namespace Direct3D11Rhi
 					d3d11ShaderResourceViewDesc.TextureCube.MostDetailedMip	= 0;
 
 					// Create the Direct3D 11 shader resource view instance
-					FAILED_DEBUG_BREAK(direct3D11Rhi.getD3D11Device()->CreateShaderResourceView(mD3D11TextureCube, &d3d11ShaderResourceViewDesc, &mD3D11ShaderResourceView));
+					FAILED_DEBUG_BREAK(direct3D11Rhi.getD3D11Device()->CreateShaderResourceView(mD3D11TextureCube, &d3d11ShaderResourceViewDesc, &mD3D11ShaderResourceView))
 				}
 
 				// Create the Direct3D 11 unordered access view instance
@@ -7785,7 +7781,7 @@ namespace Direct3D11Rhi
 					d3d11UnorderedAccessViewDesc.Texture2DArray.ArraySize = NUMBER_OF_SLICES;
 
 					// Create the Direct3D 11 unordered access view instance
-					FAILED_DEBUG_BREAK(direct3D11Rhi.getD3D11Device()->CreateUnorderedAccessView(mD3D11TextureCube, &d3d11UnorderedAccessViewDesc, &mD3D11UnorderedAccessView));
+					FAILED_DEBUG_BREAK(direct3D11Rhi.getD3D11Device()->CreateUnorderedAccessView(mD3D11TextureCube, &d3d11UnorderedAccessViewDesc, &mD3D11UnorderedAccessView))
 				}
 			}
 
@@ -7797,18 +7793,18 @@ namespace Direct3D11Rhi
 
 			// Assign a default name to the resource for debugging purposes
 			#ifdef RHI_DEBUG
-				RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "Cube texture", 15);	// 15 = "Cube texture: " including terminating zero
+				RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "Cube texture", 15)	// 15 = "Cube texture: " including terminating zero
 				if (nullptr != mD3D11TextureCube)
 				{
-					FAILED_DEBUG_BREAK(mD3D11TextureCube->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(detailedDebugName)), detailedDebugName));
+					FAILED_DEBUG_BREAK(mD3D11TextureCube->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(detailedDebugName)), detailedDebugName))
 				}
 				if (nullptr != mD3D11ShaderResourceView)
 				{
-					FAILED_DEBUG_BREAK(mD3D11ShaderResourceView->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(detailedDebugName)), detailedDebugName));
+					FAILED_DEBUG_BREAK(mD3D11ShaderResourceView->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(detailedDebugName)), detailedDebugName))
 				}
 				if (nullptr != mD3D11UnorderedAccessView)
 				{
-					FAILED_DEBUG_BREAK(mD3D11UnorderedAccessView->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(detailedDebugName)), detailedDebugName));
+					FAILED_DEBUG_BREAK(mD3D11UnorderedAccessView->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(detailedDebugName)), detailedDebugName))
 				}
 			#endif
 		}
@@ -8096,7 +8092,7 @@ namespace Direct3D11Rhi
 			// Create the Direct3D 11 sampler state
 			// -> "Rhi::SamplerState" maps directly to Direct3D 10 & 11, do not change it
 			static_assert(sizeof(Rhi::SamplerState) == sizeof(D3D11_SAMPLER_DESC), "Direct3D 11 structure mismatch detected");
-			FAILED_DEBUG_BREAK(direct3D11Rhi.getD3D11Device()->CreateSamplerState(reinterpret_cast<const D3D11_SAMPLER_DESC*>(&samplerState), &mD3D11SamplerState));
+			FAILED_DEBUG_BREAK(direct3D11Rhi.getD3D11Device()->CreateSamplerState(reinterpret_cast<const D3D11_SAMPLER_DESC*>(&samplerState), &mD3D11SamplerState))
 
 			// Assign a default name to the resource for debugging purposes
 			#ifdef RHI_DEBUG
@@ -8109,8 +8105,8 @@ namespace Direct3D11Rhi
 					mD3D11SamplerState->GetPrivateData(WKPDID_D3DDebugObjectName, &existingDataSize, nullptr);
 					if (0 == existingDataSize)
 					{
-						RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "Sampler state", 16);	// 16 = "Sampler state: " including terminating zero
-						FAILED_DEBUG_BREAK(mD3D11SamplerState->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(detailedDebugName)), detailedDebugName));
+						RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "Sampler state", 16)	// 16 = "Sampler state: " including terminating zero
+						FAILED_DEBUG_BREAK(mD3D11SamplerState->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(detailedDebugName)), detailedDebugName))
 					}
 				}
 			#endif
@@ -8248,14 +8244,14 @@ namespace Direct3D11Rhi
 			d3d11RasterizerDesc.ScissorEnable			= rasterizerState.scissorEnable;
 			d3d11RasterizerDesc.MultisampleEnable		= rasterizerState.multisampleEnable;
 			d3d11RasterizerDesc.AntialiasedLineEnable	= rasterizerState.antialiasedLineEnable;
-			FAILED_DEBUG_BREAK(direct3D11Rhi.getD3D11Device()->CreateRasterizerState(&d3d11RasterizerDesc, &mD3D11RasterizerState));
+			FAILED_DEBUG_BREAK(direct3D11Rhi.getD3D11Device()->CreateRasterizerState(&d3d11RasterizerDesc, &mD3D11RasterizerState))
 
 			// Assign a default name to the resource for debugging purposes
 			#ifdef RHI_DEBUG
 				if (nullptr != mD3D11RasterizerState)
 				{
 					static constexpr char* NAME = "Rasterizer state";
-					FAILED_DEBUG_BREAK(mD3D11RasterizerState->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(NAME)), NAME));
+					FAILED_DEBUG_BREAK(mD3D11RasterizerState->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(NAME)), NAME))
 				}
 			#endif
 		}
@@ -8328,14 +8324,14 @@ namespace Direct3D11Rhi
 			// Create the Direct3D 11 depth stencil state
 			// -> "ID3D11Device::CreateDepthStencilState()" takes automatically care of duplicate depth stencil state handling
 			// -> "Rhi::DepthStencilState" maps directly to Direct3D 10 & 11 & 12, do not change it
-			FAILED_DEBUG_BREAK(direct3D11Rhi.getD3D11Device()->CreateDepthStencilState(reinterpret_cast<const D3D11_DEPTH_STENCIL_DESC*>(&depthStencilState), &mD3D11DepthStencilState));
+			FAILED_DEBUG_BREAK(direct3D11Rhi.getD3D11Device()->CreateDepthStencilState(reinterpret_cast<const D3D11_DEPTH_STENCIL_DESC*>(&depthStencilState), &mD3D11DepthStencilState))
 
 			// Assign a default name to the resource for debugging purposes
 			#ifdef RHI_DEBUG
 				if (nullptr != mD3D11DepthStencilState)
 				{
 					static constexpr char* NAME = "Depth stencil state";
-					FAILED_DEBUG_BREAK(mD3D11DepthStencilState->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(NAME)), NAME));
+					FAILED_DEBUG_BREAK(mD3D11DepthStencilState->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(NAME)), NAME))
 				}
 			#endif
 		}
@@ -8409,14 +8405,14 @@ namespace Direct3D11Rhi
 			// -> "ID3D11Device::CreateBlendState()" takes automatically care of duplicate blend state handling
 			// -> "Rhi::DepthStencilState" maps directly to Direct3D 10 & 11, do not change it
 			static_assert(sizeof(Rhi::BlendState) == sizeof(D3D11_BLEND_DESC), "Direct3D 11 structure mismatch detected");
-			FAILED_DEBUG_BREAK(direct3D11Rhi.getD3D11Device()->CreateBlendState(reinterpret_cast<const D3D11_BLEND_DESC*>(&blendState), &mD3D11BlendState));
+			FAILED_DEBUG_BREAK(direct3D11Rhi.getD3D11Device()->CreateBlendState(reinterpret_cast<const D3D11_BLEND_DESC*>(&blendState), &mD3D11BlendState))
 
 			// Assign a default name to the resource for debugging purposes
 			#ifdef RHI_DEBUG
 				if (nullptr != mD3D11BlendState)
 				{
 					static constexpr char* NAME = "Blend state";
-					FAILED_DEBUG_BREAK(mD3D11BlendState->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(NAME)), NAME));
+					FAILED_DEBUG_BREAK(mD3D11BlendState->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(NAME)), NAME))
 				}
 			#endif
 		}
@@ -8478,7 +8474,7 @@ namespace Direct3D11Rhi
 		*  @brief
 		*    Constructor
 		*
-		*  @param[in] Rhi
+		*  @param[in] rhi
 		*    Owner RHI instance
 		*  @param[in] numberOfColorAttachments
 		*    Number of color render target textures, must be <="Rhi::Capabilities::maximumNumberOfSimultaneousRenderTargets"
@@ -8658,7 +8654,7 @@ namespace Direct3D11Rhi
 				ID3D11Device* d3d11Device = direct3D11Rhi.getD3D11Device();
 				for (uint32_t i = 0; i < numberOfQueries; ++i)
 				{
-					FAILED_DEBUG_BREAK(d3d11Device->CreateQuery(&d3d11QueryDesc, &mD3D11Queries[i]));
+					FAILED_DEBUG_BREAK(d3d11Device->CreateQuery(&d3d11QueryDesc, &mD3D11Queries[i]))
 				}
 			}
 
@@ -8668,14 +8664,14 @@ namespace Direct3D11Rhi
 				{
 					case Rhi::QueryType::OCCLUSION:
 					{
-						RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "Occlusion query", 18);	// 18 = "Occlusion query: " including terminating zero
+						RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "Occlusion query", 18)	// 18 = "Occlusion query: " including terminating zero
 						const UINT detailedDebugNameLength = static_cast<UINT>(strlen(detailedDebugName));
 						for (uint32_t i = 0; i < mNumberOfQueries; ++i)
 						{
 							ID3D11Query* d3d11Query = mD3D11Queries[i];
 							if (nullptr != d3d11Query)
 							{
-								FAILED_DEBUG_BREAK(d3d11Query->SetPrivateData(WKPDID_D3DDebugObjectName, detailedDebugNameLength, detailedDebugName));
+								FAILED_DEBUG_BREAK(d3d11Query->SetPrivateData(WKPDID_D3DDebugObjectName, detailedDebugNameLength, detailedDebugName))
 							}
 						}
 						break;
@@ -8683,14 +8679,14 @@ namespace Direct3D11Rhi
 
 					case Rhi::QueryType::PIPELINE_STATISTICS:
 					{
-						RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "Pipeline statistics query", 28);	// 28 = "Pipeline statistics query: " including terminating zero
+						RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "Pipeline statistics query", 28)	// 28 = "Pipeline statistics query: " including terminating zero
 						const UINT detailedDebugNameLength = static_cast<UINT>(strlen(detailedDebugName));
 						for (uint32_t i = 0; i < mNumberOfQueries; ++i)
 						{
 							ID3D11Query* d3d11Query = mD3D11Queries[i];
 							if (nullptr != d3d11Query)
 							{
-								FAILED_DEBUG_BREAK(d3d11Query->SetPrivateData(WKPDID_D3DDebugObjectName, detailedDebugNameLength, detailedDebugName));
+								FAILED_DEBUG_BREAK(d3d11Query->SetPrivateData(WKPDID_D3DDebugObjectName, detailedDebugNameLength, detailedDebugName))
 							}
 						}
 						break;
@@ -8698,14 +8694,14 @@ namespace Direct3D11Rhi
 
 					case Rhi::QueryType::TIMESTAMP:
 					{
-						RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "Timestamp query", 18);	// 18 = "Timestamp query: " including terminating zero
+						RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "Timestamp query", 18)	// 18 = "Timestamp query: " including terminating zero
 						const UINT detailedDebugNameLength = static_cast<UINT>(strlen(detailedDebugName));
 						for (uint32_t i = 0; i < mNumberOfQueries; ++i)
 						{
 							ID3D11Query* d3d11Query = mD3D11Queries[i];
 							if (nullptr != d3d11Query)
 							{
-								FAILED_DEBUG_BREAK(d3d11Query->SetPrivateData(WKPDID_D3DDebugObjectName, detailedDebugNameLength, detailedDebugName));
+								FAILED_DEBUG_BREAK(d3d11Query->SetPrivateData(WKPDID_D3DDebugObjectName, detailedDebugNameLength, detailedDebugName))
 							}
 						}
 						break;
@@ -8831,7 +8827,7 @@ namespace Direct3D11Rhi
 		{
 			const RenderPass& d3d11RenderPass = static_cast<RenderPass&>(renderPass);
 			const Direct3D11Rhi& direct3D11Rhi = static_cast<Direct3D11Rhi&>(d3d11RenderPass.getRhi());
-			FAILED_DEBUG_BREAK(direct3D11Rhi.getD3D11DeviceContext()->QueryInterface(__uuidof(ID3D11DeviceContext1), reinterpret_cast<void**>(&mD3D11DeviceContext1)));
+			FAILED_DEBUG_BREAK(direct3D11Rhi.getD3D11DeviceContext()->QueryInterface(__uuidof(ID3D11DeviceContext1), reinterpret_cast<void**>(&mD3D11DeviceContext1)))
 
 			// Sanity check
 			RHI_ASSERT(direct3D11Rhi.getContext(), 1 == d3d11RenderPass.getNumberOfColorAttachments(), "There must be exactly one Direct3D 11 render pass color attachment")
@@ -8849,10 +8845,10 @@ namespace Direct3D11Rhi
 			{
 				IDXGIDevice* dxgiDevice = nullptr;
 				IDXGIAdapter* dxgiAdapter = nullptr;
-				FAILED_DEBUG_BREAK(d3d11Device->QueryInterface(IID_PPV_ARGS(&dxgiDevice)));
-				FAILED_DEBUG_BREAK(dxgiDevice->GetAdapter(&dxgiAdapter));
-				FAILED_DEBUG_BREAK(dxgiAdapter->GetParent(IID_PPV_ARGS(&dxgiFactory1)));
-				FAILED_DEBUG_BREAK(dxgiAdapter->GetParent(IID_PPV_ARGS(&dxgiFactory2)));
+				FAILED_DEBUG_BREAK(d3d11Device->QueryInterface(IID_PPV_ARGS(&dxgiDevice)))
+				FAILED_DEBUG_BREAK(dxgiDevice->GetAdapter(&dxgiAdapter))
+				FAILED_DEBUG_BREAK(dxgiAdapter->GetParent(IID_PPV_ARGS(&dxgiFactory1)))
+				FAILED_DEBUG_BREAK(dxgiAdapter->GetParent(IID_PPV_ARGS(&dxgiFactory2)))
 
 				// Determines whether tearing support is available for fullscreen borderless windows
 				// -> To unlock frame rates of UWP applications on the Windows Store and providing support for both AMD Freesync and NVIDIA's G-SYNC we must explicitly allow tearing
@@ -8860,7 +8856,7 @@ namespace Direct3D11Rhi
 				if (isWindows10OrGreater)
 				{
 					IDXGIFactory5* dxgiFactory5 = nullptr;
-					FAILED_DEBUG_BREAK(dxgiAdapter->GetParent(IID_PPV_ARGS(&dxgiFactory5)));
+					FAILED_DEBUG_BREAK(dxgiAdapter->GetParent(IID_PPV_ARGS(&dxgiFactory5)))
 					if (nullptr != dxgiFactory5)
 					{
 						BOOL allowTearing = FALSE;
@@ -8941,7 +8937,7 @@ namespace Direct3D11Rhi
 
 					// Create swap chain
 					IDXGISwapChain1* dxgiSwapChain = nullptr;
-					FAILED_DEBUG_BREAK(dxgiFactory2->CreateSwapChainForHwnd(d3d11Device, hWnd, &dxgiSwapChainDesc1, &dxgiSwapChainFullscreenDesc, nullptr, &dxgiSwapChain));
+					FAILED_DEBUG_BREAK(dxgiFactory2->CreateSwapChainForHwnd(d3d11Device, hWnd, &dxgiSwapChainDesc1, &dxgiSwapChainFullscreenDesc, nullptr, &dxgiSwapChain))
 					mDxgiSwapChain = reinterpret_cast<IDXGISwapChain*>(dxgiSwapChain);
 				}
 				else
@@ -8963,13 +8959,13 @@ namespace Direct3D11Rhi
 					dxgiSwapChainDesc.Flags								 = mAllowTearing ? DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING : 0u;
 
 					// Create swap chain
-					FAILED_DEBUG_BREAK(dxgiFactory1->CreateSwapChain(d3d11Device, &dxgiSwapChainDesc, &mDxgiSwapChain));
+					FAILED_DEBUG_BREAK(dxgiFactory1->CreateSwapChain(d3d11Device, &dxgiSwapChainDesc, &mDxgiSwapChain))
 				}
 			}
 
 			// Disable alt-return for automatic fullscreen state change
 			// -> We handle this manually to have more control over it
-			FAILED_DEBUG_BREAK(dxgiFactory1->MakeWindowAssociation(hWnd, DXGI_MWA_NO_ALT_ENTER));
+			FAILED_DEBUG_BREAK(dxgiFactory1->MakeWindowAssociation(hWnd, DXGI_MWA_NO_ALT_ENTER))
 
 			// Release our DXGI factory
 			dxgiFactory1->Release();
@@ -8982,15 +8978,15 @@ namespace Direct3D11Rhi
 
 				// Assign a default name to the resource for debugging purposes
 				#ifdef RHI_DEBUG
-					RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "Swap chain", 13);	// 13 = "Swap chain: " including terminating zero
-					FAILED_DEBUG_BREAK(mDxgiSwapChain->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(detailedDebugName)), detailedDebugName));
+					RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "Swap chain", 13)	// 13 = "Swap chain: " including terminating zero
+					FAILED_DEBUG_BREAK(mDxgiSwapChain->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(detailedDebugName)), detailedDebugName))
 					if (nullptr != mD3D11RenderTargetView)
 					{
-						FAILED_DEBUG_BREAK(mD3D11RenderTargetView->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(detailedDebugName)), detailedDebugName));
+						FAILED_DEBUG_BREAK(mD3D11RenderTargetView->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(detailedDebugName)), detailedDebugName))
 					}
 					if (nullptr != mD3D11DepthStencilView)
 					{
-						FAILED_DEBUG_BREAK(mD3D11DepthStencilView->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(detailedDebugName)), detailedDebugName));
+						FAILED_DEBUG_BREAK(mD3D11DepthStencilView->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(detailedDebugName)), detailedDebugName))
 					}
 				#endif
 			}
@@ -9087,7 +9083,7 @@ namespace Direct3D11Rhi
 			{
 				// Get the Direct3D 11 swap chain description
 				DXGI_SWAP_CHAIN_DESC dxgiSwapChainDesc;
-				FAILED_DEBUG_BREAK(mDxgiSwapChain->GetDesc(&dxgiSwapChainDesc));
+				FAILED_DEBUG_BREAK(mDxgiSwapChain->GetDesc(&dxgiSwapChainDesc))
 
 				// Get the width and height
 				long swapChainWidth  = 1;
@@ -9138,7 +9134,7 @@ namespace Direct3D11Rhi
 			{
 				// Get the Direct3D 11 swap chain description
 				DXGI_SWAP_CHAIN_DESC dxgiSwapChainDesc;
-				FAILED_DEBUG_BREAK(mDxgiSwapChain->GetDesc(&dxgiSwapChainDesc));
+				FAILED_DEBUG_BREAK(mDxgiSwapChain->GetDesc(&dxgiSwapChainDesc))
 
 				// Return the native window handle
 				return reinterpret_cast<Rhi::handle>(dxgiSwapChainDesc.OutputWindow);
@@ -9244,7 +9240,7 @@ namespace Direct3D11Rhi
 			// Is there a valid swap chain?
 			if (nullptr != mDxgiSwapChain)
 			{
-				FAILED_DEBUG_BREAK(mDxgiSwapChain->GetFullscreenState(&fullscreen, nullptr));
+				FAILED_DEBUG_BREAK(mDxgiSwapChain->GetFullscreenState(&fullscreen, nullptr))
 			}
 
 			// Done
@@ -9256,7 +9252,7 @@ namespace Direct3D11Rhi
 			// Is there a valid swap chain?
 			if (nullptr != mDxgiSwapChain)
 			{
-				FAILED_DEBUG_BREAK(mDxgiSwapChain->SetFullscreenState(fullscreen, nullptr));
+				FAILED_DEBUG_BREAK(mDxgiSwapChain->SetFullscreenState(fullscreen, nullptr))
 			}
 		}
 
@@ -9309,7 +9305,7 @@ namespace Direct3D11Rhi
 		{
 			// Get the Direct3D 11 swap chain description
 			DXGI_SWAP_CHAIN_DESC dxgiSwapChainDesc;
-			FAILED_DEBUG_BREAK(mDxgiSwapChain->GetDesc(&dxgiSwapChainDesc));
+			FAILED_DEBUG_BREAK(mDxgiSwapChain->GetDesc(&dxgiSwapChainDesc))
 
 			// Get the client rectangle of the native output window
 			RECT rect;
@@ -9342,13 +9338,13 @@ namespace Direct3D11Rhi
 		{
 			// Create a render target view
 			ID3D11Texture2D* d3d11Texture2DBackBuffer = nullptr;
-			FAILED_DEBUG_BREAK(mDxgiSwapChain->GetBuffer(0, __uuidof(ID3D11Texture2D), reinterpret_cast<LPVOID*>(&d3d11Texture2DBackBuffer)));
+			FAILED_DEBUG_BREAK(mDxgiSwapChain->GetBuffer(0, __uuidof(ID3D11Texture2D), reinterpret_cast<LPVOID*>(&d3d11Texture2DBackBuffer)))
 
 			// Get the Direct3D 11 device instance
 			ID3D11Device* d3d11Device = static_cast<Direct3D11Rhi&>(getRhi()).getD3D11Device();
 
 			// Create a render target view
-			FAILED_DEBUG_BREAK(d3d11Device->CreateRenderTargetView(d3d11Texture2DBackBuffer, nullptr, &mD3D11RenderTargetView));
+			FAILED_DEBUG_BREAK(d3d11Device->CreateRenderTargetView(d3d11Texture2DBackBuffer, nullptr, &mD3D11RenderTargetView))
 			d3d11Texture2DBackBuffer->Release();
 
 			// Create depth stencil texture
@@ -9374,14 +9370,14 @@ namespace Direct3D11Rhi
 				d3d11Texture2DDesc.BindFlags		  = D3D11_BIND_DEPTH_STENCIL;
 				d3d11Texture2DDesc.CPUAccessFlags	  = 0;
 				d3d11Texture2DDesc.MiscFlags		  = 0;
-				FAILED_DEBUG_BREAK(d3d11Device->CreateTexture2D(&d3d11Texture2DDesc, nullptr, &d3d11Texture2DDepthStencil));
+				FAILED_DEBUG_BREAK(d3d11Device->CreateTexture2D(&d3d11Texture2DDesc, nullptr, &d3d11Texture2DDepthStencil))
 
 				// Create the depth stencil view
 				D3D11_DEPTH_STENCIL_VIEW_DESC d3d11DepthStencilViewDesc = {};
 				d3d11DepthStencilViewDesc.Format			 = d3d11Texture2DDesc.Format;
 				d3d11DepthStencilViewDesc.ViewDimension		 = D3D11_DSV_DIMENSION_TEXTURE2D;
 				d3d11DepthStencilViewDesc.Texture2D.MipSlice = 0;
-				FAILED_DEBUG_BREAK(d3d11Device->CreateDepthStencilView(d3d11Texture2DDepthStencil, &d3d11DepthStencilViewDesc, &mD3D11DepthStencilView));
+				FAILED_DEBUG_BREAK(d3d11Device->CreateDepthStencilView(d3d11Texture2DDepthStencil, &d3d11DepthStencilViewDesc, &mD3D11DepthStencilView))
 				d3d11Texture2DDepthStencil->Release();
 			}
 		}
@@ -9488,7 +9484,7 @@ namespace Direct3D11Rhi
 							d3d11RenderTargetViewDesc.Format			 = Mapping::getDirect3D11Format(texture2D->getTextureFormat());
 							d3d11RenderTargetViewDesc.ViewDimension		 = (texture2D->getNumberOfMultisamples() > 1) ? D3D11_RTV_DIMENSION_TEXTURE2DMS : D3D11_RTV_DIMENSION_TEXTURE2D;
 							d3d11RenderTargetViewDesc.Texture2D.MipSlice = colorFramebufferAttachments->mipmapIndex;
-							FAILED_DEBUG_BREAK(direct3D11Rhi.getD3D11Device()->CreateRenderTargetView(texture2D->getD3D11Texture2D(), &d3d11RenderTargetViewDesc, d3d11RenderTargetView));
+							FAILED_DEBUG_BREAK(direct3D11Rhi.getD3D11Device()->CreateRenderTargetView(texture2D->getD3D11Texture2D(), &d3d11RenderTargetViewDesc, d3d11RenderTargetView))
 							break;
 						}
 
@@ -9505,7 +9501,7 @@ namespace Direct3D11Rhi
 							d3d11RenderTargetViewDesc.Texture2DArray.MipSlice		 = colorFramebufferAttachments->mipmapIndex;
 							d3d11RenderTargetViewDesc.Texture2DArray.FirstArraySlice = colorFramebufferAttachments->layerIndex;
 							d3d11RenderTargetViewDesc.Texture2DArray.ArraySize		 = 1;
-							FAILED_DEBUG_BREAK(direct3D11Rhi.getD3D11Device()->CreateRenderTargetView(texture2DArray->getD3D11Texture2D(), &d3d11RenderTargetViewDesc, d3d11RenderTargetView));
+							FAILED_DEBUG_BREAK(direct3D11Rhi.getD3D11Device()->CreateRenderTargetView(texture2DArray->getD3D11Texture2D(), &d3d11RenderTargetViewDesc, d3d11RenderTargetView))
 							break;
 						}
 
@@ -9570,7 +9566,7 @@ namespace Direct3D11Rhi
 						d3d11DepthStencilViewDesc.Format			 = Mapping::getDirect3D11Format(texture2D->getTextureFormat());
 						d3d11DepthStencilViewDesc.ViewDimension		 = (texture2D->getNumberOfMultisamples() > 1) ? D3D11_DSV_DIMENSION_TEXTURE2DMS : D3D11_DSV_DIMENSION_TEXTURE2D;
 						d3d11DepthStencilViewDesc.Texture2D.MipSlice = depthStencilFramebufferAttachment->mipmapIndex;
-						FAILED_DEBUG_BREAK(direct3D11Rhi.getD3D11Device()->CreateDepthStencilView(texture2D->getD3D11Texture2D(), &d3d11DepthStencilViewDesc, &mD3D11DepthStencilView));
+						FAILED_DEBUG_BREAK(direct3D11Rhi.getD3D11Device()->CreateDepthStencilView(texture2D->getD3D11Texture2D(), &d3d11DepthStencilViewDesc, &mD3D11DepthStencilView))
 						break;
 					}
 
@@ -9587,7 +9583,7 @@ namespace Direct3D11Rhi
 						d3d11DepthStencilViewDesc.Texture2DArray.MipSlice		 = depthStencilFramebufferAttachment->mipmapIndex;
 						d3d11DepthStencilViewDesc.Texture2DArray.FirstArraySlice = depthStencilFramebufferAttachment->layerIndex;
 						d3d11DepthStencilViewDesc.Texture2DArray.ArraySize		 = 1;
-						FAILED_DEBUG_BREAK(direct3D11Rhi.getD3D11Device()->CreateDepthStencilView(texture2DArray->getD3D11Texture2D(), &d3d11DepthStencilViewDesc, &mD3D11DepthStencilView));
+						FAILED_DEBUG_BREAK(direct3D11Rhi.getD3D11Device()->CreateDepthStencilView(texture2DArray->getD3D11Texture2D(), &d3d11DepthStencilViewDesc, &mD3D11DepthStencilView))
 						break;
 					}
 
@@ -9638,7 +9634,7 @@ namespace Direct3D11Rhi
 
 			// Assign a default name to the resource for debugging purposes
 			#ifdef RHI_DEBUG
-				RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "FBO", 6);	// 6 = "FBO: " including terminating zero
+				RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "FBO", 6)	// 6 = "FBO: " including terminating zero
 				const size_t detailedDebugNameLength = strlen(detailedDebugName);
 
 				{ // Assign a debug name to the Direct3D 11 render target view, do also add the index to the name
@@ -9648,7 +9644,7 @@ namespace Direct3D11Rhi
 					for (ID3D11RenderTargetView** d3d11RenderTargetView = mD3D11RenderTargetViews; d3d11RenderTargetView < d3d11RenderTargetViewsEnd; ++d3d11RenderTargetView)
 					{
 						sprintf_s(nameWithIndex, adjustedDetailedDebugNameLength, "%s [%u]", detailedDebugName, static_cast<uint32_t>(d3d11RenderTargetView - mD3D11RenderTargetViews));
-						FAILED_DEBUG_BREAK((*d3d11RenderTargetView)->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(adjustedDetailedDebugNameLength), nameWithIndex));
+						FAILED_DEBUG_BREAK((*d3d11RenderTargetView)->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(adjustedDetailedDebugNameLength), nameWithIndex))
 					}
 					RHI_FREE(context, nameWithIndex);
 				}
@@ -9656,7 +9652,7 @@ namespace Direct3D11Rhi
 				// Assign a debug name to the Direct3D 11 depth stencil view
 				if (nullptr != mD3D11DepthStencilView)
 				{
-					FAILED_DEBUG_BREAK(mD3D11DepthStencilView->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(detailedDebugNameLength), detailedDebugName));
+					FAILED_DEBUG_BREAK(mD3D11DepthStencilView->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(detailedDebugNameLength), detailedDebugName))
 				}
 			#endif
 		}
@@ -9852,14 +9848,14 @@ namespace Direct3D11Rhi
 			memcpy(mD3DBlobVertexShader->GetBufferPointer(), shaderBytecode.getBytecode(), shaderBytecode.getNumberOfBytes());
 
 			// Create the Direct3D 11 vertex shader
-			FAILED_DEBUG_BREAK(direct3D11Rhi.getD3D11Device()->CreateVertexShader(shaderBytecode.getBytecode(), shaderBytecode.getNumberOfBytes(), nullptr, &mD3D11VertexShader));
+			FAILED_DEBUG_BREAK(direct3D11Rhi.getD3D11Device()->CreateVertexShader(shaderBytecode.getBytecode(), shaderBytecode.getNumberOfBytes(), nullptr, &mD3D11VertexShader))
 
 			// Assign a default name to the resource for debugging purposes
 			#ifdef RHI_DEBUG
 				if (nullptr != mD3D11VertexShader)
 				{
-					RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "VS", 5);	// 5 = "VS: " including terminating zero
-					FAILED_DEBUG_BREAK(mD3D11VertexShader->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(detailedDebugName)), detailedDebugName));
+					RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "VS", 5)	// 5 = "VS: " including terminating zero
+					FAILED_DEBUG_BREAK(mD3D11VertexShader->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(detailedDebugName)), detailedDebugName))
 				}
 			#endif
 		}
@@ -9883,7 +9879,7 @@ namespace Direct3D11Rhi
 			if (nullptr != mD3DBlobVertexShader)
 			{
 				// Create the Direct3D 11 vertex shader
-				FAILED_DEBUG_BREAK(direct3D11Rhi.getD3D11Device()->CreateVertexShader(mD3DBlobVertexShader->GetBufferPointer(), mD3DBlobVertexShader->GetBufferSize(), nullptr, &mD3D11VertexShader));
+				FAILED_DEBUG_BREAK(direct3D11Rhi.getD3D11Device()->CreateVertexShader(mD3DBlobVertexShader->GetBufferPointer(), mD3DBlobVertexShader->GetBufferSize(), nullptr, &mD3D11VertexShader))
 
 				// Return shader bytecode, if requested do to so
 				if (nullptr != shaderBytecode)
@@ -9895,8 +9891,8 @@ namespace Direct3D11Rhi
 				#ifdef RHI_DEBUG
 					if (nullptr != mD3D11VertexShader)
 					{
-						RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "VS", 5);	// 5 = "VS: " including terminating zero
-						FAILED_DEBUG_BREAK(mD3D11VertexShader->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(detailedDebugName)), detailedDebugName));
+						RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "VS", 5)	// 5 = "VS: " including terminating zero
+						FAILED_DEBUG_BREAK(mD3D11VertexShader->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(detailedDebugName)), detailedDebugName))
 					}
 				#endif
 			}
@@ -10016,14 +10012,14 @@ namespace Direct3D11Rhi
 			mD3D11HullShader(nullptr)
 		{
 			// Create the Direct3D 11 hull shader
-			FAILED_DEBUG_BREAK(direct3D11Rhi.getD3D11Device()->CreateHullShader(shaderBytecode.getBytecode(), shaderBytecode.getNumberOfBytes(), nullptr, &mD3D11HullShader));
+			FAILED_DEBUG_BREAK(direct3D11Rhi.getD3D11Device()->CreateHullShader(shaderBytecode.getBytecode(), shaderBytecode.getNumberOfBytes(), nullptr, &mD3D11HullShader))
 
 			// Assign a default name to the resource for debugging purposes
 			#ifdef RHI_DEBUG
 				if (nullptr != mD3D11HullShader)
 				{
-					RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "TCS", 6);	// 6 = "TCS: " including terminating zero
-					FAILED_DEBUG_BREAK(mD3D11HullShader->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(detailedDebugName)), detailedDebugName));
+					RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "TCS", 6)	// 6 = "TCS: " including terminating zero
+					FAILED_DEBUG_BREAK(mD3D11HullShader->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(detailedDebugName)), detailedDebugName))
 				}
 			#endif
 		}
@@ -10046,7 +10042,7 @@ namespace Direct3D11Rhi
 			if (nullptr != d3dBlob)
 			{
 				// Create the Direct3D 11 hull shader
-				FAILED_DEBUG_BREAK(direct3D11Rhi.getD3D11Device()->CreateHullShader(d3dBlob->GetBufferPointer(), d3dBlob->GetBufferSize(), nullptr, &mD3D11HullShader));
+				FAILED_DEBUG_BREAK(direct3D11Rhi.getD3D11Device()->CreateHullShader(d3dBlob->GetBufferPointer(), d3dBlob->GetBufferSize(), nullptr, &mD3D11HullShader))
 
 				// Return shader bytecode, if requested do to so
 				if (nullptr != shaderBytecode)
@@ -10061,8 +10057,8 @@ namespace Direct3D11Rhi
 				#ifdef RHI_DEBUG
 					if (nullptr != mD3D11HullShader)
 					{
-						RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "TCS", 6);	// 6 = "TCS: " including terminating zero
-						FAILED_DEBUG_BREAK(mD3D11HullShader->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(detailedDebugName)), detailedDebugName));
+						RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "TCS", 6)	// 6 = "TCS: " including terminating zero
+						FAILED_DEBUG_BREAK(mD3D11HullShader->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(detailedDebugName)), detailedDebugName))
 					}
 				#endif
 			}
@@ -10163,14 +10159,14 @@ namespace Direct3D11Rhi
 			mD3D11DomainShader(nullptr)
 		{
 			// Create the Direct3D 11 domain shader
-			FAILED_DEBUG_BREAK(direct3D11Rhi.getD3D11Device()->CreateDomainShader(shaderBytecode.getBytecode(), shaderBytecode.getNumberOfBytes(), nullptr, &mD3D11DomainShader));
+			FAILED_DEBUG_BREAK(direct3D11Rhi.getD3D11Device()->CreateDomainShader(shaderBytecode.getBytecode(), shaderBytecode.getNumberOfBytes(), nullptr, &mD3D11DomainShader))
 
 			// Assign a default name to the resource for debugging purposes
 			#ifdef RHI_DEBUG
 				if (nullptr != mD3D11DomainShader)
 				{
-					RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "TES", 6);	// 6 = "TES: " including terminating zero
-					FAILED_DEBUG_BREAK(mD3D11DomainShader->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(detailedDebugName)), detailedDebugName));
+					RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "TES", 6)	// 6 = "TES: " including terminating zero
+					FAILED_DEBUG_BREAK(mD3D11DomainShader->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(detailedDebugName)), detailedDebugName))
 				}
 			#endif
 		}
@@ -10193,7 +10189,7 @@ namespace Direct3D11Rhi
 			if (nullptr != d3dBlob)
 			{
 				// Create the Direct3D 11 domain shader
-				FAILED_DEBUG_BREAK(direct3D11Rhi.getD3D11Device()->CreateDomainShader(d3dBlob->GetBufferPointer(), d3dBlob->GetBufferSize(), nullptr, &mD3D11DomainShader));
+				FAILED_DEBUG_BREAK(direct3D11Rhi.getD3D11Device()->CreateDomainShader(d3dBlob->GetBufferPointer(), d3dBlob->GetBufferSize(), nullptr, &mD3D11DomainShader))
 
 				// Return shader bytecode, if requested do to so
 				if (nullptr != shaderBytecode)
@@ -10208,8 +10204,8 @@ namespace Direct3D11Rhi
 				#ifdef RHI_DEBUG
 					if (nullptr != mD3D11DomainShader)
 					{
-						RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "TES", 6);	// 6 = "TES: " including terminating zero
-						FAILED_DEBUG_BREAK(mD3D11DomainShader->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(detailedDebugName)), detailedDebugName));
+						RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "TES", 6)	// 6 = "TES: " including terminating zero
+						FAILED_DEBUG_BREAK(mD3D11DomainShader->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(detailedDebugName)), detailedDebugName))
 					}
 				#endif
 			}
@@ -10310,14 +10306,14 @@ namespace Direct3D11Rhi
 			mD3D11GeometryShader(nullptr)
 		{
 			// Create the Direct3D 11 geometry shader
-			FAILED_DEBUG_BREAK(direct3D11Rhi.getD3D11Device()->CreateGeometryShader(shaderBytecode.getBytecode(), shaderBytecode.getNumberOfBytes(), nullptr, &mD3D11GeometryShader));
+			FAILED_DEBUG_BREAK(direct3D11Rhi.getD3D11Device()->CreateGeometryShader(shaderBytecode.getBytecode(), shaderBytecode.getNumberOfBytes(), nullptr, &mD3D11GeometryShader))
 
 			// Assign a default name to the resource for debugging purposes
 			#ifdef RHI_DEBUG
 				if (nullptr != mD3D11GeometryShader)
 				{
-					RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "GS", 5);	// 5 = "GS: " including terminating zero
-					FAILED_DEBUG_BREAK(mD3D11GeometryShader->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(detailedDebugName)), detailedDebugName));
+					RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "GS", 5)	// 5 = "GS: " including terminating zero
+					FAILED_DEBUG_BREAK(mD3D11GeometryShader->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(detailedDebugName)), detailedDebugName))
 				}
 			#endif
 		}
@@ -10340,7 +10336,7 @@ namespace Direct3D11Rhi
 			if (nullptr != d3dBlob)
 			{
 				// Create the Direct3D 11 geometry shader
-				FAILED_DEBUG_BREAK(direct3D11Rhi.getD3D11Device()->CreateGeometryShader(d3dBlob->GetBufferPointer(), d3dBlob->GetBufferSize(), nullptr, &mD3D11GeometryShader));
+				FAILED_DEBUG_BREAK(direct3D11Rhi.getD3D11Device()->CreateGeometryShader(d3dBlob->GetBufferPointer(), d3dBlob->GetBufferSize(), nullptr, &mD3D11GeometryShader))
 
 				// Return shader bytecode, if requested do to so
 				if (nullptr != shaderBytecode)
@@ -10355,8 +10351,8 @@ namespace Direct3D11Rhi
 				#ifdef RHI_DEBUG
 					if (nullptr != mD3D11GeometryShader)
 					{
-						RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "GS", 5);	// 5 = "GS: " including terminating zero
-						FAILED_DEBUG_BREAK(mD3D11GeometryShader->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(detailedDebugName)), detailedDebugName));
+						RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "GS", 5)	// 5 = "GS: " including terminating zero
+						FAILED_DEBUG_BREAK(mD3D11GeometryShader->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(detailedDebugName)), detailedDebugName))
 					}
 				#endif
 			}
@@ -10457,14 +10453,14 @@ namespace Direct3D11Rhi
 			mD3D11PixelShader(nullptr)
 		{
 			// Create the Direct3D 11 pixel shader
-			FAILED_DEBUG_BREAK(direct3D11Rhi.getD3D11Device()->CreatePixelShader(shaderBytecode.getBytecode(), shaderBytecode.getNumberOfBytes(), nullptr, &mD3D11PixelShader));
+			FAILED_DEBUG_BREAK(direct3D11Rhi.getD3D11Device()->CreatePixelShader(shaderBytecode.getBytecode(), shaderBytecode.getNumberOfBytes(), nullptr, &mD3D11PixelShader))
 
 			// Assign a default name to the resource for debugging purposes
 			#ifdef RHI_DEBUG
 				if (nullptr != mD3D11PixelShader)
 				{
-					RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "FS", 5);	// 5 = "FS: " including terminating zero
-					FAILED_DEBUG_BREAK(mD3D11PixelShader->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(detailedDebugName)), detailedDebugName));
+					RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "FS", 5)	// 5 = "FS: " including terminating zero
+					FAILED_DEBUG_BREAK(mD3D11PixelShader->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(detailedDebugName)), detailedDebugName))
 				}
 			#endif
 		}
@@ -10487,7 +10483,7 @@ namespace Direct3D11Rhi
 			if (nullptr != d3dBlob)
 			{
 				// Create the Direct3D 11 pixel shader
-				FAILED_DEBUG_BREAK(direct3D11Rhi.getD3D11Device()->CreatePixelShader(d3dBlob->GetBufferPointer(), d3dBlob->GetBufferSize(), nullptr, &mD3D11PixelShader));
+				FAILED_DEBUG_BREAK(direct3D11Rhi.getD3D11Device()->CreatePixelShader(d3dBlob->GetBufferPointer(), d3dBlob->GetBufferSize(), nullptr, &mD3D11PixelShader))
 
 				// Return shader bytecode, if requested do to so
 				if (nullptr != shaderBytecode)
@@ -10502,8 +10498,8 @@ namespace Direct3D11Rhi
 				#ifdef RHI_DEBUG
 					if (nullptr != mD3D11PixelShader)
 					{
-						RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "FS", 5);	// 5 = "FS: " including terminating zero
-						FAILED_DEBUG_BREAK(mD3D11PixelShader->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(detailedDebugName)), detailedDebugName));
+						RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "FS", 5)	// 5 = "FS: " including terminating zero
+						FAILED_DEBUG_BREAK(mD3D11PixelShader->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(detailedDebugName)), detailedDebugName))
 					}
 				#endif
 			}
@@ -10604,14 +10600,14 @@ namespace Direct3D11Rhi
 			mD3D11ComputeShader(nullptr)
 		{
 			// Create the Direct3D 11 compute shader
-			FAILED_DEBUG_BREAK(direct3D11Rhi.getD3D11Device()->CreateComputeShader(shaderBytecode.getBytecode(), shaderBytecode.getNumberOfBytes(), nullptr, &mD3D11ComputeShader));
+			FAILED_DEBUG_BREAK(direct3D11Rhi.getD3D11Device()->CreateComputeShader(shaderBytecode.getBytecode(), shaderBytecode.getNumberOfBytes(), nullptr, &mD3D11ComputeShader))
 
 			// Assign a default name to the resource for debugging purposes
 			#ifdef RHI_DEBUG
 				if (nullptr != mD3D11ComputeShader)
 				{
-					RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "CS", 5);	// 5 = "CS: " including terminating zero
-					FAILED_DEBUG_BREAK(mD3D11ComputeShader->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(detailedDebugName)), detailedDebugName));
+					RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "CS", 5)	// 5 = "CS: " including terminating zero
+					FAILED_DEBUG_BREAK(mD3D11ComputeShader->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(detailedDebugName)), detailedDebugName))
 				}
 			#endif
 		}
@@ -10634,7 +10630,7 @@ namespace Direct3D11Rhi
 			if (nullptr != d3dBlob)
 			{
 				// Create the Direct3D 11 compute shader
-				FAILED_DEBUG_BREAK(direct3D11Rhi.getD3D11Device()->CreateComputeShader(d3dBlob->GetBufferPointer(), d3dBlob->GetBufferSize(), nullptr, &mD3D11ComputeShader));
+				FAILED_DEBUG_BREAK(direct3D11Rhi.getD3D11Device()->CreateComputeShader(d3dBlob->GetBufferPointer(), d3dBlob->GetBufferSize(), nullptr, &mD3D11ComputeShader))
 
 				// Return shader bytecode, if requested do to so
 				if (nullptr != shaderBytecode)
@@ -10649,8 +10645,8 @@ namespace Direct3D11Rhi
 				#ifdef RHI_DEBUG
 					if (nullptr != mD3D11ComputeShader)
 					{
-						RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "CS", 5);	// 5 = "CS: " including terminating zero
-						FAILED_DEBUG_BREAK(mD3D11ComputeShader->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(detailedDebugName)), detailedDebugName));
+						RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "CS", 5)	// 5 = "CS: " including terminating zero
+						FAILED_DEBUG_BREAK(mD3D11ComputeShader->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(detailedDebugName)), detailedDebugName))
 					}
 				#endif
 			}
@@ -11202,7 +11198,7 @@ namespace Direct3D11Rhi
 						}
 
 						// Create the Direct3D 11 input layout
-						FAILED_DEBUG_BREAK(direct3D11Rhi.getD3D11Device()->CreateInputLayout(d3d11InputElementDescs, numberOfAttributes, d3dBlobVertexShader->GetBufferPointer(), d3dBlobVertexShader->GetBufferSize(), &mD3D11InputLayout));
+						FAILED_DEBUG_BREAK(direct3D11Rhi.getD3D11Device()->CreateInputLayout(d3d11InputElementDescs, numberOfAttributes, d3dBlobVertexShader->GetBufferPointer(), d3dBlobVertexShader->GetBufferSize(), &mD3D11InputLayout))
 
 						// Destroy Direct3D 11 input element descriptions
 						RHI_FREE(context, d3d11InputElementDescs);
@@ -11211,8 +11207,8 @@ namespace Direct3D11Rhi
 						#ifdef RHI_DEBUG
 							if (nullptr != mD3D11InputLayout)
 							{
-								RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "Graphics PSO", 15);	// 15 = "Graphics PSO: " including terminating zero
-								FAILED_DEBUG_BREAK(mD3D11InputLayout->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(detailedDebugName)), detailedDebugName));
+								RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "Graphics PSO", 15)	// 15 = "Graphics PSO: " including terminating zero
+								FAILED_DEBUG_BREAK(mD3D11InputLayout->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(detailedDebugName)), detailedDebugName))
 							}
 						#endif
 					}
@@ -11820,7 +11816,7 @@ namespace
 		//[-------------------------------------------------------]
 		//[ Global definitions                                    ]
 		//[-------------------------------------------------------]
-		static Rhi::ImplementationDispatchFunction DISPATCH_FUNCTIONS[Rhi::CommandDispatchFunctionIndex::NUMBER_OF_FUNCTIONS] =
+		static Rhi::ImplementationDispatchFunction DISPATCH_FUNCTIONS[static_cast<uint8_t>(Rhi::CommandDispatchFunctionIndex::NUMBER_OF_FUNCTIONS)] =
 		{
 			// Command buffer
 			&ImplementationDispatch::ExecuteCommandBuffer,
@@ -11942,7 +11938,7 @@ namespace Direct3D11Rhi
 				{
 					#ifdef RHI_DEBUG
 						// Try to get the Direct3D 11 user defined annotation interface, Direct3D 11.1 feature
-						FAILED_DEBUG_BREAK(mD3D11DeviceContext->QueryInterface(__uuidof(ID3DUserDefinedAnnotation), reinterpret_cast<LPVOID*>(&mD3DUserDefinedAnnotation)));
+						FAILED_DEBUG_BREAK(mD3D11DeviceContext->QueryInterface(__uuidof(ID3DUserDefinedAnnotation), reinterpret_cast<LPVOID*>(&mD3DUserDefinedAnnotation)))
 					#endif
 
 					// Direct3D 11 debug settings
@@ -11981,7 +11977,7 @@ namespace Direct3D11Rhi
 							D3D11_INFO_QUEUE_FILTER d3d11InfoQueueFilter = {};
 							d3d11InfoQueueFilter.DenyList.NumIDs = _countof(d3d11MessageIds);
 							d3d11InfoQueueFilter.DenyList.pIDList = d3d11MessageIds;
-							FAILED_DEBUG_BREAK(d3d11InfoQueue->AddStorageFilterEntries(&d3d11InfoQueueFilter));
+							FAILED_DEBUG_BREAK(d3d11InfoQueue->AddStorageFilterEntries(&d3d11InfoQueueFilter))
 
 							// Sadly, when using the Direct3D 11 break feature we're having a confusing call stack, so we don't use this and use "FAILED_DEBUG_BREAK()" instead
 							// d3d11InfoQueue->SetBreakOnSeverity(D3D11_MESSAGE_SEVERITY_CORRUPTION, true);
@@ -14267,14 +14263,14 @@ namespace Direct3D11Rhi
 			D3D11_QUERY_DESC d3d11QueryDesc;
 			d3d11QueryDesc.Query	 = D3D11_QUERY_EVENT;
 			d3d11QueryDesc.MiscFlags = 0;
-			FAILED_DEBUG_BREAK(mD3D11Device->CreateQuery(&d3d11QueryDesc, &mD3D11QueryFlush));
+			FAILED_DEBUG_BREAK(mD3D11Device->CreateQuery(&d3d11QueryDesc, &mD3D11QueryFlush))
 
 			#ifdef RHI_DEBUG
 				// Set the debug name
 				if (nullptr != mD3D11QueryFlush)
 				{
 					// No need to reset the previous private data, there shouldn't be any...
-					FAILED_DEBUG_BREAK(mD3D11QueryFlush->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(__FUNCTION__)), __FUNCTION__));
+					FAILED_DEBUG_BREAK(mD3D11QueryFlush->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(__FUNCTION__)), __FUNCTION__))
 				}
 			#endif
 		}
@@ -14287,7 +14283,7 @@ namespace Direct3D11Rhi
 			do
 			{
 				// Spin-wait
-				FAILED_DEBUG_BREAK(mD3D11DeviceContext->GetData(mD3D11QueryFlush, &result, sizeof(BOOL), 0));
+				FAILED_DEBUG_BREAK(mD3D11DeviceContext->GetData(mD3D11QueryFlush, &result, sizeof(BOOL), 0))
 			} while (!result);
 		}
 	}
@@ -14306,12 +14302,12 @@ namespace Direct3D11Rhi
 			// Get DXGI adapter
 			IDXGIDevice* dxgiDevice = nullptr;
 			IDXGIAdapter* dxgiAdapter = nullptr;
-			FAILED_DEBUG_BREAK(mD3D11Device->QueryInterface(IID_PPV_ARGS(&dxgiDevice)));
-			FAILED_DEBUG_BREAK(dxgiDevice->GetAdapter(&dxgiAdapter));
+			FAILED_DEBUG_BREAK(mD3D11Device->QueryInterface(IID_PPV_ARGS(&dxgiDevice)))
+			FAILED_DEBUG_BREAK(dxgiDevice->GetAdapter(&dxgiAdapter))
 
 			// The adapter contains a description like "AMD Radeon R9 200 Series"
 			DXGI_ADAPTER_DESC dxgiAdapterDesc = {};
-			FAILED_DEBUG_BREAK(dxgiAdapter->GetDesc(&dxgiAdapterDesc));
+			FAILED_DEBUG_BREAK(dxgiAdapter->GetDesc(&dxgiAdapterDesc))
 
 			// Convert UTF-16 string to UTF-8
 			const size_t numberOfCharacters = _countof(mCapabilities.deviceName) - 1;

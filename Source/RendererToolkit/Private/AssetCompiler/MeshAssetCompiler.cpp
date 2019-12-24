@@ -671,7 +671,7 @@ namespace
 		*    Index buffer format
 		*  @param[in] indexBufferData
 		*    Index buffer data to write into the given file
-		*  @param[in, out] temporaryShortIndexBufferData
+		*  @param[in,out] temporaryShortIndexBufferData
 		*    Temporary short index buffer data to be able to reuse allocated memory
 		*  @param[out] file
 		*    File to write into

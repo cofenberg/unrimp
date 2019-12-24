@@ -163,7 +163,7 @@ namespace Renderer
 		explicit SceneResource(const SceneResource&) = delete;
 		SceneResource& operator=(const SceneResource&) = delete;
 
-		inline SceneResource& operator=(SceneResource&& sceneResource)
+		inline SceneResource& operator=(SceneResource&& sceneResource) noexcept
 		{
 			// Call base implementation
 			IResource::operator=(std::move(sceneResource));

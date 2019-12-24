@@ -70,7 +70,7 @@
 #define NODEFERWINDOWPOS
 #define NOMCX
 #define NOCRYPT
-#include <windows.h>
+#include <Windows.h>
 
 // Get rid of some nasty OS macros
 #undef max
@@ -4587,7 +4587,7 @@ namespace Direct3D12Rhi
 				}
 
 			// Load the entry points
-			IMPORT_FUNC(CreateDXGIFactory1);
+			IMPORT_FUNC(CreateDXGIFactory1)
 
 			// Undefine the helper macro
 			#undef IMPORT_FUNC
@@ -4627,10 +4627,10 @@ namespace Direct3D12Rhi
 				}
 
 			// Load the entry points
-			IMPORT_FUNC(D3D12CreateDevice);
-			IMPORT_FUNC(D3D12SerializeRootSignature);
+			IMPORT_FUNC(D3D12CreateDevice)
+			IMPORT_FUNC(D3D12SerializeRootSignature)
 			#ifdef RHI_DEBUG
-				IMPORT_FUNC(D3D12GetDebugInterface);
+				IMPORT_FUNC(D3D12GetDebugInterface)
 			#endif
 
 			// Undefine the helper macro
@@ -4671,8 +4671,8 @@ namespace Direct3D12Rhi
 				}
 
 			// Load the entry points
-			IMPORT_FUNC(D3DCompile);
-			IMPORT_FUNC(D3DCreateBlob);
+			IMPORT_FUNC(D3DCompile)
+			IMPORT_FUNC(D3DCreateBlob)
 
 			// Undefine the helper macro
 			#undef IMPORT_FUNC
@@ -5348,8 +5348,8 @@ namespace Direct3D12Rhi
 					{
 						// Assign a default name to the resource for debugging purposes
 						#ifdef RHI_DEBUG
-							RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "Root signature", 17);	// 17 = "Root signature: " including terminating zero
-							FAILED_DEBUG_BREAK(mD3D12RootSignature->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(detailedDebugName)), detailedDebugName));
+							RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "Root signature", 17)	// 17 = "Root signature: " including terminating zero
+							FAILED_DEBUG_BREAK(mD3D12RootSignature->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(detailedDebugName)), detailedDebugName))
 						#endif
 					}
 					else
@@ -5546,8 +5546,8 @@ namespace Direct3D12Rhi
 
 				// Assign a default name to the resource for debugging purposes
 				#ifdef RHI_DEBUG
-					RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "VBO", 6);	// 6 = "VBO: " including terminating zero
-					FAILED_DEBUG_BREAK(mD3D12Resource->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(detailedDebugName)), detailedDebugName));
+					RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "VBO", 6)	// 6 = "VBO: " including terminating zero
+					FAILED_DEBUG_BREAK(mD3D12Resource->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(detailedDebugName)), detailedDebugName))
 				#endif
 			}
 			else
@@ -5711,8 +5711,8 @@ namespace Direct3D12Rhi
 
 					// Assign a default name to the resource for debugging purposes
 					#ifdef RHI_DEBUG
-						RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "IBO", 6);	// 6 = "IBO: " including terminating zero
-						FAILED_DEBUG_BREAK(mD3D12Resource->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(detailedDebugName)), detailedDebugName));
+						RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "IBO", 6)	// 6 = "IBO: " including terminating zero
+						FAILED_DEBUG_BREAK(mD3D12Resource->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(detailedDebugName)), detailedDebugName))
 					#endif
 				}
 				else
@@ -6047,8 +6047,8 @@ namespace Direct3D12Rhi
 
 				// Assign a default name to the resource for debugging purposes
 				#ifdef RHI_DEBUG
-					RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "TBO", 6);	// 6 = "TBO: " including terminating zero
-					FAILED_DEBUG_BREAK(mD3D12Resource->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(detailedDebugName)), detailedDebugName));
+					RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "TBO", 6)	// 6 = "TBO: " including terminating zero
+					FAILED_DEBUG_BREAK(mD3D12Resource->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(detailedDebugName)), detailedDebugName))
 				#endif
 			}
 			else
@@ -6200,12 +6200,12 @@ namespace Direct3D12Rhi
 					d3d12SubresourceData.SysMemSlicePitch = 0;
 
 					// Create the Direct3D 12 constant buffer
-					FAILED_DEBUG_BREAK(direct3D12Rhi.getD3D12Device().CreateBuffer(&d3d12BufferDesc, &d3d12SubresourceData, &mD3D12Buffer));
+					FAILED_DEBUG_BREAK(direct3D12Rhi.getD3D12Device().CreateBuffer(&d3d12BufferDesc, &d3d12SubresourceData, &mD3D12Buffer))
 				}
 				else
 				{
 					// Create the Direct3D 12 constant buffer
-					FAILED_DEBUG_BREAK(direct3D12Rhi.getD3D12Device().CreateBuffer(&d3d12BufferDesc, nullptr, &mD3D12Buffer));
+					FAILED_DEBUG_BREAK(direct3D12Rhi.getD3D12Device().CreateBuffer(&d3d12BufferDesc, nullptr, &mD3D12Buffer))
 				}
 			}
 
@@ -6218,15 +6218,15 @@ namespace Direct3D12Rhi
 				d3d12ShaderResourceViewDesc.Buffer.ElementWidth	 = numberOfBytes / Rhi::TextureFormat::getNumberOfBytesPerElement(textureFormat);
 
 				// Create the Direct3D 12 shader resource view instance
-				FAILED_DEBUG_BREAK(direct3D12Rhi.getD3D12Device().CreateShaderResourceView(mD3D12Buffer, &d3d12ShaderResourceViewDesc, &mD3D12ShaderResourceViewTexture));
+				FAILED_DEBUG_BREAK(direct3D12Rhi.getD3D12Device().CreateShaderResourceView(mD3D12Buffer, &d3d12ShaderResourceViewDesc, &mD3D12ShaderResourceViewTexture))
 			}
 
 			// Assign a default name to the resource for debugging purposes
 			#ifdef RHI_DEBUG
 				if (nullptr != mD3D12Resource)
 				{
-					RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "SBO", 6);	// 6 = "SBO: " including terminating zero
-					FAILED_DEBUG_BREAK(mD3D12Resource->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(detailedDebugName)), detailedDebugName));
+					RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "SBO", 6)	// 6 = "SBO: " including terminating zero
+					FAILED_DEBUG_BREAK(mD3D12Resource->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(detailedDebugName)), detailedDebugName))
 				}
 			#endif
 			*/
@@ -6382,12 +6382,12 @@ namespace Direct3D12Rhi
 
 				// Assign a default name to the resource for debugging purposes
 				#ifdef RHI_DEBUG
-					RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "IndirectBufferObject", 23);	// 23 = "IndirectBufferObject: " including terminating zero
+					RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "IndirectBufferObject", 23)	// 23 = "IndirectBufferObject: " including terminating zero
 					if (nullptr != mD3D12CommandSignature)
 					{
-						FAILED_DEBUG_BREAK(mD3D12CommandSignature->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(detailedDebugName)), detailedDebugName));
+						FAILED_DEBUG_BREAK(mD3D12CommandSignature->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(detailedDebugName)), detailedDebugName))
 					}
-					FAILED_DEBUG_BREAK(mD3D12Resource->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(detailedDebugName)), detailedDebugName));
+					FAILED_DEBUG_BREAK(mD3D12Resource->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(detailedDebugName)), detailedDebugName))
 				#endif
 			}
 			else
@@ -6541,8 +6541,8 @@ namespace Direct3D12Rhi
 
 				// Assign a default name to the resource for debugging purposes
 				#ifdef RHI_DEBUG
-					RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "UBO", 6);	// 6 = "UBO: " including terminating zero
-					FAILED_DEBUG_BREAK(mD3D12Resource->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(detailedDebugName)), detailedDebugName));
+					RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "UBO", 6)	// 6 = "UBO: " including terminating zero
+					FAILED_DEBUG_BREAK(mD3D12Resource->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(detailedDebugName)), detailedDebugName))
 				#endif
 			}
 			else
@@ -6833,8 +6833,8 @@ namespace Direct3D12Rhi
 
 				// Assign a default name to the resource for debugging purposes
 				#ifdef RHI_DEBUG
-					RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "1D texture", 13);	// 13 = "1D texture: " including terminating zero
-					FAILED_DEBUG_BREAK(mD3D12Resource->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(detailedDebugName)), detailedDebugName));
+					RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "1D texture", 13)	// 13 = "1D texture: " including terminating zero
+					FAILED_DEBUG_BREAK(mD3D12Resource->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(detailedDebugName)), detailedDebugName))
 				#endif
 			}
 		}
@@ -7007,8 +7007,8 @@ namespace Direct3D12Rhi
 
 				// Assign a default name to the resource for debugging purposes
 				#ifdef RHI_DEBUG
-					RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "1D texture array", 19);	// 19 = "1D texture array: " including terminating zero
-					FAILED_DEBUG_BREAK(mD3D12Resource->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(detailedDebugName)), detailedDebugName));
+					RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "1D texture array", 19)	// 19 = "1D texture array: " including terminating zero
+					FAILED_DEBUG_BREAK(mD3D12Resource->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(detailedDebugName)), detailedDebugName))
 				#endif
 			}
 		}
@@ -7193,8 +7193,8 @@ namespace Direct3D12Rhi
 
 				// Assign a default name to the resource for debugging purposes
 				#ifdef RHI_DEBUG
-					RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "2D texture", 13);	// 13 = "2D texture: " including terminating zero
-					FAILED_DEBUG_BREAK(mD3D12Resource->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(detailedDebugName)), detailedDebugName));
+					RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "2D texture", 13)	// 13 = "2D texture: " including terminating zero
+					FAILED_DEBUG_BREAK(mD3D12Resource->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(detailedDebugName)), detailedDebugName))
 				#endif
 			}
 		}
@@ -7384,8 +7384,8 @@ namespace Direct3D12Rhi
 
 				// Assign a default name to the resource for debugging purposes
 				#ifdef RHI_DEBUG
-					RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "2D texture array", 19);	// 19 = "2D texture array: " including terminating zero
-					FAILED_DEBUG_BREAK(mD3D12Resource->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(detailedDebugName)), detailedDebugName));
+					RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "2D texture array", 19)	// 19 = "2D texture array: " including terminating zero
+					FAILED_DEBUG_BREAK(mD3D12Resource->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(detailedDebugName)), detailedDebugName))
 				#endif
 			}
 		}
@@ -7564,8 +7564,8 @@ namespace Direct3D12Rhi
 
 				// Assign a default name to the resource for debugging purposes
 				#ifdef RHI_DEBUG
-					RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "3D texture", 13);	// 13 = "3D texture: " including terminating zero
-					FAILED_DEBUG_BREAK(mD3D12Resource->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(detailedDebugName)), detailedDebugName));
+					RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "3D texture", 13)	// 13 = "3D texture: " including terminating zero
+					FAILED_DEBUG_BREAK(mD3D12Resource->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(detailedDebugName)), detailedDebugName))
 				#endif
 			}
 		}
@@ -7741,8 +7741,8 @@ namespace Direct3D12Rhi
 
 				// Assign a default name to the resource for debugging purposes
 				#ifdef RHI_DEBUG
-					RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "Cube texture", 15);	// 15 = "Cube texture: " including terminating zero
-					FAILED_DEBUG_BREAK(mD3D12Resource->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(detailedDebugName)), detailedDebugName));
+					RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "Cube texture", 15)	// 15 = "Cube texture: " including terminating zero
+					FAILED_DEBUG_BREAK(mD3D12Resource->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(detailedDebugName)), detailedDebugName))
 				#endif
 			}
 		}
@@ -8069,14 +8069,11 @@ namespace Direct3D12Rhi
 		*    least "numberOfColorAttachments" textures in the provided C-array of pointers
 		*  @param[in] depthStencilAttachmentTextureFormat
 		*    The optional depth stencil render target texture format, can be a "Rhi::TextureFormat::UNKNOWN" if there should be no depth buffer
-		*  @param[in] numberOfMultisamples
-		*    The number of multisamples per pixel (valid values: 1, 2, 4, 8)
 		*/
-		RenderPass(Rhi::IRhi& rhi, uint32_t numberOfColorAttachments, const Rhi::TextureFormat::Enum* colorAttachmentTextureFormats, Rhi::TextureFormat::Enum depthStencilAttachmentTextureFormat, uint8_t numberOfMultisamples RHI_RESOURCE_DEBUG_NAME_PARAMETER_NO_DEFAULT) :
+		RenderPass(Rhi::IRhi& rhi, uint32_t numberOfColorAttachments, const Rhi::TextureFormat::Enum* colorAttachmentTextureFormats, Rhi::TextureFormat::Enum depthStencilAttachmentTextureFormat RHI_RESOURCE_DEBUG_NAME_PARAMETER_NO_DEFAULT) :
 			IRenderPass(rhi RHI_RESOURCE_DEBUG_PASS_PARAMETER),
 			mNumberOfColorAttachments(numberOfColorAttachments),
-			mDepthStencilAttachmentTextureFormat(depthStencilAttachmentTextureFormat),
-			mNumberOfMultisamples(numberOfMultisamples)
+			mDepthStencilAttachmentTextureFormat(depthStencilAttachmentTextureFormat)
 		{
 			RHI_ASSERT(rhi.getContext(), mNumberOfColorAttachments < 8, "Invalid number of Direct3D 12 color attachments")
 			memcpy(mColorAttachmentTextureFormats, colorAttachmentTextureFormats, sizeof(Rhi::TextureFormat::Enum) * mNumberOfColorAttachments);
@@ -8167,7 +8164,6 @@ namespace Direct3D12Rhi
 		uint32_t				 mNumberOfColorAttachments;
 		Rhi::TextureFormat::Enum mColorAttachmentTextureFormats[8];
 		Rhi::TextureFormat::Enum mDepthStencilAttachmentTextureFormat;
-		uint8_t					 mNumberOfMultisamples;
 
 
 	};
@@ -8234,7 +8230,7 @@ namespace Direct3D12Rhi
 				d3d12QueryHeapDesc.Count = numberOfQueries;
 
 				// Create Direct3D 12 query heap
-				FAILED_DEBUG_BREAK(d3d12Device.CreateQueryHeap(&d3d12QueryHeapDesc, IID_PPV_ARGS(&mD3D12QueryHeap)));
+				FAILED_DEBUG_BREAK(d3d12Device.CreateQueryHeap(&d3d12QueryHeapDesc, IID_PPV_ARGS(&mD3D12QueryHeap)))
 			}
 
 			{ // Create the Direct3D 12 resource for query heap result readback
@@ -8242,7 +8238,7 @@ namespace Direct3D12Rhi
 			  // +1 = One more frame as an instance is guaranteed to be written to if "Direct3D12Rhi::NUMBER_OF_FRAMES" frames have been submitted since. This is due to a fact that present stalls when none of the maximum number of frames are done/available.
 				const CD3DX12_HEAP_PROPERTIES d3d12XHeapProperties(D3D12_HEAP_TYPE_READBACK);
 				const D3D12_RESOURCE_DESC d3d12ResourceDesc = CD3DX12_RESOURCE_DESC::Buffer(static_cast<UINT64>(numberOfBytesPerQuery) * numberOfQueries * (Direct3D12Rhi::NUMBER_OF_FRAMES + 1));
-				FAILED_DEBUG_BREAK(d3d12Device.CreateCommittedResource(&d3d12XHeapProperties, D3D12_HEAP_FLAG_NONE, &d3d12ResourceDesc, D3D12_RESOURCE_STATE_COPY_DEST, nullptr, IID_PPV_ARGS(&mD3D12ResourceQueryHeapResultReadback)));
+				FAILED_DEBUG_BREAK(d3d12Device.CreateCommittedResource(&d3d12XHeapProperties, D3D12_HEAP_FLAG_NONE, &d3d12ResourceDesc, D3D12_RESOURCE_STATE_COPY_DEST, nullptr, IID_PPV_ARGS(&mD3D12ResourceQueryHeapResultReadback)))
 			}
 
 			// Assign a default name to the resource for debugging purposes
@@ -8251,42 +8247,42 @@ namespace Direct3D12Rhi
 				{
 					case Rhi::QueryType::OCCLUSION:
 					{
-						RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "Occlusion query", 18);	// 18 = "Occlusion query: " including terminating zero
+						RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "Occlusion query", 18)	// 18 = "Occlusion query: " including terminating zero
 						if (nullptr != mD3D12QueryHeap)
 						{
-							FAILED_DEBUG_BREAK(mD3D12QueryHeap->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(detailedDebugName)), detailedDebugName));
+							FAILED_DEBUG_BREAK(mD3D12QueryHeap->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(detailedDebugName)), detailedDebugName))
 						}
 						if (nullptr != mD3D12ResourceQueryHeapResultReadback)
 						{
-							FAILED_DEBUG_BREAK(mD3D12ResourceQueryHeapResultReadback->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(detailedDebugName)), detailedDebugName));
+							FAILED_DEBUG_BREAK(mD3D12ResourceQueryHeapResultReadback->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(detailedDebugName)), detailedDebugName))
 						}
 						break;
 					}
 
 					case Rhi::QueryType::PIPELINE_STATISTICS:
 					{
-						RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "Pipeline statistics query", 28);	// 28 = "Pipeline statistics query: " including terminating zero
+						RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "Pipeline statistics query", 28)	// 28 = "Pipeline statistics query: " including terminating zero
 						if (nullptr != mD3D12QueryHeap)
 						{
-							FAILED_DEBUG_BREAK(mD3D12QueryHeap->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(detailedDebugName)), detailedDebugName));
+							FAILED_DEBUG_BREAK(mD3D12QueryHeap->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(detailedDebugName)), detailedDebugName))
 						}
 						if (nullptr != mD3D12ResourceQueryHeapResultReadback)
 						{
-							FAILED_DEBUG_BREAK(mD3D12ResourceQueryHeapResultReadback->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(detailedDebugName)), detailedDebugName));
+							FAILED_DEBUG_BREAK(mD3D12ResourceQueryHeapResultReadback->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(detailedDebugName)), detailedDebugName))
 						}
 						break;
 					}
 
 					case Rhi::QueryType::TIMESTAMP:
 					{
-						RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "Timestamp query", 18);	// 18 = "Timestamp query: " including terminating zero
+						RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "Timestamp query", 18)	// 18 = "Timestamp query: " including terminating zero
 						if (nullptr != mD3D12QueryHeap)
 						{
-							FAILED_DEBUG_BREAK(mD3D12QueryHeap->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(detailedDebugName)), detailedDebugName));
+							FAILED_DEBUG_BREAK(mD3D12QueryHeap->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(detailedDebugName)), detailedDebugName))
 						}
 						if (nullptr != mD3D12ResourceQueryHeapResultReadback)
 						{
-							FAILED_DEBUG_BREAK(mD3D12ResourceQueryHeapResultReadback->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(detailedDebugName)), detailedDebugName));
+							FAILED_DEBUG_BREAK(mD3D12ResourceQueryHeapResultReadback->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(detailedDebugName)), detailedDebugName))
 						}
 						break;
 					}
@@ -8375,7 +8371,7 @@ namespace Direct3D12Rhi
 			{
 				case Rhi::QueryType::OCCLUSION:
 				{
-					RHI_ASSERT(getRhi().getContext(), 1 == numberOfQueries || sizeof(uint64_t) == strideInBytes, "Direct3D 12 stride in bytes must be 8 bytes for occlusion query type");
+					RHI_ASSERT(getRhi().getContext(), 1 == numberOfQueries || sizeof(uint64_t) == strideInBytes, "Direct3D 12 stride in bytes must be 8 bytes for occlusion query type")
 					d3d12QueryType = D3D12_QUERY_TYPE_OCCLUSION;
 					numberOfBytesPerQuery = sizeof(uint64_t);
 					break;
@@ -8386,7 +8382,7 @@ namespace Direct3D12Rhi
 					static_assert(sizeof(Rhi::PipelineStatisticsQueryResult) == sizeof(D3D12_QUERY_DATA_PIPELINE_STATISTICS), "Direct3D 12 structure mismatch detected");
 					RHI_ASSERT(getRhi().getContext(), numberOfDataBytes >= sizeof(Rhi::PipelineStatisticsQueryResult), "Direct3D 12 out-of-memory query access")
 					RHI_ASSERT(getRhi().getContext(), 1 == numberOfQueries || strideInBytes >= sizeof(Rhi::PipelineStatisticsQueryResult), "Direct3D 12 out-of-memory query access")
-					RHI_ASSERT(getRhi().getContext(), 1 == numberOfQueries || sizeof(D3D12_QUERY_DATA_PIPELINE_STATISTICS) == strideInBytes, "Direct3D 12 stride in bytes must be 88 bytes for pipeline statistics query type");
+					RHI_ASSERT(getRhi().getContext(), 1 == numberOfQueries || sizeof(D3D12_QUERY_DATA_PIPELINE_STATISTICS) == strideInBytes, "Direct3D 12 stride in bytes must be 88 bytes for pipeline statistics query type")
 					d3d12QueryType = D3D12_QUERY_TYPE_PIPELINE_STATISTICS;
 					numberOfBytesPerQuery = sizeof(D3D12_QUERY_DATA_PIPELINE_STATISTICS);
 					break;
@@ -8394,7 +8390,7 @@ namespace Direct3D12Rhi
 
 				case Rhi::QueryType::TIMESTAMP:	// TODO(co) Convert time to nanoseconds, see e.g. http://reedbeta.com/blog/gpu-profiling-101/
 				{
-					RHI_ASSERT(getRhi().getContext(), 1 == numberOfQueries || sizeof(uint64_t) == strideInBytes, "Direct3D 12 stride in bytes must be 8 bytes for timestamp query type");
+					RHI_ASSERT(getRhi().getContext(), 1 == numberOfQueries || sizeof(uint64_t) == strideInBytes, "Direct3D 12 stride in bytes must be 8 bytes for timestamp query type")
 					d3d12QueryType = D3D12_QUERY_TYPE_TIMESTAMP;
 					numberOfBytesPerQuery = sizeof(uint64_t);
 					break;
@@ -8403,7 +8399,7 @@ namespace Direct3D12Rhi
 
  			{ // Resolve query data from the current frame
 				const uint64_t resolveToBaseAddress = static_cast<uint64_t>(numberOfBytesPerQuery) * mNumberOfQueries * mResolveToFrameNumber + static_cast<uint64_t>(numberOfBytesPerQuery) * firstQueryIndex;
-				d3d12GraphicsCommandList.ResolveQueryData(mD3D12QueryHeap, d3d12QueryType, firstQueryIndex, numberOfQueries, mD3D12ResourceQueryHeapResultReadback, static_cast<UINT64>(numberOfBytesPerQuery) * firstQueryIndex);
+				d3d12GraphicsCommandList.ResolveQueryData(mD3D12QueryHeap, d3d12QueryType, firstQueryIndex, numberOfQueries, mD3D12ResourceQueryHeapResultReadback, resolveToBaseAddress);
 			}
 
 			// Readback query result by grabbing readback data for the queries from a finished frame "Direct3D12Rhi::NUMBER_OF_FRAMES" ago
@@ -8412,7 +8408,7 @@ namespace Direct3D12Rhi
 			const uint32_t readbackBaseOffset = numberOfBytesPerQuery * mNumberOfQueries * readbackFrameNumber + numberOfBytesPerQuery * firstQueryIndex;
 			const D3D12_RANGE d3d12Range = { readbackBaseOffset, readbackBaseOffset + numberOfBytesPerQuery * numberOfQueries };
 			uint64_t* timingData = nullptr;
-			FAILED_DEBUG_BREAK(mD3D12ResourceQueryHeapResultReadback->Map(0, &d3d12Range, reinterpret_cast<void**>(&timingData)));
+			FAILED_DEBUG_BREAK(mD3D12ResourceQueryHeapResultReadback->Map(0, &d3d12Range, reinterpret_cast<void**>(&timingData)))
 			memcpy(data, timingData, numberOfBytesPerQuery * numberOfQueries);
 			mD3D12ResourceQueryHeapResultReadback->Unmap(0, nullptr);
 			mResolveToFrameNumber = readbackFrameNumber;
@@ -8546,7 +8542,7 @@ namespace Direct3D12Rhi
 			dxgiSwapChainDesc.SampleDesc.Count						= 1;
 			dxgiSwapChainDesc.Windowed								= TRUE;
 			IDXGISwapChain* dxgiSwapChain = nullptr;
-			FAILED_DEBUG_BREAK(dxgiFactory4.CreateSwapChain(direct3D12Rhi.getD3D12CommandQueue(), &dxgiSwapChainDesc, &dxgiSwapChain));
+			FAILED_DEBUG_BREAK(dxgiFactory4.CreateSwapChain(direct3D12Rhi.getD3D12CommandQueue(), &dxgiSwapChainDesc, &dxgiSwapChain))
 			if (FAILED(dxgiSwapChain->QueryInterface(IID_PPV_ARGS(&mDxgiSwapChain3))))
 			{
 				RHI_LOG(direct3D12Rhi.getContext(), CRITICAL, "Failed to retrieve the Direct3D 12 DXGI swap chain 3")
@@ -8555,7 +8551,7 @@ namespace Direct3D12Rhi
 
 			// Disable alt-return for automatic fullscreen state change
 			// -> We handle this manually to have more control over it
-			FAILED_DEBUG_BREAK(dxgiFactory4.MakeWindowAssociation(hWnd, DXGI_MWA_NO_ALT_ENTER));
+			FAILED_DEBUG_BREAK(dxgiFactory4.MakeWindowAssociation(hWnd, DXGI_MWA_NO_ALT_ENTER))
 
 			// Create the Direct3D 12 views
 			if (nullptr != mDxgiSwapChain3)
@@ -8582,12 +8578,12 @@ namespace Direct3D12Rhi
 
 			// Assign a default name to the resource for debugging purposes
 			#ifdef RHI_DEBUG
-				RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "Swap chain", 13);	// 13 = "Swap chain: " including terminating zero
+				RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "Swap chain", 13)	// 13 = "Swap chain: " including terminating zero
 
 				// Assign a debug name to the DXGI swap chain
 				if (nullptr != mDxgiSwapChain3)
 				{
-					FAILED_DEBUG_BREAK(mDxgiSwapChain3->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(detailedDebugName)), detailedDebugName));
+					FAILED_DEBUG_BREAK(mDxgiSwapChain3->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(detailedDebugName)), detailedDebugName))
 				}
 
 				// Assign a debug name to the Direct3D 12 frame resources
@@ -8595,22 +8591,22 @@ namespace Direct3D12Rhi
 				{
 					if (nullptr != mD3D12ResourceRenderTargets[frame])
 					{
-						FAILED_DEBUG_BREAK(mD3D12ResourceRenderTargets[frame]->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(detailedDebugName)), detailedDebugName));
+						FAILED_DEBUG_BREAK(mD3D12ResourceRenderTargets[frame]->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(detailedDebugName)), detailedDebugName))
 					}
 				}
 				if (nullptr != mD3D12ResourceDepthStencil)
 				{
-					FAILED_DEBUG_BREAK(mD3D12ResourceDepthStencil->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(detailedDebugName)), detailedDebugName));
+					FAILED_DEBUG_BREAK(mD3D12ResourceDepthStencil->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(detailedDebugName)), detailedDebugName))
 				}
 
 				// Assign a debug name to the Direct3D 12 descriptor heaps
 				if (nullptr != mD3D12DescriptorHeapRenderTargetView)
 				{
-					FAILED_DEBUG_BREAK(mD3D12DescriptorHeapRenderTargetView->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(detailedDebugName)), detailedDebugName));
+					FAILED_DEBUG_BREAK(mD3D12DescriptorHeapRenderTargetView->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(detailedDebugName)), detailedDebugName))
 				}
 				if (nullptr != mD3D12DescriptorHeapDepthStencilView)
 				{
-					FAILED_DEBUG_BREAK(mD3D12DescriptorHeapDepthStencilView->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(detailedDebugName)), detailedDebugName));
+					FAILED_DEBUG_BREAK(mD3D12DescriptorHeapDepthStencilView->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(detailedDebugName)), detailedDebugName))
 				}
 			#endif
 		}
@@ -8747,7 +8743,7 @@ namespace Direct3D12Rhi
 			{
 				// Get the Direct3D 12 swap chain description
 				DXGI_SWAP_CHAIN_DESC dxgiSwapChainDesc;
-				FAILED_DEBUG_BREAK(mDxgiSwapChain3->GetDesc(&dxgiSwapChainDesc));
+				FAILED_DEBUG_BREAK(mDxgiSwapChain3->GetDesc(&dxgiSwapChainDesc))
 
 				// Get the width and height
 				long swapChainWidth  = 1;
@@ -8798,7 +8794,7 @@ namespace Direct3D12Rhi
 			{
 				// Get the Direct3D 12 swap chain description
 				DXGI_SWAP_CHAIN_DESC dxgiSwapChainDesc;
-				FAILED_DEBUG_BREAK(mDxgiSwapChain3->GetDesc(&dxgiSwapChainDesc));
+				FAILED_DEBUG_BREAK(mDxgiSwapChain3->GetDesc(&dxgiSwapChainDesc))
 
 				// Return the native window handle
 				return reinterpret_cast<Rhi::handle>(dxgiSwapChainDesc.OutputWindow);
@@ -8883,7 +8879,7 @@ namespace Direct3D12Rhi
 			// Is there a valid swap chain?
 			if (nullptr != mDxgiSwapChain3)
 			{
-				FAILED_DEBUG_BREAK(mDxgiSwapChain3->GetFullscreenState(&fullscreen, nullptr));
+				FAILED_DEBUG_BREAK(mDxgiSwapChain3->GetFullscreenState(&fullscreen, nullptr))
 			}
 
 			// Done
@@ -8953,7 +8949,7 @@ namespace Direct3D12Rhi
 		{
 			// Get the Direct3D 12 swap chain description
 			DXGI_SWAP_CHAIN_DESC dxgiSwapChainDesc;
-			FAILED_DEBUG_BREAK(mDxgiSwapChain3->GetDesc(&dxgiSwapChainDesc));
+			FAILED_DEBUG_BREAK(mDxgiSwapChain3->GetDesc(&dxgiSwapChainDesc))
 
 			// Get the client rectangle of the native output window
 			RECT rect;
@@ -9446,7 +9442,7 @@ namespace Direct3D12Rhi
 
 			// Assign a default name to the resource for debugging purposes
 			#ifdef RHI_DEBUG
-				RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "FBO", 6);	// 6 = "FBO: " including terminating zero
+				RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "FBO", 6)	// 6 = "FBO: " including terminating zero
 				const size_t detailedDebugNameLength = strlen(detailedDebugName);
 
 				{ // Assign a debug name to the Direct3D 12 render target view, do also add the index to the name
@@ -9457,7 +9453,7 @@ namespace Direct3D12Rhi
 					for (ID3D12DescriptorHeap** d3d12DescriptorHeapRenderTargetView = mD3D12DescriptorHeapRenderTargetViews; d3d12DescriptorHeapRenderTargetView < d3d12DescriptorHeapRenderTargetViewsEnd; ++d3d12DescriptorHeapRenderTargetView)
 					{
 						sprintf_s(nameWithIndex, detailedDebugNameLength, "%s [%u]", detailedDebugName, static_cast<uint32_t>(d3d12DescriptorHeapRenderTargetView - mD3D12DescriptorHeapRenderTargetViews));
-						FAILED_DEBUG_BREAK((*d3d12DescriptorHeapRenderTargetView)->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(adjustedDetailedDebugNameLength), nameWithIndex));
+						FAILED_DEBUG_BREAK((*d3d12DescriptorHeapRenderTargetView)->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(adjustedDetailedDebugNameLength), nameWithIndex))
 					}
 					RHI_FREE(context, nameWithIndex);
 				}
@@ -9465,7 +9461,7 @@ namespace Direct3D12Rhi
 				// Assign a debug name to the Direct3D 12 depth stencil view
 				if (nullptr != mD3D12DescriptorHeapDepthStencilView)
 				{
-					FAILED_DEBUG_BREAK(mD3D12DescriptorHeapDepthStencilView->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(detailedDebugNameLength), detailedDebugName));
+					FAILED_DEBUG_BREAK(mD3D12DescriptorHeapDepthStencilView->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(detailedDebugNameLength), detailedDebugName))
 				}
 			#endif
 		}
@@ -9656,7 +9652,7 @@ namespace Direct3D12Rhi
 			mD3DBlobVertexShader(nullptr)
 		{
 			// Backup the vertex shader bytecode
-			FAILED_DEBUG_BREAK(D3DCreateBlob(shaderBytecode.getNumberOfBytes(), &mD3DBlobVertexShader));
+			FAILED_DEBUG_BREAK(D3DCreateBlob(shaderBytecode.getNumberOfBytes(), &mD3DBlobVertexShader))
 			memcpy(mD3DBlobVertexShader->GetBufferPointer(), shaderBytecode.getBytecode(), shaderBytecode.getNumberOfBytes());
 		}
 
@@ -9778,7 +9774,7 @@ namespace Direct3D12Rhi
 			mD3DBlobHullShader(nullptr)
 		{
 			// Backup the hull shader bytecode
-			FAILED_DEBUG_BREAK(D3DCreateBlob(shaderBytecode.getNumberOfBytes(), &mD3DBlobHullShader));
+			FAILED_DEBUG_BREAK(D3DCreateBlob(shaderBytecode.getNumberOfBytes(), &mD3DBlobHullShader))
 			memcpy(mD3DBlobHullShader->GetBufferPointer(), shaderBytecode.getBytecode(), shaderBytecode.getNumberOfBytes());
 		}
 
@@ -9900,7 +9896,7 @@ namespace Direct3D12Rhi
 			mD3DBlobDomainShader(nullptr)
 		{
 			// Backup the domain shader bytecode
-			FAILED_DEBUG_BREAK(D3DCreateBlob(shaderBytecode.getNumberOfBytes(), &mD3DBlobDomainShader));
+			FAILED_DEBUG_BREAK(D3DCreateBlob(shaderBytecode.getNumberOfBytes(), &mD3DBlobDomainShader))
 			memcpy(mD3DBlobDomainShader->GetBufferPointer(), shaderBytecode.getBytecode(), shaderBytecode.getNumberOfBytes());
 		}
 
@@ -10022,7 +10018,7 @@ namespace Direct3D12Rhi
 			mD3DBlobGeometryShader(nullptr)
 		{
 			// Backup the geometry shader bytecode
-			FAILED_DEBUG_BREAK(D3DCreateBlob(shaderBytecode.getNumberOfBytes(), &mD3DBlobGeometryShader));
+			FAILED_DEBUG_BREAK(D3DCreateBlob(shaderBytecode.getNumberOfBytes(), &mD3DBlobGeometryShader))
 			memcpy(mD3DBlobGeometryShader->GetBufferPointer(), shaderBytecode.getBytecode(), shaderBytecode.getNumberOfBytes());
 		}
 
@@ -10144,7 +10140,7 @@ namespace Direct3D12Rhi
 			mD3DBlobFragmentShader(nullptr)
 		{
 			// Backup the fragment shader bytecode
-			FAILED_DEBUG_BREAK(D3DCreateBlob(shaderBytecode.getNumberOfBytes(), &mD3DBlobFragmentShader));
+			FAILED_DEBUG_BREAK(D3DCreateBlob(shaderBytecode.getNumberOfBytes(), &mD3DBlobFragmentShader))
 			memcpy(mD3DBlobFragmentShader->GetBufferPointer(), shaderBytecode.getBytecode(), shaderBytecode.getNumberOfBytes());
 		}
 
@@ -10266,7 +10262,7 @@ namespace Direct3D12Rhi
 			mD3DBlobComputeShader(nullptr)
 		{
 			// Backup the compute shader bytecode
-			FAILED_DEBUG_BREAK(D3DCreateBlob(shaderBytecode.getNumberOfBytes(), &mD3DBlobComputeShader));
+			FAILED_DEBUG_BREAK(D3DCreateBlob(shaderBytecode.getNumberOfBytes(), &mD3DBlobComputeShader))
 			memcpy(mD3DBlobComputeShader->GetBufferPointer(), shaderBytecode.getBytecode(), shaderBytecode.getNumberOfBytes());
 		}
 
@@ -10939,8 +10935,8 @@ namespace Direct3D12Rhi
 			{
 				// Assign a default name to the resource for debugging purposes
 				#ifdef RHI_DEBUG
-					RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "Graphics PSO", 15);	// 15 = "Graphics PSO: " including terminating zero
-					FAILED_DEBUG_BREAK(mD3D12GraphicsPipelineState->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(detailedDebugName)), detailedDebugName));
+					RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "Graphics PSO", 15)	// 15 = "Graphics PSO: " including terminating zero
+					FAILED_DEBUG_BREAK(mD3D12GraphicsPipelineState->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(detailedDebugName)), detailedDebugName))
 				#endif
 			}
 			else
@@ -11078,8 +11074,8 @@ namespace Direct3D12Rhi
 			{
 				// Assign a default name to the resource for debugging purposes
 				#ifdef RHI_DEBUG
-					RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "Compute PSO", 14);	// 14 = "Compute PSO: " including terminating zero
-					FAILED_DEBUG_BREAK(mD3D12ComputePipelineState->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(detailedDebugName)), detailedDebugName));
+					RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "Compute PSO", 14)	// 14 = "Compute PSO: " including terminating zero
+					FAILED_DEBUG_BREAK(mD3D12ComputePipelineState->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(detailedDebugName)), detailedDebugName))
 				#endif
 			}
 			else
@@ -11436,7 +11432,7 @@ namespace Direct3D12Rhi
 					}
 					d3d12CpuDescriptorHandle.ptr += descriptorSize;
 				}
-				RHI_ASSERT(direct3D12Rhi.getContext(), d3d12CpuDescriptorHandle.ptr == descriptorHeap.getD3D12CpuDescriptorHandleForHeapStart().ptr + (mDescriptorHeapOffset + mNumberOfResources) * descriptorSize, "Direct3D 12 descriptor heap invalid");
+				RHI_ASSERT(direct3D12Rhi.getContext(), d3d12CpuDescriptorHandle.ptr == descriptorHeap.getD3D12CpuDescriptorHandleForHeapStart().ptr + (mDescriptorHeapOffset + mNumberOfResources) * descriptorSize, "Direct3D 12 descriptor heap invalid")
 			}
 			else
 			{
@@ -11493,7 +11489,7 @@ namespace Direct3D12Rhi
 					}
 					d3d12CpuDescriptorHandle.ptr += descriptorSize;
 				}
-				RHI_ASSERT(direct3D12Rhi.getContext(), d3d12CpuDescriptorHandle.ptr == descriptorHeap.getD3D12CpuDescriptorHandleForHeapStart().ptr + (mDescriptorHeapOffset + mNumberOfResources) * descriptorSize, "Direct3D 12 descriptor heap invalid");
+				RHI_ASSERT(direct3D12Rhi.getContext(), d3d12CpuDescriptorHandle.ptr == descriptorHeap.getD3D12CpuDescriptorHandleForHeapStart().ptr + (mDescriptorHeapOffset + mNumberOfResources) * descriptorSize, "Direct3D 12 descriptor heap invalid")
 			}
 		}
 
@@ -11881,7 +11877,7 @@ namespace
 		//[-------------------------------------------------------]
 		//[ Global definitions                                    ]
 		//[-------------------------------------------------------]
-		static constexpr Rhi::ImplementationDispatchFunction DISPATCH_FUNCTIONS[Rhi::CommandDispatchFunctionIndex::NUMBER_OF_FUNCTIONS] =
+		static constexpr Rhi::ImplementationDispatchFunction DISPATCH_FUNCTIONS[static_cast<uint8_t>(Rhi::CommandDispatchFunctionIndex::NUMBER_OF_FUNCTIONS)] =
 		{
 			// Command buffer
 			&ImplementationDispatch::ExecuteCommandBuffer,
@@ -13042,9 +13038,9 @@ namespace Direct3D12Rhi
 	//[-------------------------------------------------------]
 	//[ Resource creation                                     ]
 	//[-------------------------------------------------------]
-	Rhi::IRenderPass* Direct3D12Rhi::createRenderPass(uint32_t numberOfColorAttachments, const Rhi::TextureFormat::Enum* colorAttachmentTextureFormats, Rhi::TextureFormat::Enum depthStencilAttachmentTextureFormat, uint8_t numberOfMultisamples RHI_RESOURCE_DEBUG_NAME_PARAMETER_NO_DEFAULT)
+	Rhi::IRenderPass* Direct3D12Rhi::createRenderPass(uint32_t numberOfColorAttachments, const Rhi::TextureFormat::Enum* colorAttachmentTextureFormats, Rhi::TextureFormat::Enum depthStencilAttachmentTextureFormat, [[maybe_unused]] uint8_t numberOfMultisamples RHI_RESOURCE_DEBUG_NAME_PARAMETER_NO_DEFAULT)
 	{
-		return RHI_NEW(mContext, RenderPass)(*this, numberOfColorAttachments, colorAttachmentTextureFormats, depthStencilAttachmentTextureFormat, numberOfMultisamples RHI_RESOURCE_DEBUG_PASS_PARAMETER);
+		return RHI_NEW(mContext, RenderPass)(*this, numberOfColorAttachments, colorAttachmentTextureFormats, depthStencilAttachmentTextureFormat RHI_RESOURCE_DEBUG_PASS_PARAMETER);
 	}
 
 	Rhi::IQueryPool* Direct3D12Rhi::createQueryPool([[maybe_unused]] Rhi::QueryType queryType, [[maybe_unused]] uint32_t numberOfQueries RHI_RESOURCE_DEBUG_NAME_PARAMETER_NO_DEFAULT)

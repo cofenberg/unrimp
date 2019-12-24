@@ -5302,7 +5302,7 @@ namespace Rhi
 				mResourceType(resourceType),
 				mRhi(&rhi)
 			{
-				RHI_ASSERT(rhi.getContext(), strlen(debugName) < 256, "Resource debug name is not allowed to exceed 255 characters");
+				RHI_ASSERT(rhi.getContext(), strlen(debugName) < 256, "Resource debug name is not allowed to exceed 255 characters")
 				strncpy(mDebugName, debugName, 256);
 				mDebugName[255] = '\0';
 			}
@@ -7112,7 +7112,7 @@ namespace Rhi
 		*
 		*  @param[in] mipmapIndex
 		*    Mipmap index
-		*  @param[in, out] width
+		*  @param[in,out] width
 		*    Texture width
 		*/
 		static inline void getMipmapSize(uint32_t mipmapIndex, uint32_t& width)
@@ -7133,9 +7133,9 @@ namespace Rhi
 		*
 		*  @param[in] mipmapIndex
 		*    Mipmap index
-		*  @param[in, out] width
+		*  @param[in,out] width
 		*    Texture width
-		*  @param[in, out] height
+		*  @param[in,out] height
 		*    Texture height
 		*/
 		static inline void getMipmapSize(uint32_t mipmapIndex, uint32_t& width, uint32_t& height)
@@ -7150,11 +7150,11 @@ namespace Rhi
 		*
 		*  @param[in] mipmapIndex
 		*    Mipmap index
-		*  @param[in, out] width
+		*  @param[in,out] width
 		*    Texture width
-		*  @param[in, out] height
+		*  @param[in,out] height
 		*    Texture height
-		*  @param[in, out] depth
+		*  @param[in,out] depth
 		*    Texture depth
 		*/
 		static inline void getMipmapSize(uint32_t mipmapIndex, uint32_t& width, uint32_t& height, uint32_t& depth)
@@ -8495,7 +8495,7 @@ namespace Rhi
 		[[nodiscard]] inline uint32_t getNumberOfBytes(uint32_t numberOfAuxiliaryBytes)
 		{
 			return OFFSET_COMMAND + sizeof(T) + numberOfAuxiliaryBytes;
-		};
+		}
 
 		[[nodiscard]] inline uint32_t getNextCommandPacketByteIndex(const CommandPacket commandPacket)
 		{
@@ -8573,7 +8573,7 @@ namespace Rhi
 			return reinterpret_cast<const uint8_t*>(command) + sizeof(T);
 		}
 
-	};
+	}
 
 	/**
 	*  @brief
@@ -9705,7 +9705,7 @@ namespace Rhi
 				ASSERT(strlen(_name) < 128);
 				strncpy(name, _name, 128);
 				name[127] = '\0';
-			};
+			}
 			// Data
 			char name[128];
 			// Static data
@@ -9735,7 +9735,7 @@ namespace Rhi
 				ASSERT(strlen(_name) < 128);
 				strncpy(name, _name, 128);
 				name[127] = '\0';
-			};
+			}
 			// Data
 			char name[128];
 			// Static data

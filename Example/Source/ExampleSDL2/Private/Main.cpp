@@ -130,7 +130,7 @@ int main(int arc, char* argv[])
 	// For memory leak detection
 	#if defined(RHI_DEBUG) && defined(_WIN32)
 		// "_CrtDumpMemoryLeaks()" reports false positive memory leak with static variables, so use a memory difference instead
-		_CrtMemState crtMemState = { 0 };
+		_CrtMemState crtMemState = { };
 		_CrtMemCheckpoint(&crtMemState);
 	#endif
 

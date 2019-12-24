@@ -192,7 +192,7 @@ namespace Renderer
 
 	void ResourceStreamer::deserializationThreadWorker()
 	{
-		RENDERER_SET_CURRENT_THREAD_DEBUG_NAME("RS: Stage 1", "Renderer: Resource streamer stage: 1. Asynchronous deserialization");
+		RENDERER_SET_CURRENT_THREAD_DEBUG_NAME("RS: Stage 1", "Renderer: Resource streamer stage: 1. Asynchronous deserialization")
 
 		// Resource streamer stage: 1. Asynchronous deserialization
 		while (!mShutdownDeserializationThread)
@@ -314,7 +314,7 @@ namespace Renderer
 
 	void ResourceStreamer::processingThreadWorker()
 	{
-		RENDERER_SET_CURRENT_THREAD_DEBUG_NAME("RS: Stage 2", "Renderer: Resource streamer stage: 2. Asynchronous processing");
+		RENDERER_SET_CURRENT_THREAD_DEBUG_NAME("RS: Stage 2", "Renderer: Resource streamer stage: 2. Asynchronous processing")
 
 		// Resource streamer stage: 2. Asynchronous processing
 		while (!mShutdownProcessingThread)

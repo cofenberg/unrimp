@@ -1981,7 +1981,7 @@ namespace
 
 			// Read in the IES light profile data using the external library "ies" ( https://github.com/ray-cast/ies )
 			const rapidjson::Value& rapidJsonValueInputFiles = rapidJsonValueTextureAssetCompiler["InputFiles"];
-			struct IESOutputData
+			struct IESOutputData final
 			{
 				uint32_t width;
 				uint32_t height;

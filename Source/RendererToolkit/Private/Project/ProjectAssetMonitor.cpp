@@ -57,7 +57,7 @@ namespace RendererToolkit
 
 			FileWatchListener(const FileWatchListener&) = delete;
 
-			virtual ~FileWatchListener()
+			virtual ~FileWatchListener() override
 			{
 				// Nothing here
 			}
@@ -200,12 +200,12 @@ namespace RendererToolkit
 	//[-------------------------------------------------------]
 	void ProjectAssetMonitor::threadWorker()
 	{
-		RENDERER_SET_CURRENT_THREAD_DEBUG_NAME("Asset monitor", "Renderer toolkit: Project asset monitor");
+		RENDERER_SET_CURRENT_THREAD_DEBUG_NAME("Asset monitor", "Renderer toolkit: Project asset monitor")
 
 		// Create the file watcher object
 		FW::FileWatcher fileWatcher;
 		detail::FileWatchListener fileWatchListener(*this);
-		const FW::WatchID watchID = fileWatcher.addWatch(mProjectImpl.getAbsoluteProjectDirectory(), &fileWatchListener, true);
+		fileWatcher.addWatch(mProjectImpl.getAbsoluteProjectDirectory(), &fileWatchListener, true);
 
 		// On startup we need to check for changes which were done while the project asset monitor wasn't running
 		try

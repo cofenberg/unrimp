@@ -120,7 +120,7 @@ namespace Renderer
 		explicit TextureResource(const TextureResource&) = delete;
 		TextureResource& operator=(const TextureResource&) = delete;
 
-		inline TextureResource& operator=(TextureResource&& textureResource)
+		inline TextureResource& operator=(TextureResource&& textureResource) noexcept
 		{
 			// Call base implementation
 			IResource::operator=(std::move(textureResource));

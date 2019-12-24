@@ -230,7 +230,7 @@ namespace RendererToolkit
 			IAssetCompiler::Input input(mContext, mProjectName, *mCacheManager, virtualAssetPackageInputDirectory, virtualAssetFilename, virtualAssetInputDirectory, virtualAssetOutputDirectory, mSourceAssetIdToCompiledAssetId, mCompiledAssetIdToSourceAssetId, mSourceAssetIdToVirtualFilename, mDefaultTextureAssetIds);
 
 			// Compile the asset
-			RHI_ASSERT(getContext(), nullptr != assetCompiler, "Invalid asset compiler");
+			RHI_ASSERT(getContext(), nullptr != assetCompiler, "Invalid asset compiler")
 			RHI_ASSERT(getContext(), nullptr != mRapidJsonDocument, "Invalid renderer toolkit Rapid JSON document")
 			const IAssetCompiler::Configuration configuration(rapidJsonDocument, (*mRapidJsonDocument)["Targets"], rhiTarget, mQualityStrategy);
 			return assetCompiler->checkIfChanged(input, configuration);
@@ -286,7 +286,7 @@ namespace RendererToolkit
 			const IAssetCompiler::Configuration configuration(rapidJsonDocument, (*mRapidJsonDocument)["Targets"], rhiTarget, mQualityStrategy);
 
 			// Compile the asset
-			RHI_ASSERT(getContext(), nullptr != assetCompiler, "Invalid asset compiler");
+			RHI_ASSERT(getContext(), nullptr != assetCompiler, "Invalid asset compiler")
 			assetCompiler->compile(input, configuration);
 
 			{ // Update the output asset package

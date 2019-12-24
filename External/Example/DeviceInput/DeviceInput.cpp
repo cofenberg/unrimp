@@ -61,10 +61,10 @@
 		__pragma(warning(disable: 4365))	// warning C4365: 'argument': conversion from 'long' to 'unsigned int', signed/unsigned mismatch
 		__pragma(warning(disable: 4668))	// warning C4668: 'defined_WINBASE_' is not defined as a preprocessor macro, replacing with '0' for '#if/#elif'
 		__pragma(warning(disable: 5039))	// warning C5039: 'DSA_DestroyCallback': pointer or reference to potentially throwing function passed to extern C function under -EHc. Undefined behavior may occur if this function throws an exception.
-		#include <windows.h>
+		#include <Windows.h>
 		#include <mmsystem.h>
 		extern "C" {
-			#include <setupapi.h> 
+			#include <SetupAPI.h> 
 		}
 	__pragma(warning(pop))
 
@@ -193,11 +193,11 @@
 
 	// Raw Input definitions
 	#ifndef HID_USAGE_PAGE_GENERIC
-		#define HID_USAGE_PAGE_GENERIC		((USHORT) 0x01)
-		#define HID_USAGE_GENERIC_MOUSE		((USHORT) 0x02)
-		#define HID_USAGE_GENERIC_JOYSTICK	((USHORT) 0x04)
-		#define HID_USAGE_GENERIC_GAMEPAD	((USHORT) 0x05)
-		#define HID_USAGE_GENERIC_KEYBOARD	((USHORT) 0x06)
+		#define HID_USAGE_PAGE_GENERIC		static_cast<USHORT>(0x01)
+		#define HID_USAGE_GENERIC_MOUSE		static_cast<USHORT>(0x02)
+		#define HID_USAGE_GENERIC_JOYSTICK	static_cast<USHORT>(0x04)
+		#define HID_USAGE_GENERIC_GAMEPAD	static_cast<USHORT>(0x05)
+		#define HID_USAGE_GENERIC_KEYBOARD	static_cast<USHORT>(0x06)
 	#endif
 
 
@@ -4946,7 +4946,7 @@ namespace DeviceInput
 		*  @brief
 		*    Destructor
 		*/
-		inline virtual ~BluetoothProvider()
+		inline virtual ~BluetoothProvider() override
 		{
 			delete mBluetooth;
 		}
@@ -5228,7 +5228,7 @@ namespace DeviceInput
 			*  @brief
 			*    Destructor
 			*/
-			inline virtual ~LegacyJoystickDevice()
+			inline virtual ~LegacyJoystickDevice() override
 			{
 				// Nothing here
 			}
@@ -5436,7 +5436,9 @@ namespace DeviceInput
 				m_sName(cSource.m_sName),
 				m_nType(cSource.m_nType),
 				m_hDevice(cSource.m_hDevice),
-				m_bVirtual(cSource.m_bVirtual)
+				m_bVirtual(cSource.m_bVirtual),
+				m_nOldX(0),
+				m_nOldY(0)
 			{
 				// Do not destroy device implementation automatically, because this is managed by RawInput
 				m_bDelete = false;
@@ -6616,7 +6618,7 @@ namespace DeviceInput
 		//[ Private static functions                              ]
 		//[-------------------------------------------------------]
 		private:
-			[[nodiscard]] static void CALLBACK OnReadComplete(DWORD, DWORD, LPOVERLAPPED lpOverlapped) noexcept
+			static void CALLBACK OnReadComplete(DWORD, DWORD, LPOVERLAPPED lpOverlapped) noexcept
 			{
 				// Get object
 				HIDDeviceWindows *pThis = reinterpret_cast<ExtendedOverlapped*>(lpOverlapped)->pDevice;
@@ -6627,7 +6629,7 @@ namespace DeviceInput
 				}
 			}
 
-			[[nodiscard]] static inline void CALLBACK OnWriteComplete(DWORD, DWORD, LPOVERLAPPED) noexcept
+			static inline void CALLBACK OnWriteComplete(DWORD, DWORD, LPOVERLAPPED) noexcept
 			{
 				// Nothing here
 			}
@@ -6708,15 +6710,15 @@ namespace DeviceInput
 							// RENDERER_LOG(mDirect3D11Renderer.getContext(), CRITICAL, "Failed to locate the entry point \"%s\" within the HID shared library \"%s\"", #funcName, moduleFilename)
 
 					// Get global HID function pointers
-					IMPORT_FUNC(HidD_GetPreparsedData);
-					IMPORT_FUNC(HidD_FreePreparsedData);
-					IMPORT_FUNC(HidP_GetData);
-					IMPORT_FUNC(HidP_SetData);
-					IMPORT_FUNC(HidD_GetHidGuid);
-					IMPORT_FUNC(HidD_GetAttributes);
-					IMPORT_FUNC(HidP_GetCaps);
-					IMPORT_FUNC(HidP_GetButtonCaps);
-					IMPORT_FUNC(HidP_GetValueCaps);
+					IMPORT_FUNC(HidD_GetPreparsedData)
+					IMPORT_FUNC(HidD_FreePreparsedData)
+					IMPORT_FUNC(HidP_GetData)
+					IMPORT_FUNC(HidP_SetData)
+					IMPORT_FUNC(HidD_GetHidGuid)
+					IMPORT_FUNC(HidD_GetAttributes)
+					IMPORT_FUNC(HidP_GetCaps)
+					IMPORT_FUNC(HidP_GetButtonCaps)
+					IMPORT_FUNC(HidP_GetValueCaps)
 
 					// Undefine the helper macro
 					#undef IMPORT_FUNC

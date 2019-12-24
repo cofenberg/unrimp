@@ -27,6 +27,7 @@
 //[-------------------------------------------------------]
 //[ Includes                                              ]
 //[-------------------------------------------------------]
+#include "Renderer/Public/Resource/ShaderBlueprint/GraphicsShaderType.h"
 #include "Renderer/Public/Resource/ShaderBlueprint/Cache/ShaderProperties.h"
 
 

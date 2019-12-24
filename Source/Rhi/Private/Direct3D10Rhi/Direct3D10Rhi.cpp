@@ -70,7 +70,7 @@
 #define NODEFERWINDOWPOS
 #define NOMCX
 #define NOCRYPT
-#include <windows.h>
+#include <Windows.h>
 
 // Get rid of some nasty OS macros
 #undef max
@@ -622,7 +622,7 @@ enum D3D10_PRIMITIVE_TOPOLOGY
 	D3D10_PRIMITIVE_TOPOLOGY_LINELIST_ADJ				= D3D_PRIMITIVE_TOPOLOGY_LINELIST_ADJ,
 	D3D10_PRIMITIVE_TOPOLOGY_LINESTRIP_ADJ				= D3D_PRIMITIVE_TOPOLOGY_LINESTRIP_ADJ,
 	D3D10_PRIMITIVE_TOPOLOGY_TRIANGLELIST_ADJ			= D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST_ADJ,
-	D3D10_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP_ADJ			= D3D_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP_ADJ,
+	D3D10_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP_ADJ			= D3D_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP_ADJ
 };
 
 // "Microsoft DirectX SDK (June 2010)" -> "D3Dcommon.h"
@@ -2106,7 +2106,7 @@ namespace
 				PRAGMA_WARNING_POP
 				if (nullptr != functionPointer)
 				{
-					RTL_OSVERSIONINFOW rovi = { 0 };
+					RTL_OSVERSIONINFOW rovi = { };
 					rovi.dwOSVersionInfoSize = sizeof(rovi);
 					if (0x00000000 == functionPointer(&rovi))
 					{
@@ -2114,7 +2114,7 @@ namespace
 					}
 				}
 			}
-			RTL_OSVERSIONINFOW rovi = { 0 };
+			RTL_OSVERSIONINFOW rovi = { };
 			return rovi;
 		}
 
@@ -2561,7 +2561,7 @@ namespace Direct3D10Rhi
 				}
 
 			// Load the entry points
-			IMPORT_FUNC(D3D10CreateDevice);
+			IMPORT_FUNC(D3D10CreateDevice)
 
 			// Undefine the helper macro
 			#undef IMPORT_FUNC
@@ -2601,7 +2601,7 @@ namespace Direct3D10Rhi
 				}
 
 			// Load the entry points
-			IMPORT_FUNC(D3DX10FilterTexture);
+			IMPORT_FUNC(D3DX10FilterTexture)
 
 			// Undefine the helper macro
 			#undef IMPORT_FUNC
@@ -2641,8 +2641,8 @@ namespace Direct3D10Rhi
 				}
 
 			// Load the entry points
-			IMPORT_FUNC(D3DCompile);
-			IMPORT_FUNC(D3DCreateBlob);
+			IMPORT_FUNC(D3DCompile)
+			IMPORT_FUNC(D3DCreateBlob)
 
 			// Undefine the helper macro
 			#undef IMPORT_FUNC
@@ -2826,11 +2826,11 @@ namespace Direct3D10Rhi
 					}
 
 				// Load the entry points
-				IMPORT_FUNC(D3DPERF_GetStatus);
-				IMPORT_FUNC(D3DPERF_SetOptions);
-				IMPORT_FUNC(D3DPERF_SetMarker);
-				IMPORT_FUNC(D3DPERF_BeginEvent);
-				IMPORT_FUNC(D3DPERF_EndEvent);
+				IMPORT_FUNC(D3DPERF_GetStatus)
+				IMPORT_FUNC(D3DPERF_SetOptions)
+				IMPORT_FUNC(D3DPERF_SetMarker)
+				IMPORT_FUNC(D3DPERF_BeginEvent)
+				IMPORT_FUNC(D3DPERF_EndEvent)
 
 				// Undefine the helper macro
 				#undef IMPORT_FUNC
@@ -3259,8 +3259,6 @@ namespace Direct3D10Rhi
 		*
 		*  @param[in] rhi
 		*    Owner RHI instance
-		*  @param[in] rootParameterIndex
-		*    The root parameter index number for binding
 		*  @param[in] numberOfResources
 		*    Number of resources, having no resources is invalid
 		*  @param[in] resources
@@ -3268,9 +3266,8 @@ namespace Direct3D10Rhi
 		*  @param[in] samplerStates
 		*    If not a null pointer at least "numberOfResources" sampler state pointers, must be valid if there's at least one texture resource, the resource group will keep a reference to the sampler states
 		*/
-		ResourceGroup(Rhi::IRhi& rhi, uint32_t rootParameterIndex, uint32_t numberOfResources, Rhi::IResource** resources, Rhi::ISamplerState** samplerStates RHI_RESOURCE_DEBUG_NAME_PARAMETER_NO_DEFAULT) :
+		ResourceGroup(Rhi::IRhi& rhi, uint32_t numberOfResources, Rhi::IResource** resources, Rhi::ISamplerState** samplerStates RHI_RESOURCE_DEBUG_NAME_PARAMETER_NO_DEFAULT) :
 			IResourceGroup(rhi RHI_RESOURCE_DEBUG_PASS_PARAMETER),
-			mRootParameterIndex(rootParameterIndex),
 			mNumberOfResources(numberOfResources),
 			mResources(RHI_MALLOC_TYPED(rhi.getContext(), Rhi::IResource*, mNumberOfResources)),
 			mSamplerStates(nullptr)
@@ -3371,7 +3368,6 @@ namespace Direct3D10Rhi
 	//[ Private data                                          ]
 	//[-------------------------------------------------------]
 	private:
-		uint32_t			 mRootParameterIndex;	///< The root parameter index number for binding
 		uint32_t			 mNumberOfResources;	///< Number of resources this resource group groups together
 		Rhi::IResource**	 mResources;			///< RHI resources, we keep a reference to it
 		Rhi::ISamplerState** mSamplerStates;		///< Sampler states, we keep a reference to it
@@ -3484,7 +3480,7 @@ namespace Direct3D10Rhi
 	//[ Public virtual Rhi::IRootSignature methods            ]
 	//[-------------------------------------------------------]
 	public:
-		[[nodiscard]] inline virtual Rhi::IResourceGroup* createResourceGroup(uint32_t rootParameterIndex, uint32_t numberOfResources, Rhi::IResource** resources, Rhi::ISamplerState** samplerStates = nullptr RHI_RESOURCE_DEBUG_NAME_PARAMETER) override
+		[[nodiscard]] inline virtual Rhi::IResourceGroup* createResourceGroup([[maybe_unused]] uint32_t rootParameterIndex, uint32_t numberOfResources, Rhi::IResource** resources, Rhi::ISamplerState** samplerStates = nullptr RHI_RESOURCE_DEBUG_NAME_PARAMETER) override
 		{
 			Rhi::IRhi& rhi = getRhi();
 
@@ -3494,7 +3490,7 @@ namespace Direct3D10Rhi
 			RHI_ASSERT(rhi.getContext(), nullptr != resources, "The Direct3D 10 resource pointers must be valid")
 
 			// Create resource group
-			return RHI_NEW(rhi.getContext(), ResourceGroup)(rhi, rootParameterIndex, numberOfResources, resources, samplerStates RHI_RESOURCE_DEBUG_PASS_PARAMETER);
+			return RHI_NEW(rhi.getContext(), ResourceGroup)(rhi, numberOfResources, resources, samplerStates RHI_RESOURCE_DEBUG_PASS_PARAMETER);
 		}
 
 
@@ -3578,20 +3574,20 @@ namespace Direct3D10Rhi
 				d3d10SubresourceData.SysMemSlicePitch = 0;
 
 				// Create the Direct3D 10 vertex buffer
-				FAILED_DEBUG_BREAK(direct3D10Rhi.getD3D10Device()->CreateBuffer(&d3d10BufferDesc, &d3d10SubresourceData, &mD3D10Buffer));
+				FAILED_DEBUG_BREAK(direct3D10Rhi.getD3D10Device()->CreateBuffer(&d3d10BufferDesc, &d3d10SubresourceData, &mD3D10Buffer))
 			}
 			else
 			{
 				// Create the Direct3D 10 vertex buffer
-				FAILED_DEBUG_BREAK(direct3D10Rhi.getD3D10Device()->CreateBuffer(&d3d10BufferDesc, nullptr, &mD3D10Buffer));
+				FAILED_DEBUG_BREAK(direct3D10Rhi.getD3D10Device()->CreateBuffer(&d3d10BufferDesc, nullptr, &mD3D10Buffer))
 			}
 
 			// Assign a default name to the resource for debugging purposes
 			#ifdef RHI_DEBUG
 				if (nullptr != mD3D10Buffer)
 				{
-					RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "VBO", 6);	// 6 = "VBO: " including terminating zero
-					FAILED_DEBUG_BREAK(mD3D10Buffer->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(detailedDebugName)), detailedDebugName));
+					RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "VBO", 6)	// 6 = "VBO: " including terminating zero
+					FAILED_DEBUG_BREAK(mD3D10Buffer->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(detailedDebugName)), detailedDebugName))
 				}
 			#endif
 		}
@@ -3714,20 +3710,20 @@ namespace Direct3D10Rhi
 					d3d10SubresourceData.SysMemSlicePitch = 0;
 
 					// Create the Direct3D 10 index buffer
-					FAILED_DEBUG_BREAK(direct3D10Rhi.getD3D10Device()->CreateBuffer(&d3d10BufferDesc, &d3d10SubresourceData, &mD3D10Buffer));
+					FAILED_DEBUG_BREAK(direct3D10Rhi.getD3D10Device()->CreateBuffer(&d3d10BufferDesc, &d3d10SubresourceData, &mD3D10Buffer))
 				}
 				else
 				{
 					// Create the Direct3D 10 index buffer
-					FAILED_DEBUG_BREAK(direct3D10Rhi.getD3D10Device()->CreateBuffer(&d3d10BufferDesc, nullptr, &mD3D10Buffer));
+					FAILED_DEBUG_BREAK(direct3D10Rhi.getD3D10Device()->CreateBuffer(&d3d10BufferDesc, nullptr, &mD3D10Buffer))
 				}
 
 				// Assign a default name to the resource for debugging purposes
 				#ifdef RHI_DEBUG
 					if (nullptr != mD3D10Buffer)
 					{
-						RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "IBO", 6);	// 6 = "IBO: " including terminating zero
-						FAILED_DEBUG_BREAK(mD3D10Buffer->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(detailedDebugName)), detailedDebugName));
+						RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "IBO", 6)	// 6 = "IBO: " including terminating zero
+						FAILED_DEBUG_BREAK(mD3D10Buffer->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(detailedDebugName)), detailedDebugName))
 					}
 				#endif
 			}
@@ -4060,12 +4056,12 @@ namespace Direct3D10Rhi
 					d3d10SubresourceData.SysMemSlicePitch = 0;
 
 					// Create the Direct3D 10 constant buffer
-					FAILED_DEBUG_BREAK(direct3D10Rhi.getD3D10Device()->CreateBuffer(&d3d10BufferDesc, &d3d10SubresourceData, &mD3D10Buffer));
+					FAILED_DEBUG_BREAK(direct3D10Rhi.getD3D10Device()->CreateBuffer(&d3d10BufferDesc, &d3d10SubresourceData, &mD3D10Buffer))
 				}
 				else
 				{
 					// Create the Direct3D 10 constant buffer
-					FAILED_DEBUG_BREAK(direct3D10Rhi.getD3D10Device()->CreateBuffer(&d3d10BufferDesc, nullptr, &mD3D10Buffer));
+					FAILED_DEBUG_BREAK(direct3D10Rhi.getD3D10Device()->CreateBuffer(&d3d10BufferDesc, nullptr, &mD3D10Buffer))
 				}
 			}
 
@@ -4080,19 +4076,19 @@ namespace Direct3D10Rhi
 				d3d10ShaderResourceViewDesc.Buffer.ElementWidth	 = numberOfBytes / Rhi::TextureFormat::getNumberOfBytesPerElement(textureFormat);
 
 				// Create the Direct3D 10 shader resource view instance
-				FAILED_DEBUG_BREAK(direct3D10Rhi.getD3D10Device()->CreateShaderResourceView(mD3D10Buffer, &d3d10ShaderResourceViewDesc, &mD3D10ShaderResourceView));
+				FAILED_DEBUG_BREAK(direct3D10Rhi.getD3D10Device()->CreateShaderResourceView(mD3D10Buffer, &d3d10ShaderResourceViewDesc, &mD3D10ShaderResourceView))
 			}
 
 			// Assign a default name to the resource for debugging purposes
 			#ifdef RHI_DEBUG
-				RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "TBO", 6);	// 6 = "TBO: " including terminating zero
+				RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "TBO", 6)	// 6 = "TBO: " including terminating zero
 				if (nullptr != mD3D10Buffer)
 				{
-					FAILED_DEBUG_BREAK(mD3D10Buffer->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(detailedDebugName)), detailedDebugName));
+					FAILED_DEBUG_BREAK(mD3D10Buffer->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(detailedDebugName)), detailedDebugName))
 				}
 				if (nullptr != mD3D10ShaderResourceView)
 				{
-					FAILED_DEBUG_BREAK(mD3D10ShaderResourceView->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(detailedDebugName)), detailedDebugName));
+					FAILED_DEBUG_BREAK(mD3D10ShaderResourceView->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(detailedDebugName)), detailedDebugName))
 				}
 			#endif
 		}
@@ -4349,20 +4345,20 @@ namespace Direct3D10Rhi
 				d3d10SubresourceData.SysMemSlicePitch = 0;
 
 				// Create the Direct3D 10 constant buffer
-				FAILED_DEBUG_BREAK(direct3D10Rhi.getD3D10Device()->CreateBuffer(&d3d10BufferDesc, &d3d10SubresourceData, &mD3D10Buffer));
+				FAILED_DEBUG_BREAK(direct3D10Rhi.getD3D10Device()->CreateBuffer(&d3d10BufferDesc, &d3d10SubresourceData, &mD3D10Buffer))
 			}
 			else
 			{
 				// Create the Direct3D 10 constant buffer
-				FAILED_DEBUG_BREAK(direct3D10Rhi.getD3D10Device()->CreateBuffer(&d3d10BufferDesc, nullptr, &mD3D10Buffer));
+				FAILED_DEBUG_BREAK(direct3D10Rhi.getD3D10Device()->CreateBuffer(&d3d10BufferDesc, nullptr, &mD3D10Buffer))
 			}
 
 			// Assign a default name to the resource for debugging purposes
 			#ifdef RHI_DEBUG
 				if (nullptr != mD3D10Buffer)
 				{
-					RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "UBO", 6);	// 6 = "UBO: " including terminating zero
-					FAILED_DEBUG_BREAK(mD3D10Buffer->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(detailedDebugName)), detailedDebugName));
+					RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "UBO", 6)	// 6 = "UBO: " including terminating zero
+					FAILED_DEBUG_BREAK(mD3D10Buffer->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(detailedDebugName)), detailedDebugName))
 				}
 			#endif
 		}
@@ -4650,7 +4646,7 @@ namespace Direct3D10Rhi
 				{
 					// Let Direct3D 10 generate the mipmaps for us automatically
 					// -> Sadly, it's impossible to use initialization data in this use-case
-					FAILED_DEBUG_BREAK(direct3D10Rhi.getD3D10Device()->CreateTexture1D(&d3d10Texture1DDesc, nullptr, &mD3D10Texture1D));
+					FAILED_DEBUG_BREAK(direct3D10Rhi.getD3D10Device()->CreateTexture1D(&d3d10Texture1DDesc, nullptr, &mD3D10Texture1D))
 					if (nullptr != mD3D10Texture1D)
 					{
 						// Begin debug event
@@ -4700,13 +4696,13 @@ namespace Direct3D10Rhi
 						d3d10SubresourceData->SysMemPitch	   = Rhi::TextureFormat::getNumberOfBytesPerRow(textureFormat, width);
 						d3d10SubresourceData->SysMemSlicePitch = 0;	// Only relevant for 3D textures
 					}
-					FAILED_DEBUG_BREAK(direct3D10Rhi.getD3D10Device()->CreateTexture1D(&d3d10Texture1DDesc, d3d10SubresourceData, &mD3D10Texture1D));
+					FAILED_DEBUG_BREAK(direct3D10Rhi.getD3D10Device()->CreateTexture1D(&d3d10Texture1DDesc, d3d10SubresourceData, &mD3D10Texture1D))
 				}
 			}
 			else
 			{
 				// The user did not provide us with texture data
-				FAILED_DEBUG_BREAK(direct3D10Rhi.getD3D10Device()->CreateTexture1D(&d3d10Texture1DDesc, nullptr, &mD3D10Texture1D));
+				FAILED_DEBUG_BREAK(direct3D10Rhi.getD3D10Device()->CreateTexture1D(&d3d10Texture1DDesc, nullptr, &mD3D10Texture1D))
 			}
 
 			// Create the Direct3D 10 shader resource view instance
@@ -4720,19 +4716,19 @@ namespace Direct3D10Rhi
 				d3d10ShaderResourceViewDesc.Texture1D.MostDetailedMip = 0;
 
 				// Create the Direct3D 10 shader resource view instance
-				FAILED_DEBUG_BREAK(direct3D10Rhi.getD3D10Device()->CreateShaderResourceView(mD3D10Texture1D, &d3d10ShaderResourceViewDesc, &mD3D10ShaderResourceView));
+				FAILED_DEBUG_BREAK(direct3D10Rhi.getD3D10Device()->CreateShaderResourceView(mD3D10Texture1D, &d3d10ShaderResourceViewDesc, &mD3D10ShaderResourceView))
 			}
 
 			// Assign a default name to the resource for debugging purposes
 			#ifdef RHI_DEBUG
-				RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "1D texture", 13);	// 13 = "1D texture: " including terminating zero
+				RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "1D texture", 13)	// 13 = "1D texture: " including terminating zero
 				if (nullptr != mD3D10Texture1D)
 				{
-					FAILED_DEBUG_BREAK(mD3D10Texture1D->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(detailedDebugName)), detailedDebugName));
+					FAILED_DEBUG_BREAK(mD3D10Texture1D->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(detailedDebugName)), detailedDebugName))
 				}
 				if (nullptr != mD3D10ShaderResourceView)
 				{
-					FAILED_DEBUG_BREAK(mD3D10ShaderResourceView->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(detailedDebugName)), detailedDebugName));
+					FAILED_DEBUG_BREAK(mD3D10ShaderResourceView->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(detailedDebugName)), detailedDebugName))
 				}
 			#endif
 		}
@@ -4922,7 +4918,7 @@ namespace Direct3D10Rhi
 				{
 					// Let Direct3D 10 generate the mipmaps for us automatically
 					// -> Sadly, it's impossible to use initialization data in this use-case
-					FAILED_DEBUG_BREAK(d3d10Device->CreateTexture1D(&d3d10Texture1DDesc, nullptr, &mD3D10Texture1D));
+					FAILED_DEBUG_BREAK(d3d10Device->CreateTexture1D(&d3d10Texture1DDesc, nullptr, &mD3D10Texture1D))
 					if (nullptr != mD3D10Texture1D)
 					{
 						// Begin debug event
@@ -5007,7 +5003,7 @@ namespace Direct3D10Rhi
 							data = static_cast<const uint8_t*>(data) + numberOfBytesPerSlice;
 						}
 					}
-					FAILED_DEBUG_BREAK(d3d10Device->CreateTexture1D(&d3d10Texture1DDesc, d3d10SubresourceData, &mD3D10Texture1D));
+					FAILED_DEBUG_BREAK(d3d10Device->CreateTexture1D(&d3d10Texture1DDesc, d3d10SubresourceData, &mD3D10Texture1D))
 					if (numberOfSlices > MAXIMUM_NUMBER_OF_SLICES)
 					{
 						RHI_FREE(context, d3d10SubresourceData);
@@ -5017,7 +5013,7 @@ namespace Direct3D10Rhi
 			else
 			{
 				// The user did not provide us with texture data
-				FAILED_DEBUG_BREAK(d3d10Device->CreateTexture1D(&d3d10Texture1DDesc, nullptr, &mD3D10Texture1D));
+				FAILED_DEBUG_BREAK(d3d10Device->CreateTexture1D(&d3d10Texture1DDesc, nullptr, &mD3D10Texture1D))
 			}
 
 			// Create the Direct3D 10 shader resource view instance
@@ -5033,19 +5029,19 @@ namespace Direct3D10Rhi
 				d3d10ShaderResourceViewDesc.Texture1DArray.ArraySize		= numberOfSlices;
 
 				// Create the Direct3D 10 shader resource view instance
-				FAILED_DEBUG_BREAK(direct3D10Rhi.getD3D10Device()->CreateShaderResourceView(mD3D10Texture1D, &d3d10ShaderResourceViewDesc, &mD3D10ShaderResourceView));
+				FAILED_DEBUG_BREAK(direct3D10Rhi.getD3D10Device()->CreateShaderResourceView(mD3D10Texture1D, &d3d10ShaderResourceViewDesc, &mD3D10ShaderResourceView))
 			}
 
 			// Assign a default name to the resource for debugging purposes
 			#ifdef RHI_DEBUG
-				RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "1D texture array", 19);	// 19 = "1D texture array: " including terminating zero
+				RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "1D texture array", 19)	// 19 = "1D texture array: " including terminating zero
 				if (nullptr != mD3D10Texture1D)
 				{
-					FAILED_DEBUG_BREAK(mD3D10Texture1D->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(detailedDebugName)), detailedDebugName));
+					FAILED_DEBUG_BREAK(mD3D10Texture1D->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(detailedDebugName)), detailedDebugName))
 				}
 				if (nullptr != mD3D10ShaderResourceView)
 				{
-					FAILED_DEBUG_BREAK(mD3D10ShaderResourceView->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(detailedDebugName)), detailedDebugName));
+					FAILED_DEBUG_BREAK(mD3D10ShaderResourceView->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(detailedDebugName)), detailedDebugName))
 				}
 			#endif
 		}
@@ -5236,7 +5232,7 @@ namespace Direct3D10Rhi
 				{
 					// Let Direct3D 10 generate the mipmaps for us automatically
 					// -> Sadly, it's impossible to use initialization data in this use-case
-					FAILED_DEBUG_BREAK(direct3D10Rhi.getD3D10Device()->CreateTexture2D(&d3d10Texture2DDesc, nullptr, &mD3D10Texture2D));
+					FAILED_DEBUG_BREAK(direct3D10Rhi.getD3D10Device()->CreateTexture2D(&d3d10Texture2DDesc, nullptr, &mD3D10Texture2D))
 					if (nullptr != mD3D10Texture2D)
 					{
 						// Begin debug event
@@ -5287,13 +5283,13 @@ namespace Direct3D10Rhi
 						d3d10SubresourceData->SysMemPitch	   = Rhi::TextureFormat::getNumberOfBytesPerRow(textureFormat, width);
 						d3d10SubresourceData->SysMemSlicePitch = 0;	// Only relevant for 3D textures
 					}
-					FAILED_DEBUG_BREAK(direct3D10Rhi.getD3D10Device()->CreateTexture2D(&d3d10Texture2DDesc, d3d10SubresourceData, &mD3D10Texture2D));
+					FAILED_DEBUG_BREAK(direct3D10Rhi.getD3D10Device()->CreateTexture2D(&d3d10Texture2DDesc, d3d10SubresourceData, &mD3D10Texture2D))
 				}
 			}
 			else
 			{
 				// The user did not provide us with texture data
-				FAILED_DEBUG_BREAK(direct3D10Rhi.getD3D10Device()->CreateTexture2D(&d3d10Texture2DDesc, nullptr, &mD3D10Texture2D));
+				FAILED_DEBUG_BREAK(direct3D10Rhi.getD3D10Device()->CreateTexture2D(&d3d10Texture2DDesc, nullptr, &mD3D10Texture2D))
 			}
 
 			// Create the Direct3D 10 shader resource view instance
@@ -5307,19 +5303,19 @@ namespace Direct3D10Rhi
 				d3d10ShaderResourceViewDesc.Texture2D.MostDetailedMip = 0;
 
 				// Create the Direct3D 10 shader resource view instance
-				FAILED_DEBUG_BREAK(direct3D10Rhi.getD3D10Device()->CreateShaderResourceView(mD3D10Texture2D, &d3d10ShaderResourceViewDesc, &mD3D10ShaderResourceView));
+				FAILED_DEBUG_BREAK(direct3D10Rhi.getD3D10Device()->CreateShaderResourceView(mD3D10Texture2D, &d3d10ShaderResourceViewDesc, &mD3D10ShaderResourceView))
 			}
 
 			// Assign a default name to the resource for debugging purposes
 			#ifdef RHI_DEBUG
-				RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "2D texture", 13);	// 13 = "2D texture: " including terminating zero
+				RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "2D texture", 13)	// 13 = "2D texture: " including terminating zero
 				if (nullptr != mD3D10Texture2D)
 				{
-					FAILED_DEBUG_BREAK(mD3D10Texture2D->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(detailedDebugName)), detailedDebugName));
+					FAILED_DEBUG_BREAK(mD3D10Texture2D->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(detailedDebugName)), detailedDebugName))
 				}
 				if (nullptr != mD3D10ShaderResourceView)
 				{
-					FAILED_DEBUG_BREAK(mD3D10ShaderResourceView->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(detailedDebugName)), detailedDebugName));
+					FAILED_DEBUG_BREAK(mD3D10ShaderResourceView->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(detailedDebugName)), detailedDebugName))
 				}
 			#endif
 		}
@@ -5418,7 +5414,7 @@ namespace Direct3D10Rhi
 				d3d10ShaderResourceViewDesc.Texture2D.MostDetailedMip = minimumMipmapIndex;
 
 				// Create the Direct3D 10 shader resource view instance
-				FAILED_DEBUG_BREAK(static_cast<Direct3D10Rhi&>(getRhi()).getD3D10Device()->CreateShaderResourceView(mD3D10Texture2D, &d3d10ShaderResourceViewDesc, &mD3D10ShaderResourceView));
+				FAILED_DEBUG_BREAK(static_cast<Direct3D10Rhi&>(getRhi()).getD3D10Device()->CreateShaderResourceView(mD3D10Texture2D, &d3d10ShaderResourceViewDesc, &mD3D10ShaderResourceView))
 			}
 		}
 
@@ -5558,7 +5554,7 @@ namespace Direct3D10Rhi
 				{
 					// Let Direct3D 10 generate the mipmaps for us automatically
 					// -> Sadly, it's impossible to use initialization data in this use-case
-					FAILED_DEBUG_BREAK(d3d10Device->CreateTexture2D(&d3d10Texture2DDesc, nullptr, &mD3D10Texture2D));
+					FAILED_DEBUG_BREAK(d3d10Device->CreateTexture2D(&d3d10Texture2DDesc, nullptr, &mD3D10Texture2D))
 					if (nullptr != mD3D10Texture2D)
 					{
 						// Begin debug event
@@ -5644,7 +5640,7 @@ namespace Direct3D10Rhi
 							data = static_cast<const uint8_t*>(data) + numberOfBytesPerSlice;
 						}
 					}
-					FAILED_DEBUG_BREAK(d3d10Device->CreateTexture2D(&d3d10Texture2DDesc, d3d10SubresourceData, &mD3D10Texture2D));
+					FAILED_DEBUG_BREAK(d3d10Device->CreateTexture2D(&d3d10Texture2DDesc, d3d10SubresourceData, &mD3D10Texture2D))
 					if (numberOfSlices > MAXIMUM_NUMBER_OF_SLICES)
 					{
 						RHI_FREE(context, d3d10SubresourceData);
@@ -5654,7 +5650,7 @@ namespace Direct3D10Rhi
 			else
 			{
 				// The user did not provide us with texture data
-				FAILED_DEBUG_BREAK(d3d10Device->CreateTexture2D(&d3d10Texture2DDesc, nullptr, &mD3D10Texture2D));
+				FAILED_DEBUG_BREAK(d3d10Device->CreateTexture2D(&d3d10Texture2DDesc, nullptr, &mD3D10Texture2D))
 			}
 
 			// Create the Direct3D 10 shader resource view instance
@@ -5670,19 +5666,19 @@ namespace Direct3D10Rhi
 				d3d10ShaderResourceViewDesc.Texture2DArray.ArraySize		= numberOfSlices;
 
 				// Create the Direct3D 10 shader resource view instance
-				FAILED_DEBUG_BREAK(direct3D10Rhi.getD3D10Device()->CreateShaderResourceView(mD3D10Texture2D, &d3d10ShaderResourceViewDesc, &mD3D10ShaderResourceView));
+				FAILED_DEBUG_BREAK(direct3D10Rhi.getD3D10Device()->CreateShaderResourceView(mD3D10Texture2D, &d3d10ShaderResourceViewDesc, &mD3D10ShaderResourceView))
 			}
 
 			// Assign a default name to the resource for debugging purposes
 			#ifdef RHI_DEBUG
-				RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "2D texture array", 19);	// 19 = "2D texture array: " including terminating zero
+				RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "2D texture array", 19)	// 19 = "2D texture array: " including terminating zero
 				if (nullptr != mD3D10Texture2D)
 				{
-					FAILED_DEBUG_BREAK(mD3D10Texture2D->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(detailedDebugName)), detailedDebugName));
+					FAILED_DEBUG_BREAK(mD3D10Texture2D->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(detailedDebugName)), detailedDebugName))
 				}
 				if (nullptr != mD3D10ShaderResourceView)
 				{
-					FAILED_DEBUG_BREAK(mD3D10ShaderResourceView->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(detailedDebugName)), detailedDebugName));
+					FAILED_DEBUG_BREAK(mD3D10ShaderResourceView->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(detailedDebugName)), detailedDebugName))
 				}
 			#endif
 		}
@@ -5878,7 +5874,7 @@ namespace Direct3D10Rhi
 				{
 					// Let Direct3D 10 generate the mipmaps for us automatically
 					// -> Sadly, it's impossible to use initialization data in this use-case
-					FAILED_DEBUG_BREAK(direct3D10Rhi.getD3D10Device()->CreateTexture3D(&d3d10Texture3DDesc, nullptr, &mD3D10Texture3D));
+					FAILED_DEBUG_BREAK(direct3D10Rhi.getD3D10Device()->CreateTexture3D(&d3d10Texture3DDesc, nullptr, &mD3D10Texture3D))
 					if (nullptr != mD3D10Texture3D)
 					{
 						// Begin debug event
@@ -5935,13 +5931,13 @@ namespace Direct3D10Rhi
 						d3d10SubresourceData->SysMemPitch	   = Rhi::TextureFormat::getNumberOfBytesPerRow(textureFormat, width);
 						d3d10SubresourceData->SysMemSlicePitch = Rhi::TextureFormat::getNumberOfBytesPerSlice(textureFormat, width, height);
 					}
-					FAILED_DEBUG_BREAK(direct3D10Rhi.getD3D10Device()->CreateTexture3D(&d3d10Texture3DDesc, d3d10SubresourceData, &mD3D10Texture3D));
+					FAILED_DEBUG_BREAK(direct3D10Rhi.getD3D10Device()->CreateTexture3D(&d3d10Texture3DDesc, d3d10SubresourceData, &mD3D10Texture3D))
 				}
 			}
 			else
 			{
 				// The user did not provide us with texture data
-				FAILED_DEBUG_BREAK(direct3D10Rhi.getD3D10Device()->CreateTexture3D(&d3d10Texture3DDesc, nullptr, &mD3D10Texture3D));
+				FAILED_DEBUG_BREAK(direct3D10Rhi.getD3D10Device()->CreateTexture3D(&d3d10Texture3DDesc, nullptr, &mD3D10Texture3D))
 			}
 
 			// Create the Direct3D 10 shader resource view instance
@@ -5955,19 +5951,19 @@ namespace Direct3D10Rhi
 				d3d10ShaderResourceViewDesc.Texture3D.MostDetailedMip = 0;
 
 				// Create the Direct3D 10 shader resource view instance
-				FAILED_DEBUG_BREAK(direct3D10Rhi.getD3D10Device()->CreateShaderResourceView(mD3D10Texture3D, &d3d10ShaderResourceViewDesc, &mD3D10ShaderResourceView));
+				FAILED_DEBUG_BREAK(direct3D10Rhi.getD3D10Device()->CreateShaderResourceView(mD3D10Texture3D, &d3d10ShaderResourceViewDesc, &mD3D10ShaderResourceView))
 			}
 
 			// Assign a default name to the resource for debugging purposes
 			#ifdef RHI_DEBUG
-				RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "3D texture", 13);	// 13 = "3D texture: " including terminating zero
+				RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "3D texture", 13)	// 13 = "3D texture: " including terminating zero
 				if (nullptr != mD3D10Texture3D)
 				{
-					FAILED_DEBUG_BREAK(mD3D10Texture3D->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(detailedDebugName)), detailedDebugName));
+					FAILED_DEBUG_BREAK(mD3D10Texture3D->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(detailedDebugName)), detailedDebugName))
 				}
 				if (nullptr != mD3D10ShaderResourceView)
 				{
-					FAILED_DEBUG_BREAK(mD3D10ShaderResourceView->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(detailedDebugName)), detailedDebugName));
+					FAILED_DEBUG_BREAK(mD3D10ShaderResourceView->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(detailedDebugName)), detailedDebugName))
 				}
 			#endif
 		}
@@ -6154,7 +6150,7 @@ namespace Direct3D10Rhi
 				{
 					// Let Direct3D 10 generate the mipmaps for us automatically
 					// -> Sadly, it's impossible to use initialization data in this use-case
-					FAILED_DEBUG_BREAK(d3d10Device->CreateTexture2D(&d3d10Texture2DDesc, nullptr, &mD3D10TextureCube));
+					FAILED_DEBUG_BREAK(d3d10Device->CreateTexture2D(&d3d10Texture2DDesc, nullptr, &mD3D10TextureCube))
 					if (nullptr != mD3D10TextureCube)
 					{
 						// Begin debug event
@@ -6237,13 +6233,13 @@ namespace Direct3D10Rhi
 							data = static_cast<const uint8_t*>(data) + numberOfBytesPerSlice;
 						}
 					}
-					FAILED_DEBUG_BREAK(d3d10Device->CreateTexture2D(&d3d10Texture2DDesc, d3d10SubresourceData, &mD3D10TextureCube));
+					FAILED_DEBUG_BREAK(d3d10Device->CreateTexture2D(&d3d10Texture2DDesc, d3d10SubresourceData, &mD3D10TextureCube))
 				}
 			}
 			else
 			{
 				// The user did not provide us with texture data
-				FAILED_DEBUG_BREAK(d3d10Device->CreateTexture2D(&d3d10Texture2DDesc, nullptr, &mD3D10TextureCube));
+				FAILED_DEBUG_BREAK(d3d10Device->CreateTexture2D(&d3d10Texture2DDesc, nullptr, &mD3D10TextureCube))
 			}
 
 			// Create the Direct3D 10 shader resource view instance
@@ -6257,19 +6253,19 @@ namespace Direct3D10Rhi
 				d3d10ShaderResourceViewDesc.TextureCube.MostDetailedMip	= 0;
 
 				// Create the Direct3D 10 shader resource view instance
-				FAILED_DEBUG_BREAK(direct3D10Rhi.getD3D10Device()->CreateShaderResourceView(mD3D10TextureCube, &d3d10ShaderResourceViewDesc, &mD3D10ShaderResourceView));
+				FAILED_DEBUG_BREAK(direct3D10Rhi.getD3D10Device()->CreateShaderResourceView(mD3D10TextureCube, &d3d10ShaderResourceViewDesc, &mD3D10ShaderResourceView))
 			}
 
 			// Assign a default name to the resource for debugging purposes
 			#ifdef RHI_DEBUG
-				RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "Cube texture", 15);	// 15 = "Cube texture: " including terminating zero
+				RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "Cube texture", 15)	// 15 = "Cube texture: " including terminating zero
 				if (nullptr != mD3D10TextureCube)
 				{
-					FAILED_DEBUG_BREAK(mD3D10TextureCube->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(detailedDebugName)), detailedDebugName));
+					FAILED_DEBUG_BREAK(mD3D10TextureCube->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(detailedDebugName)), detailedDebugName))
 				}
 				if (nullptr != mD3D10ShaderResourceView)
 				{
-					FAILED_DEBUG_BREAK(mD3D10ShaderResourceView->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(detailedDebugName)), detailedDebugName));
+					FAILED_DEBUG_BREAK(mD3D10ShaderResourceView->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(detailedDebugName)), detailedDebugName))
 				}
 			#endif
 		}
@@ -6535,14 +6531,14 @@ namespace Direct3D10Rhi
 
 			// Create the Direct3D 10 sampler state
 			// -> "Rhi::SamplerState" maps directly to Direct3D 10 & 11, do not change it
-			FAILED_DEBUG_BREAK(direct3D10Rhi.getD3D10Device()->CreateSamplerState(reinterpret_cast<const D3D10_SAMPLER_DESC*>(&samplerState), &mD3D10SamplerState));
+			FAILED_DEBUG_BREAK(direct3D10Rhi.getD3D10Device()->CreateSamplerState(reinterpret_cast<const D3D10_SAMPLER_DESC*>(&samplerState), &mD3D10SamplerState))
 
 			// Assign a default name to the resource for debugging purposes
 			#ifdef RHI_DEBUG
 				if (nullptr != mD3D10SamplerState)
 				{
-					RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "Sampler state", 16);	// 16 = "Sampler state: " including terminating zero
-					FAILED_DEBUG_BREAK(mD3D10SamplerState->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(detailedDebugName)), detailedDebugName));
+					RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "Sampler state", 16)	// 16 = "Sampler state: " including terminating zero
+					FAILED_DEBUG_BREAK(mD3D10SamplerState->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(detailedDebugName)), detailedDebugName))
 				}
 			#endif
 		}
@@ -6679,14 +6675,14 @@ namespace Direct3D10Rhi
 			d3d10RasterizerDesc.ScissorEnable			= rasterizerState.scissorEnable;
 			d3d10RasterizerDesc.MultisampleEnable		= rasterizerState.multisampleEnable;
 			d3d10RasterizerDesc.AntialiasedLineEnable	= rasterizerState.antialiasedLineEnable;
-			FAILED_DEBUG_BREAK(direct3D10Rhi.getD3D10Device()->CreateRasterizerState(&d3d10RasterizerDesc, &mD3D10RasterizerState));
+			FAILED_DEBUG_BREAK(direct3D10Rhi.getD3D10Device()->CreateRasterizerState(&d3d10RasterizerDesc, &mD3D10RasterizerState))
 
 			// Assign a default name to the resource for debugging purposes
 			#ifdef RHI_DEBUG
 				if (nullptr != mD3D10RasterizerState)
 				{
 					static constexpr char* NAME = "Rasterizer state";
-					FAILED_DEBUG_BREAK(mD3D10RasterizerState->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(NAME)), NAME));
+					FAILED_DEBUG_BREAK(mD3D10RasterizerState->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(NAME)), NAME))
 				}
 			#endif
 		}
@@ -6759,14 +6755,14 @@ namespace Direct3D10Rhi
 			// Create the Direct3D 10 depth stencil state
 			// -> "ID3D10Device::CreateDepthStencilState()" takes automatically care of duplicate depth stencil state handling
 			// -> "Rhi::DepthStencilState" maps directly to Direct3D 10 & 11, do not change it
-			FAILED_DEBUG_BREAK(direct3D10Rhi.getD3D10Device()->CreateDepthStencilState(reinterpret_cast<const D3D10_DEPTH_STENCIL_DESC*>(&depthStencilState), &mD3D10DepthStencilState));
+			FAILED_DEBUG_BREAK(direct3D10Rhi.getD3D10Device()->CreateDepthStencilState(reinterpret_cast<const D3D10_DEPTH_STENCIL_DESC*>(&depthStencilState), &mD3D10DepthStencilState))
 
 			// Assign a default name to the resource for debugging purposes
 			#ifdef RHI_DEBUG
 				if (nullptr != mD3D10DepthStencilState)
 				{
 					static constexpr char* NAME = "Depth stencil state";
-					FAILED_DEBUG_BREAK(mD3D10DepthStencilState->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(NAME)), NAME));
+					FAILED_DEBUG_BREAK(mD3D10DepthStencilState->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(NAME)), NAME))
 				}
 			#endif
 		}
@@ -6864,14 +6860,14 @@ namespace Direct3D10Rhi
 				blendState.renderTarget[6].renderTargetWriteMask,						// RenderTargetWriteMask[6] (UINT8)
 				blendState.renderTarget[7].renderTargetWriteMask						// RenderTargetWriteMask[7] (UINT8)
 			};
-			FAILED_DEBUG_BREAK(direct3D10Rhi.getD3D10Device()->CreateBlendState(&d3d10BlendDesc, &mD3D10BlendState));
+			FAILED_DEBUG_BREAK(direct3D10Rhi.getD3D10Device()->CreateBlendState(&d3d10BlendDesc, &mD3D10BlendState))
 
 			// Assign a default name to the resource for debugging purposes
 			#ifdef RHI_DEBUG
 				if (nullptr != mD3D10BlendState)
 				{
 					static constexpr char* NAME = "Blend state";
-					FAILED_DEBUG_BREAK(mD3D10BlendState->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(NAME)), NAME));
+					FAILED_DEBUG_BREAK(mD3D10BlendState->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(NAME)), NAME))
 				}
 			#endif
 		}
@@ -6933,7 +6929,7 @@ namespace Direct3D10Rhi
 		*  @brief
 		*    Constructor
 		*
-		*  @param[in] Rhi
+		*  @param[in] rhi
 		*    Owner RHI instance
 		*  @param[in] numberOfColorAttachments
 		*    Number of color render target textures, must be <="Rhi::Capabilities::maximumNumberOfSimultaneousRenderTargets"
@@ -7113,7 +7109,7 @@ namespace Direct3D10Rhi
 				ID3D10Device* d3d10Device = direct3D10Rhi.getD3D10Device();
 				for (uint32_t i = 0; i < numberOfQueries; ++i)
 				{
-					FAILED_DEBUG_BREAK(d3d10Device->CreateQuery(&d3d10QueryDesc, &mD3D10Queries[i]));
+					FAILED_DEBUG_BREAK(d3d10Device->CreateQuery(&d3d10QueryDesc, &mD3D10Queries[i]))
 				}
 			}
 
@@ -7123,14 +7119,14 @@ namespace Direct3D10Rhi
 				{
 					case Rhi::QueryType::OCCLUSION:
 					{
-						RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "Occlusion query", 18);	// 18 = "Occlusion query: " including terminating zero
+						RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "Occlusion query", 18)	// 18 = "Occlusion query: " including terminating zero
 						const UINT detailedDebugNameLength = static_cast<UINT>(strlen(detailedDebugName));
 						for (uint32_t i = 0; i < mNumberOfQueries; ++i)
 						{
 							ID3D10Query* d3d10Query = mD3D10Queries[i];
 							if (nullptr != d3d10Query)
 							{
-								FAILED_DEBUG_BREAK(d3d10Query->SetPrivateData(WKPDID_D3DDebugObjectName, detailedDebugNameLength, detailedDebugName));
+								FAILED_DEBUG_BREAK(d3d10Query->SetPrivateData(WKPDID_D3DDebugObjectName, detailedDebugNameLength, detailedDebugName))
 							}
 						}
 						break;
@@ -7138,14 +7134,14 @@ namespace Direct3D10Rhi
 
 					case Rhi::QueryType::PIPELINE_STATISTICS:
 					{
-						RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "Pipeline statistics query", 28);	// 28 = "Pipeline statistics query: " including terminating zero
+						RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "Pipeline statistics query", 28)	// 28 = "Pipeline statistics query: " including terminating zero
 						const UINT detailedDebugNameLength = static_cast<UINT>(strlen(detailedDebugName));
 						for (uint32_t i = 0; i < mNumberOfQueries; ++i)
 						{
 							ID3D10Query* d3d10Query = mD3D10Queries[i];
 							if (nullptr != d3d10Query)
 							{
-								FAILED_DEBUG_BREAK(d3d10Query->SetPrivateData(WKPDID_D3DDebugObjectName, detailedDebugNameLength, detailedDebugName));
+								FAILED_DEBUG_BREAK(d3d10Query->SetPrivateData(WKPDID_D3DDebugObjectName, detailedDebugNameLength, detailedDebugName))
 							}
 						}
 						break;
@@ -7153,14 +7149,14 @@ namespace Direct3D10Rhi
 
 					case Rhi::QueryType::TIMESTAMP:
 					{
-						RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "Timestamp query", 18);	// 18 = "Timestamp query: " including terminating zero
+						RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "Timestamp query", 18)	// 18 = "Timestamp query: " including terminating zero
 						const UINT detailedDebugNameLength = static_cast<UINT>(strlen(detailedDebugName));
 						for (uint32_t i = 0; i < mNumberOfQueries; ++i)
 						{
 							ID3D10Query* d3d10Query = mD3D10Queries[i];
 							if (nullptr != d3d10Query)
 							{
-								FAILED_DEBUG_BREAK(d3d10Query->SetPrivateData(WKPDID_D3DDebugObjectName, detailedDebugNameLength, detailedDebugName));
+								FAILED_DEBUG_BREAK(d3d10Query->SetPrivateData(WKPDID_D3DDebugObjectName, detailedDebugNameLength, detailedDebugName))
 							}
 						}
 						break;
@@ -7301,9 +7297,9 @@ namespace Direct3D10Rhi
 			{
 				IDXGIDevice* dxgiDevice = nullptr;
 				IDXGIAdapter* dxgiAdapter = nullptr;
-				FAILED_DEBUG_BREAK(d3d10Device->QueryInterface(IID_PPV_ARGS(&dxgiDevice)));
-				FAILED_DEBUG_BREAK(dxgiDevice->GetAdapter(&dxgiAdapter));
-				FAILED_DEBUG_BREAK(dxgiAdapter->GetParent(IID_PPV_ARGS(&dxgiFactory)));
+				FAILED_DEBUG_BREAK(d3d10Device->QueryInterface(IID_PPV_ARGS(&dxgiDevice)))
+				FAILED_DEBUG_BREAK(dxgiDevice->GetAdapter(&dxgiAdapter))
+				FAILED_DEBUG_BREAK(dxgiAdapter->GetParent(IID_PPV_ARGS(&dxgiFactory)))
 
 				// Determines whether tearing support is available for fullscreen borderless windows
 				// -> To unlock frame rates of UWP applications on the Windows Store and providing support for both AMD Freesync and NVIDIA's G-SYNC we must explicitly allow tearing
@@ -7311,7 +7307,7 @@ namespace Direct3D10Rhi
 				if (isWindows10OrGreater)
 				{
 					IDXGIFactory5* dxgiFactory5 = nullptr;
-					FAILED_DEBUG_BREAK(dxgiAdapter->GetParent(IID_PPV_ARGS(&dxgiFactory5)));
+					FAILED_DEBUG_BREAK(dxgiAdapter->GetParent(IID_PPV_ARGS(&dxgiFactory5)))
 					if (nullptr != dxgiFactory5)
 					{
 						BOOL allowTearing = FALSE;
@@ -7378,11 +7374,11 @@ namespace Direct3D10Rhi
 				dxgiSwapChainDesc.SwapEffect = DXGI_SWAP_EFFECT_FLIP_SEQUENTIAL;
 			}
 			dxgiSwapChainDesc.Flags = (mAllowTearing ? DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING : 0u);
-			FAILED_DEBUG_BREAK(dxgiFactory->CreateSwapChain(d3d10Device, &dxgiSwapChainDesc, &mDxgiSwapChain));
+			FAILED_DEBUG_BREAK(dxgiFactory->CreateSwapChain(d3d10Device, &dxgiSwapChainDesc, &mDxgiSwapChain))
 
 			// Disable alt-return for automatic fullscreen state change
 			// -> We handle this manually to have more control over it
-			FAILED_DEBUG_BREAK(dxgiFactory->MakeWindowAssociation(hWnd, DXGI_MWA_NO_ALT_ENTER));
+			FAILED_DEBUG_BREAK(dxgiFactory->MakeWindowAssociation(hWnd, DXGI_MWA_NO_ALT_ENTER))
 
 			// Release our DXGI factory
 			dxgiFactory->Release();
@@ -7394,15 +7390,15 @@ namespace Direct3D10Rhi
 
 				// Assign a default name to the resource for debugging purposes
 				#ifdef RHI_DEBUG
-					RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "Swap chain", 13);	// 13 = "Swap chain: " including terminating zero
-					FAILED_DEBUG_BREAK(mDxgiSwapChain->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(detailedDebugName)), detailedDebugName));
+					RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "Swap chain", 13)	// 13 = "Swap chain: " including terminating zero
+					FAILED_DEBUG_BREAK(mDxgiSwapChain->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(detailedDebugName)), detailedDebugName))
 					if (nullptr != mD3D10RenderTargetView)
 					{
-						FAILED_DEBUG_BREAK(mD3D10RenderTargetView->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(detailedDebugName)), detailedDebugName));
+						FAILED_DEBUG_BREAK(mD3D10RenderTargetView->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(detailedDebugName)), detailedDebugName))
 					}
 					if (nullptr != mD3D10DepthStencilView)
 					{
-						FAILED_DEBUG_BREAK(mD3D10DepthStencilView->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(detailedDebugName)), detailedDebugName));
+						FAILED_DEBUG_BREAK(mD3D10DepthStencilView->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(detailedDebugName)), detailedDebugName))
 					}
 				#endif
 			}
@@ -7495,7 +7491,7 @@ namespace Direct3D10Rhi
 			{
 				// Get the Direct3D 10 swap chain description
 				DXGI_SWAP_CHAIN_DESC dxgiSwapChainDesc;
-				FAILED_DEBUG_BREAK(mDxgiSwapChain->GetDesc(&dxgiSwapChainDesc));
+				FAILED_DEBUG_BREAK(mDxgiSwapChain->GetDesc(&dxgiSwapChainDesc))
 
 				// Get the width and height
 				long swapChainWidth  = 1;
@@ -7546,7 +7542,7 @@ namespace Direct3D10Rhi
 			{
 				// Get the Direct3D 10 swap chain description
 				DXGI_SWAP_CHAIN_DESC dxgiSwapChainDesc;
-				FAILED_DEBUG_BREAK(mDxgiSwapChain->GetDesc(&dxgiSwapChainDesc));
+				FAILED_DEBUG_BREAK(mDxgiSwapChain->GetDesc(&dxgiSwapChainDesc))
 
 				// Return the native window handle
 				return reinterpret_cast<Rhi::handle>(dxgiSwapChainDesc.OutputWindow);
@@ -7641,7 +7637,7 @@ namespace Direct3D10Rhi
 			// Is there a valid swap chain?
 			if (nullptr != mDxgiSwapChain)
 			{
-				FAILED_DEBUG_BREAK(mDxgiSwapChain->GetFullscreenState(&fullscreen, nullptr));
+				FAILED_DEBUG_BREAK(mDxgiSwapChain->GetFullscreenState(&fullscreen, nullptr))
 			}
 
 			// Done
@@ -7653,7 +7649,7 @@ namespace Direct3D10Rhi
 			// Is there a valid swap chain?
 			if (nullptr != mDxgiSwapChain)
 			{
-				FAILED_DEBUG_BREAK(mDxgiSwapChain->SetFullscreenState(fullscreen, nullptr));
+				FAILED_DEBUG_BREAK(mDxgiSwapChain->SetFullscreenState(fullscreen, nullptr))
 			}
 		}
 
@@ -7706,7 +7702,7 @@ namespace Direct3D10Rhi
 		{
 			// Get the Direct3D 10 swap chain description
 			DXGI_SWAP_CHAIN_DESC dxgiSwapChainDesc;
-			FAILED_DEBUG_BREAK(mDxgiSwapChain->GetDesc(&dxgiSwapChainDesc));
+			FAILED_DEBUG_BREAK(mDxgiSwapChain->GetDesc(&dxgiSwapChainDesc))
 
 			// Get the client rectangle of the native output window
 			RECT rect;
@@ -7739,13 +7735,13 @@ namespace Direct3D10Rhi
 		{
 			// Create a render target view
 			ID3D10Texture2D* d3d10Texture2DBackBuffer = nullptr;
-			FAILED_DEBUG_BREAK(mDxgiSwapChain->GetBuffer(0, __uuidof(ID3D10Texture2D), reinterpret_cast<LPVOID*>(&d3d10Texture2DBackBuffer)));
+			FAILED_DEBUG_BREAK(mDxgiSwapChain->GetBuffer(0, __uuidof(ID3D10Texture2D), reinterpret_cast<LPVOID*>(&d3d10Texture2DBackBuffer)))
 
 			// Get the Direct3D 10 device instance
 			ID3D10Device* d3d10Device = static_cast<Direct3D10Rhi&>(getRhi()).getD3D10Device();
 
 			// Create a render target view
-			FAILED_DEBUG_BREAK(d3d10Device->CreateRenderTargetView(d3d10Texture2DBackBuffer, nullptr, &mD3D10RenderTargetView));
+			FAILED_DEBUG_BREAK(d3d10Device->CreateRenderTargetView(d3d10Texture2DBackBuffer, nullptr, &mD3D10RenderTargetView))
 			d3d10Texture2DBackBuffer->Release();
 
 			// Create depth stencil texture
@@ -7771,14 +7767,14 @@ namespace Direct3D10Rhi
 				d3d10Texture2DDesc.BindFlags		  = D3D10_BIND_DEPTH_STENCIL;
 				d3d10Texture2DDesc.CPUAccessFlags	  = 0;
 				d3d10Texture2DDesc.MiscFlags		  = 0;
-				FAILED_DEBUG_BREAK(d3d10Device->CreateTexture2D(&d3d10Texture2DDesc, nullptr, &d3d10Texture2DDepthStencil));
+				FAILED_DEBUG_BREAK(d3d10Device->CreateTexture2D(&d3d10Texture2DDesc, nullptr, &d3d10Texture2DDepthStencil))
 
 				// Create the depth stencil view
 				D3D10_DEPTH_STENCIL_VIEW_DESC d3d10DepthStencilViewDesc = {};
 				d3d10DepthStencilViewDesc.Format			 = d3d10Texture2DDesc.Format;
 				d3d10DepthStencilViewDesc.ViewDimension		 = D3D10_DSV_DIMENSION_TEXTURE2D;
 				d3d10DepthStencilViewDesc.Texture2D.MipSlice = 0;
-				FAILED_DEBUG_BREAK(d3d10Device->CreateDepthStencilView(d3d10Texture2DDepthStencil, &d3d10DepthStencilViewDesc, &mD3D10DepthStencilView));
+				FAILED_DEBUG_BREAK(d3d10Device->CreateDepthStencilView(d3d10Texture2DDepthStencil, &d3d10DepthStencilViewDesc, &mD3D10DepthStencilView))
 				d3d10Texture2DDepthStencil->Release();
 			}
 		}
@@ -7884,7 +7880,7 @@ namespace Direct3D10Rhi
 							d3d10RenderTargetViewDesc.Format			 = Mapping::getDirect3D10Format(texture2D->getTextureFormat());
 							d3d10RenderTargetViewDesc.ViewDimension		 = (texture2D->getNumberOfMultisamples() > 1) ? D3D10_RTV_DIMENSION_TEXTURE2DMS : D3D10_RTV_DIMENSION_TEXTURE2D;
 							d3d10RenderTargetViewDesc.Texture2D.MipSlice = colorFramebufferAttachments->mipmapIndex;
-							FAILED_DEBUG_BREAK(direct3D10Rhi.getD3D10Device()->CreateRenderTargetView(texture2D->getD3D10Texture2D(), &d3d10RenderTargetViewDesc, d3d10RenderTargetView));
+							FAILED_DEBUG_BREAK(direct3D10Rhi.getD3D10Device()->CreateRenderTargetView(texture2D->getD3D10Texture2D(), &d3d10RenderTargetViewDesc, d3d10RenderTargetView))
 							break;
 						}
 
@@ -7901,7 +7897,7 @@ namespace Direct3D10Rhi
 							d3d10RenderTargetViewDesc.Texture2DArray.MipSlice		 = colorFramebufferAttachments->mipmapIndex;
 							d3d10RenderTargetViewDesc.Texture2DArray.FirstArraySlice = colorFramebufferAttachments->layerIndex;
 							d3d10RenderTargetViewDesc.Texture2DArray.ArraySize		 = 1;
-							FAILED_DEBUG_BREAK(direct3D10Rhi.getD3D10Device()->CreateRenderTargetView(texture2DArray->getD3D10Texture2D(), &d3d10RenderTargetViewDesc, d3d10RenderTargetView));
+							FAILED_DEBUG_BREAK(direct3D10Rhi.getD3D10Device()->CreateRenderTargetView(texture2DArray->getD3D10Texture2D(), &d3d10RenderTargetViewDesc, d3d10RenderTargetView))
 							break;
 						}
 
@@ -7966,7 +7962,7 @@ namespace Direct3D10Rhi
 						d3d10DepthStencilViewDesc.Format			 = Mapping::getDirect3D10Format(texture2D->getTextureFormat());
 						d3d10DepthStencilViewDesc.ViewDimension		 = (texture2D->getNumberOfMultisamples() > 1) ? D3D10_DSV_DIMENSION_TEXTURE2DMS : D3D10_DSV_DIMENSION_TEXTURE2D;
 						d3d10DepthStencilViewDesc.Texture2D.MipSlice = depthStencilFramebufferAttachment->mipmapIndex;
-						FAILED_DEBUG_BREAK(direct3D10Rhi.getD3D10Device()->CreateDepthStencilView(texture2D->getD3D10Texture2D(), &d3d10DepthStencilViewDesc, &mD3D10DepthStencilView));
+						FAILED_DEBUG_BREAK(direct3D10Rhi.getD3D10Device()->CreateDepthStencilView(texture2D->getD3D10Texture2D(), &d3d10DepthStencilViewDesc, &mD3D10DepthStencilView))
 						break;
 					}
 
@@ -7983,7 +7979,7 @@ namespace Direct3D10Rhi
 						d3d10DepthStencilViewDesc.Texture2DArray.MipSlice		 = depthStencilFramebufferAttachment->mipmapIndex;
 						d3d10DepthStencilViewDesc.Texture2DArray.FirstArraySlice = depthStencilFramebufferAttachment->layerIndex;
 						d3d10DepthStencilViewDesc.Texture2DArray.ArraySize		 = 1;
-						FAILED_DEBUG_BREAK(direct3D10Rhi.getD3D10Device()->CreateDepthStencilView(texture2DArray->getD3D10Texture2D(), &d3d10DepthStencilViewDesc, &mD3D10DepthStencilView));
+						FAILED_DEBUG_BREAK(direct3D10Rhi.getD3D10Device()->CreateDepthStencilView(texture2DArray->getD3D10Texture2D(), &d3d10DepthStencilViewDesc, &mD3D10DepthStencilView))
 						break;
 					}
 
@@ -8034,7 +8030,7 @@ namespace Direct3D10Rhi
 
 			// Assign a default name to the resource for debugging purposes
 			#ifdef RHI_DEBUG
-				RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "FBO", 6);	// 6 = "FBO: " including terminating zero
+				RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "FBO", 6)	// 6 = "FBO: " including terminating zero
 				const size_t detailedDebugNameLength = strlen(detailedDebugName);
 
 				{ // Assign a debug name to the Direct3D 10 render target view, do also add the index to the name
@@ -8044,7 +8040,7 @@ namespace Direct3D10Rhi
 					for (ID3D10RenderTargetView** d3d10RenderTargetView = mD3D10RenderTargetViews; d3d10RenderTargetView < d3d10RenderTargetViewsEnd; ++d3d10RenderTargetView)
 					{
 						sprintf_s(nameWithIndex, adjustedDetailedDebugNameLength, "%s [%u]", detailedDebugName, static_cast<uint32_t>(d3d10RenderTargetView - mD3D10RenderTargetViews));
-						FAILED_DEBUG_BREAK((*d3d10RenderTargetView)->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(adjustedDetailedDebugNameLength), nameWithIndex));
+						FAILED_DEBUG_BREAK((*d3d10RenderTargetView)->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(adjustedDetailedDebugNameLength), nameWithIndex))
 					}
 					RHI_FREE(context, nameWithIndex);
 				}
@@ -8052,7 +8048,7 @@ namespace Direct3D10Rhi
 				// Assign a debug name to the Direct3D 10 depth stencil view
 				if (nullptr != mD3D10DepthStencilView)
 				{
-					FAILED_DEBUG_BREAK(mD3D10DepthStencilView->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(detailedDebugNameLength), detailedDebugName));
+					FAILED_DEBUG_BREAK(mD3D10DepthStencilView->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(detailedDebugNameLength), detailedDebugName))
 				}
 			#endif
 		}
@@ -8248,14 +8244,14 @@ namespace Direct3D10Rhi
 			memcpy(mD3DBlobVertexShader->GetBufferPointer(), shaderBytecode.getBytecode(), shaderBytecode.getNumberOfBytes());
 
 			// Create the Direct3D 10 vertex shader
-			FAILED_DEBUG_BREAK(direct3D10Rhi.getD3D10Device()->CreateVertexShader(shaderBytecode.getBytecode(), shaderBytecode.getNumberOfBytes(), &mD3D10VertexShader));
+			FAILED_DEBUG_BREAK(direct3D10Rhi.getD3D10Device()->CreateVertexShader(shaderBytecode.getBytecode(), shaderBytecode.getNumberOfBytes(), &mD3D10VertexShader))
 
 			// Assign a default name to the resource for debugging purposes
 			#ifdef RHI_DEBUG
 				if (nullptr != mD3D10VertexShader)
 				{
-					RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "VS", 5);	// 5 = "VS: " including terminating zero
-					FAILED_DEBUG_BREAK(mD3D10VertexShader->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(detailedDebugName)), detailedDebugName));
+					RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "VS", 5)	// 5 = "VS: " including terminating zero
+					FAILED_DEBUG_BREAK(mD3D10VertexShader->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(detailedDebugName)), detailedDebugName))
 				}
 			#endif
 		}
@@ -8279,7 +8275,7 @@ namespace Direct3D10Rhi
 			if (nullptr != mD3DBlobVertexShader)
 			{
 				// Create the Direct3D 10 vertex shader
-				FAILED_DEBUG_BREAK(direct3D10Rhi.getD3D10Device()->CreateVertexShader(mD3DBlobVertexShader->GetBufferPointer(), mD3DBlobVertexShader->GetBufferSize(), &mD3D10VertexShader));
+				FAILED_DEBUG_BREAK(direct3D10Rhi.getD3D10Device()->CreateVertexShader(mD3DBlobVertexShader->GetBufferPointer(), mD3DBlobVertexShader->GetBufferSize(), &mD3D10VertexShader))
 
 				// Return shader bytecode, if requested do to so
 				if (nullptr != shaderBytecode)
@@ -8292,8 +8288,8 @@ namespace Direct3D10Rhi
 			#ifdef RHI_DEBUG
 				if (nullptr != mD3D10VertexShader)
 				{
-					RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "VS", 5);	// 5 = "VS: " including terminating zero
-					FAILED_DEBUG_BREAK(mD3D10VertexShader->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(detailedDebugName)), detailedDebugName));
+					RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "VS", 5)	// 5 = "VS: " including terminating zero
+					FAILED_DEBUG_BREAK(mD3D10VertexShader->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(detailedDebugName)), detailedDebugName))
 				}
 			#endif
 		}
@@ -8412,14 +8408,14 @@ namespace Direct3D10Rhi
 			mD3D10GeometryShader(nullptr)
 		{
 			// Create the Direct3D 10 geometry shader
-			FAILED_DEBUG_BREAK(direct3D10Rhi.getD3D10Device()->CreateGeometryShader(shaderBytecode.getBytecode(), shaderBytecode.getNumberOfBytes(), &mD3D10GeometryShader));
+			FAILED_DEBUG_BREAK(direct3D10Rhi.getD3D10Device()->CreateGeometryShader(shaderBytecode.getBytecode(), shaderBytecode.getNumberOfBytes(), &mD3D10GeometryShader))
 
 			// Assign a default name to the resource for debugging purposes
 			#ifdef RHI_DEBUG
 				if (nullptr != mD3D10GeometryShader)
 				{
-					RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "GS", 5);	// 5 = "GS: " including terminating zero
-					FAILED_DEBUG_BREAK(mD3D10GeometryShader->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(detailedDebugName)), detailedDebugName));
+					RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "GS", 5)	// 5 = "GS: " including terminating zero
+					FAILED_DEBUG_BREAK(mD3D10GeometryShader->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(detailedDebugName)), detailedDebugName))
 				}
 			#endif
 		}
@@ -8442,7 +8438,7 @@ namespace Direct3D10Rhi
 			if (nullptr != d3dBlob)
 			{
 				// Create the Direct3D 10 geometry shader
-				FAILED_DEBUG_BREAK(direct3D10Rhi.getD3D10Device()->CreateGeometryShader(d3dBlob->GetBufferPointer(), d3dBlob->GetBufferSize(), &mD3D10GeometryShader));
+				FAILED_DEBUG_BREAK(direct3D10Rhi.getD3D10Device()->CreateGeometryShader(d3dBlob->GetBufferPointer(), d3dBlob->GetBufferSize(), &mD3D10GeometryShader))
 
 				// Return shader bytecode, if requested do to so
 				if (nullptr != shaderBytecode)
@@ -8457,8 +8453,8 @@ namespace Direct3D10Rhi
 				#ifdef RHI_DEBUG
 					if (nullptr != mD3D10GeometryShader)
 					{
-						RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "GS", 5);	// 5 = "GS: " including terminating zero
-						FAILED_DEBUG_BREAK(mD3D10GeometryShader->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(detailedDebugName)), detailedDebugName));
+						RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "GS", 5)	// 5 = "GS: " including terminating zero
+						FAILED_DEBUG_BREAK(mD3D10GeometryShader->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(detailedDebugName)), detailedDebugName))
 					}
 				#endif
 			}
@@ -8559,14 +8555,14 @@ namespace Direct3D10Rhi
 			mD3D10PixelShader(nullptr)
 		{
 			// Create the Direct3D 10 pixel shader
-			FAILED_DEBUG_BREAK(direct3D10Rhi.getD3D10Device()->CreatePixelShader(shaderBytecode.getBytecode(), shaderBytecode.getNumberOfBytes(), &mD3D10PixelShader));
+			FAILED_DEBUG_BREAK(direct3D10Rhi.getD3D10Device()->CreatePixelShader(shaderBytecode.getBytecode(), shaderBytecode.getNumberOfBytes(), &mD3D10PixelShader))
 
 			// Assign a default name to the resource for debugging purposes
 			#ifdef RHI_DEBUG
 				if (nullptr != mD3D10PixelShader)
 				{
-					RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "FS", 5);	// 5 = "FS: " including terminating zero
-					FAILED_DEBUG_BREAK(mD3D10PixelShader->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(detailedDebugName)), detailedDebugName));
+					RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "FS", 5)	// 5 = "FS: " including terminating zero
+					FAILED_DEBUG_BREAK(mD3D10PixelShader->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(detailedDebugName)), detailedDebugName))
 				}
 			#endif
 		}
@@ -8589,7 +8585,7 @@ namespace Direct3D10Rhi
 			if (nullptr != d3dBlob)
 			{
 				// Create the Direct3D 10 pixel shader
-				FAILED_DEBUG_BREAK(direct3D10Rhi.getD3D10Device()->CreatePixelShader(d3dBlob->GetBufferPointer(), d3dBlob->GetBufferSize(), &mD3D10PixelShader));
+				FAILED_DEBUG_BREAK(direct3D10Rhi.getD3D10Device()->CreatePixelShader(d3dBlob->GetBufferPointer(), d3dBlob->GetBufferSize(), &mD3D10PixelShader))
 
 				// Return shader bytecode, if requested do to so
 				if (nullptr != shaderBytecode)
@@ -8604,8 +8600,8 @@ namespace Direct3D10Rhi
 				#ifdef RHI_DEBUG
 					if (nullptr != mD3D10PixelShader)
 					{
-						RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "FS", 5);	// 5 = "FS: " including terminating zero
-						FAILED_DEBUG_BREAK(mD3D10PixelShader->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(detailedDebugName)), detailedDebugName));
+						RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "FS", 5)	// 5 = "FS: " including terminating zero
+						FAILED_DEBUG_BREAK(mD3D10PixelShader->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(detailedDebugName)), detailedDebugName))
 					}
 				#endif
 			}
@@ -8710,7 +8706,6 @@ namespace Direct3D10Rhi
 		*/
 		GraphicsProgramHlsl(Direct3D10Rhi& direct3D10Rhi, VertexShaderHlsl* vertexShaderHlsl, GeometryShaderHlsl* geometryShaderHlsl, FragmentShaderHlsl* fragmentShaderHlsl RHI_RESOURCE_DEBUG_NAME_PARAMETER_NO_DEFAULT) :
 			IGraphicsProgram(direct3D10Rhi RHI_RESOURCE_DEBUG_PASS_PARAMETER),
-			mDirect3D10Rhi(&direct3D10Rhi),
 			mVertexShaderHlsl(vertexShaderHlsl),
 			mGeometryShaderHlsl(geometryShaderHlsl),
 			mFragmentShaderHlsl(fragmentShaderHlsl)
@@ -8810,7 +8805,6 @@ namespace Direct3D10Rhi
 	//[ Private data                                          ]
 	//[-------------------------------------------------------]
 	private:
-		Direct3D10Rhi*		mDirect3D10Rhi;			///< Owner Direct3D 10 RHI instance, always valid
 		VertexShaderHlsl*   mVertexShaderHlsl;		///< Vertex shader the graphics program is using (we keep a reference to it), can be a null pointer
 		GeometryShaderHlsl* mGeometryShaderHlsl;	///< Geometry shader the graphics program is using (we keep a reference to it), can be a null pointer
 		FragmentShaderHlsl* mFragmentShaderHlsl;	///< Fragment shader the graphics program is using (we keep a reference to it), can be a null pointer
@@ -9090,7 +9084,7 @@ namespace Direct3D10Rhi
 
 					{ // Create the Direct3D 10 input layout
 						ID3DBlob* d3dBlobVertexShader = vertexShaderHlsl->getD3DBlobVertexShader();
-						FAILED_DEBUG_BREAK(direct3D10Rhi.getD3D10Device()->CreateInputLayout(d3d10InputElementDescs, numberOfAttributes, d3dBlobVertexShader->GetBufferPointer(), d3dBlobVertexShader->GetBufferSize(), &mD3D10InputLayout));
+						FAILED_DEBUG_BREAK(direct3D10Rhi.getD3D10Device()->CreateInputLayout(d3d10InputElementDescs, numberOfAttributes, d3dBlobVertexShader->GetBufferPointer(), d3dBlobVertexShader->GetBufferSize(), &mD3D10InputLayout))
 					}
 
 					// Destroy Direct3D 10 input element descriptions
@@ -9106,8 +9100,8 @@ namespace Direct3D10Rhi
 			#ifdef RHI_DEBUG
 				if (nullptr != mD3D10InputLayout)
 				{
-					RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "Graphics PSO", 15);	// 15 = "Graphics PSO: " including terminating zero
-					FAILED_DEBUG_BREAK(mD3D10InputLayout->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(detailedDebugName)), detailedDebugName));
+					RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "Graphics PSO", 15)	// 15 = "Graphics PSO: " including terminating zero
+					FAILED_DEBUG_BREAK(mD3D10InputLayout->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(detailedDebugName)), detailedDebugName))
 				}
 			#endif
 		}
@@ -9504,7 +9498,7 @@ namespace
 		//[-------------------------------------------------------]
 		//[ Global definitions                                    ]
 		//[-------------------------------------------------------]
-		static constexpr Rhi::ImplementationDispatchFunction DISPATCH_FUNCTIONS[Rhi::CommandDispatchFunctionIndex::NUMBER_OF_FUNCTIONS] =
+		static constexpr Rhi::ImplementationDispatchFunction DISPATCH_FUNCTIONS[static_cast<uint8_t>(Rhi::CommandDispatchFunctionIndex::NUMBER_OF_FUNCTIONS)] =
 		{
 			// Command buffer
 			&ImplementationDispatch::ExecuteCommandBuffer,
@@ -9642,7 +9636,7 @@ namespace Direct3D10Rhi
 							D3D10_INFO_QUEUE_FILTER d3d10InfoQueueFilter = {};
 							d3d10InfoQueueFilter.DenyList.NumIDs = _countof(d3d10MessageIds);
 							d3d10InfoQueueFilter.DenyList.pIDList = d3d10MessageIds;
-							FAILED_DEBUG_BREAK(d3d10InfoQueue->AddStorageFilterEntries(&d3d10InfoQueueFilter));
+							FAILED_DEBUG_BREAK(d3d10InfoQueue->AddStorageFilterEntries(&d3d10InfoQueueFilter))
 
 							// Sadly, when using the Direct3D 10 break feature we're having a confusing call stack, so we don't use this and use "FAILED_DEBUG_BREAK()" instead
 							// d3d10InfoQueue->SetBreakOnSeverity(D3D10_MESSAGE_SEVERITY_CORRUPTION, true);
@@ -11267,14 +11261,14 @@ namespace Direct3D10Rhi
 			D3D10_QUERY_DESC d3d10QueryDesc;
 			d3d10QueryDesc.Query	  = D3D10_QUERY_EVENT;
 			d3d10QueryDesc.MiscFlags = 0;
-			FAILED_DEBUG_BREAK(mD3D10Device->CreateQuery(&d3d10QueryDesc, &mD3D10QueryFlush));
+			FAILED_DEBUG_BREAK(mD3D10Device->CreateQuery(&d3d10QueryDesc, &mD3D10QueryFlush))
 
 			#ifdef RHI_DEBUG
 				// Set the debug name
 				if (nullptr != mD3D10QueryFlush)
 				{
 					// No need to reset the previous private data, there shouldn't be any...
-					FAILED_DEBUG_BREAK(mD3D10QueryFlush->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(__FUNCTION__)), __FUNCTION__));
+					FAILED_DEBUG_BREAK(mD3D10QueryFlush->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(__FUNCTION__)), __FUNCTION__))
 				}
 			#endif
 		}
@@ -11287,7 +11281,7 @@ namespace Direct3D10Rhi
 			do
 			{
 				// Spin-wait
-				FAILED_DEBUG_BREAK(mD3D10QueryFlush->GetData(&result, sizeof(BOOL), 0));
+				FAILED_DEBUG_BREAK(mD3D10QueryFlush->GetData(&result, sizeof(BOOL), 0))
 			} while (!result);
 		}
 	}
@@ -11306,12 +11300,12 @@ namespace Direct3D10Rhi
 			// Get DXGI adapter
 			IDXGIDevice* dxgiDevice = nullptr;
 			IDXGIAdapter* dxgiAdapter = nullptr;
-			FAILED_DEBUG_BREAK(mD3D10Device->QueryInterface(IID_PPV_ARGS(&dxgiDevice)));
-			FAILED_DEBUG_BREAK(dxgiDevice->GetAdapter(&dxgiAdapter));
+			FAILED_DEBUG_BREAK(mD3D10Device->QueryInterface(IID_PPV_ARGS(&dxgiDevice)))
+			FAILED_DEBUG_BREAK(dxgiDevice->GetAdapter(&dxgiAdapter))
 
 			// The adapter contains a description like "AMD Radeon R9 200 Series"
 			DXGI_ADAPTER_DESC dxgiAdapterDesc = {};
-			FAILED_DEBUG_BREAK(dxgiAdapter->GetDesc(&dxgiAdapterDesc));
+			FAILED_DEBUG_BREAK(dxgiAdapter->GetDesc(&dxgiAdapterDesc))
 
 			// Convert UTF-16 string to UTF-8
 			const size_t numberOfCharacters = _countof(mCapabilities.deviceName) - 1;

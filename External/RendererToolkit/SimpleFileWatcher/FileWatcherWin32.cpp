@@ -27,7 +27,7 @@
 #pragma warning(disable: 4668)	// warning C4668: '<x>' is not defined as a preprocessor macro, replacing with '0' for '#if/#elif'
 
 #define _WIN32_WINNT 0x0550
-#include <windows.h>
+#include <Windows.h>
 
 #if defined(_MSC_VER)
 #pragma comment(lib, "comctl32.lib")

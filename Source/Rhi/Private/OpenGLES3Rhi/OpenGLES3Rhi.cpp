@@ -84,7 +84,7 @@ PRAGMA_WARNING_POP
 	#define NODEFERWINDOWPOS
 	#define NOMCX
 	#define NOCRYPT
-	#include <windows.h>
+	#include <Windows.h>
 
 	// Get rid of some nasty OS macros
 	#undef max
@@ -2675,37 +2675,37 @@ namespace OpenGLES3Rhi
 			#endif
 
 			// Load the entry points
-			IMPORT_FUNC(eglGetProcAddress);
-			IMPORT_FUNC(eglGetError);
-			IMPORT_FUNC(eglGetDisplay);
-			IMPORT_FUNC(eglInitialize);
-			IMPORT_FUNC(eglTerminate);
-			IMPORT_FUNC(eglQueryString);
-			IMPORT_FUNC(eglGetConfigs);
-			IMPORT_FUNC(eglChooseConfig);
-			IMPORT_FUNC(eglGetConfigAttrib);
-			IMPORT_FUNC(eglCreateWindowSurface);
-			IMPORT_FUNC(eglDestroySurface);
-			IMPORT_FUNC(eglQuerySurface);
-			IMPORT_FUNC(eglBindAPI);
-			IMPORT_FUNC(eglQueryAPI);
-			IMPORT_FUNC(eglWaitClient);
-			IMPORT_FUNC(eglReleaseThread);
-			IMPORT_FUNC(eglSurfaceAttrib);
-			IMPORT_FUNC(eglBindTexImage);
-			IMPORT_FUNC(eglReleaseTexImage);
-			IMPORT_FUNC(eglSwapInterval);
-			IMPORT_FUNC(eglCreateContext);
-			IMPORT_FUNC(eglDestroyContext);
-			IMPORT_FUNC(eglMakeCurrent);
-			IMPORT_FUNC(eglGetCurrentContext);
-			IMPORT_FUNC(eglGetCurrentSurface);
-			IMPORT_FUNC(eglGetCurrentDisplay);
-			IMPORT_FUNC(eglQueryContext);
-			IMPORT_FUNC(eglWaitGL);
-			IMPORT_FUNC(eglWaitNative);
-			IMPORT_FUNC(eglSwapBuffers);
-			IMPORT_FUNC(eglCopyBuffers);
+			IMPORT_FUNC(eglGetProcAddress)
+			IMPORT_FUNC(eglGetError)
+			IMPORT_FUNC(eglGetDisplay)
+			IMPORT_FUNC(eglInitialize)
+			IMPORT_FUNC(eglTerminate)
+			IMPORT_FUNC(eglQueryString)
+			IMPORT_FUNC(eglGetConfigs)
+			IMPORT_FUNC(eglChooseConfig)
+			IMPORT_FUNC(eglGetConfigAttrib)
+			IMPORT_FUNC(eglCreateWindowSurface)
+			IMPORT_FUNC(eglDestroySurface)
+			IMPORT_FUNC(eglQuerySurface)
+			IMPORT_FUNC(eglBindAPI)
+			IMPORT_FUNC(eglQueryAPI)
+			IMPORT_FUNC(eglWaitClient)
+			IMPORT_FUNC(eglReleaseThread)
+			IMPORT_FUNC(eglSurfaceAttrib)
+			IMPORT_FUNC(eglBindTexImage)
+			IMPORT_FUNC(eglReleaseTexImage)
+			IMPORT_FUNC(eglSwapInterval)
+			IMPORT_FUNC(eglCreateContext)
+			IMPORT_FUNC(eglDestroyContext)
+			IMPORT_FUNC(eglMakeCurrent)
+			IMPORT_FUNC(eglGetCurrentContext)
+			IMPORT_FUNC(eglGetCurrentSurface)
+			IMPORT_FUNC(eglGetCurrentDisplay)
+			IMPORT_FUNC(eglQueryContext)
+			IMPORT_FUNC(eglWaitGL)
+			IMPORT_FUNC(eglWaitNative)
+			IMPORT_FUNC(eglSwapBuffers)
+			IMPORT_FUNC(eglCopyBuffers)
 
 			// Undefine the helper macro
 			#undef IMPORT_FUNC
@@ -2765,168 +2765,168 @@ namespace OpenGLES3Rhi
 			#endif
 
 			// Load the entry points
-			IMPORT_FUNC(glActiveTexture);
-			IMPORT_FUNC(glAttachShader);
-			IMPORT_FUNC(glBindAttribLocation);
-			IMPORT_FUNC(glBindBuffer);
-			IMPORT_FUNC(glBindFramebuffer);
-			IMPORT_FUNC(glBindRenderbuffer);
-			IMPORT_FUNC(glBindTexture);
-			IMPORT_FUNC(glBlendColor);
-			IMPORT_FUNC(glBlendEquation);
-			IMPORT_FUNC(glBlendEquationSeparate);
-			IMPORT_FUNC(glBlendFunc);
-			IMPORT_FUNC(glBlendFuncSeparate);
-			IMPORT_FUNC(glBufferData);
-			IMPORT_FUNC(glBufferSubData);
-			IMPORT_FUNC(glCheckFramebufferStatus);
-			IMPORT_FUNC(glClear);
-			IMPORT_FUNC(glClearColor);
-			IMPORT_FUNC(glClearDepthf);
-			IMPORT_FUNC(glClearStencil);
-			IMPORT_FUNC(glColorMask);
-			IMPORT_FUNC(glCompileShader);
-			IMPORT_FUNC(glCompressedTexImage2D);
-			IMPORT_FUNC(glCompressedTexImage3D);
-			IMPORT_FUNC(glCompressedTexSubImage2D);
-			IMPORT_FUNC(glCopyTexImage2D);
-			IMPORT_FUNC(glCopyTexSubImage2D);
-			IMPORT_FUNC(glCreateProgram);
-			IMPORT_FUNC(glCreateShader);
-			IMPORT_FUNC(glCullFace);
-			IMPORT_FUNC(glDeleteBuffers);
-			IMPORT_FUNC(glDeleteFramebuffers);
-			IMPORT_FUNC(glDeleteProgram);
-			IMPORT_FUNC(glDeleteRenderbuffers);
-			IMPORT_FUNC(glDeleteShader);
-			IMPORT_FUNC(glDeleteTextures);
-			IMPORT_FUNC(glDepthFunc);
-			IMPORT_FUNC(glDepthMask);
-			IMPORT_FUNC(glDepthRangef);
-			IMPORT_FUNC(glDetachShader);
-			IMPORT_FUNC(glDisable);
-			IMPORT_FUNC(glDisableVertexAttribArray);
-			IMPORT_FUNC(glDrawArrays);
-			IMPORT_FUNC(glDrawArraysInstanced);
-			IMPORT_FUNC(glDrawElements);
-			IMPORT_FUNC(glDrawElementsInstanced);
-			IMPORT_FUNC(glEnable);
-			IMPORT_FUNC(glEnableVertexAttribArray);
-			IMPORT_FUNC(glFinish);
-			IMPORT_FUNC(glFlush);
-			IMPORT_FUNC(glFramebufferRenderbuffer);
-			IMPORT_FUNC(glFramebufferTexture2D);
-			IMPORT_FUNC(glFramebufferTextureLayer);
-			IMPORT_FUNC(glBlitFramebuffer);
-			IMPORT_FUNC(glFrontFace);
-			IMPORT_FUNC(glGenBuffers);
-			IMPORT_FUNC(glGenerateMipmap);
-			IMPORT_FUNC(glGenFramebuffers);
-			IMPORT_FUNC(glGenRenderbuffers);
-			IMPORT_FUNC(glGenTextures);
-			IMPORT_FUNC(glGetActiveAttrib);
-			IMPORT_FUNC(glGetActiveUniform);
-			IMPORT_FUNC(glGetAttachedShaders);
-			IMPORT_FUNC(glGetAttribLocation);
-			IMPORT_FUNC(glGetBooleanv);
-			IMPORT_FUNC(glGetBufferParameteriv);
-			IMPORT_FUNC(glGetError);
-			IMPORT_FUNC(glGetFloatv);
-			IMPORT_FUNC(glGetFramebufferAttachmentParameteriv);
-			IMPORT_FUNC(glGetIntegerv);
-			IMPORT_FUNC(glGetProgramiv);
-			IMPORT_FUNC(glGetProgramInfoLog);
-			IMPORT_FUNC(glGetRenderbufferParameteriv);
-			IMPORT_FUNC(glGetShaderiv);
-			IMPORT_FUNC(glGetShaderInfoLog);
-			IMPORT_FUNC(glGetShaderPrecisionFormat);
-			IMPORT_FUNC(glGetShaderSource);
-			IMPORT_FUNC(glGetString);
-			IMPORT_FUNC(glGetTexParameterfv);
-			IMPORT_FUNC(glGetTexParameteriv);
-			IMPORT_FUNC(glGetUniformfv);
-			IMPORT_FUNC(glGetUniformiv);
-			IMPORT_FUNC(glGetUniformLocation);
-			IMPORT_FUNC(glGetUniformBlockIndex);
-			IMPORT_FUNC(glUniformBlockBinding);
-			IMPORT_FUNC(glGetVertexAttribfv);
-			IMPORT_FUNC(glGetVertexAttribiv);
-			IMPORT_FUNC(glGetVertexAttribPointerv);
-			IMPORT_FUNC(glHint);
-			IMPORT_FUNC(glIsBuffer);
-			IMPORT_FUNC(glIsEnabled);
-			IMPORT_FUNC(glIsFramebuffer);
-			IMPORT_FUNC(glIsProgram);
-			IMPORT_FUNC(glIsRenderbuffer);
-			IMPORT_FUNC(glIsShader);
-			IMPORT_FUNC(glIsTexture);
-			IMPORT_FUNC(glLineWidth);
-			IMPORT_FUNC(glLinkProgram);
-			IMPORT_FUNC(glPixelStorei);
-			IMPORT_FUNC(glPolygonOffset);
-			IMPORT_FUNC(glReadPixels);
-			IMPORT_FUNC(glReleaseShaderCompiler);
-			IMPORT_FUNC(glRenderbufferStorage);
-			IMPORT_FUNC(glSampleCoverage);
-			IMPORT_FUNC(glScissor);
-			IMPORT_FUNC(glShaderBinary);
-			IMPORT_FUNC(glShaderSource);
-			IMPORT_FUNC(glStencilFunc);
-			IMPORT_FUNC(glStencilFuncSeparate);
-			IMPORT_FUNC(glStencilMask);
-			IMPORT_FUNC(glStencilMaskSeparate);
-			IMPORT_FUNC(glStencilOp);
-			IMPORT_FUNC(glStencilOpSeparate);
-			IMPORT_FUNC(glTexImage2D);
-			IMPORT_FUNC(glTexImage3D);
-			IMPORT_FUNC(glTexParameterf);
-			IMPORT_FUNC(glTexParameterfv);
-			IMPORT_FUNC(glTexParameteri);
-			IMPORT_FUNC(glTexParameteriv);
-			IMPORT_FUNC(glTexSubImage2D);
-			IMPORT_FUNC(glUniform1f);
-			IMPORT_FUNC(glUniform1fv);
-			IMPORT_FUNC(glUniform1i);
-			IMPORT_FUNC(glUniform1iv);
-			IMPORT_FUNC(glUniform1ui);
-			IMPORT_FUNC(glUniform2f);
-			IMPORT_FUNC(glUniform2fv);
-			IMPORT_FUNC(glUniform2i);
-			IMPORT_FUNC(glUniform2iv);
-			IMPORT_FUNC(glUniform3f);
-			IMPORT_FUNC(glUniform3fv);
-			IMPORT_FUNC(glUniform3i);
-			IMPORT_FUNC(glUniform3iv);
-			IMPORT_FUNC(glUniform4f);
-			IMPORT_FUNC(glUniform4fv);
-			IMPORT_FUNC(glUniform4i);
-			IMPORT_FUNC(glUniform4iv);
-			IMPORT_FUNC(glUniformMatrix2fv);
-			IMPORT_FUNC(glUniformMatrix3fv);
-			IMPORT_FUNC(glUniformMatrix4fv);
-			IMPORT_FUNC(glUseProgram);
-			IMPORT_FUNC(glValidateProgram);
-			IMPORT_FUNC(glVertexAttrib1f);
-			IMPORT_FUNC(glVertexAttrib1fv);
-			IMPORT_FUNC(glVertexAttrib2f);
-			IMPORT_FUNC(glVertexAttrib2fv);
-			IMPORT_FUNC(glVertexAttrib3f);
-			IMPORT_FUNC(glVertexAttrib3fv);
-			IMPORT_FUNC(glVertexAttrib4f);
-			IMPORT_FUNC(glVertexAttrib4fv);
-			IMPORT_FUNC(glVertexAttribPointer);
-			IMPORT_FUNC(glVertexAttribIPointer);
-			IMPORT_FUNC(glVertexAttribDivisor);
-			IMPORT_FUNC(glViewport);
-			IMPORT_FUNC(glBindBufferBase);
-			IMPORT_FUNC(glUnmapBuffer);
-			IMPORT_FUNC(glMapBufferRange);
-			IMPORT_FUNC(glDrawBuffers);
-			IMPORT_FUNC(glTexImage3D);
-			IMPORT_FUNC(glTexSubImage3D);
-			IMPORT_FUNC(glCopyTexSubImage3D);
-			IMPORT_FUNC(glCompressedTexSubImage3D);
-			IMPORT_FUNC(glGetBufferPointerv);
+			IMPORT_FUNC(glActiveTexture)
+			IMPORT_FUNC(glAttachShader)
+			IMPORT_FUNC(glBindAttribLocation)
+			IMPORT_FUNC(glBindBuffer)
+			IMPORT_FUNC(glBindFramebuffer)
+			IMPORT_FUNC(glBindRenderbuffer)
+			IMPORT_FUNC(glBindTexture)
+			IMPORT_FUNC(glBlendColor)
+			IMPORT_FUNC(glBlendEquation)
+			IMPORT_FUNC(glBlendEquationSeparate)
+			IMPORT_FUNC(glBlendFunc)
+			IMPORT_FUNC(glBlendFuncSeparate)
+			IMPORT_FUNC(glBufferData)
+			IMPORT_FUNC(glBufferSubData)
+			IMPORT_FUNC(glCheckFramebufferStatus)
+			IMPORT_FUNC(glClear)
+			IMPORT_FUNC(glClearColor)
+			IMPORT_FUNC(glClearDepthf)
+			IMPORT_FUNC(glClearStencil)
+			IMPORT_FUNC(glColorMask)
+			IMPORT_FUNC(glCompileShader)
+			IMPORT_FUNC(glCompressedTexImage2D)
+			IMPORT_FUNC(glCompressedTexImage3D)
+			IMPORT_FUNC(glCompressedTexSubImage2D)
+			IMPORT_FUNC(glCopyTexImage2D)
+			IMPORT_FUNC(glCopyTexSubImage2D)
+			IMPORT_FUNC(glCreateProgram)
+			IMPORT_FUNC(glCreateShader)
+			IMPORT_FUNC(glCullFace)
+			IMPORT_FUNC(glDeleteBuffers)
+			IMPORT_FUNC(glDeleteFramebuffers)
+			IMPORT_FUNC(glDeleteProgram)
+			IMPORT_FUNC(glDeleteRenderbuffers)
+			IMPORT_FUNC(glDeleteShader)
+			IMPORT_FUNC(glDeleteTextures)
+			IMPORT_FUNC(glDepthFunc)
+			IMPORT_FUNC(glDepthMask)
+			IMPORT_FUNC(glDepthRangef)
+			IMPORT_FUNC(glDetachShader)
+			IMPORT_FUNC(glDisable)
+			IMPORT_FUNC(glDisableVertexAttribArray)
+			IMPORT_FUNC(glDrawArrays)
+			IMPORT_FUNC(glDrawArraysInstanced)
+			IMPORT_FUNC(glDrawElements)
+			IMPORT_FUNC(glDrawElementsInstanced)
+			IMPORT_FUNC(glEnable)
+			IMPORT_FUNC(glEnableVertexAttribArray)
+			IMPORT_FUNC(glFinish)
+			IMPORT_FUNC(glFlush)
+			IMPORT_FUNC(glFramebufferRenderbuffer)
+			IMPORT_FUNC(glFramebufferTexture2D)
+			IMPORT_FUNC(glFramebufferTextureLayer)
+			IMPORT_FUNC(glBlitFramebuffer)
+			IMPORT_FUNC(glFrontFace)
+			IMPORT_FUNC(glGenBuffers)
+			IMPORT_FUNC(glGenerateMipmap)
+			IMPORT_FUNC(glGenFramebuffers)
+			IMPORT_FUNC(glGenRenderbuffers)
+			IMPORT_FUNC(glGenTextures)
+			IMPORT_FUNC(glGetActiveAttrib)
+			IMPORT_FUNC(glGetActiveUniform)
+			IMPORT_FUNC(glGetAttachedShaders)
+			IMPORT_FUNC(glGetAttribLocation)
+			IMPORT_FUNC(glGetBooleanv)
+			IMPORT_FUNC(glGetBufferParameteriv)
+			IMPORT_FUNC(glGetError)
+			IMPORT_FUNC(glGetFloatv)
+			IMPORT_FUNC(glGetFramebufferAttachmentParameteriv)
+			IMPORT_FUNC(glGetIntegerv)
+			IMPORT_FUNC(glGetProgramiv)
+			IMPORT_FUNC(glGetProgramInfoLog)
+			IMPORT_FUNC(glGetRenderbufferParameteriv)
+			IMPORT_FUNC(glGetShaderiv)
+			IMPORT_FUNC(glGetShaderInfoLog)
+			IMPORT_FUNC(glGetShaderPrecisionFormat)
+			IMPORT_FUNC(glGetShaderSource)
+			IMPORT_FUNC(glGetString)
+			IMPORT_FUNC(glGetTexParameterfv)
+			IMPORT_FUNC(glGetTexParameteriv)
+			IMPORT_FUNC(glGetUniformfv)
+			IMPORT_FUNC(glGetUniformiv)
+			IMPORT_FUNC(glGetUniformLocation)
+			IMPORT_FUNC(glGetUniformBlockIndex)
+			IMPORT_FUNC(glUniformBlockBinding)
+			IMPORT_FUNC(glGetVertexAttribfv)
+			IMPORT_FUNC(glGetVertexAttribiv)
+			IMPORT_FUNC(glGetVertexAttribPointerv)
+			IMPORT_FUNC(glHint)
+			IMPORT_FUNC(glIsBuffer)
+			IMPORT_FUNC(glIsEnabled)
+			IMPORT_FUNC(glIsFramebuffer)
+			IMPORT_FUNC(glIsProgram)
+			IMPORT_FUNC(glIsRenderbuffer)
+			IMPORT_FUNC(glIsShader)
+			IMPORT_FUNC(glIsTexture)
+			IMPORT_FUNC(glLineWidth)
+			IMPORT_FUNC(glLinkProgram)
+			IMPORT_FUNC(glPixelStorei)
+			IMPORT_FUNC(glPolygonOffset)
+			IMPORT_FUNC(glReadPixels)
+			IMPORT_FUNC(glReleaseShaderCompiler)
+			IMPORT_FUNC(glRenderbufferStorage)
+			IMPORT_FUNC(glSampleCoverage)
+			IMPORT_FUNC(glScissor)
+			IMPORT_FUNC(glShaderBinary)
+			IMPORT_FUNC(glShaderSource)
+			IMPORT_FUNC(glStencilFunc)
+			IMPORT_FUNC(glStencilFuncSeparate)
+			IMPORT_FUNC(glStencilMask)
+			IMPORT_FUNC(glStencilMaskSeparate)
+			IMPORT_FUNC(glStencilOp)
+			IMPORT_FUNC(glStencilOpSeparate)
+			IMPORT_FUNC(glTexImage2D)
+			IMPORT_FUNC(glTexImage3D)
+			IMPORT_FUNC(glTexParameterf)
+			IMPORT_FUNC(glTexParameterfv)
+			IMPORT_FUNC(glTexParameteri)
+			IMPORT_FUNC(glTexParameteriv)
+			IMPORT_FUNC(glTexSubImage2D)
+			IMPORT_FUNC(glUniform1f)
+			IMPORT_FUNC(glUniform1fv)
+			IMPORT_FUNC(glUniform1i)
+			IMPORT_FUNC(glUniform1iv)
+			IMPORT_FUNC(glUniform1ui)
+			IMPORT_FUNC(glUniform2f)
+			IMPORT_FUNC(glUniform2fv)
+			IMPORT_FUNC(glUniform2i)
+			IMPORT_FUNC(glUniform2iv)
+			IMPORT_FUNC(glUniform3f)
+			IMPORT_FUNC(glUniform3fv)
+			IMPORT_FUNC(glUniform3i)
+			IMPORT_FUNC(glUniform3iv)
+			IMPORT_FUNC(glUniform4f)
+			IMPORT_FUNC(glUniform4fv)
+			IMPORT_FUNC(glUniform4i)
+			IMPORT_FUNC(glUniform4iv)
+			IMPORT_FUNC(glUniformMatrix2fv)
+			IMPORT_FUNC(glUniformMatrix3fv)
+			IMPORT_FUNC(glUniformMatrix4fv)
+			IMPORT_FUNC(glUseProgram)
+			IMPORT_FUNC(glValidateProgram)
+			IMPORT_FUNC(glVertexAttrib1f)
+			IMPORT_FUNC(glVertexAttrib1fv)
+			IMPORT_FUNC(glVertexAttrib2f)
+			IMPORT_FUNC(glVertexAttrib2fv)
+			IMPORT_FUNC(glVertexAttrib3f)
+			IMPORT_FUNC(glVertexAttrib3fv)
+			IMPORT_FUNC(glVertexAttrib4f)
+			IMPORT_FUNC(glVertexAttrib4fv)
+			IMPORT_FUNC(glVertexAttribPointer)
+			IMPORT_FUNC(glVertexAttribIPointer)
+			IMPORT_FUNC(glVertexAttribDivisor)
+			IMPORT_FUNC(glViewport)
+			IMPORT_FUNC(glBindBufferBase)
+			IMPORT_FUNC(glUnmapBuffer)
+			IMPORT_FUNC(glMapBufferRange)
+			IMPORT_FUNC(glDrawBuffers)
+			IMPORT_FUNC(glTexImage3D)
+			IMPORT_FUNC(glTexSubImage3D)
+			IMPORT_FUNC(glCopyTexSubImage3D)
+			IMPORT_FUNC(glCompressedTexSubImage3D)
+			IMPORT_FUNC(glGetBufferPointerv)
 			IMPORT_FUNC(glBindVertexArray)
 			IMPORT_FUNC(glDeleteVertexArrays)
 			IMPORT_FUNC(glGenVertexArrays)
@@ -4115,7 +4115,7 @@ namespace OpenGLES3Rhi
 			#ifdef RHI_DEBUG
 				if (openGLES3Rhi.getOpenGLES3Context().getExtensions().isGL_KHR_debug())
 				{
-					RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "VBO", 6);	// 6 = "VBO: " including terminating zero
+					RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "VBO", 6)	// 6 = "VBO: " including terminating zero
 					glObjectLabelKHR(GL_BUFFER_KHR, mOpenGLES3ArrayBuffer, -1, detailedDebugName);
 				}
 			#endif
@@ -4246,7 +4246,7 @@ namespace OpenGLES3Rhi
 				#ifdef RHI_DEBUG
 					if (openGLES3Rhi.getOpenGLES3Context().getExtensions().isGL_KHR_debug())
 					{
-						RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "IBO", 6);	// 6 = "IBO: " including terminating zero
+						RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "IBO", 6)	// 6 = "IBO: " including terminating zero
 						glObjectLabelKHR(GL_BUFFER_KHR, mOpenGLES3ElementArrayBuffer, -1, detailedDebugName);
 					}
 				#endif
@@ -4483,7 +4483,7 @@ namespace OpenGLES3Rhi
 			#ifdef RHI_DEBUG
 				if (openGLES3Rhi.getOpenGLES3Context().getExtensions().isGL_KHR_debug())
 				{
-					RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "VAO", 6);	// 6 = "VAO: " including terminating zero
+					RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "VAO", 6)	// 6 = "VAO: " including terminating zero
 					glObjectLabelKHR(GL_VERTEX_ARRAY_KHR, mOpenGLES3VertexArray, -1, detailedDebugName);
 				}
 			#endif
@@ -4775,7 +4775,7 @@ namespace OpenGLES3Rhi
 			#ifdef RHI_DEBUG
 				if (openGLES3Rhi.getOpenGLES3Context().getExtensions().isGL_KHR_debug())
 				{
-					RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "TBO", 6);	// 6 = "TBO: " including terminating zero
+					RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "TBO", 6)	// 6 = "TBO: " including terminating zero
 					if (0 != mOpenGLES3Texture)
 					{
 						glObjectLabelKHR(GL_TEXTURE, mOpenGLES3Texture, -1, detailedDebugName);
@@ -4864,7 +4864,7 @@ namespace OpenGLES3Rhi
 			#ifdef RHI_DEBUG
 				if (openGLES3Rhi.getOpenGLES3Context().getExtensions().isGL_KHR_debug())
 				{
-					RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "TBO", 6);	// 6 = "TBO: " including terminating zero
+					RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "TBO", 6)	// 6 = "TBO: " including terminating zero
 					glObjectLabelKHR(GL_BUFFER_KHR, mOpenGLES3TextureBuffer, -1, detailedDebugName);
 				}
 			#endif
@@ -5066,7 +5066,7 @@ namespace OpenGLES3Rhi
 			#ifdef RHI_DEBUG
 				if (openGLES3Rhi.getOpenGLES3Context().getExtensions().isGL_KHR_debug())
 				{
-					RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "UBO", 6);	// 6 = "UBO: " including terminating zero
+					RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "UBO", 6)	// 6 = "UBO: " including terminating zero
 					glObjectLabelKHR(GL_BUFFER_KHR, mOpenGLES3UniformBuffer, -1, detailedDebugName);
 				}
 			#endif
@@ -5449,7 +5449,7 @@ namespace OpenGLES3Rhi
 			#ifdef RHI_DEBUG
 				if (openGLES3Rhi.getOpenGLES3Context().getExtensions().isGL_KHR_debug())
 				{
-					RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "1D texture", 13);	// 13 = "1D texture: " including terminating zero
+					RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "1D texture", 13)	// 13 = "1D texture: " including terminating zero
 					glObjectLabelKHR(GL_TEXTURE, mOpenGLES3Texture, -1, detailedDebugName);
 				}
 			#endif
@@ -5609,7 +5609,7 @@ namespace OpenGLES3Rhi
 			#ifdef RHI_DEBUG
 				if (openGLES3Rhi.getOpenGLES3Context().getExtensions().isGL_KHR_debug())
 				{
-					RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "1D texture array", 19);	// 19 = "1D texture array: " including terminating zero
+					RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "1D texture array", 19)	// 19 = "1D texture array: " including terminating zero
 					glObjectLabelKHR(GL_TEXTURE, mOpenGLES3Texture, -1, detailedDebugName);
 				}
 			#endif
@@ -5813,7 +5813,7 @@ namespace OpenGLES3Rhi
 			#ifdef RHI_DEBUG
 				if (openGLES3Rhi.getOpenGLES3Context().getExtensions().isGL_KHR_debug())
 				{
-					RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "2D texture", 13);	// 13 = "2D texture: " including terminating zero
+					RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "2D texture", 13)	// 13 = "2D texture: " including terminating zero
 					glObjectLabelKHR(GL_TEXTURE, mOpenGLES3Texture, -1, detailedDebugName);
 				}
 			#endif
@@ -6009,7 +6009,7 @@ namespace OpenGLES3Rhi
 			#ifdef RHI_DEBUG
 				if (openGLES3Rhi.getOpenGLES3Context().getExtensions().isGL_KHR_debug())
 				{
-					RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "2D texture array", 19);	// 19 = "2D texture array: " including terminating zero
+					RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "2D texture array", 19)	// 19 = "2D texture array: " including terminating zero
 					glObjectLabelKHR(GL_TEXTURE, mOpenGLES3Texture, -1, detailedDebugName);
 				}
 			#endif
@@ -6228,7 +6228,7 @@ namespace OpenGLES3Rhi
 			#ifdef RHI_DEBUG
 				if (openGLES3Rhi.getOpenGLES3Context().getExtensions().isGL_KHR_debug())
 				{
-					RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "3D texture", 13);	// 13 = "3D texture: " including terminating zero
+					RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "3D texture", 13)	// 13 = "3D texture: " including terminating zero
 					glObjectLabelKHR(GL_TEXTURE, mOpenGLES3Texture, -1, detailedDebugName);
 				}
 			#endif
@@ -6477,7 +6477,7 @@ namespace OpenGLES3Rhi
 			#ifdef RHI_DEBUG
 				if (openGLES3Rhi.getOpenGLES3Context().getExtensions().isGL_KHR_debug())
 				{
-					RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "Cube texture", 15);	// 15 = "Cube texture: " including terminating zero
+					RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "Cube texture", 15)	// 15 = "Cube texture: " including terminating zero
 					glObjectLabelKHR(GL_TEXTURE, mOpenGLES3Texture, -1, detailedDebugName);
 				}
 			#endif
@@ -7828,7 +7828,7 @@ namespace OpenGLES3Rhi
 			#ifdef RHI_DEBUG
 				if (openGLES3Rhi.getOpenGLES3Context().getExtensions().isGL_KHR_debug())
 				{
-					RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "FBO", 6);	// 6 = "FBO: " including terminating zero
+					RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "FBO", 6)	// 6 = "FBO: " including terminating zero
 					glObjectLabelKHR(GL_FRAMEBUFFER, mOpenGLES3Framebuffer, -1, detailedDebugName);
 				}
 			#endif
@@ -7982,7 +7982,7 @@ namespace OpenGLES3Rhi
 			#ifdef RHI_DEBUG
 				if (0 != mOpenGLES3Shader && openGLES3Rhi.getOpenGLES3Context().getExtensions().isGL_KHR_debug())
 				{
-					RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "VS", 5);	// 5 = "VS: " including terminating zero
+					RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "VS", 5)	// 5 = "VS: " including terminating zero
 					glObjectLabelKHR(GL_SHADER_KHR, mOpenGLES3Shader, -1, detailedDebugName);
 				}
 			#endif
@@ -8084,7 +8084,7 @@ namespace OpenGLES3Rhi
 			#ifdef RHI_DEBUG
 				if (0 != mOpenGLES3Shader && openGLES3Rhi.getOpenGLES3Context().getExtensions().isGL_KHR_debug())
 				{
-					RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "FS", 5);	// 5 = "FS: " including terminating zero
+					RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "FS", 5)	// 5 = "FS: " including terminating zero
 					glObjectLabelKHR(GL_SHADER_KHR, mOpenGLES3Shader, -1, detailedDebugName);
 				}
 			#endif
@@ -8349,7 +8349,7 @@ namespace OpenGLES3Rhi
 			#ifdef RHI_DEBUG
 				if (0 != mOpenGLES3Program && openGLES3Rhi.getOpenGLES3Context().getExtensions().isGL_KHR_debug())
 				{
-					RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "Graphics program", 19);	// 19 = "Graphics program: " including terminating zero
+					RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "Graphics program", 19)	// 19 = "Graphics program: " including terminating zero
 					glObjectLabelKHR(GL_SHADER_KHR, mOpenGLES3Program, -1, detailedDebugName);
 				}
 			#endif
@@ -9232,7 +9232,7 @@ namespace
 		//[-------------------------------------------------------]
 		//[ Global definitions                                    ]
 		//[-------------------------------------------------------]
-		static constexpr Rhi::ImplementationDispatchFunction DISPATCH_FUNCTIONS[Rhi::CommandDispatchFunctionIndex::NUMBER_OF_FUNCTIONS] =
+		static constexpr Rhi::ImplementationDispatchFunction DISPATCH_FUNCTIONS[static_cast<uint8_t>(Rhi::CommandDispatchFunctionIndex::NUMBER_OF_FUNCTIONS)] =
 		{
 			// Command buffer
 			&ImplementationDispatch::ExecuteCommandBuffer,

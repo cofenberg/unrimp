@@ -35,7 +35,7 @@
 
 #include <ImGuizmo/ImGuizmo.h>
 
-#include <imgui/imgui.h>
+#include <ImGui/imgui.h>
 
 // Disable warnings in external headers, we can't fix them
 PRAGMA_WARNING_PUSH
@@ -284,7 +284,7 @@ namespace Renderer
 		}
 	}
 
-	void DebugGuiHelper::drawGrid(const CameraSceneItem& cameraSceneItem, float cellSize, float yPosition)
+	void DebugGuiHelper::drawGrid(const CameraSceneItem& cameraSceneItem, float cellSize, double yPosition)
 	{
 		ImGui::SetNextWindowSize(ImGui::GetIO().DisplaySize, ImGuiCond_FirstUseEver);
 		if (ImGui::Begin("grid", nullptr, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoInputs | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoBringToFrontOnFocus))
@@ -389,7 +389,7 @@ namespace Renderer
 				if (ImGui::TreeNode("EmittedCommands", "Emitted commands: %s", ::detail::stringFormatCommas(numberOfCommands, temporary)))
 				{
 					// Loop through all commands and count them
-					uint32_t numberOfCommandFunctions[Rhi::CommandDispatchFunctionIndex::NUMBER_OF_FUNCTIONS] = {};
+					uint32_t numberOfCommandFunctions[static_cast<uint8_t>(Rhi::CommandDispatchFunctionIndex::NUMBER_OF_FUNCTIONS)] = {};
 					const uint8_t* commandPacketBuffer = commandBuffer.getCommandPacketBuffer();
 					Rhi::ConstCommandPacket constCommandPacket = commandPacketBuffer;
 					while (nullptr != constCommandPacket)

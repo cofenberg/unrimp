@@ -65,7 +65,7 @@
 		#define NODEFERWINDOWPOS
 		#define NOMCX
 		#define NOCRYPT
-		#include <windows.h>
+		#include <Windows.h>
 
 		// Get rid of some nasty OS macros
 		#undef min

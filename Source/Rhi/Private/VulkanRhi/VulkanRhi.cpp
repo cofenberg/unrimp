@@ -76,7 +76,7 @@
 	#define NODEFERWINDOWPOS
 	#define NOMCX
 	#define NOCRYPT
-	#include <windows.h>
+	#include <Windows.h>
 
 	// Get rid of some nasty OS macros
 	#undef max
@@ -1149,11 +1149,11 @@ namespace
 					}																											\
 
 				// "VK_EXT_debug_marker"-extension
-				IMPORT_FUNC(vkDebugMarkerSetObjectTagEXT);
-				IMPORT_FUNC(vkDebugMarkerSetObjectNameEXT);
-				IMPORT_FUNC(vkCmdDebugMarkerBeginEXT);
-				IMPORT_FUNC(vkCmdDebugMarkerEndEXT);
-				IMPORT_FUNC(vkCmdDebugMarkerInsertEXT);
+				IMPORT_FUNC(vkDebugMarkerSetObjectTagEXT)
+				IMPORT_FUNC(vkDebugMarkerSetObjectNameEXT)
+				IMPORT_FUNC(vkCmdDebugMarkerBeginEXT)
+				IMPORT_FUNC(vkCmdDebugMarkerEndEXT)
+				IMPORT_FUNC(vkCmdDebugMarkerInsertEXT)
 
 				// Undefine the helper macro
 				#undef IMPORT_FUNC
@@ -2602,11 +2602,11 @@ namespace VulkanRhi
 			#endif
 
 			// Load the Vulkan global level function entry points
-			IMPORT_FUNC(vkGetInstanceProcAddr);
-			IMPORT_FUNC(vkGetDeviceProcAddr);
-			IMPORT_FUNC(vkEnumerateInstanceExtensionProperties);
-			IMPORT_FUNC(vkEnumerateInstanceLayerProperties);
-			IMPORT_FUNC(vkCreateInstance);
+			IMPORT_FUNC(vkGetInstanceProcAddr)
+			IMPORT_FUNC(vkGetDeviceProcAddr)
+			IMPORT_FUNC(vkEnumerateInstanceExtensionProperties)
+			IMPORT_FUNC(vkEnumerateInstanceLayerProperties)
+			IMPORT_FUNC(vkCreateInstance)
 
 			// Undefine the helper macro
 			#undef IMPORT_FUNC
@@ -4770,7 +4770,7 @@ namespace VulkanRhi
 			#ifdef RHI_DEBUG
 				if (nullptr != vkDebugMarkerSetObjectNameEXT)
 				{
-					RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "Root signature", 17);	// 17 = "Root signature: " including terminating zero
+					RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "Root signature", 17)	// 17 = "Root signature: " including terminating zero
 					for (VkDescriptorSetLayout vkDescriptorSetLayout : mVkDescriptorSetLayouts)
 					{
 						Helper::setDebugObjectName(vkDevice, VK_DEBUG_REPORT_OBJECT_TYPE_DESCRIPTOR_SET_LAYOUT_EXT, (uint64_t)vkDescriptorSetLayout, detailedDebugName);
@@ -4958,7 +4958,7 @@ namespace VulkanRhi
 			#ifdef RHI_DEBUG
 				if (nullptr != vkDebugMarkerSetObjectNameEXT)
 				{
-					RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "VBO", 6);	// 6 = "VBO: " including terminating zero
+					RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "VBO", 6)	// 6 = "VBO: " including terminating zero
 					const VkDevice vkDevice = vulkanRhi.getVulkanContext().getVkDevice();
 					Helper::setDebugObjectName(vkDevice, VK_DEBUG_REPORT_OBJECT_TYPE_BUFFER_EXT, (uint64_t)mVkBuffer, detailedDebugName);
 					Helper::setDebugObjectName(vkDevice, VK_DEBUG_REPORT_OBJECT_TYPE_DEVICE_MEMORY_EXT, (uint64_t)mVkDeviceMemory, detailedDebugName);
@@ -5080,7 +5080,7 @@ namespace VulkanRhi
 			#ifdef RHI_DEBUG
 				if (nullptr != vkDebugMarkerSetObjectNameEXT)
 				{
-					RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "IBO", 6);	// 6 = "IBO: " including terminating zero
+					RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "IBO", 6)	// 6 = "IBO: " including terminating zero
 					const VkDevice vkDevice = vulkanRhi.getVulkanContext().getVkDevice();
 					Helper::setDebugObjectName(vkDevice, VK_DEBUG_REPORT_OBJECT_TYPE_BUFFER_EXT, (uint64_t)mVkBuffer, detailedDebugName);
 					Helper::setDebugObjectName(vkDevice, VK_DEBUG_REPORT_OBJECT_TYPE_DEVICE_MEMORY_EXT, (uint64_t)mVkDeviceMemory, detailedDebugName);
@@ -5441,7 +5441,7 @@ namespace VulkanRhi
 			#ifdef RHI_DEBUG
 				if (nullptr != vkDebugMarkerSetObjectNameEXT)
 				{
-					RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "TBO", 6);	// 6 = "TBO: " including terminating zero
+					RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "TBO", 6)	// 6 = "TBO: " including terminating zero
 					const VkDevice vkDevice = vulkanRhi.getVulkanContext().getVkDevice();
 					Helper::setDebugObjectName(vkDevice, VK_DEBUG_REPORT_OBJECT_TYPE_BUFFER_EXT, (uint64_t)mVkBuffer, detailedDebugName);
 					Helper::setDebugObjectName(vkDevice, VK_DEBUG_REPORT_OBJECT_TYPE_DEVICE_MEMORY_EXT, (uint64_t)mVkDeviceMemory, detailedDebugName);
@@ -5579,7 +5579,7 @@ namespace VulkanRhi
 			#ifdef RHI_DEBUG
 				if (nullptr != vkDebugMarkerSetObjectNameEXT)
 				{
-					RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "SBO", 6);	// 6 = "SBO: " including terminating zero
+					RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "SBO", 6)	// 6 = "SBO: " including terminating zero
 					const VkDevice vkDevice = vulkanRhi.getVulkanContext().getVkDevice();
 					Helper::setDebugObjectName(vkDevice, VK_DEBUG_REPORT_OBJECT_TYPE_BUFFER_EXT, (uint64_t)mVkBuffer, detailedDebugName);
 					Helper::setDebugObjectName(vkDevice, VK_DEBUG_REPORT_OBJECT_TYPE_DEVICE_MEMORY_EXT, (uint64_t)mVkDeviceMemory, detailedDebugName);
@@ -5705,7 +5705,7 @@ namespace VulkanRhi
 			#ifdef RHI_DEBUG
 				if (nullptr != vkDebugMarkerSetObjectNameEXT)
 				{
-					RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "IndirectBufferObject", 23);	// 23 = "IndirectBufferObject: " including terminating zero
+					RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "IndirectBufferObject", 23)	// 23 = "IndirectBufferObject: " including terminating zero
 					const VkDevice vkDevice = vulkanRhi.getVulkanContext().getVkDevice();
 					Helper::setDebugObjectName(vkDevice, VK_DEBUG_REPORT_OBJECT_TYPE_BUFFER_EXT, (uint64_t)mVkBuffer, detailedDebugName);
 					Helper::setDebugObjectName(vkDevice, VK_DEBUG_REPORT_OBJECT_TYPE_DEVICE_MEMORY_EXT, (uint64_t)mVkDeviceMemory, detailedDebugName);
@@ -5827,7 +5827,7 @@ namespace VulkanRhi
 			#ifdef RHI_DEBUG
 				if (nullptr != vkDebugMarkerSetObjectNameEXT)
 				{
-					RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "UBO", 6);	// 6 = "UBO: " including terminating zero
+					RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "UBO", 6)	// 6 = "UBO: " including terminating zero
 					const VkDevice vkDevice = vulkanRhi.getVulkanContext().getVkDevice();
 					Helper::setDebugObjectName(vkDevice, VK_DEBUG_REPORT_OBJECT_TYPE_BUFFER_EXT, (uint64_t)mVkBuffer, detailedDebugName);
 					Helper::setDebugObjectName(vkDevice, VK_DEBUG_REPORT_OBJECT_TYPE_DEVICE_MEMORY_EXT, (uint64_t)mVkDeviceMemory, detailedDebugName);
@@ -6087,7 +6087,7 @@ namespace VulkanRhi
 			#ifdef RHI_DEBUG
 				if (nullptr != vkDebugMarkerSetObjectNameEXT)
 				{
-					RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "1D texture", 13);	// 13 = "1D texture: " including terminating zero
+					RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "1D texture", 13)	// 13 = "1D texture: " including terminating zero
 					const VkDevice vkDevice = vulkanRhi.getVulkanContext().getVkDevice();
 					Helper::setDebugObjectName(vkDevice, VK_DEBUG_REPORT_OBJECT_TYPE_IMAGE_EXT, (uint64_t)mVkImage, detailedDebugName);
 					Helper::setDebugObjectName(vkDevice, VK_DEBUG_REPORT_OBJECT_TYPE_DEVICE_MEMORY_EXT, (uint64_t)mVkDeviceMemory, detailedDebugName);
@@ -6207,7 +6207,7 @@ namespace VulkanRhi
 			#ifdef RHI_DEBUG
 				if (nullptr != vkDebugMarkerSetObjectNameEXT)
 				{
-					RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "1D texture array", 19);	// 19 = "1D texture array: " including terminating zero
+					RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "1D texture array", 19)	// 19 = "1D texture array: " including terminating zero
 					const VkDevice vkDevice = vulkanRhi.getVulkanContext().getVkDevice();
 					Helper::setDebugObjectName(vkDevice, VK_DEBUG_REPORT_OBJECT_TYPE_IMAGE_EXT, (uint64_t)mVkImage, detailedDebugName);
 					Helper::setDebugObjectName(vkDevice, VK_DEBUG_REPORT_OBJECT_TYPE_DEVICE_MEMORY_EXT, (uint64_t)mVkDeviceMemory, detailedDebugName);
@@ -6378,7 +6378,7 @@ namespace VulkanRhi
 			#ifdef RHI_DEBUG
 				if (nullptr != vkDebugMarkerSetObjectNameEXT)
 				{
-					RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "2D texture", 13);	// 13 = "2D texture: " including terminating zero
+					RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "2D texture", 13)	// 13 = "2D texture: " including terminating zero
 					const VkDevice vkDevice = vulkanRhi.getVulkanContext().getVkDevice();
 					Helper::setDebugObjectName(vkDevice, VK_DEBUG_REPORT_OBJECT_TYPE_IMAGE_EXT, (uint64_t)mVrVulkanTextureData.m_nImage, detailedDebugName);
 					Helper::setDebugObjectName(vkDevice, VK_DEBUG_REPORT_OBJECT_TYPE_DEVICE_MEMORY_EXT, (uint64_t)mVkDeviceMemory, detailedDebugName);
@@ -6536,7 +6536,7 @@ namespace VulkanRhi
 			#ifdef RHI_DEBUG
 				if (nullptr != vkDebugMarkerSetObjectNameEXT)
 				{
-					RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "2D texture array", 19);	// 19 = "2D texture array: " including terminating zero
+					RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "2D texture array", 19)	// 19 = "2D texture array: " including terminating zero
 					const VkDevice vkDevice = vulkanRhi.getVulkanContext().getVkDevice();
 					Helper::setDebugObjectName(vkDevice, VK_DEBUG_REPORT_OBJECT_TYPE_IMAGE_EXT, (uint64_t)mVkImage, detailedDebugName);
 					Helper::setDebugObjectName(vkDevice, VK_DEBUG_REPORT_OBJECT_TYPE_DEVICE_MEMORY_EXT, (uint64_t)mVkDeviceMemory, detailedDebugName);
@@ -6672,7 +6672,7 @@ namespace VulkanRhi
 			#ifdef RHI_DEBUG
 				if (nullptr != vkDebugMarkerSetObjectNameEXT)
 				{
-					RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "3D texture", 13);	// 13 = "3D texture: " including terminating zero
+					RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "3D texture", 13)	// 13 = "3D texture: " including terminating zero
 					const VkDevice vkDevice = vulkanRhi.getVulkanContext().getVkDevice();
 					Helper::setDebugObjectName(vkDevice, VK_DEBUG_REPORT_OBJECT_TYPE_IMAGE_EXT, (uint64_t)mVkImage, detailedDebugName);
 					Helper::setDebugObjectName(vkDevice, VK_DEBUG_REPORT_OBJECT_TYPE_DEVICE_MEMORY_EXT, (uint64_t)mVkDeviceMemory, detailedDebugName);
@@ -6793,7 +6793,7 @@ namespace VulkanRhi
 			#ifdef RHI_DEBUG
 				if (nullptr != vkDebugMarkerSetObjectNameEXT)
 				{
-					RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "Cube texture", 15);	// 15 = "Cube texture: " including terminating zero
+					RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "Cube texture", 15)	// 15 = "Cube texture: " including terminating zero
 					const VkDevice vkDevice = vulkanRhi.getVulkanContext().getVkDevice();
 					Helper::setDebugObjectName(vkDevice, VK_DEBUG_REPORT_OBJECT_TYPE_IMAGE_EXT, (uint64_t)mVkImage, detailedDebugName);
 					Helper::setDebugObjectName(vkDevice, VK_DEBUG_REPORT_OBJECT_TYPE_DEVICE_MEMORY_EXT, (uint64_t)mVkDeviceMemory, detailedDebugName);
@@ -7064,7 +7064,7 @@ namespace VulkanRhi
 				#ifdef RHI_DEBUG
 					if (nullptr != vkDebugMarkerSetObjectNameEXT)
 					{
-						RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "Sampler state", 16);	// 16 = "Sampler state: " including terminating zero
+						RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "Sampler state", 16)	// 16 = "Sampler state: " including terminating zero
 						Helper::setDebugObjectName(vulkanRhi.getVulkanContext().getVkDevice(), VK_DEBUG_REPORT_OBJECT_TYPE_SAMPLER_EXT, (uint64_t)mVkSampler, detailedDebugName);
 					}
 				#endif
@@ -7283,7 +7283,7 @@ namespace VulkanRhi
 				#ifdef RHI_DEBUG
 					if (nullptr != vkDebugMarkerSetObjectNameEXT)
 					{
-						RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "Render pass", 14);	// 14 = "Render pass: " including terminating zero
+						RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "Render pass", 14)	// 14 = "Render pass: " including terminating zero
 						Helper::setDebugObjectName(vulkanRhi.getVulkanContext().getVkDevice(), VK_DEBUG_REPORT_OBJECT_TYPE_RENDER_PASS_EXT, (uint64_t)mVkRenderPass, detailedDebugName);
 					}
 				#endif
@@ -7480,21 +7480,21 @@ namespace VulkanRhi
 						{
 							case Rhi::QueryType::OCCLUSION:
 							{
-								RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "Occlusion query", 18);	// 18 = "Occlusion query: " including terminating zero
+								RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "Occlusion query", 18)	// 18 = "Occlusion query: " including terminating zero
 								Helper::setDebugObjectName(vulkanRhi.getVulkanContext().getVkDevice(), VK_DEBUG_REPORT_OBJECT_TYPE_QUERY_POOL_EXT, (uint64_t)mVkQueryPool, detailedDebugName);
 								break;
 							}
 
 							case Rhi::QueryType::PIPELINE_STATISTICS:
 							{
-								RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "Pipeline statistics query", 28);	// 28 = "Pipeline statistics query: " including terminating zero
+								RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "Pipeline statistics query", 28)	// 28 = "Pipeline statistics query: " including terminating zero
 								Helper::setDebugObjectName(vulkanRhi.getVulkanContext().getVkDevice(), VK_DEBUG_REPORT_OBJECT_TYPE_QUERY_POOL_EXT, (uint64_t)mVkQueryPool, detailedDebugName);
 								break;
 							}
 
 							case Rhi::QueryType::TIMESTAMP:
 							{
-								RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "Timestamp query", 18);	// 18 = "Timestamp query: " including terminating zero
+								RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "Timestamp query", 18)	// 18 = "Timestamp query: " including terminating zero
 								Helper::setDebugObjectName(vulkanRhi.getVulkanContext().getVkDevice(), VK_DEBUG_REPORT_OBJECT_TYPE_QUERY_POOL_EXT, (uint64_t)mVkQueryPool, detailedDebugName);
 								break;
 							}
@@ -8478,7 +8478,7 @@ namespace VulkanRhi
 				#ifdef RHI_DEBUG
 					if (nullptr != vkDebugMarkerSetObjectNameEXT)
 					{
-						RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "FBO", 6);	// 6 = "FBO: " including terminating zero
+						RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "FBO", 6)	// 6 = "FBO: " including terminating zero
 						const VkDevice vkDevice = vulkanRhi.getVulkanContext().getVkDevice();
 						Helper::setDebugObjectName(vkDevice, VK_DEBUG_REPORT_OBJECT_TYPE_RENDER_PASS_EXT, (uint64_t)mVkRenderPass, detailedDebugName);
 						Helper::setDebugObjectName(vkDevice, VK_DEBUG_REPORT_OBJECT_TYPE_FRAMEBUFFER_EXT, (uint64_t)mVkFramebuffer, detailedDebugName);
@@ -8632,7 +8632,7 @@ namespace VulkanRhi
 			#ifdef RHI_DEBUG
 				if (nullptr != vkDebugMarkerSetObjectNameEXT)
 				{
-					RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "VS", 5);	// 5 = "VS: " including terminating zero
+					RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "VS", 5)	// 5 = "VS: " including terminating zero
 					Helper::setDebugObjectName(vulkanRhi.getVulkanContext().getVkDevice(), VK_DEBUG_REPORT_OBJECT_TYPE_SHADER_MODULE_EXT, (uint64_t)mVkShaderModule, detailedDebugName);
 				}
 			#endif
@@ -8654,7 +8654,7 @@ namespace VulkanRhi
 			#ifdef RHI_DEBUG
 				if (nullptr != vkDebugMarkerSetObjectNameEXT)
 				{
-					RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "VS", 5);	// 5 = "VS: " including terminating zero
+					RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "VS", 5)	// 5 = "VS: " including terminating zero
 					Helper::setDebugObjectName(vulkanRhi.getVulkanContext().getVkDevice(), VK_DEBUG_REPORT_OBJECT_TYPE_SHADER_MODULE_EXT, (uint64_t)mVkShaderModule, detailedDebugName);
 				}
 			#endif
@@ -8757,7 +8757,7 @@ namespace VulkanRhi
 			#ifdef RHI_DEBUG
 				if (nullptr != vkDebugMarkerSetObjectNameEXT)
 				{
-					RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "TCS", 6);	// 6 = "TCS: " including terminating zero
+					RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "TCS", 6)	// 6 = "TCS: " including terminating zero
 					Helper::setDebugObjectName(vulkanRhi.getVulkanContext().getVkDevice(), VK_DEBUG_REPORT_OBJECT_TYPE_SHADER_MODULE_EXT, (uint64_t)mVkShaderModule, detailedDebugName);
 				}
 			#endif
@@ -8779,7 +8779,7 @@ namespace VulkanRhi
 			#ifdef RHI_DEBUG
 				if (nullptr != vkDebugMarkerSetObjectNameEXT)
 				{
-					RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "TCS", 6);	// 6 = "TCS: " including terminating zero
+					RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "TCS", 6)	// 6 = "TCS: " including terminating zero
 					Helper::setDebugObjectName(vulkanRhi.getVulkanContext().getVkDevice(), VK_DEBUG_REPORT_OBJECT_TYPE_SHADER_MODULE_EXT, (uint64_t)mVkShaderModule, detailedDebugName);
 				}
 			#endif
@@ -8882,7 +8882,7 @@ namespace VulkanRhi
 			#ifdef RHI_DEBUG
 				if (nullptr != vkDebugMarkerSetObjectNameEXT)
 				{
-					RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "TES", 6);	// 6 = "TES: " including terminating zero
+					RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "TES", 6)	// 6 = "TES: " including terminating zero
 					Helper::setDebugObjectName(vulkanRhi.getVulkanContext().getVkDevice(), VK_DEBUG_REPORT_OBJECT_TYPE_SHADER_MODULE_EXT, (uint64_t)mVkShaderModule, detailedDebugName);
 				}
 			#endif
@@ -8904,7 +8904,7 @@ namespace VulkanRhi
 			#ifdef RHI_DEBUG
 				if (nullptr != vkDebugMarkerSetObjectNameEXT)
 				{
-					RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "TES", 6);	// 6 = "TES: " including terminating zero
+					RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "TES", 6)	// 6 = "TES: " including terminating zero
 					Helper::setDebugObjectName(vulkanRhi.getVulkanContext().getVkDevice(), VK_DEBUG_REPORT_OBJECT_TYPE_SHADER_MODULE_EXT, (uint64_t)mVkShaderModule, detailedDebugName);
 				}
 			#endif
@@ -9014,7 +9014,7 @@ namespace VulkanRhi
 			#ifdef RHI_DEBUG
 				if (nullptr != vkDebugMarkerSetObjectNameEXT)
 				{
-					RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "GS", 5);	// 5 = "GS: " including terminating zero
+					RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "GS", 5)	// 5 = "GS: " including terminating zero
 					Helper::setDebugObjectName(vulkanRhi.getVulkanContext().getVkDevice(), VK_DEBUG_REPORT_OBJECT_TYPE_SHADER_MODULE_EXT, (uint64_t)mVkShaderModule, detailedDebugName);
 				}
 			#endif
@@ -9043,7 +9043,7 @@ namespace VulkanRhi
 			#ifdef RHI_DEBUG
 				if (nullptr != vkDebugMarkerSetObjectNameEXT)
 				{
-					RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "GS", 5);	// 5 = "GS: " including terminating zero
+					RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "GS", 5)	// 5 = "GS: " including terminating zero
 					Helper::setDebugObjectName(vulkanRhi.getVulkanContext().getVkDevice(), VK_DEBUG_REPORT_OBJECT_TYPE_SHADER_MODULE_EXT, (uint64_t)mVkShaderModule, detailedDebugName);
 				}
 			#endif
@@ -9146,7 +9146,7 @@ namespace VulkanRhi
 			#ifdef RHI_DEBUG
 				if (nullptr != vkDebugMarkerSetObjectNameEXT)
 				{
-					RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "FS", 5);	// 5 = "FS: " including terminating zero
+					RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "FS", 5)	// 5 = "FS: " including terminating zero
 					Helper::setDebugObjectName(vulkanRhi.getVulkanContext().getVkDevice(), VK_DEBUG_REPORT_OBJECT_TYPE_SHADER_MODULE_EXT, (uint64_t)mVkShaderModule, detailedDebugName);
 				}
 			#endif
@@ -9168,7 +9168,7 @@ namespace VulkanRhi
 			#ifdef RHI_DEBUG
 				if (nullptr != vkDebugMarkerSetObjectNameEXT)
 				{
-					RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "FS", 5);	// 5 = "FS: " including terminating zero
+					RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "FS", 5)	// 5 = "FS: " including terminating zero
 					Helper::setDebugObjectName(vulkanRhi.getVulkanContext().getVkDevice(), VK_DEBUG_REPORT_OBJECT_TYPE_SHADER_MODULE_EXT, (uint64_t)mVkShaderModule, detailedDebugName);
 				}
 			#endif
@@ -9271,7 +9271,7 @@ namespace VulkanRhi
 			#ifdef RHI_DEBUG
 				if (nullptr != vkDebugMarkerSetObjectNameEXT)
 				{
-					RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "CS", 5);	// 5 = "CS: " including terminating zero
+					RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "CS", 5)	// 5 = "CS: " including terminating zero
 					Helper::setDebugObjectName(vulkanRhi.getVulkanContext().getVkDevice(), VK_DEBUG_REPORT_OBJECT_TYPE_SHADER_MODULE_EXT, (uint64_t)mVkShaderModule, detailedDebugName);
 				}
 			#endif
@@ -9293,7 +9293,7 @@ namespace VulkanRhi
 			#ifdef RHI_DEBUG
 				if (nullptr != vkDebugMarkerSetObjectNameEXT)
 				{
-					RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "CS", 5);	// 5 = "CS: " including terminating zero
+					RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "CS", 5)	// 5 = "CS: " including terminating zero
 					Helper::setDebugObjectName(vulkanRhi.getVulkanContext().getVkDevice(), VK_DEBUG_REPORT_OBJECT_TYPE_SHADER_MODULE_EXT, (uint64_t)mVkShaderModule, detailedDebugName);
 				}
 			#endif
@@ -10044,7 +10044,7 @@ namespace VulkanRhi
 				#ifdef RHI_DEBUG
 					if (nullptr != vkDebugMarkerSetObjectNameEXT)
 					{
-						RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "Graphics PSO", 15);	// 15 = "Graphics PSO: " including terminating zero
+						RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "Graphics PSO", 15)	// 15 = "Graphics PSO: " including terminating zero
 						Helper::setDebugObjectName(vulkanRhi.getVulkanContext().getVkDevice(), VK_DEBUG_REPORT_OBJECT_TYPE_PIPELINE_EXT, (uint64_t)mVkPipeline, detailedDebugName);
 					}
 				#endif
@@ -10186,7 +10186,7 @@ namespace VulkanRhi
 				#ifdef RHI_DEBUG
 					if (nullptr != vkDebugMarkerSetObjectNameEXT)
 					{
-						RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "Compute PSO", 14);	// 14 = "Compute PSO: " including terminating zero
+						RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "Compute PSO", 14)	// 14 = "Compute PSO: " including terminating zero
 						Helper::setDebugObjectName(vulkanRhi.getVulkanContext().getVkDevice(), VK_DEBUG_REPORT_OBJECT_TYPE_PIPELINE_EXT, (uint64_t)mVkPipeline, detailedDebugName);
 					}
 				#endif
@@ -10624,7 +10624,7 @@ namespace VulkanRhi
 			#ifdef RHI_DEBUG
 				if (nullptr != vkDebugMarkerSetObjectNameEXT)
 				{
-					RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "Resource group", 17);	// 17 = "Resource group: " including terminating zero
+					RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "Resource group", 17)	// 17 = "Resource group: " including terminating zero
 					Helper::setDebugObjectName(vulkanRhi.getVulkanContext().getVkDevice(), VK_DEBUG_REPORT_OBJECT_TYPE_DESCRIPTOR_SET_EXT, (uint64_t)mVkDescriptorSet, detailedDebugName);
 				}
 			#endif
@@ -11038,7 +11038,7 @@ namespace
 		//[-------------------------------------------------------]
 		//[ Global definitions                                    ]
 		//[-------------------------------------------------------]
-		static constexpr Rhi::ImplementationDispatchFunction DISPATCH_FUNCTIONS[Rhi::CommandDispatchFunctionIndex::NUMBER_OF_FUNCTIONS] =
+		static constexpr Rhi::ImplementationDispatchFunction DISPATCH_FUNCTIONS[static_cast<uint8_t>(Rhi::CommandDispatchFunctionIndex::NUMBER_OF_FUNCTIONS)] =
 		{
 			// Command buffer
 			&ImplementationDispatch::ExecuteCommandBuffer,

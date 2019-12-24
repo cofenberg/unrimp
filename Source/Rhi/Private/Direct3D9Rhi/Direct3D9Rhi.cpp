@@ -79,7 +79,7 @@
 #define NODEFERWINDOWPOS
 #define NOMCX
 #define NOCRYPT
-#include <windows.h>
+#include <Windows.h>
 
 // Get rid of some nasty OS macros
 #undef max
@@ -774,7 +774,7 @@ enum D3DDECLUSAGE
 	D3DDECLUSAGE_COLOR,
 	D3DDECLUSAGE_FOG,
 	D3DDECLUSAGE_DEPTH,
-	D3DDECLUSAGE_SAMPLE,
+	D3DDECLUSAGE_SAMPLE
 };
 
 // "Microsoft Direct3D SDK (June 2010)" -> "d3d9types.h"
@@ -2182,13 +2182,13 @@ namespace Direct3D9Rhi
 				}
 
 			// Load the entry points
-			IMPORT_FUNC(Direct3DCreate9);
-			IMPORT_FUNC(D3DPERF_GetStatus);
-			IMPORT_FUNC(D3DPERF_SetOptions);
+			IMPORT_FUNC(Direct3DCreate9)
+			IMPORT_FUNC(D3DPERF_GetStatus)
+			IMPORT_FUNC(D3DPERF_SetOptions)
 			#ifdef RHI_DEBUG
-				IMPORT_FUNC(D3DPERF_SetMarker);
-				IMPORT_FUNC(D3DPERF_BeginEvent);
-				IMPORT_FUNC(D3DPERF_EndEvent);
+				IMPORT_FUNC(D3DPERF_SetMarker)
+				IMPORT_FUNC(D3DPERF_BeginEvent)
+				IMPORT_FUNC(D3DPERF_EndEvent)
 			#endif
 
 			// Undefine the helper macro
@@ -2229,9 +2229,9 @@ namespace Direct3D9Rhi
 				}
 
 			// Load the entry points
-			IMPORT_FUNC(D3DXLoadSurfaceFromMemory);
-			IMPORT_FUNC(D3DXCompileShader);
-			IMPORT_FUNC(D3DXGetShaderConstantTable);
+			IMPORT_FUNC(D3DXLoadSurfaceFromMemory)
+			IMPORT_FUNC(D3DXCompileShader)
+			IMPORT_FUNC(D3DXGetShaderConstantTable)
 
 			// Undefine the helper macro
 			#undef IMPORT_FUNC
@@ -2955,8 +2955,6 @@ namespace Direct3D9Rhi
 		*
 		*  @param[in] Rhi
 		*    Owner RHI instance
-		*  @param[in] rootParameterIndex
-		*    The root parameter index number for binding
 		*  @param[in] numberOfResources
 		*    Number of resources, having no resources is invalid
 		*  @param[in] resources
@@ -2964,9 +2962,8 @@ namespace Direct3D9Rhi
 		*  @param[in] samplerStates
 		*    If not a null pointer at least "numberOfResources" sampler state pointers, must be valid if there's at least one texture resource, the resource group will keep a reference to the sampler states
 		*/
-		ResourceGroup(Rhi::IRhi& rhi, uint32_t rootParameterIndex, uint32_t numberOfResources, Rhi::IResource** resources, Rhi::ISamplerState** samplerStates RHI_RESOURCE_DEBUG_NAME_PARAMETER_NO_DEFAULT) :
+		ResourceGroup(Rhi::IRhi& rhi, uint32_t numberOfResources, Rhi::IResource** resources, Rhi::ISamplerState** samplerStates RHI_RESOURCE_DEBUG_NAME_PARAMETER_NO_DEFAULT) :
 			IResourceGroup(rhi RHI_RESOURCE_DEBUG_PASS_PARAMETER),
-			mRootParameterIndex(rootParameterIndex),
 			mNumberOfResources(numberOfResources),
 			mResources(RHI_MALLOC_TYPED(rhi.getContext(), Rhi::IResource*, mNumberOfResources)),
 			mSamplerStates(nullptr)
@@ -3086,7 +3083,6 @@ namespace Direct3D9Rhi
 	//[ Private data                                          ]
 	//[-------------------------------------------------------]
 	private:
-		uint32_t			 mRootParameterIndex;	///< The root parameter index number for binding
 		uint32_t			 mNumberOfResources;	///< Number of resources this resource group groups together
 		Rhi::IResource**	 mResources;			///< RHI resources, we keep a reference to it
 		Rhi::ISamplerState** mSamplerStates;		///< Sampler states, we keep a reference to it
@@ -3200,7 +3196,7 @@ namespace Direct3D9Rhi
 	//[ Public virtual Rhi::IRootSignature methods            ]
 	//[-------------------------------------------------------]
 	public:
-		[[nodiscard]] virtual Rhi::IResourceGroup* createResourceGroup(uint32_t rootParameterIndex, uint32_t numberOfResources, Rhi::IResource** resources, Rhi::ISamplerState** samplerStates = nullptr RHI_RESOURCE_DEBUG_NAME_PARAMETER) override
+		[[nodiscard]] virtual Rhi::IResourceGroup* createResourceGroup([[maybe_unused]] uint32_t rootParameterIndex, uint32_t numberOfResources, Rhi::IResource** resources, Rhi::ISamplerState** samplerStates = nullptr RHI_RESOURCE_DEBUG_NAME_PARAMETER) override
 		{
 			Rhi::IRhi& rhi = getRhi();
 
@@ -3210,7 +3206,7 @@ namespace Direct3D9Rhi
 			RHI_ASSERT(rhi.getContext(), nullptr != resources, "The Direct3D 9 resource pointers must be valid")
 
 			// Create resource group
-			return RHI_NEW(rhi.getContext(), ResourceGroup)(rhi, rootParameterIndex, numberOfResources, resources, samplerStates RHI_RESOURCE_DEBUG_PASS_PARAMETER);
+			return RHI_NEW(rhi.getContext(), ResourceGroup)(rhi, numberOfResources, resources, samplerStates RHI_RESOURCE_DEBUG_PASS_PARAMETER);
 		}
 
 
@@ -3277,7 +3273,7 @@ namespace Direct3D9Rhi
 			mDirect3DVertexBuffer9(nullptr)
 		{
 			// Create the Direct3D 9 vertex buffer
-			FAILED_DEBUG_BREAK(direct3D9Rhi.getDirect3DDevice9()->CreateVertexBuffer(numberOfBytes, Mapping::getDirect3D9Usage(bufferUsage), 0, D3DPOOL_DEFAULT, &mDirect3DVertexBuffer9, nullptr));
+			FAILED_DEBUG_BREAK(direct3D9Rhi.getDirect3DDevice9()->CreateVertexBuffer(numberOfBytes, Mapping::getDirect3D9Usage(bufferUsage), 0, D3DPOOL_DEFAULT, &mDirect3DVertexBuffer9, nullptr))
 
 			// Copy the data, if required
 			if (nullptr != data)
@@ -3294,8 +3290,8 @@ namespace Direct3D9Rhi
 			#ifdef RHI_DEBUG
 				if (nullptr != mDirect3DVertexBuffer9)
 				{
-					RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "VBO", 6);	// 6 = "VBO: " including terminating zero
-					FAILED_DEBUG_BREAK(mDirect3DVertexBuffer9->SetPrivateData(WKPDID_D3DDebugObjectName, detailedDebugName, static_cast<UINT>(strlen(detailedDebugName)), 0));
+					RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "VBO", 6)	// 6 = "VBO: " including terminating zero
+					FAILED_DEBUG_BREAK(mDirect3DVertexBuffer9->SetPrivateData(WKPDID_D3DDebugObjectName, detailedDebugName, static_cast<UINT>(strlen(detailedDebugName)), 0))
 				}
 			#endif
 		}
@@ -3397,7 +3393,7 @@ namespace Direct3D9Rhi
 			else
 			{
 				// Create the Direct3D 9 index buffer
-				FAILED_DEBUG_BREAK(direct3D9Rhi.getDirect3DDevice9()->CreateIndexBuffer(numberOfBytes, Mapping::getDirect3D9Usage(bufferUsage), static_cast<D3DFORMAT>(Mapping::getDirect3D9Format(indexBufferFormat)), D3DPOOL_DEFAULT, &mDirect3DIndexBuffer9, nullptr));
+				FAILED_DEBUG_BREAK(direct3D9Rhi.getDirect3DDevice9()->CreateIndexBuffer(numberOfBytes, Mapping::getDirect3D9Usage(bufferUsage), static_cast<D3DFORMAT>(Mapping::getDirect3D9Format(indexBufferFormat)), D3DPOOL_DEFAULT, &mDirect3DIndexBuffer9, nullptr))
 
 				// Copy the data, if required
 				if (nullptr != data)
@@ -3414,8 +3410,8 @@ namespace Direct3D9Rhi
 				#ifdef RHI_DEBUG
 					if (nullptr != mDirect3DIndexBuffer9)
 					{
-						RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "IBO", 6);	// 6 = "IBO: " including terminating zero
-						FAILED_DEBUG_BREAK(mDirect3DIndexBuffer9->SetPrivateData(WKPDID_D3DDebugObjectName, detailedDebugName, static_cast<UINT>(strlen(detailedDebugName)), 0));
+						RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "IBO", 6)	// 6 = "IBO: " including terminating zero
+						FAILED_DEBUG_BREAK(mDirect3DIndexBuffer9->SetPrivateData(WKPDID_D3DDebugObjectName, detailedDebugName, static_cast<UINT>(strlen(detailedDebugName)), 0))
 					}
 				#endif
 			}
@@ -3620,10 +3616,10 @@ namespace Direct3D9Rhi
 				for (uint32_t slot = 0; slot < mNumberOfSlots; ++slot, ++currentDirect3DVertexBuffer9AtSlot, ++currentStrideAtSlot, ++currentInstancesPerElementAtSlot)
 				{
 					// Vertex buffer offset is not supported by OpenGL, so our RHI implementation doesn't support it either
-					FAILED_DEBUG_BREAK(mDirect3DDevice9->SetStreamSource(slot, *currentDirect3DVertexBuffer9AtSlot, 0, *currentStrideAtSlot));
+					FAILED_DEBUG_BREAK(mDirect3DDevice9->SetStreamSource(slot, *currentDirect3DVertexBuffer9AtSlot, 0, *currentStrideAtSlot))
 
 					// "D3DSTREAMSOURCE_INDEXEDDATA" is set within "Direct3D9Rhi::Direct3D9Rhi::DrawIndexedInstanced()"
-					FAILED_DEBUG_BREAK(mDirect3DDevice9->SetStreamSourceFreq(1, (0 == *currentInstancesPerElementAtSlot) ? 1 : (D3DSTREAMSOURCE_INSTANCEDATA | *currentInstancesPerElementAtSlot)));
+					FAILED_DEBUG_BREAK(mDirect3DDevice9->SetStreamSourceFreq(1, (0 == *currentInstancesPerElementAtSlot) ? 1 : (D3DSTREAMSOURCE_INSTANCEDATA | *currentInstancesPerElementAtSlot)))
 				}
 			}
 
@@ -3632,7 +3628,7 @@ namespace Direct3D9Rhi
 			if (nullptr != mIndexBuffer)
 			{
 				// Set the Direct3D 9 indices
-				FAILED_DEBUG_BREAK(mDirect3DDevice9->SetIndices(mIndexBuffer->getDirect3DIndexBuffer9()));
+				FAILED_DEBUG_BREAK(mDirect3DDevice9->SetIndices(mIndexBuffer->getDirect3DIndexBuffer9()))
 			}
 		}
 
@@ -4024,7 +4020,7 @@ namespace Direct3D9Rhi
 							{
 								// Upload the texture data
 								const RECT sourceRect[] = { 0, 0, static_cast<LONG>(width), static_cast<LONG>(1) };
-								FAILED_DEBUG_BREAK(D3DXLoadSurfaceFromMemory(direct3DSurface9, nullptr, nullptr, data, d3dFormat, Rhi::TextureFormat::getNumberOfBytesPerRow(textureFormat, width), nullptr, sourceRect, D3DX_FILTER_NONE, 0));
+								FAILED_DEBUG_BREAK(D3DXLoadSurfaceFromMemory(direct3DSurface9, nullptr, nullptr, data, d3dFormat, Rhi::TextureFormat::getNumberOfBytesPerRow(textureFormat, width), nullptr, sourceRect, D3DX_FILTER_NONE, 0))
 
 								// Release the surface
 								direct3DSurface9->Release();
@@ -4046,7 +4042,7 @@ namespace Direct3D9Rhi
 						{
 							// Upload the texture data
 							const RECT sourceRect[] = { 0, 0, static_cast<LONG>(width), static_cast<LONG>(1) };
-							FAILED_DEBUG_BREAK(D3DXLoadSurfaceFromMemory(direct3DSurface9, nullptr, nullptr, data, d3dFormat, Rhi::TextureFormat::getNumberOfBytesPerRow(textureFormat, width), nullptr, sourceRect, D3DX_FILTER_NONE, 0));
+							FAILED_DEBUG_BREAK(D3DXLoadSurfaceFromMemory(direct3DSurface9, nullptr, nullptr, data, d3dFormat, Rhi::TextureFormat::getNumberOfBytesPerRow(textureFormat, width), nullptr, sourceRect, D3DX_FILTER_NONE, 0))
 
 							// Release the surface
 							direct3DSurface9->Release();
@@ -4056,9 +4052,9 @@ namespace Direct3D9Rhi
 
 				// Assign a default name to the resource for debugging purposes
 				#ifdef RHI_DEBUG
-					RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "1D texture", 13);	// 13 = "1D texture: " including terminating zero
+					RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "1D texture", 13)	// 13 = "1D texture: " including terminating zero
 					const UINT detailedDebugNameLength = static_cast<UINT>(strlen(detailedDebugName));
-					FAILED_DEBUG_BREAK(mDirect3DTexture9->SetPrivateData(WKPDID_D3DDebugObjectName, detailedDebugName, detailedDebugNameLength, 0));
+					FAILED_DEBUG_BREAK(mDirect3DTexture9->SetPrivateData(WKPDID_D3DDebugObjectName, detailedDebugName, detailedDebugNameLength, 0))
 
 					// Set debug name of the texture surfaces
 					const DWORD levelCount = mDirect3DTexture9->GetLevelCount();
@@ -4066,10 +4062,10 @@ namespace Direct3D9Rhi
 					{
 						// Get the Direct3D 9 surface
 						IDirect3DSurface9* direct3DSurface9 = nullptr;
-						FAILED_DEBUG_BREAK(mDirect3DTexture9->GetSurfaceLevel(level, &direct3DSurface9));
+						FAILED_DEBUG_BREAK(mDirect3DTexture9->GetSurfaceLevel(level, &direct3DSurface9))
 						if (nullptr != direct3DSurface9)
 						{
-							FAILED_DEBUG_BREAK(direct3DSurface9->SetPrivateData(WKPDID_D3DDebugObjectName, detailedDebugName, detailedDebugNameLength, 0));
+							FAILED_DEBUG_BREAK(direct3DSurface9->SetPrivateData(WKPDID_D3DDebugObjectName, detailedDebugName, detailedDebugNameLength, 0))
 
 							// Release the Direct3D 9 surface
 							direct3DSurface9->Release();
@@ -4228,12 +4224,12 @@ namespace Direct3D9Rhi
 
 							// Get the surface
 							IDirect3DSurface9* direct3DSurface9 = nullptr;
-							FAILED_DEBUG_BREAK(mDirect3DTexture9->GetSurfaceLevel(mipmap, &direct3DSurface9));
+							FAILED_DEBUG_BREAK(mDirect3DTexture9->GetSurfaceLevel(mipmap, &direct3DSurface9))
 							if (nullptr != direct3DSurface9)
 							{
 								// Upload the texture data
 								const RECT sourceRect[] = { 0, 0, static_cast<LONG>(width), static_cast<LONG>(height) };
-								FAILED_DEBUG_BREAK(D3DXLoadSurfaceFromMemory(direct3DSurface9, nullptr, nullptr, data, d3dFormat, Rhi::TextureFormat::getNumberOfBytesPerRow(textureFormat, width), nullptr, sourceRect, D3DX_FILTER_NONE, 0));
+								FAILED_DEBUG_BREAK(D3DXLoadSurfaceFromMemory(direct3DSurface9, nullptr, nullptr, data, d3dFormat, Rhi::TextureFormat::getNumberOfBytesPerRow(textureFormat, width), nullptr, sourceRect, D3DX_FILTER_NONE, 0))
 
 								// Release the surface
 								direct3DSurface9->Release();
@@ -4251,12 +4247,12 @@ namespace Direct3D9Rhi
 
 						// Get the surface
 						IDirect3DSurface9* direct3DSurface9 = nullptr;
-						FAILED_DEBUG_BREAK(mDirect3DTexture9->GetSurfaceLevel(0, &direct3DSurface9));
+						FAILED_DEBUG_BREAK(mDirect3DTexture9->GetSurfaceLevel(0, &direct3DSurface9))
 						if (nullptr != direct3DSurface9)
 						{
 							// Upload the texture data
 							const RECT sourceRect[] = { 0, 0, static_cast<LONG>(width), static_cast<LONG>(height) };
-							FAILED_DEBUG_BREAK(D3DXLoadSurfaceFromMemory(direct3DSurface9, nullptr, nullptr, data, d3dFormat, Rhi::TextureFormat::getNumberOfBytesPerRow(textureFormat, width), nullptr, sourceRect, D3DX_FILTER_NONE, 0));
+							FAILED_DEBUG_BREAK(D3DXLoadSurfaceFromMemory(direct3DSurface9, nullptr, nullptr, data, d3dFormat, Rhi::TextureFormat::getNumberOfBytesPerRow(textureFormat, width), nullptr, sourceRect, D3DX_FILTER_NONE, 0))
 
 							// Release the surface
 							direct3DSurface9->Release();
@@ -4266,9 +4262,9 @@ namespace Direct3D9Rhi
 
 				// Assign a default name to the resource for debugging purposes
 				#ifdef RHI_DEBUG
-					RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "2D texture", 13);	// 13 = "2D texture: " including terminating zero
+					RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "2D texture", 13)	// 13 = "2D texture: " including terminating zero
 					const UINT detailedDebugNameLength = static_cast<UINT>(strlen(detailedDebugName));
-					FAILED_DEBUG_BREAK(mDirect3DTexture9->SetPrivateData(WKPDID_D3DDebugObjectName, detailedDebugName, detailedDebugNameLength, 0));
+					FAILED_DEBUG_BREAK(mDirect3DTexture9->SetPrivateData(WKPDID_D3DDebugObjectName, detailedDebugName, detailedDebugNameLength, 0))
 
 					// Set debug name of the texture surfaces
 					const DWORD levelCount = mDirect3DTexture9->GetLevelCount();
@@ -4276,10 +4272,10 @@ namespace Direct3D9Rhi
 					{
 						// Get the Direct3D 9 surface
 						IDirect3DSurface9* direct3DSurface9 = nullptr;
-						FAILED_DEBUG_BREAK(mDirect3DTexture9->GetSurfaceLevel(level, &direct3DSurface9));
+						FAILED_DEBUG_BREAK(mDirect3DTexture9->GetSurfaceLevel(level, &direct3DSurface9))
 						if (nullptr != direct3DSurface9)
 						{
-							FAILED_DEBUG_BREAK(direct3DSurface9->SetPrivateData(WKPDID_D3DDebugObjectName, detailedDebugName, detailedDebugNameLength, 0));
+							FAILED_DEBUG_BREAK(direct3DSurface9->SetPrivateData(WKPDID_D3DDebugObjectName, detailedDebugName, detailedDebugNameLength, 0))
 
 							// Release the Direct3D 9 surface
 							direct3DSurface9->Release();
@@ -4456,12 +4452,12 @@ namespace Direct3D9Rhi
 
 							// Get the surface
 							IDirect3DSurface9* direct3DSurface9 = nullptr;
-							FAILED_DEBUG_BREAK(mDirect3DTexture9->GetSurfaceLevel(mipmap, &direct3DSurface9));
+							FAILED_DEBUG_BREAK(mDirect3DTexture9->GetSurfaceLevel(mipmap, &direct3DSurface9))
 							if (nullptr != direct3DSurface9)
 							{
 								// Upload the texture data
 								const RECT sourceRect[] = { 0, 0, static_cast<LONG>(width), static_cast<LONG>(height) };
-								FAILED_DEBUG_BREAK(D3DXLoadSurfaceFromMemory(direct3DSurface9, nullptr, nullptr, data, d3dFormat, Rhi::TextureFormat::getNumberOfBytesPerRow(textureFormat, width), nullptr, sourceRect, D3DX_FILTER_NONE, 0));
+								FAILED_DEBUG_BREAK(D3DXLoadSurfaceFromMemory(direct3DSurface9, nullptr, nullptr, data, d3dFormat, Rhi::TextureFormat::getNumberOfBytesPerRow(textureFormat, width), nullptr, sourceRect, D3DX_FILTER_NONE, 0))
 
 								// Release the surface
 								direct3DSurface9->Release();
@@ -4479,12 +4475,12 @@ namespace Direct3D9Rhi
 
 						// Get the surface
 						IDirect3DSurface9* direct3DSurface9 = nullptr;
-						FAILED_DEBUG_BREAK(mDirect3DTexture9->GetSurfaceLevel(0, &direct3DSurface9));
+						FAILED_DEBUG_BREAK(mDirect3DTexture9->GetSurfaceLevel(0, &direct3DSurface9))
 						if (nullptr != direct3DSurface9)
 						{
 							// Upload the texture data
 							const RECT sourceRect[] = { 0, 0, static_cast<LONG>(width), static_cast<LONG>(height) };
-							FAILED_DEBUG_BREAK(D3DXLoadSurfaceFromMemory(direct3DSurface9, nullptr, nullptr, data, d3dFormat, Rhi::TextureFormat::getNumberOfBytesPerRow(textureFormat, width), nullptr, sourceRect, D3DX_FILTER_NONE, 0));
+							FAILED_DEBUG_BREAK(D3DXLoadSurfaceFromMemory(direct3DSurface9, nullptr, nullptr, data, d3dFormat, Rhi::TextureFormat::getNumberOfBytesPerRow(textureFormat, width), nullptr, sourceRect, D3DX_FILTER_NONE, 0))
 
 							// Release the surface
 							direct3DSurface9->Release();
@@ -4494,9 +4490,9 @@ namespace Direct3D9Rhi
 
 				// Assign a default name to the resource for debugging purposes
 				#ifdef RHI_DEBUG
-					RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "3D texture", 13);	// 13 = "3D texture: " including terminating zero
+					RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "3D texture", 13)	// 13 = "3D texture: " including terminating zero
 					const UINT detailedDebugNameLength = static_cast<UINT>(strlen(detailedDebugName));
-					FAILED_DEBUG_BREAK(mDirect3DTexture9->SetPrivateData(WKPDID_D3DDebugObjectName, detailedDebugName, detailedDebugNameLength, 0));
+					FAILED_DEBUG_BREAK(mDirect3DTexture9->SetPrivateData(WKPDID_D3DDebugObjectName, detailedDebugName, detailedDebugNameLength, 0))
 
 					// Set debug name of the texture surfaces
 					const DWORD levelCount = mDirect3DTexture9->GetLevelCount();
@@ -4504,10 +4500,10 @@ namespace Direct3D9Rhi
 					{
 						// Get the Direct3D 9 surface
 						IDirect3DSurface9* direct3DSurface9 = nullptr;
-						FAILED_DEBUG_BREAK(mDirect3DTexture9->GetSurfaceLevel(level, &direct3DSurface9));
+						FAILED_DEBUG_BREAK(mDirect3DTexture9->GetSurfaceLevel(level, &direct3DSurface9))
 						if (nullptr != direct3DSurface9)
 						{
-							FAILED_DEBUG_BREAK(direct3DSurface9->SetPrivateData(WKPDID_D3DDebugObjectName, detailedDebugName, detailedDebugNameLength, 0));
+							FAILED_DEBUG_BREAK(direct3DSurface9->SetPrivateData(WKPDID_D3DDebugObjectName, detailedDebugName, detailedDebugNameLength, 0))
 
 							// Release the Direct3D 9 surface
 							direct3DSurface9->Release();
@@ -4669,12 +4665,12 @@ namespace Direct3D9Rhi
 
 							// Get the surface
 							IDirect3DSurface9* direct3DSurface9 = nullptr;
-							FAILED_DEBUG_BREAK(mDirect3DTexture9->GetSurfaceLevel(mipmap, &direct3DSurface9));
+							FAILED_DEBUG_BREAK(mDirect3DTexture9->GetSurfaceLevel(mipmap, &direct3DSurface9))
 							if (nullptr != direct3DSurface9)
 							{
 								// Upload the texture data
 								const RECT sourceRect[] = { 0, 0, static_cast<LONG>(width), static_cast<LONG>(height) };
-								FAILED_DEBUG_BREAK(D3DXLoadSurfaceFromMemory(direct3DSurface9, nullptr, nullptr, data, d3dFormat, Rhi::TextureFormat::getNumberOfBytesPerRow(textureFormat, width), nullptr, sourceRect, D3DX_FILTER_NONE, 0));
+								FAILED_DEBUG_BREAK(D3DXLoadSurfaceFromMemory(direct3DSurface9, nullptr, nullptr, data, d3dFormat, Rhi::TextureFormat::getNumberOfBytesPerRow(textureFormat, width), nullptr, sourceRect, D3DX_FILTER_NONE, 0))
 
 								// Release the surface
 								direct3DSurface9->Release();
@@ -4692,12 +4688,12 @@ namespace Direct3D9Rhi
 
 						// Get the surface
 						IDirect3DSurface9* direct3DSurface9 = nullptr;
-						FAILED_DEBUG_BREAK(mDirect3DTexture9->GetSurfaceLevel(0, &direct3DSurface9));
+						FAILED_DEBUG_BREAK(mDirect3DTexture9->GetSurfaceLevel(0, &direct3DSurface9))
 						if (nullptr != direct3DSurface9)
 						{
 							// Upload the texture data
 							const RECT sourceRect[] = { 0, 0, static_cast<LONG>(width), static_cast<LONG>(height) };
-							FAILED_DEBUG_BREAK(D3DXLoadSurfaceFromMemory(direct3DSurface9, nullptr, nullptr, data, d3dFormat, Rhi::TextureFormat::getNumberOfBytesPerRow(textureFormat, width), nullptr, sourceRect, D3DX_FILTER_NONE, 0));
+							FAILED_DEBUG_BREAK(D3DXLoadSurfaceFromMemory(direct3DSurface9, nullptr, nullptr, data, d3dFormat, Rhi::TextureFormat::getNumberOfBytesPerRow(textureFormat, width), nullptr, sourceRect, D3DX_FILTER_NONE, 0))
 
 							// Release the surface
 							direct3DSurface9->Release();
@@ -4707,9 +4703,9 @@ namespace Direct3D9Rhi
 
 				// Assign a default name to the resource for debugging purposes
 				#ifdef RHI_DEBUG
-					RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "Cube texture", 15);	// 15 = "Cube texture: " including terminating zero
+					RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "Cube texture", 15)	// 15 = "Cube texture: " including terminating zero
 					const UINT detailedDebugNameLength = static_cast<UINT>(strlen(detailedDebugName));
-					FAILED_DEBUG_BREAK(mDirect3DTexture9->SetPrivateData(WKPDID_D3DDebugObjectName, detailedDebugName, detailedDebugNameLength, 0));
+					FAILED_DEBUG_BREAK(mDirect3DTexture9->SetPrivateData(WKPDID_D3DDebugObjectName, detailedDebugName, detailedDebugNameLength, 0))
 
 					// Set debug name of the texture surfaces
 					const DWORD levelCount = mDirect3DTexture9->GetLevelCount();
@@ -4717,10 +4713,10 @@ namespace Direct3D9Rhi
 					{
 						// Get the Direct3D 9 surface
 						IDirect3DSurface9 *direct3DSurface9 = nullptr;
-						FAILED_DEBUG_BREAK(mDirect3DTexture9->GetSurfaceLevel(level, &direct3DSurface9));
+						FAILED_DEBUG_BREAK(mDirect3DTexture9->GetSurfaceLevel(level, &direct3DSurface9))
 						if (nullptr != direct3DSurface9)
 						{
-							FAILED_DEBUG_BREAK(direct3DSurface9->SetPrivateData(WKPDID_D3DDebugObjectName, detailedDebugName, detailedDebugNameLength, 0));
+							FAILED_DEBUG_BREAK(direct3DSurface9->SetPrivateData(WKPDID_D3DDebugObjectName, detailedDebugName, detailedDebugNameLength, 0))
 
 							// Release the Direct3D 9 surface
 							direct3DSurface9->Release();
@@ -4992,33 +4988,33 @@ namespace Direct3D9Rhi
 			// "IDirect3DDevice9::SetSamplerState()"-documentation: "D3DSAMPLERSTATETYPE Enumerated Type" at MSDN http://msdn.microsoft.com/en-us/library/windows/desktop/bb172602%28v=vs.85%29.aspx
 
 			// Rhi::SamplerState::filter
-			FAILED_DEBUG_BREAK(direct3DDevice9.SetSamplerState(sampler, D3DSAMP_MAGFILTER, mDirect3D9MagFilterMode));
-			FAILED_DEBUG_BREAK(direct3DDevice9.SetSamplerState(sampler, D3DSAMP_MINFILTER, mDirect3D9MinFilterMode));
-			FAILED_DEBUG_BREAK(direct3DDevice9.SetSamplerState(sampler, D3DSAMP_MIPFILTER, mDirect3D9MipFilterMode));
+			FAILED_DEBUG_BREAK(direct3DDevice9.SetSamplerState(sampler, D3DSAMP_MAGFILTER, mDirect3D9MagFilterMode))
+			FAILED_DEBUG_BREAK(direct3DDevice9.SetSamplerState(sampler, D3DSAMP_MINFILTER, mDirect3D9MinFilterMode))
+			FAILED_DEBUG_BREAK(direct3DDevice9.SetSamplerState(sampler, D3DSAMP_MIPFILTER, mDirect3D9MipFilterMode))
 
 			// Rhi::SamplerState::addressU
-			FAILED_DEBUG_BREAK(direct3DDevice9.SetSamplerState(sampler, D3DSAMP_ADDRESSU, mDirect3D9AddressModeU));
+			FAILED_DEBUG_BREAK(direct3DDevice9.SetSamplerState(sampler, D3DSAMP_ADDRESSU, mDirect3D9AddressModeU))
 
 			// Rhi::SamplerState::addressV
-			FAILED_DEBUG_BREAK(direct3DDevice9.SetSamplerState(sampler, D3DSAMP_ADDRESSV, mDirect3D9AddressModeV));
+			FAILED_DEBUG_BREAK(direct3DDevice9.SetSamplerState(sampler, D3DSAMP_ADDRESSV, mDirect3D9AddressModeV))
 
 			// Rhi::SamplerState::addressW
-			FAILED_DEBUG_BREAK(direct3DDevice9.SetSamplerState(sampler, D3DSAMP_ADDRESSW, mDirect3D9AddressModeW));
+			FAILED_DEBUG_BREAK(direct3DDevice9.SetSamplerState(sampler, D3DSAMP_ADDRESSW, mDirect3D9AddressModeW))
 
 			// Rhi::SamplerState::mipLodBias
-			FAILED_DEBUG_BREAK(direct3DDevice9.SetSamplerState(sampler, D3DSAMP_MIPMAPLODBIAS, mDirect3D9MipLodBias));
+			FAILED_DEBUG_BREAK(direct3DDevice9.SetSamplerState(sampler, D3DSAMP_MIPMAPLODBIAS, mDirect3D9MipLodBias))
 
 			// Rhi::SamplerState::maxAnisotropy
-			FAILED_DEBUG_BREAK(direct3DDevice9.SetSamplerState(sampler, D3DSAMP_MAXANISOTROPY, mDirect3D9MaxAnisotropy));
+			FAILED_DEBUG_BREAK(direct3DDevice9.SetSamplerState(sampler, D3DSAMP_MAXANISOTROPY, mDirect3D9MaxAnisotropy))
 
 			// Rhi::SamplerState::comparisonFunc
 			// -> Not available in Direct3D 9
 
 			// Rhi::SamplerState::borderColor[4]
-			FAILED_DEBUG_BREAK(direct3DDevice9.SetSamplerState(sampler, D3DSAMP_BORDERCOLOR, mDirect3DBorderColor));
+			FAILED_DEBUG_BREAK(direct3DDevice9.SetSamplerState(sampler, D3DSAMP_BORDERCOLOR, mDirect3DBorderColor))
 
 			// Rhi::SamplerState::minLod
-			FAILED_DEBUG_BREAK(direct3DDevice9.SetSamplerState(sampler, D3DSAMP_MAXMIPLEVEL, mDirect3DMaxMipLevel));
+			FAILED_DEBUG_BREAK(direct3DDevice9.SetSamplerState(sampler, D3DSAMP_MAXMIPLEVEL, mDirect3DMaxMipLevel))
 
 			// Rhi::SamplerState::maxLod
 			// -> Not available in Direct3D 9
@@ -5184,32 +5180,32 @@ namespace Direct3D9Rhi
 		void setDirect3D9RasterizerStates(IDirect3DDevice9& direct3DDevice9) const
 		{
 			// Rhi::RasterizerState::fillMode
-			FAILED_DEBUG_BREAK(direct3DDevice9.SetRenderState(D3DRS_FILLMODE, mDirect3DFillMode));
+			FAILED_DEBUG_BREAK(direct3DDevice9.SetRenderState(D3DRS_FILLMODE, mDirect3DFillMode))
 
 			// Rhi::RasterizerState::cullMode
 			// Rhi::RasterizerState::frontCounterClockwise
-			FAILED_DEBUG_BREAK(direct3DDevice9.SetRenderState(D3DRS_CULLMODE, mDirect3DCullMode));
+			FAILED_DEBUG_BREAK(direct3DDevice9.SetRenderState(D3DRS_CULLMODE, mDirect3DCullMode))
 
 			// RasterizerState::depthBias
-			FAILED_DEBUG_BREAK(direct3DDevice9.SetRenderState(D3DRS_DEPTHBIAS, mDirect3DDepthBias));
+			FAILED_DEBUG_BREAK(direct3DDevice9.SetRenderState(D3DRS_DEPTHBIAS, mDirect3DDepthBias))
 
 			// RasterizerState::depthBiasClamp
 			// -> Not available in Direct3D 9
 
 			// RasterizerState::slopeScaledDepthBias
-			FAILED_DEBUG_BREAK(direct3DDevice9.SetRenderState(D3DRS_SLOPESCALEDEPTHBIAS, mDirect3DSlopeScaledDepthBias));
+			FAILED_DEBUG_BREAK(direct3DDevice9.SetRenderState(D3DRS_SLOPESCALEDEPTHBIAS, mDirect3DSlopeScaledDepthBias))
 
 			// RasterizerState::depthClipEnable
 			// TODO(co) Supported in Direct3D 9? I assume it's not...
 
 			// RasterizerState::scissorEnable
-			FAILED_DEBUG_BREAK(direct3DDevice9.SetRenderState(D3DRS_SCISSORTESTENABLE, mDirect3DScissorEnable));
+			FAILED_DEBUG_BREAK(direct3DDevice9.SetRenderState(D3DRS_SCISSORTESTENABLE, mDirect3DScissorEnable))
 
 			// RasterizerState::multisampleEnable
-			FAILED_DEBUG_BREAK(direct3DDevice9.SetRenderState(D3DRS_MULTISAMPLEANTIALIAS, mDirect3DMultisampleEnable));
+			FAILED_DEBUG_BREAK(direct3DDevice9.SetRenderState(D3DRS_MULTISAMPLEANTIALIAS, mDirect3DMultisampleEnable))
 
 			// RasterizerState::antialiasedLineEnable
-			FAILED_DEBUG_BREAK(direct3DDevice9.SetRenderState(D3DRS_ANTIALIASEDLINEENABLE, mDirect3DAntialiasedLineEnable));
+			FAILED_DEBUG_BREAK(direct3DDevice9.SetRenderState(D3DRS_ANTIALIASEDLINEENABLE, mDirect3DAntialiasedLineEnable))
 		}
 
 
@@ -5274,13 +5270,13 @@ namespace Direct3D9Rhi
 		void setDirect3D9DepthStencilStates(IDirect3DDevice9& direct3DDevice9) const
 		{
 			// Rhi::DepthStencilState::depthEnable
-			FAILED_DEBUG_BREAK(direct3DDevice9.SetRenderState(D3DRS_ZENABLE, static_cast<DWORD>(mDepthStencilState.depthEnable)));
+			FAILED_DEBUG_BREAK(direct3DDevice9.SetRenderState(D3DRS_ZENABLE, static_cast<DWORD>(mDepthStencilState.depthEnable)))
 
 			// Rhi::DepthStencilState::depthWriteMask
-			FAILED_DEBUG_BREAK(direct3DDevice9.SetRenderState(D3DRS_ZWRITEENABLE, static_cast<DWORD>((Rhi::DepthWriteMask::ALL == mDepthStencilState.depthWriteMask) ? TRUE : FALSE)));
+			FAILED_DEBUG_BREAK(direct3DDevice9.SetRenderState(D3DRS_ZWRITEENABLE, static_cast<DWORD>((Rhi::DepthWriteMask::ALL == mDepthStencilState.depthWriteMask) ? TRUE : FALSE)))
 
 			// Rhi::DepthStencilState::depthFunc
-			FAILED_DEBUG_BREAK(direct3DDevice9.SetRenderState(D3DRS_ZFUNC, Mapping::getDirect3D9ComparisonFunc(mDepthStencilState.depthFunc)));
+			FAILED_DEBUG_BREAK(direct3DDevice9.SetRenderState(D3DRS_ZFUNC, Mapping::getDirect3D9ComparisonFunc(mDepthStencilState.depthFunc)))
 
 			// TODO(co) Map the rest of the depth stencil states, store mapped values instead of mapping over and over again during runtime
 		}
@@ -5340,11 +5336,11 @@ namespace Direct3D9Rhi
 		*/
 		void setDirect3D9BlendStates(IDirect3DDevice9& direct3DDevice9) const
 		{
-			FAILED_DEBUG_BREAK(direct3DDevice9.SetRenderState(D3DRS_ALPHABLENDENABLE, static_cast<DWORD>(mBlendState.renderTarget[0].blendEnable)));
+			FAILED_DEBUG_BREAK(direct3DDevice9.SetRenderState(D3DRS_ALPHABLENDENABLE, static_cast<DWORD>(mBlendState.renderTarget[0].blendEnable)))
 
 			// TODO(co) Add more blend state options: Due to time limitations for now only fixed build in alpha blend setup in order to see a change
-			FAILED_DEBUG_BREAK(direct3DDevice9.SetRenderState(D3DRS_SRCBLEND,  D3DBLEND_SRCALPHA));
-			FAILED_DEBUG_BREAK(direct3DDevice9.SetRenderState(D3DRS_DESTBLEND, D3DBLEND_ONE));
+			FAILED_DEBUG_BREAK(direct3DDevice9.SetRenderState(D3DRS_SRCBLEND,  D3DBLEND_SRCALPHA))
+			FAILED_DEBUG_BREAK(direct3DDevice9.SetRenderState(D3DRS_DESTBLEND, D3DBLEND_ONE))
 
 			// TODO(co) Map the rest of the blend states
 		}
@@ -5390,14 +5386,11 @@ namespace Direct3D9Rhi
 		*    least "numberOfColorAttachments" textures in the provided C-array of pointers
 		*  @param[in] depthStencilAttachmentTextureFormat
 		*    The optional depth stencil render target texture format, can be a "Rhi::TextureFormat::UNKNOWN" if there should be no depth buffer
-		*  @param[in] numberOfMultisamples
-		*    The number of multisamples per pixel (valid values: 1, 2, 4, 8)
 		*/
-		RenderPass(Rhi::IRhi& rhi, uint32_t numberOfColorAttachments, const Rhi::TextureFormat::Enum* colorAttachmentTextureFormats, Rhi::TextureFormat::Enum depthStencilAttachmentTextureFormat, uint8_t numberOfMultisamples RHI_RESOURCE_DEBUG_NAME_PARAMETER_NO_DEFAULT) :
+		RenderPass(Rhi::IRhi& rhi, uint32_t numberOfColorAttachments, const Rhi::TextureFormat::Enum* colorAttachmentTextureFormats, Rhi::TextureFormat::Enum depthStencilAttachmentTextureFormat RHI_RESOURCE_DEBUG_NAME_PARAMETER_NO_DEFAULT) :
 			IRenderPass(rhi RHI_RESOURCE_DEBUG_PASS_PARAMETER),
 			mNumberOfColorAttachments(numberOfColorAttachments),
-			mDepthStencilAttachmentTextureFormat(depthStencilAttachmentTextureFormat),
-			mNumberOfMultisamples(numberOfMultisamples)
+			mDepthStencilAttachmentTextureFormat(depthStencilAttachmentTextureFormat)
 		{
 			RHI_ASSERT(rhi.getContext(), mNumberOfColorAttachments < 8, "Invalid number of Direct3D 9 color attachments")
 			memcpy(mColorAttachmentTextureFormats, colorAttachmentTextureFormats, sizeof(Rhi::TextureFormat::Enum) * mNumberOfColorAttachments);
@@ -5488,7 +5481,6 @@ namespace Direct3D9Rhi
 		uint32_t				 mNumberOfColorAttachments;
 		Rhi::TextureFormat::Enum mColorAttachmentTextureFormats[8];
 		Rhi::TextureFormat::Enum mDepthStencilAttachmentTextureFormat;
-		uint8_t					 mNumberOfMultisamples;
 
 
 	};
@@ -5578,10 +5570,10 @@ namespace Direct3D9Rhi
 
 			// Create the Direct3D 9 swap chain
 			// -> Direct3D 9 now also automatically fills the given present parameters instance with the chosen settings
-			FAILED_DEBUG_BREAK(direct3DDevice9->CreateAdditionalSwapChain(&d3dPresentParameters, &mDirect3DSwapChain9));
+			FAILED_DEBUG_BREAK(direct3DDevice9->CreateAdditionalSwapChain(&d3dPresentParameters, &mDirect3DSwapChain9))
 
 			// Get the Direct3D 9 render target surface instance
-			FAILED_DEBUG_BREAK(mDirect3DSwapChain9->GetBackBuffer(0, D3DBACKBUFFER_TYPE_MONO, &mDirect3DSurface9RenderTarget));
+			FAILED_DEBUG_BREAK(mDirect3DSwapChain9->GetBackBuffer(0, D3DBACKBUFFER_TYPE_MONO, &mDirect3DSurface9RenderTarget))
 
 			// Create the Direct3D 9 depth stencil surface
 			const Rhi::TextureFormat::Enum depthStencilAttachmentTextureFormat = static_cast<RenderPass&>(getRenderPass()).getDepthStencilAttachmentTextureFormat();
@@ -5589,24 +5581,24 @@ namespace Direct3D9Rhi
 			{
 				FAILED_DEBUG_BREAK(direct3DDevice9->CreateDepthStencilSurface(d3dPresentParameters.BackBufferWidth, d3dPresentParameters.BackBufferHeight,
 					D3DFMT_D24S8, d3dPresentParameters.MultiSampleType, d3dPresentParameters.MultiSampleQuality, FALSE,
-					&mDirect3DSurface9DepthStencil, nullptr));
+					&mDirect3DSurface9DepthStencil, nullptr))
 			}
 
 			// Assign a default name to the resource for debugging purposes
 			#ifdef RHI_DEBUG
 				// "IDirect3DSwapChain9" is not derived from "IDirect3DResource9", meaning we can't use the "IDirect3DResource9::SetPrivateData()"-method
-				RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "Swap chain", 13);	// 13 = "Swap chain: " including terminating zero
+				RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "Swap chain", 13)	// 13 = "Swap chain: " including terminating zero
 
 				// Assign a debug name to the Direct3D 9 render target surface
 				if (nullptr != mDirect3DSurface9RenderTarget)
 				{
-					FAILED_DEBUG_BREAK(mDirect3DSurface9RenderTarget->SetPrivateData(WKPDID_D3DDebugObjectName, detailedDebugName, static_cast<UINT>(strlen(detailedDebugName)), 0));
+					FAILED_DEBUG_BREAK(mDirect3DSurface9RenderTarget->SetPrivateData(WKPDID_D3DDebugObjectName, detailedDebugName, static_cast<UINT>(strlen(detailedDebugName)), 0))
 				}
 
 				// Assign a debug name to the Direct3D 9 depth stencil surface
 				if (nullptr != mDirect3DSurface9DepthStencil)
 				{
-					FAILED_DEBUG_BREAK(mDirect3DSurface9DepthStencil->SetPrivateData(WKPDID_D3DDebugObjectName, detailedDebugName, static_cast<UINT>(strlen(detailedDebugName)), 0));
+					FAILED_DEBUG_BREAK(mDirect3DSurface9DepthStencil->SetPrivateData(WKPDID_D3DDebugObjectName, detailedDebugName, static_cast<UINT>(strlen(detailedDebugName)), 0))
 				}
 			#endif
 		}
@@ -5686,7 +5678,7 @@ namespace Direct3D9Rhi
 			{
 				// Get the Direct3D 9 present parameters
 				D3DPRESENT_PARAMETERS d3dPresentParameters;
-				FAILED_DEBUG_BREAK(mDirect3DSwapChain9->GetPresentParameters(&d3dPresentParameters));
+				FAILED_DEBUG_BREAK(mDirect3DSwapChain9->GetPresentParameters(&d3dPresentParameters))
 
 				// Get the width and height
 				long swapChainWidth  = 1;
@@ -5737,7 +5729,7 @@ namespace Direct3D9Rhi
 			{
 				// Get the Direct3D 9 present parameters
 				D3DPRESENT_PARAMETERS d3dPresentParameters;
-				FAILED_DEBUG_BREAK(mDirect3DSwapChain9->GetPresentParameters(&d3dPresentParameters));
+				FAILED_DEBUG_BREAK(mDirect3DSwapChain9->GetPresentParameters(&d3dPresentParameters))
 
 				// Return the native window handle
 				return reinterpret_cast<Rhi::handle>(d3dPresentParameters.hDeviceWindow);
@@ -5762,7 +5754,7 @@ namespace Direct3D9Rhi
 			// Is there a valid swap chain?
 			if (nullptr != mDirect3DSwapChain9)
 			{
-				FAILED_DEBUG_BREAK(mDirect3DSwapChain9->Present(nullptr, nullptr, nullptr, nullptr, 0));
+				FAILED_DEBUG_BREAK(mDirect3DSwapChain9->Present(nullptr, nullptr, nullptr, nullptr, 0))
 			}
 		}
 
@@ -5773,11 +5765,11 @@ namespace Direct3D9Rhi
 			{
 				// Get the Direct3D 9 device instance
 				IDirect3DDevice9* direct3DDevice9 = nullptr;
-				FAILED_DEBUG_BREAK(mDirect3DSwapChain9->GetDevice(&direct3DDevice9));
+				FAILED_DEBUG_BREAK(mDirect3DSwapChain9->GetDevice(&direct3DDevice9))
 
 				// Get the Direct3D 9 present parameters to query the native window handle
 				D3DPRESENT_PARAMETERS d3dPresentParameters;
-				FAILED_DEBUG_BREAK(mDirect3DSwapChain9->GetPresentParameters(&d3dPresentParameters));
+				FAILED_DEBUG_BREAK(mDirect3DSwapChain9->GetPresentParameters(&d3dPresentParameters))
 				const HWND nativeWindowHandle = d3dPresentParameters.hDeviceWindow;
 
 				// Get the swap chain width and height, ensures they are never ever zero
@@ -5831,15 +5823,15 @@ namespace Direct3D9Rhi
 
 				// Create the Direct3D 9 swap chain
 				// -> Direct3D 9 now also automatically fills the given present parameters instance with the chosen settings
-				FAILED_DEBUG_BREAK(direct3DDevice9->CreateAdditionalSwapChain(&d3dPresentParameters, &mDirect3DSwapChain9));
+				FAILED_DEBUG_BREAK(direct3DDevice9->CreateAdditionalSwapChain(&d3dPresentParameters, &mDirect3DSwapChain9))
 
 				// Get the Direct3D 9 render target surface instance
-				FAILED_DEBUG_BREAK(mDirect3DSwapChain9->GetBackBuffer(0, D3DBACKBUFFER_TYPE_MONO, &mDirect3DSurface9RenderTarget));
+				FAILED_DEBUG_BREAK(mDirect3DSwapChain9->GetBackBuffer(0, D3DBACKBUFFER_TYPE_MONO, &mDirect3DSurface9RenderTarget))
 
 				// Create the Direct3D 9 depth stencil surface
 				FAILED_DEBUG_BREAK(direct3DDevice9->CreateDepthStencilSurface(d3dPresentParameters.BackBufferWidth, d3dPresentParameters.BackBufferHeight,
 					D3DFMT_D24S8, d3dPresentParameters.MultiSampleType, d3dPresentParameters.MultiSampleQuality, FALSE,
-					&mDirect3DSurface9DepthStencil, nullptr));
+					&mDirect3DSurface9DepthStencil, nullptr))
 			}
 		}
 
@@ -5902,7 +5894,7 @@ namespace Direct3D9Rhi
 		{
 			// Get the Direct3D 9 present parameters
 			D3DPRESENT_PARAMETERS d3dPresentParameters;
-			FAILED_DEBUG_BREAK(mDirect3DSwapChain9->GetPresentParameters(&d3dPresentParameters));
+			FAILED_DEBUG_BREAK(mDirect3DSwapChain9->GetPresentParameters(&d3dPresentParameters))
 
 			// Get the client rectangle of the native output window
 			RECT rect;
@@ -6022,7 +6014,7 @@ namespace Direct3D9Rhi
 							::detail::updateWidthHeight(colorFramebufferAttachments->mipmapIndex, texture2D->getWidth(), texture2D->getHeight(), mWidth, mHeight);
 
 							// Get the Direct3D 9 surface
-							FAILED_DEBUG_BREAK(texture2D->getDirect3DTexture9()->GetSurfaceLevel(colorFramebufferAttachments->mipmapIndex, direct3D9ColorSurface));
+							FAILED_DEBUG_BREAK(texture2D->getDirect3DTexture9()->GetSurfaceLevel(colorFramebufferAttachments->mipmapIndex, direct3D9ColorSurface))
 							break;
 						}
 
@@ -6084,7 +6076,7 @@ namespace Direct3D9Rhi
 						::detail::updateWidthHeight(depthStencilFramebufferAttachment->mipmapIndex, texture2D->getWidth(), texture2D->getHeight(), mWidth, mHeight);
 
 						// Get the Direct3D 9 surface
-						FAILED_DEBUG_BREAK(texture2D->getDirect3DTexture9()->GetSurfaceLevel(depthStencilFramebufferAttachment->mipmapIndex, &mDirect3D9DepthStencilSurface));
+						FAILED_DEBUG_BREAK(texture2D->getDirect3DTexture9()->GetSurfaceLevel(depthStencilFramebufferAttachment->mipmapIndex, &mDirect3D9DepthStencilSurface))
 						break;
 					}
 
@@ -6299,7 +6291,7 @@ namespace Direct3D9Rhi
 		{
 			// Create the Direct3D 9 vertex shader
 			direct3D9Rhi.getDirect3DDevice9()->CreateVertexShader(reinterpret_cast<const DWORD*>(shaderBytecode.getBytecode()), &mDirect3DVertexShader9);
-			FAILED_DEBUG_BREAK(D3DXGetShaderConstantTable(reinterpret_cast<const DWORD*>(shaderBytecode.getBytecode()), &mD3DXConstantTable));
+			FAILED_DEBUG_BREAK(D3DXGetShaderConstantTable(reinterpret_cast<const DWORD*>(shaderBytecode.getBytecode()), &mD3DXConstantTable))
 		}
 
 		/**
@@ -6321,7 +6313,7 @@ namespace Direct3D9Rhi
 			if (nullptr != d3dXBuffer)
 			{
 				// Create the Direct3D 9 vertex shader
-				FAILED_DEBUG_BREAK(direct3D9Rhi.getDirect3DDevice9()->CreateVertexShader(static_cast<DWORD*>(d3dXBuffer->GetBufferPointer()), &mDirect3DVertexShader9));
+				FAILED_DEBUG_BREAK(direct3D9Rhi.getDirect3DDevice9()->CreateVertexShader(static_cast<DWORD*>(d3dXBuffer->GetBufferPointer()), &mDirect3DVertexShader9))
 
 				// Return shader bytecode, if requested do to so
 				if (nullptr != shaderBytecode)
@@ -6450,7 +6442,7 @@ namespace Direct3D9Rhi
 		{
 			// Create the Direct3D 9 pixel shader
 			direct3D9Rhi.getDirect3DDevice9()->CreatePixelShader(reinterpret_cast<const DWORD*>(shaderBytecode.getBytecode()), &mDirect3DPixelShader9);
-			FAILED_DEBUG_BREAK(D3DXGetShaderConstantTable(reinterpret_cast<const DWORD*>(shaderBytecode.getBytecode()), &mD3DXConstantTable));
+			FAILED_DEBUG_BREAK(D3DXGetShaderConstantTable(reinterpret_cast<const DWORD*>(shaderBytecode.getBytecode()), &mD3DXConstantTable))
 		}
 
 		/**
@@ -6472,7 +6464,7 @@ namespace Direct3D9Rhi
 			if (nullptr != d3dXBuffer)
 			{
 				// Create the Direct3D 9 pixel shader
-				FAILED_DEBUG_BREAK(direct3D9Rhi.getDirect3DDevice9()->CreatePixelShader(static_cast<DWORD*>(d3dXBuffer->GetBufferPointer()), &mDirect3DPixelShader9));
+				FAILED_DEBUG_BREAK(direct3D9Rhi.getDirect3DDevice9()->CreatePixelShader(static_cast<DWORD*>(d3dXBuffer->GetBufferPointer()), &mDirect3DPixelShader9))
 
 				// Return shader bytecode, if requested do to so
 				if (nullptr != shaderBytecode)
@@ -6601,7 +6593,6 @@ namespace Direct3D9Rhi
 		*/
 		GraphicsProgramHlsl(Direct3D9Rhi& direct3D9Rhi, VertexShaderHlsl* vertexShaderHlsl, FragmentShaderHlsl* fragmentShaderHlsl RHI_RESOURCE_DEBUG_NAME_PARAMETER_NO_DEFAULT) :
 			IGraphicsProgram(direct3D9Rhi RHI_RESOURCE_DEBUG_PASS_PARAMETER),
-			mDirect3D9Rhi(&direct3D9Rhi),
 			mVertexShaderHlsl(vertexShaderHlsl),
 			mFragmentShaderHlsl(fragmentShaderHlsl),
 			mDirect3DDevice9(nullptr),
@@ -6622,7 +6613,7 @@ namespace Direct3D9Rhi
 					// -> The "IDirect3DResource9::GetDevice()"-method documentation on the other hand states
 					//    that the Direct3D 9 device reference counter is increased automatically
 					// -> So, I just have to assume that Direct3D 9 has a consistent interface, hopefully...
-					FAILED_DEBUG_BREAK(direct3DVertexShader9->GetDevice(&mDirect3DDevice9));
+					FAILED_DEBUG_BREAK(direct3DVertexShader9->GetDevice(&mDirect3DDevice9))
 
 					// Get the Direct3D 9 constant table and acquire our reference
 					mD3DXConstantTable = mVertexShaderHlsl->getD3DXConstantTable();
@@ -6640,7 +6631,7 @@ namespace Direct3D9Rhi
 				// -> See reference counter behaviour documentation above
 				if (nullptr == mDirect3DDevice9 && mFragmentShaderHlsl->getDirect3DPixelShader9())
 				{
-					FAILED_DEBUG_BREAK(mFragmentShaderHlsl->getDirect3DPixelShader9()->GetDevice(&mDirect3DDevice9));
+					FAILED_DEBUG_BREAK(mFragmentShaderHlsl->getDirect3DPixelShader9()->GetDevice(&mDirect3DDevice9))
 				}
 
 				// If required, get the Direct3D 9 constant table and acquire our reference
@@ -6748,7 +6739,7 @@ namespace Direct3D9Rhi
 		{
 			if (nullptr != mDirect3DDevice9)
 			{
-				FAILED_DEBUG_BREAK(mD3DXConstantTable->SetFloat(mDirect3DDevice9, reinterpret_cast<D3DXHANDLE>(uniformHandle), value));
+				FAILED_DEBUG_BREAK(mD3DXConstantTable->SetFloat(mDirect3DDevice9, reinterpret_cast<D3DXHANDLE>(uniformHandle), value))
 			}
 		}
 
@@ -6756,7 +6747,7 @@ namespace Direct3D9Rhi
 		{
 			if (nullptr != mDirect3DDevice9)
 			{
-				FAILED_DEBUG_BREAK(mD3DXConstantTable->SetFloatArray(mDirect3DDevice9, reinterpret_cast<D3DXHANDLE>(uniformHandle), value, 2));
+				FAILED_DEBUG_BREAK(mD3DXConstantTable->SetFloatArray(mDirect3DDevice9, reinterpret_cast<D3DXHANDLE>(uniformHandle), value, 2))
 			}
 		}
 
@@ -6764,7 +6755,7 @@ namespace Direct3D9Rhi
 		{
 			if (nullptr != mDirect3DDevice9)
 			{
-				FAILED_DEBUG_BREAK(mD3DXConstantTable->SetFloatArray(mDirect3DDevice9, reinterpret_cast<D3DXHANDLE>(uniformHandle), value, 3));
+				FAILED_DEBUG_BREAK(mD3DXConstantTable->SetFloatArray(mDirect3DDevice9, reinterpret_cast<D3DXHANDLE>(uniformHandle), value, 3))
 			}
 		}
 
@@ -6772,7 +6763,7 @@ namespace Direct3D9Rhi
 		{
 			if (nullptr != mDirect3DDevice9)
 			{
-				FAILED_DEBUG_BREAK(mD3DXConstantTable->SetFloatArray(mDirect3DDevice9, reinterpret_cast<D3DXHANDLE>(uniformHandle), value, 4));
+				FAILED_DEBUG_BREAK(mD3DXConstantTable->SetFloatArray(mDirect3DDevice9, reinterpret_cast<D3DXHANDLE>(uniformHandle), value, 4))
 			}
 		}
 
@@ -6780,7 +6771,7 @@ namespace Direct3D9Rhi
 		{
 			if (nullptr != mDirect3DDevice9)
 			{
-				FAILED_DEBUG_BREAK(mD3DXConstantTable->SetFloatArray(mDirect3DDevice9, reinterpret_cast<D3DXHANDLE>(uniformHandle), value, 3 * 3));
+				FAILED_DEBUG_BREAK(mD3DXConstantTable->SetFloatArray(mDirect3DDevice9, reinterpret_cast<D3DXHANDLE>(uniformHandle), value, 3 * 3))
 			}
 		}
 
@@ -6788,7 +6779,7 @@ namespace Direct3D9Rhi
 		{
 			if (nullptr != mDirect3DDevice9)
 			{
-				FAILED_DEBUG_BREAK(mD3DXConstantTable->SetFloatArray(mDirect3DDevice9, reinterpret_cast<D3DXHANDLE>(uniformHandle), value, 4 * 4));
+				FAILED_DEBUG_BREAK(mD3DXConstantTable->SetFloatArray(mDirect3DDevice9, reinterpret_cast<D3DXHANDLE>(uniformHandle), value, 4 * 4))
 			}
 		}
 
@@ -6815,7 +6806,6 @@ namespace Direct3D9Rhi
 	//[ Private data                                          ]
 	//[-------------------------------------------------------]
 	private:
-		Direct3D9Rhi*	    mDirect3D9Rhi;			///< Owner Direct3D 9 RHI instance, always valid
 		VertexShaderHlsl*   mVertexShaderHlsl;		///< Vertex shader the graphics program is using (we keep a reference to it), can be a null pointer
 		FragmentShaderHlsl* mFragmentShaderHlsl;	///< Fragment shader the graphics program is using (we keep a reference to it), can be a null pointer
 		IDirect3DDevice9*   mDirect3DDevice9;		///< The Direct3D 9 device instance (we keep a reference to it), can be a null pointer
@@ -7079,7 +7069,7 @@ namespace Direct3D9Rhi
 				d3dVertexElement->UsageIndex = 0;					// Semantic index (BYTE)
 
 				// Create the Direct3D 9 vertex declaration
-				FAILED_DEBUG_BREAK(direct3D9Rhi.getDirect3DDevice9()->CreateVertexDeclaration(d3dVertexElements, &mDirect3DVertexDeclaration9));
+				FAILED_DEBUG_BREAK(direct3D9Rhi.getDirect3DDevice9()->CreateVertexDeclaration(d3dVertexElements, &mDirect3DVertexDeclaration9))
 
 				// Destroy Direct3D 9 vertex elements
 				RHI_FREE(context, d3dVertexElements);
@@ -7140,7 +7130,7 @@ namespace Direct3D9Rhi
 		void bindGraphicsPipelineState() const
 		{
 			// Set the Direct3D 9 vertex declaration
-			FAILED_DEBUG_BREAK(mDirect3DDevice9->SetVertexDeclaration(mDirect3DVertexDeclaration9));
+			FAILED_DEBUG_BREAK(mDirect3DDevice9->SetVertexDeclaration(mDirect3DVertexDeclaration9))
 
 			// Set the graphics program
 			static_cast<Direct3D9Rhi&>(getRhi()).setGraphicsProgram(mGraphicsProgram);
@@ -7432,7 +7422,7 @@ namespace
 		//[-------------------------------------------------------]
 		//[ Global definitions                                    ]
 		//[-------------------------------------------------------]
-		static constexpr Rhi::ImplementationDispatchFunction DISPATCH_FUNCTIONS[Rhi::CommandDispatchFunctionIndex::NUMBER_OF_FUNCTIONS] =
+		static constexpr Rhi::ImplementationDispatchFunction DISPATCH_FUNCTIONS[static_cast<uint8_t>(Rhi::CommandDispatchFunctionIndex::NUMBER_OF_FUNCTIONS)] =
 		{
 			// Command buffer
 			&ImplementationDispatch::ExecuteCommandBuffer,
@@ -7532,7 +7522,7 @@ namespace Direct3D9Rhi
 				//    loss of all resources and everything has to be rebuild and configured from scratch
 				// -> We really don't want to use the implicit swap chain, so we're creating a tiny one (because we have to)
 				//    and then using "IDirect3DDevice9::CreateAdditionalSwapChain()" later on for the real main swap chain
-				FAILED_DEBUG_BREAK(mDirect3D9->CreateDevice(D3DADAPTER_DEFAULT, D3DDEVTYPE_HAL, NULL_HANDLE, D3DCREATE_HARDWARE_VERTEXPROCESSING, &d3dPresentParameters, &mDirect3DDevice9));
+				FAILED_DEBUG_BREAK(mDirect3D9->CreateDevice(D3DADAPTER_DEFAULT, D3DDEVTYPE_HAL, NULL_HANDLE, D3DCREATE_HARDWARE_VERTEXPROCESSING, &d3dPresentParameters, &mDirect3DDevice9))
 				if (nullptr != mDirect3DDevice9)
 				{
 					#ifndef RHI_DEBUG
@@ -7833,8 +7823,8 @@ namespace Direct3D9Rhi
 								RHI_BEGIN_DEBUG_EVENT_FUNCTION(this)
 
 								// Set texture
-								FAILED_DEBUG_BREAK(mDirect3DDevice9->SetTexture(vertexFetchStartSlot, direct3DBaseTexture9));
-								FAILED_DEBUG_BREAK(mDirect3DDevice9->SetTexture(startSlot, direct3DBaseTexture9));
+								FAILED_DEBUG_BREAK(mDirect3DDevice9->SetTexture(vertexFetchStartSlot, direct3DBaseTexture9))
+								FAILED_DEBUG_BREAK(mDirect3DDevice9->SetTexture(startSlot, direct3DBaseTexture9))
 
 								{ // Set sampler, it's valid that there's no sampler state (e.g. texel fetch instead of sampling might be used)
 									RHI_ASSERT(mContext, nullptr != d3d9ResourceGroup->getSamplerState(), "Invalid Direct3D 9 sampler state")
@@ -7856,7 +7846,7 @@ namespace Direct3D9Rhi
 								RHI_BEGIN_DEBUG_EVENT_FUNCTION(this)
 
 								// Set texture
-								FAILED_DEBUG_BREAK(mDirect3DDevice9->SetTexture(vertexFetchStartSlot, direct3DBaseTexture9));
+								FAILED_DEBUG_BREAK(mDirect3DDevice9->SetTexture(vertexFetchStartSlot, direct3DBaseTexture9))
 
 								{ // Set sampler, it's valid that there's no sampler state (e.g. texel fetch instead of sampling might be used)
 									RHI_ASSERT(mContext, nullptr != d3d9ResourceGroup->getSamplerState(), "Invalid Direct3D 9 sampler state")
@@ -7890,7 +7880,7 @@ namespace Direct3D9Rhi
 								RHI_BEGIN_DEBUG_EVENT_FUNCTION(this)
 
 								// Set texture
-								FAILED_DEBUG_BREAK(mDirect3DDevice9->SetTexture(startSlot, direct3DBaseTexture9));
+								FAILED_DEBUG_BREAK(mDirect3DDevice9->SetTexture(startSlot, direct3DBaseTexture9))
 
 								{ // Set sampler, it's valid that there's no sampler state (e.g. texel fetch instead of sampling might be used)
 									RHI_ASSERT(mContext, nullptr != d3d9ResourceGroup->getSamplerState(), "Invalid Direct3D 9 sampler state")
@@ -7988,7 +7978,7 @@ namespace Direct3D9Rhi
 			viewports->minDepth,						// MinZ (float)
 			viewports->maxDepth							// MaxZ (float)
 		};
-		FAILED_DEBUG_BREAK(mDirect3DDevice9->SetViewport(&direct3D9Viewport));
+		FAILED_DEBUG_BREAK(mDirect3DDevice9->SetViewport(&direct3D9Viewport))
 	}
 
 	void Direct3D9Rhi::setGraphicsScissorRectangles([[maybe_unused]] uint32_t numberOfScissorRectangles, const Rhi::ScissorRectangle* scissorRectangles)
@@ -8002,7 +7992,7 @@ namespace Direct3D9Rhi
 		// -> "Rhi::ScissorRectangle" directly maps to Direct3D 9 & 10 & 11, do not change it
 		// -> Direct3D 9 supports only one viewport
 		RHI_ASSERT(mContext, numberOfScissorRectangles <= 1, "Direct3D 9 supports only one scissor rectangle")
-		FAILED_DEBUG_BREAK(mDirect3DDevice9->SetScissorRect(reinterpret_cast<const RECT*>(scissorRectangles)));
+		FAILED_DEBUG_BREAK(mDirect3DDevice9->SetScissorRect(reinterpret_cast<const RECT*>(scissorRectangles)))
 	}
 
 	void Direct3D9Rhi::setGraphicsRenderTarget(Rhi::IRenderTarget* renderTarget)
@@ -8023,9 +8013,9 @@ namespace Direct3D9Rhi
 
 			// Backup the currently set Direct3D 9 viewport and scissor rectangle
 			D3DVIEWPORT9 direct3D9ViewportBackup;
-			FAILED_DEBUG_BREAK(mDirect3DDevice9->GetViewport(&direct3D9ViewportBackup));
+			FAILED_DEBUG_BREAK(mDirect3DDevice9->GetViewport(&direct3D9ViewportBackup))
 			RECT direct3D9ScissorRectangleBackup;
-			FAILED_DEBUG_BREAK(mDirect3DDevice9->GetScissorRect(&direct3D9ScissorRectangleBackup));
+			FAILED_DEBUG_BREAK(mDirect3DDevice9->GetScissorRect(&direct3D9ScissorRectangleBackup))
 
 			// Set a render target?
 			if (nullptr != renderTarget)
@@ -8052,14 +8042,14 @@ namespace Direct3D9Rhi
 						SwapChain* swapChain = static_cast<SwapChain*>(mRenderTarget);
 
 						// Set the Direct3D 9 default color surfaces
-						FAILED_DEBUG_BREAK(mDirect3DDevice9->SetRenderTarget(0, swapChain->getDirect3DSurface9RenderTarget()));
+						FAILED_DEBUG_BREAK(mDirect3DDevice9->SetRenderTarget(0, swapChain->getDirect3DSurface9RenderTarget()))
 						for (DWORD direct3D9RenderTargetIndex = 1; direct3D9RenderTargetIndex < mCapabilities.maximumNumberOfSimultaneousRenderTargets; ++direct3D9RenderTargetIndex)
 						{
-							FAILED_DEBUG_BREAK(mDirect3DDevice9->SetRenderTarget(direct3D9RenderTargetIndex, nullptr));
+							FAILED_DEBUG_BREAK(mDirect3DDevice9->SetRenderTarget(direct3D9RenderTargetIndex, nullptr))
 						}
 
 						// Set the Direct3D 9 default depth stencil surface
-						FAILED_DEBUG_BREAK(mDirect3DDevice9->SetDepthStencilSurface(swapChain->getDirect3DSurface9DepthStencil()));
+						FAILED_DEBUG_BREAK(mDirect3DDevice9->SetDepthStencilSurface(swapChain->getDirect3DSurface9DepthStencil()))
 						break;
 					}
 
@@ -8073,11 +8063,11 @@ namespace Direct3D9Rhi
 						IDirect3DSurface9** direct3D9ColorSurfacesEnd = framebuffer->getDirect3DSurface9Colors() + framebuffer->getNumberOfDirect3DSurface9Colors();
 						for (IDirect3DSurface9** direct3D9ColorSurface = framebuffer->getDirect3DSurface9Colors(); direct3D9ColorSurface < direct3D9ColorSurfacesEnd; ++direct3D9ColorSurface, ++direct3D9RenderTargetIndex)
 						{
-							FAILED_DEBUG_BREAK(mDirect3DDevice9->SetRenderTarget(direct3D9RenderTargetIndex, *direct3D9ColorSurface));
+							FAILED_DEBUG_BREAK(mDirect3DDevice9->SetRenderTarget(direct3D9RenderTargetIndex, *direct3D9ColorSurface))
 						}
 
 						// Set the Direct3D 9 depth stencil surface
-						FAILED_DEBUG_BREAK(mDirect3DDevice9->SetDepthStencilSurface(framebuffer->getDirect3DSurface9DepthStencil()));
+						FAILED_DEBUG_BREAK(mDirect3DDevice9->SetDepthStencilSurface(framebuffer->getDirect3DSurface9DepthStencil()))
 						break;
 					}
 
@@ -8118,11 +8108,11 @@ namespace Direct3D9Rhi
 				// Set no Direct3D 9 color surfaces
 				for (DWORD direct3D9RenderTargetIndex = 0; direct3D9RenderTargetIndex < mCapabilities.maximumNumberOfSimultaneousRenderTargets; ++direct3D9RenderTargetIndex)
 				{
-					FAILED_DEBUG_BREAK(mDirect3DDevice9->SetRenderTarget(direct3D9RenderTargetIndex, nullptr));
+					FAILED_DEBUG_BREAK(mDirect3DDevice9->SetRenderTarget(direct3D9RenderTargetIndex, nullptr))
 				}
 
 				// Set no Direct3D 9 depth stencil surface
-				FAILED_DEBUG_BREAK(mDirect3DDevice9->SetDepthStencilSurface(nullptr));
+				FAILED_DEBUG_BREAK(mDirect3DDevice9->SetDepthStencilSurface(nullptr))
 
 				// Release the render target reference, in case we have one
 				if (nullptr != mRenderTarget)
@@ -8133,8 +8123,8 @@ namespace Direct3D9Rhi
 			}
 
 			// Restore the previously set Direct3D 9 viewport and scissor rectangle
-			FAILED_DEBUG_BREAK(mDirect3DDevice9->SetViewport(&direct3D9ViewportBackup));
-			FAILED_DEBUG_BREAK(mDirect3DDevice9->SetScissorRect(&direct3D9ScissorRectangleBackup));
+			FAILED_DEBUG_BREAK(mDirect3DDevice9->SetViewport(&direct3D9ViewportBackup))
+			FAILED_DEBUG_BREAK(mDirect3DDevice9->SetScissorRect(&direct3D9ScissorRectangleBackup))
 
 			// End debug event
 			RHI_END_DEBUG_EVENT(this)
@@ -8174,11 +8164,11 @@ namespace Direct3D9Rhi
 
 		// Backup the currently set Direct3D 9 viewport
 		D3DVIEWPORT9 direct3D9ViewportBackup;
-		FAILED_DEBUG_BREAK(mDirect3DDevice9->GetViewport(&direct3D9ViewportBackup));
+		FAILED_DEBUG_BREAK(mDirect3DDevice9->GetViewport(&direct3D9ViewportBackup))
 
 		// Backup the currently set Direct3D 9 scissor test state
 		DWORD direct3D9ScissorTestBackup = 0;
-		FAILED_DEBUG_BREAK(mDirect3DDevice9->GetRenderState(D3DRS_SCISSORTESTENABLE, &direct3D9ScissorTestBackup));
+		FAILED_DEBUG_BREAK(mDirect3DDevice9->GetRenderState(D3DRS_SCISSORTESTENABLE, &direct3D9ScissorTestBackup))
 
 		// Get the current primary render target
 		IDirect3DSurface9* direct3DSurface9 = nullptr;
@@ -8186,7 +8176,7 @@ namespace Direct3D9Rhi
 		{
 			// Get the surface description of the primary render target
 			D3DSURFACE_DESC d3dSurfaceDesc;
-			FAILED_DEBUG_BREAK(direct3DSurface9->GetDesc(&d3dSurfaceDesc));
+			FAILED_DEBUG_BREAK(direct3DSurface9->GetDesc(&d3dSurfaceDesc))
 
 			// Set a Direct3D 9 viewport which covers the whole current render target
 			const D3DVIEWPORT9 direct3D9Viewport =
@@ -8198,14 +8188,14 @@ namespace Direct3D9Rhi
 				0.0f,					// MinZ (float)
 				1.0f					// MaxZ (float)
 			};
-			FAILED_DEBUG_BREAK(mDirect3DDevice9->SetViewport(&direct3D9Viewport));
+			FAILED_DEBUG_BREAK(mDirect3DDevice9->SetViewport(&direct3D9Viewport))
 
 			// Release the render target
 			direct3DSurface9->Release();
 		}
 
 		// Disable Direct3D 9 scissor test
-		FAILED_DEBUG_BREAK(mDirect3DDevice9->SetRenderState(D3DRS_SCISSORTESTENABLE, 0));
+		FAILED_DEBUG_BREAK(mDirect3DDevice9->SetRenderState(D3DRS_SCISSORTESTENABLE, 0))
 
 		// Get API flags
 		uint32_t flagsApi = 0;
@@ -8223,13 +8213,13 @@ namespace Direct3D9Rhi
 		}
 
 		// Clear
-		FAILED_DEBUG_BREAK(mDirect3DDevice9->Clear(0, nullptr, flagsApi, D3DCOLOR_COLORVALUE(normalizedColor[0], normalizedColor[1], normalizedColor[2], normalizedColor[3]), z, stencil));
+		FAILED_DEBUG_BREAK(mDirect3DDevice9->Clear(0, nullptr, flagsApi, D3DCOLOR_COLORVALUE(normalizedColor[0], normalizedColor[1], normalizedColor[2], normalizedColor[3]), z, stencil))
 
 		// Restore the previously set Direct3D 9 viewport
-		FAILED_DEBUG_BREAK(mDirect3DDevice9->SetViewport(&direct3D9ViewportBackup));
+		FAILED_DEBUG_BREAK(mDirect3DDevice9->SetViewport(&direct3D9ViewportBackup))
 
 		// Restore previously set Direct3D 9 scissor test state
-		FAILED_DEBUG_BREAK(mDirect3DDevice9->SetRenderState(D3DRS_SCISSORTESTENABLE, direct3D9ScissorTestBackup));
+		FAILED_DEBUG_BREAK(mDirect3DDevice9->SetRenderState(D3DRS_SCISSORTESTENABLE, direct3D9ScissorTestBackup))
 
 		// End debug event
 		RHI_END_DEBUG_EVENT(this)
@@ -8325,7 +8315,7 @@ namespace Direct3D9Rhi
 				}
 
 				// The "Rhi::PrimitiveTopology" values directly map to Direct3D 9 & 10 & 11 constants, do not change them
-				FAILED_DEBUG_BREAK(mDirect3DDevice9->DrawPrimitive(static_cast<D3DPRIMITIVETYPE>(mPrimitiveTopology), drawArguments.startVertexLocation, primitiveCount));
+				FAILED_DEBUG_BREAK(mDirect3DDevice9->DrawPrimitive(static_cast<D3DPRIMITIVETYPE>(mPrimitiveTopology), drawArguments.startVertexLocation, primitiveCount))
 			}
 
 			// Advance
@@ -8366,7 +8356,7 @@ namespace Direct3D9Rhi
 				// The "Efficiently Drawing Multiple Instances of Geometry (Direct3D 9)"-article at MSDN http://msdn.microsoft.com/en-us/library/windows/desktop/bb173349%28v=vs.85%29.aspx#Drawing_Non_Indexed_Geometry
 				// states: "Note that D3DSTREAMSOURCE_INDEXEDDATA and the number of instances to draw must always be set in stream zero."
 				// -> "D3DSTREAMSOURCE_INSTANCEDATA" is set within "Direct3D9Rhi::VertexArray::enableDirect3DVertexDeclarationAndStreamSource()"
-				FAILED_DEBUG_BREAK(mDirect3DDevice9->SetStreamSourceFreq(0, D3DSTREAMSOURCE_INDEXEDDATA | drawIndexedArguments.instanceCount));
+				FAILED_DEBUG_BREAK(mDirect3DDevice9->SetStreamSourceFreq(0, D3DSTREAMSOURCE_INDEXEDDATA | drawIndexedArguments.instanceCount))
 
 				{ // Draw
 					// Get number of primitives
@@ -8432,7 +8422,7 @@ namespace Direct3D9Rhi
 
 					// The "Rhi::PrimitiveTopology" values directly map to Direct3D 9 & 10 & 11 constants, do not change them
 					const UINT numberOfVertices = drawIndexedArguments.indexCountPerInstance * 3;	// TODO(co) Review "numberOfVertices", might be wrong
-					FAILED_DEBUG_BREAK(mDirect3DDevice9->DrawIndexedPrimitive(static_cast<D3DPRIMITIVETYPE>(mPrimitiveTopology), static_cast<INT>(drawIndexedArguments.baseVertexLocation), 0, numberOfVertices, drawIndexedArguments.startIndexLocation, primitiveCount));
+					FAILED_DEBUG_BREAK(mDirect3DDevice9->DrawIndexedPrimitive(static_cast<D3DPRIMITIVETYPE>(mPrimitiveTopology), static_cast<INT>(drawIndexedArguments.baseVertexLocation), 0, numberOfVertices, drawIndexedArguments.startIndexLocation, primitiveCount))
 				}
 
 				// Advance
@@ -8446,7 +8436,7 @@ namespace Direct3D9Rhi
 			#endif
 
 			// Reset the stream source frequency
-			FAILED_DEBUG_BREAK(mDirect3DDevice9->SetStreamSourceFreq(0, 1));
+			FAILED_DEBUG_BREAK(mDirect3DDevice9->SetStreamSourceFreq(0, 1))
 		}
 	}
 
@@ -8610,9 +8600,9 @@ namespace Direct3D9Rhi
 	//[-------------------------------------------------------]
 	//[ Resource creation                                     ]
 	//[-------------------------------------------------------]
-	Rhi::IRenderPass* Direct3D9Rhi::createRenderPass(uint32_t numberOfColorAttachments, const Rhi::TextureFormat::Enum* colorAttachmentTextureFormats, Rhi::TextureFormat::Enum depthStencilAttachmentTextureFormat, uint8_t numberOfMultisamples RHI_RESOURCE_DEBUG_NAME_PARAMETER_NO_DEFAULT)
+	Rhi::IRenderPass* Direct3D9Rhi::createRenderPass(uint32_t numberOfColorAttachments, const Rhi::TextureFormat::Enum* colorAttachmentTextureFormats, Rhi::TextureFormat::Enum depthStencilAttachmentTextureFormat, [[maybe_unused]] uint8_t numberOfMultisamples RHI_RESOURCE_DEBUG_NAME_PARAMETER_NO_DEFAULT)
 	{
-		return RHI_NEW(mContext, RenderPass)(*this, numberOfColorAttachments, colorAttachmentTextureFormats, depthStencilAttachmentTextureFormat, numberOfMultisamples RHI_RESOURCE_DEBUG_PASS_PARAMETER);
+		return RHI_NEW(mContext, RenderPass)(*this, numberOfColorAttachments, colorAttachmentTextureFormats, depthStencilAttachmentTextureFormat RHI_RESOURCE_DEBUG_PASS_PARAMETER);
 	}
 
 	Rhi::IQueryPool* Direct3D9Rhi::createQueryPool([[maybe_unused]] Rhi::QueryType queryType, [[maybe_unused]] uint32_t numberOfQueries RHI_RESOURCE_DEBUG_NAME_MAYBE_UNUSED_PARAMETER_NO_DEFAULT)
@@ -9005,7 +8995,7 @@ namespace Direct3D9Rhi
 		// We need to forget about the currently set render target
 		setGraphicsRenderTarget(nullptr);
 
-		FAILED_DEBUG_BREAK(mDirect3DDevice9->EndScene());
+		FAILED_DEBUG_BREAK(mDirect3DDevice9->EndScene())
 	}
 
 
@@ -9017,15 +9007,15 @@ namespace Direct3D9Rhi
 		// Create the Direct3D 9 query instance used for flush right now?
 		if (nullptr == mDirect3DQuery9Flush)
 		{
-			FAILED_DEBUG_BREAK(mDirect3DDevice9->CreateQuery(D3DQUERYTYPE_EVENT, &mDirect3DQuery9Flush));
+			FAILED_DEBUG_BREAK(mDirect3DDevice9->CreateQuery(D3DQUERYTYPE_EVENT, &mDirect3DQuery9Flush))
 
 			// "IDirect3DQuery9" is not derived from "IDirect3DResource9", meaning we can't use the "IDirect3DResource9::SetPrivateData()"-method in order to set a debug name
 		}
 		if (nullptr != mDirect3DQuery9Flush)
 		{
 			// Perform the flush
-			FAILED_DEBUG_BREAK(mDirect3DQuery9Flush->Issue(D3DISSUE_END));
-			FAILED_DEBUG_BREAK(mDirect3DQuery9Flush->GetData(nullptr, 0, D3DGETDATA_FLUSH));
+			FAILED_DEBUG_BREAK(mDirect3DQuery9Flush->Issue(D3DISSUE_END))
+			FAILED_DEBUG_BREAK(mDirect3DQuery9Flush->GetData(nullptr, 0, D3DGETDATA_FLUSH))
 		}
 	}
 
@@ -9034,14 +9024,14 @@ namespace Direct3D9Rhi
 		// Create the Direct3D 9 query instance used for flush right now?
 		if (nullptr == mDirect3DQuery9Flush)
 		{
-			FAILED_DEBUG_BREAK(mDirect3DDevice9->CreateQuery(D3DQUERYTYPE_EVENT, &mDirect3DQuery9Flush));
+			FAILED_DEBUG_BREAK(mDirect3DDevice9->CreateQuery(D3DQUERYTYPE_EVENT, &mDirect3DQuery9Flush))
 
 			// "IDirect3DQuery9" is not derived from "IDirect3DResource9", meaning we can't use the "IDirect3DResource9::SetPrivateData()"-method in order to set a debug name
 		}
 		if (nullptr != mDirect3DQuery9Flush)
 		{
 			// Perform the flush and wait
-			FAILED_DEBUG_BREAK(mDirect3DQuery9Flush->Issue(D3DISSUE_END));
+			FAILED_DEBUG_BREAK(mDirect3DQuery9Flush->Issue(D3DISSUE_END))
 			while (mDirect3DQuery9Flush->GetData(nullptr, 0, D3DGETDATA_FLUSH) == S_FALSE)
 			{
 				// Spin-wait
@@ -9057,12 +9047,12 @@ namespace Direct3D9Rhi
 	{
 		// Get Direct3D 9 device capabilities
 		D3DCAPS9 d3dCaps9;
-		FAILED_DEBUG_BREAK(mDirect3DDevice9->GetDeviceCaps(&d3dCaps9));
+		FAILED_DEBUG_BREAK(mDirect3DDevice9->GetDeviceCaps(&d3dCaps9))
 
 		{ // Get device name
 		  // -> The adapter contains a description like "AMD Radeon R9 200 Series"
 			D3DADAPTER_IDENTIFIER9 d3dAdapterIdentifier9;
-			FAILED_DEBUG_BREAK(mDirect3D9->GetAdapterIdentifier(d3dCaps9.AdapterOrdinal, 0, &d3dAdapterIdentifier9));
+			FAILED_DEBUG_BREAK(mDirect3D9->GetAdapterIdentifier(d3dCaps9.AdapterOrdinal, 0, &d3dAdapterIdentifier9))
 			const size_t numberOfCharacters = _countof(mCapabilities.deviceName) - 1;
 			strncpy(mCapabilities.deviceName, d3dAdapterIdentifier9.Description, numberOfCharacters);
 			mCapabilities.deviceName[numberOfCharacters] = '\0';

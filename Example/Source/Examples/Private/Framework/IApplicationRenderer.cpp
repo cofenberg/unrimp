@@ -234,7 +234,7 @@ void IApplicationRenderer::deinitialization()
 #ifdef RENDERER_TOOLKIT
 	void IApplicationRenderer::rendererToolkitProjectStartupThreadWorker(Renderer::IRenderer* renderer, RendererToolkit::IRendererToolkit* rendererToolkit, bool rhiIsOpenGLES)
 	{
-		RENDERER_SET_CURRENT_THREAD_DEBUG_NAME("Project startup", "Renderer toolkit: Project startup");
+		RENDERER_SET_CURRENT_THREAD_DEBUG_NAME("Project startup", "Renderer toolkit: Project startup")
 		std::lock_guard<std::mutex> projectMutexLock(mProjectMutex);
 		mProject = rendererToolkit->createProject();
 		if (nullptr != mProject)
