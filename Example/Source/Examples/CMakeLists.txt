@@ -21,7 +21,7 @@
 ##################################################
 ## CMake
 ##################################################
-cmake_minimum_required(VERSION 3.11.0)
+cmake_minimum_required(VERSION 3.15.0)
 
 # Optional "Simple DirectMedia Layer" (SDL, https://www.libsdl.org/ ) support inside the example framework
 if(EXAMPLE_SDL2_ENABLED)

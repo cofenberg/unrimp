@@ -21,7 +21,7 @@
 ##################################################
 ## CMake
 ##################################################
-cmake_minimum_required(VERSION 3.11.0)
+cmake_minimum_required(VERSION 3.15.0)
 
 
 ##################################################
@@ -310,12 +310,14 @@ if(${CMAKE_GENERATOR} MATCHES "Ninja")	# Ninja is used for "CMake support in Vis
 			message(FATAL_ERROR "Unsupported architecture")
 		endif()
 	endif()
-elseif(${CMAKE_GENERATOR} MATCHES "Visual Studio 15 Win64")
-	set(ARCHITECTURE_X64 1)
-	set(ARCHITECTURE "x64")
-elseif(${CMAKE_GENERATOR} MATCHES "Visual Studio 15")
-	set(ARCHITECTURE_X86 1)
-	set(ARCHITECTURE "x86")
+elseif(${CMAKE_GENERATOR} MATCHES "Visual Studio 16 2019")
+	if(${CMAKE_GENERATOR_PLATFORM} MATCHES "Win32")
+		set(ARCHITECTURE_X86 1)
+		set(ARCHITECTURE "x86")
+	else()
+		set(ARCHITECTURE_X64 1)
+		set(ARCHITECTURE "x64")
+	endif()
 elseif(${CMAKE_GENERATOR} MATCHES "Unix Makefiles")
 	if(ANDROID)
 		set(ARCHITECTURE ${ANDROID_ABI})
