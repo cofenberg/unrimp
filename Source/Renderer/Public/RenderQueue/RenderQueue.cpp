@@ -24,6 +24,9 @@
 #include "Renderer/Public/RenderQueue/RenderQueue.h"
 #include "Renderer/Public/RenderQueue/RenderableManager.h"
 #include "Renderer/Public/Resource/CompositorWorkspace/CompositorContextData.h"
+#include "Renderer/Public/Resource/Texture/TextureResource.h"
+#include "Renderer/Public/Resource/Texture/TextureResourceManager.h"
+#include "Renderer/Public/Resource/Mesh/MeshResourceManager.h"
 #include "Renderer/Public/Resource/Material/MaterialResourceManager.h"
 #include "Renderer/Public/Resource/Material/MaterialTechnique.h"
 #include "Renderer/Public/Resource/Material/MaterialResource.h"
@@ -37,7 +40,6 @@
 #include "Renderer/Public/Resource/MaterialBlueprint/BufferManager/TextureInstanceBufferManager.h"
 #include "Renderer/Public/Core/IProfiler.h"
 #include "Renderer/Public/Core/Math/Transform.h"
-#include "Renderer/Public/IRenderer.h"
 
 #include <array>
 #include <algorithm>
@@ -59,7 +61,7 @@ namespace
 		// - See "Rough sorting by depth" - http://aras-p.info/blog/2014/01/16/rough-sorting-by-depth/
 		[[nodiscard]] inline uint32_t floatFlip(uint32_t f)
 		{
-			const uint32_t mask = -int(f >> 31) | 0x80000000;
+			const uint32_t mask = static_cast<uint32_t>(-int(f >> 31) | 0x80000000);
 			return (f ^ mask);
 		}
 

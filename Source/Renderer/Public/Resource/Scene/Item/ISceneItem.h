@@ -75,7 +75,7 @@ namespace Renderer
 	//[ Public methods                                        ]
 	//[-------------------------------------------------------]
 	public:
-		RENDERER_API_EXPORT [[nodiscard]] Context& getContext() const;
+		[[nodiscard]] RENDERER_API_EXPORT Context& getContext() const;
 
 		[[nodiscard]] inline SceneResource& getSceneResource() const
 		{

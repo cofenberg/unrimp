@@ -28,6 +28,7 @@
 //[ Includes                                              ]
 //[-------------------------------------------------------]
 #include "Renderer/Public/Resource/ResourceManager.h"
+#include "Renderer/Public/Context.h"
 
 
 //[-------------------------------------------------------]

@@ -26,6 +26,7 @@
 #include "Renderer/Public/Resource/Material/MaterialResourceManager.h"
 #include "Renderer/Public/Resource/Material/MaterialResource.h"
 #include "Renderer/Public/Core/SwizzleVectorElementRemove.h"
+#include "Renderer/Public/IRenderer.h"
 
 
 //[-------------------------------------------------------]

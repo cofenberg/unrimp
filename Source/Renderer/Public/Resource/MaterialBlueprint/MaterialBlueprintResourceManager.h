@@ -29,6 +29,7 @@
 //[-------------------------------------------------------]
 #include "Renderer/Public/Resource/ResourceManager.h"
 #include "Renderer/Public/Resource/Material/MaterialProperties.h"
+#include "Renderer/Public/IRenderer.h"
 
 // Disable warnings in external headers, we can't fix them
 PRAGMA_WARNING_PUSH
