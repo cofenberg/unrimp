@@ -222,8 +222,13 @@ if(WIN32)
 		# Used debug build options:
 		# - "Debug Information Format" = "Program Database for Edit And Continue (/ZI)" ( "/Z7, /Zi, /ZI (Debug Information Format)"-documentation at https://msdn.microsoft.com/en-us/library/958x11bc.aspx )
 		# - "Basic Runtime Checks" = "Default" instead of "/RTC1" which is causing a massive slow-down when debugging
-		# unrimp_replace_cmake_cxx_flags(/Zi /ZI)	# TODO(co) 2018.10.20: Using Visual Studio 2017 15.8.7: "/ZI" will automatically set "/FC" ( https://msdn.microsoft.com/en-us/library/027c4t2s.aspx ) which causes random conversion of filenames to lowercase (see also "VS 2017 Changes My File Name Case" at https://developercommunity.visualstudio.com/content/problem/228405/vs-2017-changes-my-file-name-case.html )
+		# - "/debug:fastlink" see https://devblogs.microsoft.com/cppblog/faster-c-build-cycle-in-vs-15-with-debugfastlink/
+		# - "/incremental" see https://devblogs.microsoft.com/cppblog/the-visual-c-linker-best-practices-developer-iteration/
+		unrimp_replace_cmake_cxx_flags(/Zi /ZI)
 		unrimp_replace_cmake_cxx_flags(/RTC1 "")
+		set(CMAKE_STATIC_LINKER_FLAGS_DEBUG "${CMAKE_STATIC_LINKER_FLAGS} /debug:fastlink /incremental")
+		set(CMAKE_SHARED_LINKER_FLAGS_DEBUG "${CMAKE_SHARED_LINKER_FLAGS} /debug:fastlink /incremental")
+		set(CMAKE_EXE_LINKER_FLAGS_DEBUG "${CMAKE_EXE_LINKER_FLAGS} /debug:fastlink /incremental")
 
 		# TODO(co) "Just My Code" = "/JMC" (see https://blogs.msdn.microsoft.com/vcblog/2018/06/29/announcing-jmc-stepping-in-visual-studio/ ) is currently disabled due to horrible observed performance
 		#          impact in Visual Studio 2017 15.8.1: In my scenario: 13.3 ms per frame without JMC and 21.5 ms per frame with JMC (major hotspot is "__CheckForDebuggerJustMyCode")
