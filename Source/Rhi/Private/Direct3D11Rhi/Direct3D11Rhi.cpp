@@ -2496,7 +2496,7 @@ namespace Direct3D11Rhi
 	*  @brief
 	*    Debug break on execution failure, replacement for "ID3D11InfoQueue::SetBreakOnSeverity()" which is creating a confusing callstack
 	*/
-	#define FAILED_DEBUG_BREAK(toExecute) toExecute
+	#define FAILED_DEBUG_BREAK(toExecute) toExecute;
 #endif
 
 

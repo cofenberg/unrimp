@@ -3683,7 +3683,7 @@ namespace Direct3D12Rhi
 	*  @brief
 	*    Debug break on execution failure
 	*/
-	#define FAILED_DEBUG_BREAK(toExecute) toExecute
+	#define FAILED_DEBUG_BREAK(toExecute) toExecute;
 #endif
 
 
