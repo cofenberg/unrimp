@@ -4560,6 +4560,7 @@ namespace VulkanRhi
 								case Rhi::ResourceType::TEXTURE_2D_ARRAY:
 								case Rhi::ResourceType::TEXTURE_3D:
 								case Rhi::ResourceType::TEXTURE_CUBE:
+								case Rhi::ResourceType::TEXTURE_CUBE_ARRAY:
 									RHI_ASSERT(vulkanRhi.getContext(), Rhi::DescriptorRangeType::SRV == descriptorRange->rangeType || Rhi::DescriptorRangeType::UAV == descriptorRange->rangeType, "Vulkan RHI implementation: Invalid descriptor range type")
 									if (Rhi::DescriptorRangeType::SRV == descriptorRange->rangeType)
 									{
@@ -6979,6 +6980,15 @@ namespace VulkanRhi
 			return RHI_NEW(vulkanRhi.getContext(), TextureCube)(vulkanRhi, width, height, textureFormat, data, textureFlags RHI_RESOURCE_DEBUG_PASS_PARAMETER);
 		}
 
+		[[nodiscard]] virtual Rhi::ITextureCubeArray* createTextureCubeArray([[maybe_unused]] uint32_t width, [[maybe_unused]] uint32_t height, [[maybe_unused]] uint32_t numberOfSlices, [[maybe_unused]] Rhi::TextureFormat::Enum textureFormat, [[maybe_unused]] const void* data = nullptr, [[maybe_unused]] uint32_t textureFlags = 0, [[maybe_unused]] Rhi::TextureUsage textureUsage = Rhi::TextureUsage::DEFAULT RHI_RESOURCE_DEBUG_NAME_PARAMETER) override
+		{
+			// TODO(co) Implement me
+			#ifdef RHI_DEBUG
+				debugName = debugName;
+			#endif
+			return nullptr;
+		}
+
 
 	//[-------------------------------------------------------]
 	//[ Protected virtual Rhi::RefCount methods               ]
@@ -8355,6 +8365,7 @@ namespace VulkanRhi
 						case Rhi::ResourceType::TEXTURE_1D_ARRAY:
 						case Rhi::ResourceType::TEXTURE_3D:
 						case Rhi::ResourceType::TEXTURE_CUBE:
+						case Rhi::ResourceType::TEXTURE_CUBE_ARRAY:
 						case Rhi::ResourceType::GRAPHICS_PIPELINE_STATE:
 						case Rhi::ResourceType::COMPUTE_PIPELINE_STATE:
 						case Rhi::ResourceType::SAMPLER_STATE:
@@ -8429,6 +8440,7 @@ namespace VulkanRhi
 					case Rhi::ResourceType::TEXTURE_1D_ARRAY:
 					case Rhi::ResourceType::TEXTURE_3D:
 					case Rhi::ResourceType::TEXTURE_CUBE:
+					case Rhi::ResourceType::TEXTURE_CUBE_ARRAY:
 					case Rhi::ResourceType::GRAPHICS_PIPELINE_STATE:
 					case Rhi::ResourceType::COMPUTE_PIPELINE_STATE:
 					case Rhi::ResourceType::SAMPLER_STATE:
@@ -10487,6 +10499,7 @@ namespace VulkanRhi
 					case Rhi::ResourceType::TEXTURE_2D_ARRAY:
 					case Rhi::ResourceType::TEXTURE_3D:
 					case Rhi::ResourceType::TEXTURE_CUBE:
+					case Rhi::ResourceType::TEXTURE_CUBE_ARRAY:
 					{
 						// Evaluate the texture type and get the Vulkan image view
 						VkImageView vkImageView = VK_NULL_HANDLE;
@@ -10538,6 +10551,17 @@ namespace VulkanRhi
 								const TextureCube* textureCube = static_cast<TextureCube*>(resource);
 								vkImageView = textureCube->getVkImageView();
 								vkImageLayout = textureCube->getVkImageLayout();
+								break;
+							}
+
+							case Rhi::ResourceType::TEXTURE_CUBE_ARRAY:
+							{
+								// TODO(co) Implement me
+								/*
+								const TextureCubeArray* textureCubeArray = static_cast<TextureCubeArray*>(resource);
+								vkImageView = textureCubeArray->getVkImageView();
+								vkImageLayout = textureCubeArray->getVkImageLayout();
+								*/
 								break;
 							}
 
@@ -11996,6 +12020,12 @@ namespace VulkanRhi
 				return false;
 			}
 
+			case Rhi::ResourceType::TEXTURE_CUBE_ARRAY:
+			{
+				// TODO(co) Implement me
+				return false;
+			}
+
 			case Rhi::ResourceType::ROOT_SIGNATURE:
 			case Rhi::ResourceType::RESOURCE_GROUP:
 			case Rhi::ResourceType::GRAPHICS_PROGRAM:
@@ -12122,6 +12152,12 @@ namespace VulkanRhi
 			}
 
 			case Rhi::ResourceType::TEXTURE_CUBE:
+			{
+				// TODO(co) Implement me
+				break;
+			}
+
+			case Rhi::ResourceType::TEXTURE_CUBE_ARRAY:
 			{
 				// TODO(co) Implement me
 				break;
@@ -12436,6 +12472,7 @@ namespace VulkanRhi
 			case Rhi::ResourceType::TEXTURE_2D_ARRAY:
 			case Rhi::ResourceType::TEXTURE_3D:
 			case Rhi::ResourceType::TEXTURE_CUBE:
+			case Rhi::ResourceType::TEXTURE_CUBE_ARRAY:
 			case Rhi::ResourceType::GRAPHICS_PIPELINE_STATE:
 			case Rhi::ResourceType::COMPUTE_PIPELINE_STATE:
 			case Rhi::ResourceType::SAMPLER_STATE:

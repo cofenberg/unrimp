@@ -11716,6 +11716,15 @@ namespace OpenGLRhi
 			}
 		}
 
+		[[nodiscard]] virtual Rhi::ITextureCubeArray* createTextureCubeArray([[maybe_unused]] uint32_t width, [[maybe_unused]] uint32_t height, [[maybe_unused]] uint32_t numberOfSlices, [[maybe_unused]] Rhi::TextureFormat::Enum textureFormat, [[maybe_unused]] const void* data = nullptr, [[maybe_unused]] uint32_t textureFlags = 0, [[maybe_unused]] Rhi::TextureUsage textureUsage = Rhi::TextureUsage::DEFAULT RHI_RESOURCE_DEBUG_NAME_PARAMETER) override
+		{
+			// TODO(co) Implement me
+			#ifdef RHI_DEBUG
+				debugName = debugName;
+			#endif
+			return nullptr;
+		}
+
 
 	//[-------------------------------------------------------]
 	//[ Protected virtual Rhi::RefCount methods               ]
@@ -13558,6 +13567,7 @@ namespace OpenGLRhi
 						case Rhi::ResourceType::TEXTURE_1D_ARRAY:
 						case Rhi::ResourceType::TEXTURE_3D:
 						case Rhi::ResourceType::TEXTURE_CUBE:
+						case Rhi::ResourceType::TEXTURE_CUBE_ARRAY:
 						case Rhi::ResourceType::GRAPHICS_PIPELINE_STATE:
 						case Rhi::ResourceType::COMPUTE_PIPELINE_STATE:
 						case Rhi::ResourceType::SAMPLER_STATE:
@@ -13623,6 +13633,7 @@ namespace OpenGLRhi
 					case Rhi::ResourceType::TEXTURE_1D_ARRAY:
 					case Rhi::ResourceType::TEXTURE_3D:
 					case Rhi::ResourceType::TEXTURE_CUBE:
+					case Rhi::ResourceType::TEXTURE_CUBE_ARRAY:
 					case Rhi::ResourceType::GRAPHICS_PIPELINE_STATE:
 					case Rhi::ResourceType::COMPUTE_PIPELINE_STATE:
 					case Rhi::ResourceType::SAMPLER_STATE:
@@ -13790,6 +13801,7 @@ namespace OpenGLRhi
 					case Rhi::ResourceType::TEXTURE_1D_ARRAY:
 					case Rhi::ResourceType::TEXTURE_3D:
 					case Rhi::ResourceType::TEXTURE_CUBE:
+					case Rhi::ResourceType::TEXTURE_CUBE_ARRAY:
 					case Rhi::ResourceType::GRAPHICS_PIPELINE_STATE:
 					case Rhi::ResourceType::COMPUTE_PIPELINE_STATE:
 					case Rhi::ResourceType::SAMPLER_STATE:
@@ -13867,6 +13879,7 @@ namespace OpenGLRhi
 					case Rhi::ResourceType::TEXTURE_1D_ARRAY:
 					case Rhi::ResourceType::TEXTURE_3D:
 					case Rhi::ResourceType::TEXTURE_CUBE:
+					case Rhi::ResourceType::TEXTURE_CUBE_ARRAY:
 					case Rhi::ResourceType::GRAPHICS_PIPELINE_STATE:
 					case Rhi::ResourceType::COMPUTE_PIPELINE_STATE:
 					case Rhi::ResourceType::SAMPLER_STATE:
@@ -14093,6 +14106,7 @@ namespace OpenGLRhi
 					case Rhi::ResourceType::TEXTURE_1D_ARRAY:
 					case Rhi::ResourceType::TEXTURE_3D:
 					case Rhi::ResourceType::TEXTURE_CUBE:
+					case Rhi::ResourceType::TEXTURE_CUBE_ARRAY:
 					case Rhi::ResourceType::GRAPHICS_PIPELINE_STATE:
 					case Rhi::ResourceType::COMPUTE_PIPELINE_STATE:
 					case Rhi::ResourceType::SAMPLER_STATE:
@@ -14184,6 +14198,7 @@ namespace OpenGLRhi
 					case Rhi::ResourceType::TEXTURE_1D_ARRAY:
 					case Rhi::ResourceType::TEXTURE_3D:
 					case Rhi::ResourceType::TEXTURE_CUBE:
+					case Rhi::ResourceType::TEXTURE_CUBE_ARRAY:
 					case Rhi::ResourceType::GRAPHICS_PIPELINE_STATE:
 					case Rhi::ResourceType::COMPUTE_PIPELINE_STATE:
 					case Rhi::ResourceType::SAMPLER_STATE:
@@ -19270,6 +19285,7 @@ namespace OpenGLRhi
 					case Rhi::ResourceType::TEXTURE_2D_ARRAY:
 					case Rhi::ResourceType::TEXTURE_3D:
 					case Rhi::ResourceType::TEXTURE_CUBE:
+					case Rhi::ResourceType::TEXTURE_CUBE_ARRAY:
 					case Rhi::ResourceType::GRAPHICS_PIPELINE_STATE:
 					case Rhi::ResourceType::COMPUTE_PIPELINE_STATE:
 					case Rhi::ResourceType::SAMPLER_STATE:
@@ -19787,6 +19803,7 @@ namespace OpenGLRhi
 			case Rhi::ResourceType::TEXTURE_2D_ARRAY:
 			case Rhi::ResourceType::TEXTURE_3D:
 			case Rhi::ResourceType::TEXTURE_CUBE:
+			case Rhi::ResourceType::TEXTURE_CUBE_ARRAY:
 			case Rhi::ResourceType::GRAPHICS_PIPELINE_STATE:
 			case Rhi::ResourceType::COMPUTE_PIPELINE_STATE:
 			case Rhi::ResourceType::SAMPLER_STATE:
@@ -19884,6 +19901,7 @@ namespace OpenGLRhi
 			case Rhi::ResourceType::TEXTURE_2D_ARRAY:
 			case Rhi::ResourceType::TEXTURE_3D:
 			case Rhi::ResourceType::TEXTURE_CUBE:
+			case Rhi::ResourceType::TEXTURE_CUBE_ARRAY:
 			case Rhi::ResourceType::GRAPHICS_PIPELINE_STATE:
 			case Rhi::ResourceType::COMPUTE_PIPELINE_STATE:
 			case Rhi::ResourceType::SAMPLER_STATE:
@@ -20453,6 +20471,12 @@ namespace OpenGLRhi
 				return false;
 			}
 
+			case Rhi::ResourceType::TEXTURE_CUBE_ARRAY:
+			{
+				// TODO(co) Implement me
+				return false;
+			}
+
 			case Rhi::ResourceType::ROOT_SIGNATURE:
 			case Rhi::ResourceType::RESOURCE_GROUP:
 			case Rhi::ResourceType::GRAPHICS_PROGRAM:
@@ -20622,6 +20646,12 @@ namespace OpenGLRhi
 			}
 
 			case Rhi::ResourceType::TEXTURE_CUBE:
+			{
+				// TODO(co) Implement me
+				break;
+			}
+
+			case Rhi::ResourceType::TEXTURE_CUBE_ARRAY:
 			{
 				// TODO(co) Implement me
 				break;
@@ -21139,6 +21169,7 @@ namespace OpenGLRhi
 					case Rhi::ResourceType::TEXTURE_2D_ARRAY:
 					case Rhi::ResourceType::TEXTURE_3D:
 					case Rhi::ResourceType::TEXTURE_CUBE:
+					case Rhi::ResourceType::TEXTURE_CUBE_ARRAY:
 					{
 						// In OpenGL, all shaders share the same texture units (= "Rhi::RootParameter::shaderVisibility" stays unused)
 						switch (descriptorRange.rangeType)
@@ -21178,8 +21209,7 @@ namespace OpenGLRhi
 											else
 											{
 												// "GL_TEXTURE0_ARB" is the first texture unit, while the unit we received is zero based
-												const Texture1D* texture1D = static_cast<Texture1D*>(resource);
-												glBindMultiTextureEXT(GL_TEXTURE0_ARB + unit, GL_TEXTURE_1D, texture1D->getOpenGLTexture());
+												glBindMultiTextureEXT(GL_TEXTURE0_ARB + unit, GL_TEXTURE_1D, static_cast<Texture1D*>(resource)->getOpenGLTexture());
 											}
 											break;
 
@@ -21230,8 +21260,7 @@ namespace OpenGLRhi
 											else
 											{
 												// "GL_TEXTURE0_ARB" is the first texture unit, while the unit we received is zero based
-												const Texture3D* texture3D = static_cast<Texture3D*>(resource);
-												glBindMultiTextureEXT(GL_TEXTURE0_ARB + unit, GL_TEXTURE_3D, texture3D->getOpenGLTexture());
+												glBindMultiTextureEXT(GL_TEXTURE0_ARB + unit, GL_TEXTURE_3D, static_cast<Texture3D*>(resource)->getOpenGLTexture());
 											}
 											break;
 
@@ -21243,9 +21272,23 @@ namespace OpenGLRhi
 											else
 											{
 												// "GL_TEXTURE0_ARB" is the first texture unit, while the unit we received is zero based
-												const TextureCube* textureCube = static_cast<TextureCube*>(resource);
-												glBindMultiTextureEXT(GL_TEXTURE0_ARB + unit, GL_TEXTURE_CUBE_MAP, textureCube->getOpenGLTexture());
+												glBindMultiTextureEXT(GL_TEXTURE0_ARB + unit, GL_TEXTURE_CUBE_MAP, static_cast<TextureCube*>(resource)->getOpenGLTexture());
 											}
+											break;
+
+										case Rhi::ResourceType::TEXTURE_CUBE_ARRAY:
+											// TODO(co) Implement me
+											/*
+											if (isArbDsa)
+											{
+												glBindTextureUnit(unit, static_cast<TextureCubeArray*>(resource)->getOpenGLTexture());
+											}
+											else
+											{
+												// "GL_TEXTURE0_ARB" is the first texture unit, while the unit we received is zero based
+												glBindMultiTextureEXT(GL_TEXTURE0_ARB + unit, GL_TEXTURE_CUBE_MAP, static_cast<TextureCubeArray*>(resource)->getOpenGLTexture());
+											}
+											*/
 											break;
 
 										case Rhi::ResourceType::ROOT_SIGNATURE:
@@ -21373,6 +21416,11 @@ namespace OpenGLRhi
 												glBindTexture(GL_TEXTURE_CUBE_MAP, static_cast<TextureCube*>(resource)->getOpenGLTexture());
 												break;
 
+											case Rhi::ResourceType::TEXTURE_CUBE_ARRAY:
+												// TODO(co) Implement me
+												// glBindTexture(GL_TEXTURE_CUBE_MAP, static_cast<TextureCubeArray*>(resource)->getOpenGLTexture());
+												break;
+
 											case Rhi::ResourceType::ROOT_SIGNATURE:
 											case Rhi::ResourceType::RESOURCE_GROUP:
 											case Rhi::ResourceType::GRAPHICS_PROGRAM:
@@ -21493,6 +21541,14 @@ namespace OpenGLRhi
 										{
 											const TextureCube* textureCube = static_cast<TextureCube*>(resource);
 											glBindImageTextureEXT(unit, textureCube->getOpenGLTexture(), 0, GL_FALSE, 0, GL_WRITE_ONLY, static_cast<GLint>(textureCube->getOpenGLInternalFormat()));
+											break;
+										}
+
+										case Rhi::ResourceType::TEXTURE_CUBE_ARRAY:
+										{
+											// TODO(co) Implement me
+											// const TextureCubeArray* textureCubeArray = static_cast<TextureCubeArray*>(resource);
+											// glBindImageTextureEXT(unit, textureCubeArray->getOpenGLTexture(), 0, GL_FALSE, 0, GL_WRITE_ONLY, static_cast<GLint>(textureCubeArray->getOpenGLInternalFormat()));
 											break;
 										}
 

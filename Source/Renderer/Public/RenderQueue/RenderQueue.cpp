@@ -929,9 +929,18 @@ namespace Renderer
 
 						case Rhi::ResourceType::TEXTURE_CUBE:
 						{
-							const Rhi::ITexture2D* texture2D = static_cast<const Rhi::ITexture2D*>(texture);
-							compositorContextData.mGlobalComputeSize[0] = texture2D->getWidth();
-							compositorContextData.mGlobalComputeSize[1] = texture2D->getHeight();
+							const Rhi::ITextureCube* textureCube = static_cast<const Rhi::ITextureCube*>(texture);
+							compositorContextData.mGlobalComputeSize[0] = textureCube->getWidth();
+							compositorContextData.mGlobalComputeSize[1] = textureCube->getHeight();
+							compositorContextData.mGlobalComputeSize[2] = 6;	// TODO(co) Or better 1?
+							break;
+						}
+
+						case Rhi::ResourceType::TEXTURE_CUBE_ARRAY:
+						{
+							const Rhi::ITextureCubeArray* textureCubeArray = static_cast<const Rhi::ITextureCubeArray*>(texture);
+							compositorContextData.mGlobalComputeSize[0] = textureCubeArray->getWidth();
+							compositorContextData.mGlobalComputeSize[1] = textureCubeArray->getHeight();
 							compositorContextData.mGlobalComputeSize[2] = 6;	// TODO(co) Or better 1?
 							break;
 						}

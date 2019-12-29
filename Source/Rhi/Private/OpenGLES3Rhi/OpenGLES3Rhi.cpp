@@ -6658,6 +6658,15 @@ namespace OpenGLES3Rhi
 			return RHI_NEW(openGLES3Rhi.getContext(), TextureCube)(openGLES3Rhi, width, height, textureFormat, data, textureFlags RHI_RESOURCE_DEBUG_PASS_PARAMETER);
 		}
 
+		[[nodiscard]] virtual Rhi::ITextureCubeArray* createTextureCubeArray([[maybe_unused]] uint32_t width, [[maybe_unused]] uint32_t height, [[maybe_unused]] uint32_t numberOfSlices, [[maybe_unused]] Rhi::TextureFormat::Enum textureFormat, [[maybe_unused]] const void* data = nullptr, [[maybe_unused]] uint32_t textureFlags = 0, [[maybe_unused]] Rhi::TextureUsage textureUsage = Rhi::TextureUsage::DEFAULT RHI_RESOURCE_DEBUG_NAME_PARAMETER) override
+		{
+			// TODO(co) Implement me, OpenGL ES 3.1 "GL_EXT_texture_cube_map_array"-extension
+			#ifdef RHI_DEBUG
+				debugName = debugName;
+			#endif
+			return nullptr;
+		}
+
 
 	//[-------------------------------------------------------]
 	//[ Protected virtual Rhi::RefCount methods               ]
@@ -7670,6 +7679,7 @@ namespace OpenGLES3Rhi
 						case Rhi::ResourceType::TEXTURE_1D_ARRAY:
 						case Rhi::ResourceType::TEXTURE_3D:
 						case Rhi::ResourceType::TEXTURE_CUBE:
+						case Rhi::ResourceType::TEXTURE_CUBE_ARRAY:
 						case Rhi::ResourceType::GRAPHICS_PIPELINE_STATE:
 						case Rhi::ResourceType::COMPUTE_PIPELINE_STATE:
 						case Rhi::ResourceType::SAMPLER_STATE:
@@ -7741,6 +7751,7 @@ namespace OpenGLES3Rhi
 					case Rhi::ResourceType::TEXTURE_1D_ARRAY:
 					case Rhi::ResourceType::TEXTURE_3D:
 					case Rhi::ResourceType::TEXTURE_CUBE:
+					case Rhi::ResourceType::TEXTURE_CUBE_ARRAY:
 					case Rhi::ResourceType::GRAPHICS_PIPELINE_STATE:
 					case Rhi::ResourceType::COMPUTE_PIPELINE_STATE:
 					case Rhi::ResourceType::SAMPLER_STATE:
@@ -9564,6 +9575,7 @@ namespace OpenGLES3Rhi
 					case Rhi::ResourceType::TEXTURE_2D_ARRAY:
 					case Rhi::ResourceType::TEXTURE_3D:
 					case Rhi::ResourceType::TEXTURE_CUBE:
+					case Rhi::ResourceType::TEXTURE_CUBE_ARRAY:
 					{
 						switch (descriptorRange.shaderVisibility)
 						{
@@ -9583,35 +9595,41 @@ namespace OpenGLES3Rhi
 								glActiveTexture(static_cast<GLenum>(GL_TEXTURE0 + descriptorRange.baseShaderRegister));
 
 								// Bind texture or texture buffer
-								if (resourceType == Rhi::ResourceType::TEXTURE_BUFFER)
+								if (Rhi::ResourceType::TEXTURE_BUFFER == resourceType)
 								{
 									glBindTexture(GL_TEXTURE_BUFFER_EXT, static_cast<TextureBuffer*>(resource)->getOpenGLES3Texture());
 								}
-								else if (resourceType == Rhi::ResourceType::TEXTURE_1D)
+								else if (Rhi::ResourceType::TEXTURE_1D == resourceType)
 								{
 									// OpenGL ES 3 has no 1D textures, just use a 2D texture with a height of one
 									glBindTexture(GL_TEXTURE_2D, static_cast<Texture1D*>(resource)->getOpenGLES3Texture());
 								}
-								else if (resourceType == Rhi::ResourceType::TEXTURE_1D_ARRAY)
+								else if (Rhi::ResourceType::TEXTURE_1D_ARRAY == resourceType)
 								{
 									// OpenGL ES 3 has no 1D textures, just use a 2D texture with a height of one
 									// No extension check required, if we in here we already know it must exist
 									glBindTexture(GL_TEXTURE_2D_ARRAY, static_cast<Texture1DArray*>(resource)->getOpenGLES3Texture());
 								}
-								else if (resourceType == Rhi::ResourceType::TEXTURE_2D_ARRAY)
+								else if (Rhi::ResourceType::TEXTURE_2D_ARRAY == resourceType)
 								{
 									// No extension check required, if we in here we already know it must exist
 									glBindTexture(GL_TEXTURE_2D_ARRAY, static_cast<Texture2DArray*>(resource)->getOpenGLES3Texture());
 								}
-								else if (resourceType == Rhi::ResourceType::TEXTURE_3D)
+								else if (Rhi::ResourceType::TEXTURE_3D == resourceType)
 								{
 									// No extension check required, if we in here we already know it must exist
 									glBindTexture(GL_TEXTURE_3D, static_cast<Texture3D*>(resource)->getOpenGLES3Texture());
 								}
-								else if (resourceType == Rhi::ResourceType::TEXTURE_CUBE)
+								else if (Rhi::ResourceType::TEXTURE_CUBE == resourceType)
 								{
 									// No extension check required, if we in here we already know it must exist
 									glBindTexture(GL_TEXTURE_CUBE_MAP, static_cast<TextureCube*>(resource)->getOpenGLES3Texture());
+								}
+								else if (Rhi::ResourceType::TEXTURE_CUBE_ARRAY == resourceType)
+								{
+									// No extension check required, if we in here we already know it must exist
+									// TODO(co) Implement me
+									// glBindTexture(GL_TEXTURE_CUBE_MAP, static_cast<TextureCubeArray*>(resource)->getOpenGLES3Texture());
 								}
 								else
 								{
@@ -9869,6 +9887,7 @@ namespace OpenGLES3Rhi
 					case Rhi::ResourceType::TEXTURE_2D_ARRAY:
 					case Rhi::ResourceType::TEXTURE_3D:
 					case Rhi::ResourceType::TEXTURE_CUBE:
+					case Rhi::ResourceType::TEXTURE_CUBE_ARRAY:
 					case Rhi::ResourceType::GRAPHICS_PIPELINE_STATE:
 					case Rhi::ResourceType::COMPUTE_PIPELINE_STATE:
 					case Rhi::ResourceType::SAMPLER_STATE:
@@ -10201,6 +10220,7 @@ namespace OpenGLES3Rhi
 			case Rhi::ResourceType::TEXTURE_2D_ARRAY:
 			case Rhi::ResourceType::TEXTURE_3D:
 			case Rhi::ResourceType::TEXTURE_CUBE:
+			case Rhi::ResourceType::TEXTURE_CUBE_ARRAY:
 			case Rhi::ResourceType::GRAPHICS_PIPELINE_STATE:
 			case Rhi::ResourceType::COMPUTE_PIPELINE_STATE:
 			case Rhi::ResourceType::SAMPLER_STATE:
@@ -10603,6 +10623,12 @@ namespace OpenGLES3Rhi
 				return false;
 			}
 
+			case Rhi::ResourceType::TEXTURE_CUBE_ARRAY:
+			{
+				// TODO(co) Implement me
+				return false;
+			}
+
 			case Rhi::ResourceType::ROOT_SIGNATURE:
 			case Rhi::ResourceType::RESOURCE_GROUP:
 			case Rhi::ResourceType::GRAPHICS_PROGRAM:
@@ -10717,6 +10743,12 @@ namespace OpenGLES3Rhi
 			}
 
 			case Rhi::ResourceType::TEXTURE_CUBE:
+			{
+				// TODO(co) Implement me
+				break;
+			}
+
+			case Rhi::ResourceType::TEXTURE_CUBE_ARRAY:
 			{
 				// TODO(co) Implement me
 				break;

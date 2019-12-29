@@ -6473,6 +6473,15 @@ namespace Direct3D10Rhi
 			return RHI_NEW(direct3D10Rhi.getContext(), TextureCube)(direct3D10Rhi, width, height, textureFormat, data, textureFlags, textureUsage RHI_RESOURCE_DEBUG_PASS_PARAMETER);
 		}
 
+		[[nodiscard]] virtual Rhi::ITextureCubeArray* createTextureCubeArray([[maybe_unused]] uint32_t width, [[maybe_unused]] uint32_t height, [[maybe_unused]] uint32_t numberOfSlices, [[maybe_unused]] Rhi::TextureFormat::Enum textureFormat, [[maybe_unused]] const void* data = nullptr, [[maybe_unused]] uint32_t textureFlags = 0, [[maybe_unused]] Rhi::TextureUsage textureUsage = Rhi::TextureUsage::DEFAULT RHI_RESOURCE_DEBUG_NAME_PARAMETER) override
+		{
+			// TODO(co) Implement me, Direct3D 10.1 has support for it ("D3D10_1_SRV_DIMENSION_TEXTURECUBEARRAY")
+			#ifdef RHI_DEBUG
+				debugName = debugName;
+			#endif
+			return nullptr;
+		}
+
 
 	//[-------------------------------------------------------]
 	//[ Protected virtual Rhi::RefCount methods               ]
@@ -7919,6 +7928,7 @@ namespace Direct3D10Rhi
 						case Rhi::ResourceType::TEXTURE_1D_ARRAY:
 						case Rhi::ResourceType::TEXTURE_3D:
 						case Rhi::ResourceType::TEXTURE_CUBE:
+						case Rhi::ResourceType::TEXTURE_CUBE_ARRAY:
 						case Rhi::ResourceType::GRAPHICS_PIPELINE_STATE:
 						case Rhi::ResourceType::COMPUTE_PIPELINE_STATE:
 						case Rhi::ResourceType::SAMPLER_STATE:
@@ -8001,6 +8011,7 @@ namespace Direct3D10Rhi
 					case Rhi::ResourceType::TEXTURE_1D_ARRAY:
 					case Rhi::ResourceType::TEXTURE_3D:
 					case Rhi::ResourceType::TEXTURE_CUBE:
+					case Rhi::ResourceType::TEXTURE_CUBE_ARRAY:
 					case Rhi::ResourceType::GRAPHICS_PIPELINE_STATE:
 					case Rhi::ResourceType::COMPUTE_PIPELINE_STATE:
 					case Rhi::ResourceType::SAMPLER_STATE:
@@ -9872,6 +9883,7 @@ namespace Direct3D10Rhi
 					case Rhi::ResourceType::TEXTURE_2D_ARRAY:
 					case Rhi::ResourceType::TEXTURE_3D:
 					case Rhi::ResourceType::TEXTURE_CUBE:
+					case Rhi::ResourceType::TEXTURE_CUBE_ARRAY:
 					{
 						ID3D10ShaderResourceView* d3d10ShaderResourceView = nullptr;
 						switch (resourceType)
@@ -9906,6 +9918,11 @@ namespace Direct3D10Rhi
 
 							case Rhi::ResourceType::TEXTURE_CUBE:
 								d3d10ShaderResourceView = static_cast<const TextureCube*>(resource)->getD3D10ShaderResourceView();
+								break;
+
+							case Rhi::ResourceType::TEXTURE_CUBE_ARRAY:
+								// TODO(co) Implement me, Direct3D 10.1 has support for it ("D3D10_1_SRV_DIMENSION_TEXTURECUBEARRAY")
+								// d3d10ShaderResourceView = static_cast<const TextureCubeArray*>(resource)->getD3D10ShaderResourceView();
 								break;
 
 							case Rhi::ResourceType::ROOT_SIGNATURE:
@@ -10180,6 +10197,7 @@ namespace Direct3D10Rhi
 					case Rhi::ResourceType::TEXTURE_2D_ARRAY:
 					case Rhi::ResourceType::TEXTURE_3D:
 					case Rhi::ResourceType::TEXTURE_CUBE:
+					case Rhi::ResourceType::TEXTURE_CUBE_ARRAY:
 					case Rhi::ResourceType::GRAPHICS_PIPELINE_STATE:
 					case Rhi::ResourceType::COMPUTE_PIPELINE_STATE:
 					case Rhi::ResourceType::SAMPLER_STATE:
@@ -10310,6 +10328,7 @@ namespace Direct3D10Rhi
 				case Rhi::ResourceType::TEXTURE_2D_ARRAY:
 				case Rhi::ResourceType::TEXTURE_3D:
 				case Rhi::ResourceType::TEXTURE_CUBE:
+				case Rhi::ResourceType::TEXTURE_CUBE_ARRAY:
 				case Rhi::ResourceType::GRAPHICS_PIPELINE_STATE:
 				case Rhi::ResourceType::COMPUTE_PIPELINE_STATE:
 				case Rhi::ResourceType::SAMPLER_STATE:
@@ -10511,6 +10530,7 @@ namespace Direct3D10Rhi
 			case Rhi::ResourceType::TEXTURE_2D_ARRAY:
 			case Rhi::ResourceType::TEXTURE_3D:
 			case Rhi::ResourceType::TEXTURE_CUBE:
+			case Rhi::ResourceType::TEXTURE_CUBE_ARRAY:
 			case Rhi::ResourceType::GRAPHICS_PIPELINE_STATE:
 			case Rhi::ResourceType::COMPUTE_PIPELINE_STATE:
 			case Rhi::ResourceType::SAMPLER_STATE:
@@ -10571,6 +10591,7 @@ namespace Direct3D10Rhi
 			case Rhi::ResourceType::TEXTURE_2D_ARRAY:
 			case Rhi::ResourceType::TEXTURE_3D:
 			case Rhi::ResourceType::TEXTURE_CUBE:
+			case Rhi::ResourceType::TEXTURE_CUBE_ARRAY:
 			case Rhi::ResourceType::GRAPHICS_PIPELINE_STATE:
 			case Rhi::ResourceType::COMPUTE_PIPELINE_STATE:
 			case Rhi::ResourceType::SAMPLER_STATE:
@@ -10985,6 +11006,10 @@ namespace Direct3D10Rhi
 				// TODO(co) Implement Direct3D 10 cube texture
 				return false;
 
+			case Rhi::ResourceType::TEXTURE_CUBE_ARRAY:
+				// TODO(co) Implement Direct3D 10.1 cube texture array
+				return false;
+
 			case Rhi::ResourceType::ROOT_SIGNATURE:
 			case Rhi::ResourceType::RESOURCE_GROUP:
 			case Rhi::ResourceType::GRAPHICS_PROGRAM:
@@ -11075,6 +11100,10 @@ namespace Direct3D10Rhi
 
 			case Rhi::ResourceType::TEXTURE_CUBE:
 				// TODO(co) Implement Direct3D 10 cube texture
+				break;
+
+			case Rhi::ResourceType::TEXTURE_CUBE_ARRAY:
+				// TODO(co) Implement Direct3D 10.1 cube texture array
 				break;
 
 			case Rhi::ResourceType::ROOT_SIGNATURE:

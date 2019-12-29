@@ -4879,6 +4879,12 @@ namespace Direct3D9Rhi
 			return RHI_NEW(direct3D9Rhi.getContext(), TextureCube)(direct3D9Rhi, width, height, textureFormat, data, textureFlags, textureUsage RHI_RESOURCE_DEBUG_PASS_PARAMETER);
 		}
 
+		[[nodiscard]] virtual Rhi::ITextureCubeArray* createTextureCubeArray([[maybe_unused]] uint32_t width, [[maybe_unused]] uint32_t height, [[maybe_unused]] uint32_t numberOfSlices, [[maybe_unused]] Rhi::TextureFormat::Enum textureFormat, [[maybe_unused]] const void* data = nullptr, [[maybe_unused]] uint32_t textureFlags = 0, [[maybe_unused]] Rhi::TextureUsage textureUsage = Rhi::TextureUsage::DEFAULT RHI_RESOURCE_DEBUG_NAME_MAYBE_UNUSED_PARAMETER) override
+		{
+			RHI_ASSERT(getRhi().getContext(), false, "Direct3D 9 has no texture cube arrays")
+			return nullptr;
+		}
+
 
 	//[-------------------------------------------------------]
 	//[ Protected virtual Rhi::RefCount methods               ]
@@ -6037,6 +6043,7 @@ namespace Direct3D9Rhi
 						case Rhi::ResourceType::TEXTURE_2D_ARRAY:
 						case Rhi::ResourceType::TEXTURE_3D:
 						case Rhi::ResourceType::TEXTURE_CUBE:
+						case Rhi::ResourceType::TEXTURE_CUBE_ARRAY:
 						case Rhi::ResourceType::GRAPHICS_PIPELINE_STATE:
 						case Rhi::ResourceType::COMPUTE_PIPELINE_STATE:
 						case Rhi::ResourceType::SAMPLER_STATE:
@@ -6099,6 +6106,7 @@ namespace Direct3D9Rhi
 					case Rhi::ResourceType::TEXTURE_2D_ARRAY:
 					case Rhi::ResourceType::TEXTURE_3D:
 					case Rhi::ResourceType::TEXTURE_CUBE:
+					case Rhi::ResourceType::TEXTURE_CUBE_ARRAY:
 					case Rhi::ResourceType::GRAPHICS_PIPELINE_STATE:
 					case Rhi::ResourceType::COMPUTE_PIPELINE_STATE:
 					case Rhi::ResourceType::SAMPLER_STATE:
@@ -7738,6 +7746,7 @@ namespace Direct3D9Rhi
 					case Rhi::ResourceType::TEXTURE_2D_ARRAY:
 					case Rhi::ResourceType::TEXTURE_3D:
 					case Rhi::ResourceType::TEXTURE_CUBE:
+					case Rhi::ResourceType::TEXTURE_CUBE_ARRAY:
 					{
 						const UINT startSlot = descriptorRange.baseShaderRegister;
 
@@ -7767,6 +7776,10 @@ namespace Direct3D9Rhi
 
 							case Rhi::ResourceType::TEXTURE_CUBE:
 								direct3DBaseTexture9 = static_cast<TextureCube*>(resource)->getDirect3DTexture9();
+								break;
+
+							case Rhi::ResourceType::TEXTURE_CUBE_ARRAY:
+								RHI_LOG(mContext, CRITICAL, "Direct3D 9 has no cube array texture support")
 								break;
 
 							case Rhi::ResourceType::TEXTURE_BUFFER:
@@ -8089,6 +8102,7 @@ namespace Direct3D9Rhi
 					case Rhi::ResourceType::TEXTURE_2D_ARRAY:
 					case Rhi::ResourceType::TEXTURE_3D:
 					case Rhi::ResourceType::TEXTURE_CUBE:
+					case Rhi::ResourceType::TEXTURE_CUBE_ARRAY:
 					case Rhi::ResourceType::GRAPHICS_PIPELINE_STATE:
 					case Rhi::ResourceType::COMPUTE_PIPELINE_STATE:
 					case Rhi::ResourceType::SAMPLER_STATE:
@@ -8852,6 +8866,7 @@ namespace Direct3D9Rhi
 			case Rhi::ResourceType::UNIFORM_BUFFER:
 			case Rhi::ResourceType::TEXTURE_1D_ARRAY:
 			case Rhi::ResourceType::TEXTURE_2D_ARRAY:
+			case Rhi::ResourceType::TEXTURE_CUBE_ARRAY:
 			case Rhi::ResourceType::GRAPHICS_PIPELINE_STATE:
 			case Rhi::ResourceType::COMPUTE_PIPELINE_STATE:
 			case Rhi::ResourceType::SAMPLER_STATE:
@@ -8921,6 +8936,7 @@ namespace Direct3D9Rhi
 			case Rhi::ResourceType::UNIFORM_BUFFER:
 			case Rhi::ResourceType::TEXTURE_1D_ARRAY:
 			case Rhi::ResourceType::TEXTURE_2D_ARRAY:
+			case Rhi::ResourceType::TEXTURE_CUBE_ARRAY:
 			case Rhi::ResourceType::GRAPHICS_PIPELINE_STATE:
 			case Rhi::ResourceType::COMPUTE_PIPELINE_STATE:
 			case Rhi::ResourceType::SAMPLER_STATE:

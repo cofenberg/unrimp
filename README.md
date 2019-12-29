@@ -20,33 +20,32 @@ Screenshots
 <img src="https://github.com/cofenberg/unrimp/raw/master/Documentation/Screenshot2.jpg" width="640" height="360">
 
 
-Features
+General
 ======
-- General
-	- C++ 17 and above, no legacy compiler support, compiled with wall warning level
-	- Compact user-header for the rendering hardware interface (RHI)
-		- A single all in one header for ease-of-use and best possible compile times
-		- No need to links against the RHI library itself, load RHI implementations dynamically during runtime
-	- Usage of [Amalgamated](https://blog.forrestthewoods.com/improving-open-source-with-amalgamation-cf293592c5f4)/[Unity](http://buffered.io/posts/the-magic-of-unity-builds/) builds for best possible compile times
-	- Using [CMake](https://cmake.org/) for the build process
-	- Using [Doxygen](http://www.doxygen.org) for code documentation
-	- Lightweight RHI implementations
-		- Designed with [AZDO ("Almost Zero Driver Overhead")](https://de.slideshare.net/CassEveritt/approaching-zero-driver-overhead) in mind
-		- Implementations try to stick as best as possible close-to-the-metal and as a result are just a few KiB instead of MiB in memory size
-		- Implementations load the entry points of Vulkan, Direct3D, OpenGL and so on during runtime, meaning it's possible to react on system failures by e.g. dynamically switching to another RHI implementation
-	- Support for static and shared build
-	- RTTI and C++ exceptions are not used by RHI and renderer
-	- Separation into RHI, renderer and toolkit for asset cooking
-		- RHI abstracts way the underlying API like Vulkan/OpenGL/DirectX
-		- Renderer designed with end-user and middleware-user in mind
-			- Efficiency and responsiveness over flexibility (were it isn't useful in practice)
-			- Intended to be controlled by a high-level entity-component system, no unused implementation feature overkill in the basic renderer
-		- Toolkit designed with developer fast iterations in mind: Asset source flexibility, asset background compilation, hot-reloading
-	- Interfaces for log, assert, memory allocator, graphics debugger, profiler and file so the user has the control over those things
-		- Standard implementations are provided
-		- Standard graphics debugger implementation using [RenderDoc](https://renderdoc.org/) is provided
-		- Standard profiler implementation using [Remotery](https://github.com/Celtoys/Remotery) is provided
-		- Standard file implementation using UTF-8 STD file streams as well as [PhysicsFS](https://icculus.org/physfs/) for shipping packed asset packages are provided
+- C++ 17 and above, no legacy compiler support, compiled with wall warning level
+- Compact user-header for the rendering hardware interface (RHI)
+	- A single all in one header for ease-of-use and best possible compile times
+	- No need to links against the RHI library itself, load RHI implementations dynamically during runtime
+- Usage of [Amalgamated](https://blog.forrestthewoods.com/improving-open-source-with-amalgamation-cf293592c5f4)/[Unity](http://buffered.io/posts/the-magic-of-unity-builds/) builds for best possible compile times
+- Using [CMake](https://cmake.org/) for the build process
+- Using [Doxygen](http://www.doxygen.org) for code documentation
+- Lightweight RHI implementations
+	- Designed with [AZDO ("Almost Zero Driver Overhead")](https://de.slideshare.net/CassEveritt/approaching-zero-driver-overhead) in mind
+	- Implementations try to stick as best as possible close-to-the-metal and as a result are just a few KiB instead of MiB in memory size
+	- Implementations load the entry points of Vulkan, Direct3D, OpenGL and so on during runtime, meaning it's possible to react on system failures by e.g. dynamically switching to another RHI implementation
+- Support for static and shared build
+- RTTI and C++ exceptions are not used by RHI and renderer
+- Separation into RHI, renderer and toolkit for asset cooking
+	- RHI abstracts way the underlying API like Vulkan/OpenGL/DirectX
+	- Renderer designed with end-user and middleware-user in mind
+		- Efficiency and responsiveness over flexibility (were it isn't useful in practice)
+		- Intended to be controlled by a high-level entity-component system, no unused implementation feature overkill in the basic renderer
+	- Toolkit designed with developer fast iterations in mind: Asset source flexibility, asset background compilation, hot-reloading
+- Interfaces for log, assert, memory allocator, graphics debugger, profiler and file so the user has the control over those things
+	- Standard implementations are provided
+	- Standard graphics debugger implementation using [RenderDoc](https://renderdoc.org/) is provided
+	- Standard profiler implementation using [Remotery](https://github.com/Celtoys/Remotery) is provided
+	- Standard file implementation using UTF-8 STD file streams as well as [PhysicsFS](https://icculus.org/physfs/) for shipping packed asset packages are provided
 - Cross-platform
 	- Microsoft Windows x86 and x64
 	- Currently unmaintained
@@ -93,7 +92,7 @@ Rendering hardware interface (RHI) and implementations
 	- Indirect buffer object with optional internal emulation, draw methods always use an indirect buffer to have an unified draw call API
 	- Uniform buffer object (UBO, "constant buffer" in Direct3D terminology)
 	- Command buffer mandatory by design, not just build on top
-- Textures: 1D, 1D array, 2D, 2D array, 3D, cube
+- Textures: 1D, 1D array, 2D, 2D array, 3D, cube, cube array
 - State objects with mapping to API specific settings during creation, not runtime
 	- Graphics pipeline state object (PSO) which directly maps to Direct3D 12, other RHI implementations internally subdivide into
 		- Rasterizer state object (rasterizer stage (RS))

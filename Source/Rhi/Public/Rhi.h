@@ -352,6 +352,7 @@ namespace Rhi
 			class ITexture2DArray;
 			class ITexture3D;
 			class ITextureCube;
+			class ITextureCubeArray;
 		class IState;
 			class IPipelineState;
 				class IGraphicsPipelineState;
@@ -1199,18 +1200,19 @@ namespace Rhi
 		TEXTURE_2D_ARRAY			   = 17,	///< Texture 2D array
 		TEXTURE_3D					   = 18,	///< Texture 3D
 		TEXTURE_CUBE				   = 19,	///< Texture cube
+		TEXTURE_CUBE_ARRAY			   = 20,	///< Texture cube array
 		// IState
 			// IPipelineState
-			GRAPHICS_PIPELINE_STATE	   = 20,	///< Graphics pipeline state (PSO)
-			COMPUTE_PIPELINE_STATE	   = 21,	///< Compute pipeline state (PSO)
-		SAMPLER_STATE				   = 22,	///< Sampler state
+			GRAPHICS_PIPELINE_STATE	   = 21,	///< Graphics pipeline state (PSO)
+			COMPUTE_PIPELINE_STATE	   = 22,	///< Compute pipeline state (PSO)
+		SAMPLER_STATE				   = 23,	///< Sampler state
 		// IShader
-		VERTEX_SHADER				   = 23,	///< Vertex shader (VS)
-		TESSELLATION_CONTROL_SHADER	   = 24,	///< Tessellation control shader (TCS, "hull shader" in Direct3D terminology)
-		TESSELLATION_EVALUATION_SHADER = 25,	///< Tessellation evaluation shader (TES, "domain shader" in Direct3D terminology)
-		GEOMETRY_SHADER				   = 26,	///< Geometry shader (GS)
-		FRAGMENT_SHADER				   = 27,	///< Fragment shader (FS, "pixel shader" in Direct3D terminology)
-		COMPUTE_SHADER				   = 28		///< Compute shader (CS)
+		VERTEX_SHADER				   = 24,	///< Vertex shader (VS)
+		TESSELLATION_CONTROL_SHADER	   = 25,	///< Tessellation control shader (TCS, "hull shader" in Direct3D terminology)
+		TESSELLATION_EVALUATION_SHADER = 26,	///< Tessellation evaluation shader (TES, "domain shader" in Direct3D terminology)
+		GEOMETRY_SHADER				   = 27,	///< Geometry shader (GS)
+		FRAGMENT_SHADER				   = 28,	///< Fragment shader (FS, "pixel shader" in Direct3D terminology)
+		COMPUTE_SHADER				   = 29		///< Compute shader (CS)
 	};
 
 
@@ -1416,6 +1418,7 @@ namespace Rhi
 					case ResourceType::TEXTURE_2D_ARRAY:
 					case ResourceType::TEXTURE_3D:
 					case ResourceType::TEXTURE_CUBE:
+					case ResourceType::TEXTURE_CUBE_ARRAY:
 						range.rangeType = DescriptorRangeType::SRV;
 						break;
 
@@ -3894,6 +3897,8 @@ namespace Rhi
 			std::atomic<uint32_t> numberOfCreatedTexture3Ds;					///< Number of created texture 3D instances
 			std::atomic<uint32_t> currentNumberOfTextureCubes;					///< Current number of texture cube instances
 			std::atomic<uint32_t> numberOfCreatedTextureCubes;					///< Number of created texture cube instances
+			std::atomic<uint32_t> currentNumberOfTextureCubeArrays;				///< Current number of texture cube array instances
+			std::atomic<uint32_t> numberOfCreatedTextureCubeArrays;				///< Number of created texture cube array instances
 			// IState
 			std::atomic<uint32_t> currentNumberOfGraphicsPipelineStates;		///< Current number of graphics pipeline state (PSO) instances
 			std::atomic<uint32_t> numberOfCreatedGraphicsPipelineStates;		///< Number of created graphics pipeline state (PSO) instances
@@ -3965,6 +3970,8 @@ namespace Rhi
 				numberOfCreatedTexture3Ds(0),
 				currentNumberOfTextureCubes(0),
 				numberOfCreatedTextureCubes(0),
+				currentNumberOfTextureCubeArrays(0),
+				numberOfCreatedTextureCubeArrays(0),
 				// IState
 				currentNumberOfGraphicsPipelineStates(0),
 				numberOfCreatedGraphicsPipelineStates(0),
@@ -4031,6 +4038,7 @@ namespace Rhi
 						currentNumberOfTexture2DArrays +
 						currentNumberOfTexture3Ds +
 						currentNumberOfTextureCubes +
+						currentNumberOfTextureCubeArrays +
 						// IState
 						currentNumberOfGraphicsPipelineStates +
 						currentNumberOfComputePipelineStates +
@@ -4086,6 +4094,7 @@ namespace Rhi
 				RHI_LOG(context, INFORMATION, "2D texture arrays: %u", currentNumberOfTexture2DArrays.load())
 				RHI_LOG(context, INFORMATION, "3D textures: %u", currentNumberOfTexture3Ds.load())
 				RHI_LOG(context, INFORMATION, "Cube textures: %u", currentNumberOfTextureCubes.load())
+				RHI_LOG(context, INFORMATION, "Cube texture arrays: %u", currentNumberOfTextureCubeArrays.load())
 
 				// IState
 				RHI_LOG(context, INFORMATION, "Graphics pipeline states: %u", currentNumberOfGraphicsPipelineStates.load())
@@ -4162,6 +4171,7 @@ namespace Rhi
 		friend class ITexture2DArray;
 		friend class ITexture3D;
 		friend class ITextureCube;
+		friend class ITextureCubeArray;
 		friend class IGraphicsPipelineState;
 		friend class IComputePipelineState;
 		friend class ISamplerState;
@@ -6791,6 +6801,7 @@ namespace Rhi
 	*    - 2D texture array ("Rhi::ITexture2DArray")
 	*    - 3D texture ("Rhi::ITexture3D")
 	*    - Cube texture ("Rhi::ITextureCube")
+	*    - Cube texture array ("Rhi::ITextureCubeArray")
 	*/
 	class ITextureManager : public RefCount<ITextureManager>
 	{
@@ -6996,6 +7007,36 @@ namespace Rhi
 		*    (DDS-texture layout is using face-major order)
 		*/
 		[[nodiscard]] virtual ITextureCube* createTextureCube(uint32_t width, uint32_t height, TextureFormat::Enum textureFormat, const void* data = nullptr, uint32_t textureFlags = 0, TextureUsage textureUsage = TextureUsage::DEFAULT RHI_RESOURCE_DEBUG_NAME_PARAMETER) = 0;
+
+		/**
+		*  @brief
+		*    Create a cube texture array instance
+		*
+		*  @param[in] width
+		*    Texture width, must be >0 else a null pointer is returned
+		*  @param[in] height
+		*    Texture height, must be >0 else a null pointer is returned
+		*  @param[in] numberOfSlices
+		*    Number of slices, must be >0 else a null pointer is returned
+		*  @param[in] textureFormat
+		*    Texture format
+		*  @param[in] data
+		*    Texture data, can be a null pointer, the data is internally copied and you have to free your memory if you no longer need it
+		*  @param[in] textureFlags
+		*    Texture flags, see "Rhi::TextureFlag::Enum"
+		*  @param[in] textureUsage
+		*    Indication of the texture usage
+		*
+		*  @return
+		*    The created cube texture array instance, null pointer on error. Release the returned instance if you no longer need it.
+		*
+		*  @remarks
+		*    The texture data has to be in CRN-texture layout, which means organized in mip-major order, like this:
+		*    - Mip0: Face0, Face1, Face2, Face3, Face4, Face5
+		*    - Mip1: Face0, Face1, Face2, Face3, Face4, Face5
+		*    (DDS-texture layout is using face-major order)
+		*/
+		[[nodiscard]] virtual ITextureCubeArray* createTextureCubeArray(uint32_t width, uint32_t height, uint32_t numberOfSlices, TextureFormat::Enum textureFormat, const void* data = nullptr, uint32_t textureFlags = 0, TextureUsage textureUsage = TextureUsage::DEFAULT RHI_RESOURCE_DEBUG_NAME_PARAMETER) = 0;
 
 	// Protected methods
 	protected:
@@ -7204,6 +7245,13 @@ namespace Rhi
 	/**
 	*  @brief
 	*    Abstract 1D texture interface
+	*
+	*  @remarks
+	*    Common use cases for 1D textures:
+	*    - Illuminating Engineering Society (IES) light profile as 1D texture
+	*    - 1D lens color map for screen space lens flares
+	*    - 1D screen space ambient occlusion sample kernel map
+	*    - 1D light gradient map for cel—shading (a style of cartoon rendering)
 	*/
 	class ITexture1D : public ITexture
 	{
@@ -7278,7 +7326,7 @@ namespace Rhi
 	*    Abstract 1D array texture interface
 	*
 	*  @note
-	*    - An 1D array texture is for example useful for storing multiple 1D Illuminating Engineering Society (IES) light profiles packed together in a single texture in order to avoid RHI state changes
+	*    - Common use case for 1D texture array: An 1D array texture is for example useful for storing multiple 1D Illuminating Engineering Society (IES) light profiles packed together in a single texture in order to avoid RHI state changes
 	*/
 	class ITexture1DArray : public ITexture
 	{
@@ -7367,6 +7415,9 @@ namespace Rhi
 	/**
 	*  @brief
 	*    Abstract 2D texture interface
+	*
+	*  @note
+	*    - Common use case for 2D texture: Pretty much every standard 2D texture
 	*/
 	class ITexture2D : public ITexture
 	{
@@ -7455,6 +7506,12 @@ namespace Rhi
 	/**
 	*  @brief
 	*    Abstract 2D array texture interface
+	*
+	*  @remarks
+	*    Common use cases for 2D texture arrays:
+	*    - The cascade 2D textures of shadow mapping
+	*    - The detail layer 2D textures (grass, stone etc.) of a terrain
+	*    - Decal 2D textures
 	*/
 	class ITexture2DArray : public ITexture
 	{
@@ -7559,6 +7616,12 @@ namespace Rhi
 	/**
 	*  @brief
 	*    Abstract 3D texture interface
+	*
+	*  @remarks
+	*    Common use cases for 3D textures:
+	*    - 3D color correction lookup table (LUT)
+	*    - Volume rendering (medical area and nowadays in games as well)
+	*    - Light clusters 3D map
 	*/
 	class ITexture3D : public ITexture
 	{
@@ -7663,6 +7726,9 @@ namespace Rhi
 	/**
 	*  @brief
 	*    Abstract cube texture interface
+	*
+	*  @note
+	*    - Common use case for cube texture: Environment cube maps
 	*/
 	class ITextureCube : public ITexture
 	{
@@ -7741,6 +7807,113 @@ namespace Rhi
 	};
 
 	typedef SmartRefCount<ITextureCube> ITextureCubePtr;
+
+
+
+
+	//[-------------------------------------------------------]
+	//[ Rhi/Texture/ITextureCubeArray.h                       ]
+	//[-------------------------------------------------------]
+	/**
+	*  @brief
+	*    Abstract cube texture array interface
+	*
+	*  @note
+	*    - Common use case for cube texture array: Multiple environment cube maps (created e.g. via environment probes)
+	*/
+	class ITextureCubeArray : public ITexture
+	{
+
+	// Public methods
+	public:
+		/**
+		*  @brief
+		*    Destructor
+		*/
+		inline virtual ~ITextureCubeArray() override
+		{
+			#ifdef RHI_STATISTICS
+				// Update the statistics
+				--getRhi().getStatistics().currentNumberOfTextureCubeArrays;
+			#endif
+		}
+
+		/**
+		*  @brief
+		*    Return the width of the texture
+		*
+		*  @return
+		*    The width of the texture
+		*/
+		[[nodiscard]] inline uint32_t getWidth() const
+		{
+			return mWidth;
+		}
+
+		/**
+		*  @brief
+		*    Return the height of the texture
+		*
+		*  @return
+		*    The height of the texture
+		*/
+		[[nodiscard]] inline uint32_t getHeight() const
+		{
+			return mHeight;
+		}
+
+		/**
+		*  @brief
+		*    Return the number of slices
+		*
+		*  @return
+		*    The number of slices
+		*/
+		[[nodiscard]] inline uint32_t getNumberOfSlices() const
+		{
+			return mNumberOfSlices;
+		}
+
+	// Protected methods
+	protected:
+		/**
+		*  @brief
+		*    Constructor
+		*
+		*  @param[in] rhi
+		*    Owner RHI instance
+		*  @param[in] width
+		*    The width of the texture
+		*  @param[in] height
+		*    The height of the texture
+		*  @param[in] numberOfSlices
+		*    The number of slices
+		*/
+		inline ITextureCubeArray(IRhi& rhi, uint32_t width, uint32_t height, uint32_t numberOfSlices RHI_RESOURCE_DEBUG_NAME_PARAMETER_NO_DEFAULT) :
+			ITexture(ResourceType::TEXTURE_CUBE_ARRAY, rhi RHI_RESOURCE_DEBUG_PASS_PARAMETER),
+			mWidth(width),
+			mHeight(height),
+			mNumberOfSlices(numberOfSlices)
+		{
+			#ifdef RHI_STATISTICS
+				// Update the statistics
+				++rhi.getStatistics().numberOfCreatedTextureCubeArrays;
+				++rhi.getStatistics().currentNumberOfTextureCubeArrays;
+			#endif
+		}
+
+		explicit ITextureCubeArray(const ITextureCubeArray& source) = delete;
+		ITextureCubeArray& operator =(const ITextureCubeArray& source) = delete;
+
+	// Private data
+	private:
+		uint32_t mWidth;			///< The width of the texture
+		uint32_t mHeight;			///< The height of the texture
+		uint32_t mNumberOfSlices;	///< The number of slices
+
+	};
+
+	typedef SmartRefCount<ITextureCubeArray> ITextureCubeArrayPtr;
 
 
 

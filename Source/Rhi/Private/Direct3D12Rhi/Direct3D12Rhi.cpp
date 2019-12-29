@@ -7932,6 +7932,15 @@ namespace Direct3D12Rhi
 			return RHI_NEW(direct3D12Rhi.getContext(), TextureCube)(direct3D12Rhi, width, height, textureFormat, data, textureFlags RHI_RESOURCE_DEBUG_PASS_PARAMETER);
 		}
 
+		[[nodiscard]] virtual Rhi::ITextureCubeArray* createTextureCubeArray([[maybe_unused]] uint32_t width, [[maybe_unused]] uint32_t height, [[maybe_unused]] uint32_t numberOfSlices, [[maybe_unused]] Rhi::TextureFormat::Enum textureFormat, [[maybe_unused]] const void* data = nullptr, [[maybe_unused]] uint32_t textureFlags = 0, [[maybe_unused]] Rhi::TextureUsage textureUsage = Rhi::TextureUsage::DEFAULT RHI_RESOURCE_DEBUG_NAME_PARAMETER) override
+		{
+			// TODO(co) Implement me
+			#ifdef RHI_DEBUG
+				debugName = debugName;
+			#endif
+			return nullptr;
+		}
+
 
 	//[-------------------------------------------------------]
 	//[ Protected virtual Rhi::RefCount methods               ]
@@ -9312,6 +9321,7 @@ namespace Direct3D12Rhi
 						case Rhi::ResourceType::TEXTURE_1D_ARRAY:
 						case Rhi::ResourceType::TEXTURE_3D:
 						case Rhi::ResourceType::TEXTURE_CUBE:
+						case Rhi::ResourceType::TEXTURE_CUBE_ARRAY:
 						case Rhi::ResourceType::GRAPHICS_PIPELINE_STATE:
 						case Rhi::ResourceType::COMPUTE_PIPELINE_STATE:
 						case Rhi::ResourceType::SAMPLER_STATE:
@@ -9413,6 +9423,7 @@ namespace Direct3D12Rhi
 					case Rhi::ResourceType::TEXTURE_1D_ARRAY:
 					case Rhi::ResourceType::TEXTURE_3D:
 					case Rhi::ResourceType::TEXTURE_CUBE:
+					case Rhi::ResourceType::TEXTURE_CUBE_ARRAY:
 					case Rhi::ResourceType::GRAPHICS_PIPELINE_STATE:
 					case Rhi::ResourceType::COMPUTE_PIPELINE_STATE:
 					case Rhi::ResourceType::SAMPLER_STATE:
@@ -11310,6 +11321,7 @@ namespace Direct3D12Rhi
 						case Rhi::ResourceType::TEXTURE_2D_ARRAY:
 						case Rhi::ResourceType::TEXTURE_3D:
 						case Rhi::ResourceType::TEXTURE_CUBE:
+						case Rhi::ResourceType::TEXTURE_CUBE_ARRAY:
 						{
 							// Evaluate the texture type and create the Direct3D 12 shader resource view
 							ID3D12Resource* d3d12Resource = nullptr;
@@ -11376,6 +11388,19 @@ namespace Direct3D12Rhi
 									d3d12ShaderResourceViewDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURECUBE;
 									d3d12ShaderResourceViewDesc.TextureCube.MipLevels = textureCube->getNumberOfMipmaps();
 									d3d12Resource = textureCube->getD3D12Resource();
+									break;
+								}
+
+								case Rhi::ResourceType::TEXTURE_CUBE_ARRAY:
+								{
+									// TODO(co) Implement me
+									/*
+									const TextureCubeArray* textureCubeArray = static_cast<TextureCubeArray*>(resource);
+									d3d12ShaderResourceViewDesc.Format = textureCubeArray->getDxgiFormat();
+									d3d12ShaderResourceViewDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURECUBEARRAY;
+									d3d12ShaderResourceViewDesc.TextureCubeArray.MipLevels = textureCubeArray->getNumberOfMipmaps();
+									d3d12Resource = textureCubeArray->getD3D12Resource();
+									*/
 									break;
 								}
 
@@ -11468,6 +11493,7 @@ namespace Direct3D12Rhi
 						case Rhi::ResourceType::TEXTURE_2D_ARRAY:
 						case Rhi::ResourceType::TEXTURE_3D:
 						case Rhi::ResourceType::TEXTURE_CUBE:
+						case Rhi::ResourceType::TEXTURE_CUBE_ARRAY:
 						case Rhi::ResourceType::ROOT_SIGNATURE:
 						case Rhi::ResourceType::RESOURCE_GROUP:
 						case Rhi::ResourceType::GRAPHICS_PROGRAM:
@@ -12380,6 +12406,7 @@ namespace Direct3D12Rhi
 					case Rhi::ResourceType::TEXTURE_2D_ARRAY:
 					case Rhi::ResourceType::TEXTURE_3D:
 					case Rhi::ResourceType::TEXTURE_CUBE:
+					case Rhi::ResourceType::TEXTURE_CUBE_ARRAY:
 					case Rhi::ResourceType::GRAPHICS_PIPELINE_STATE:
 					case Rhi::ResourceType::COMPUTE_PIPELINE_STATE:
 					case Rhi::ResourceType::SAMPLER_STATE:
@@ -12491,6 +12518,7 @@ namespace Direct3D12Rhi
 					case Rhi::ResourceType::TEXTURE_2D_ARRAY:
 					case Rhi::ResourceType::TEXTURE_3D:
 					case Rhi::ResourceType::TEXTURE_CUBE:
+					case Rhi::ResourceType::TEXTURE_CUBE_ARRAY:
 					case Rhi::ResourceType::GRAPHICS_PIPELINE_STATE:
 					case Rhi::ResourceType::COMPUTE_PIPELINE_STATE:
 					case Rhi::ResourceType::SAMPLER_STATE:
@@ -12618,6 +12646,7 @@ namespace Direct3D12Rhi
 				case Rhi::ResourceType::TEXTURE_2D_ARRAY:
 				case Rhi::ResourceType::TEXTURE_3D:
 				case Rhi::ResourceType::TEXTURE_CUBE:
+				case Rhi::ResourceType::TEXTURE_CUBE_ARRAY:
 				case Rhi::ResourceType::GRAPHICS_PIPELINE_STATE:
 				case Rhi::ResourceType::COMPUTE_PIPELINE_STATE:
 				case Rhi::ResourceType::SAMPLER_STATE:
@@ -13212,6 +13241,8 @@ namespace Direct3D12Rhi
 			TEXTURE_RESOURCE(Rhi::ResourceType::TEXTURE_2D_ARRAY, Texture2DArray)
 			TEXTURE_RESOURCE(Rhi::ResourceType::TEXTURE_3D, Texture3D)
 			TEXTURE_RESOURCE(Rhi::ResourceType::TEXTURE_CUBE, TextureCube)
+			//TEXTURE_RESOURCE(Rhi::ResourceType::TEXTURE_CUBE_ARRAY, TextureCubeArray)	// TODO(co) Implement me
+			case Rhi::ResourceType::TEXTURE_CUBE_ARRAY:
 
 			case Rhi::ResourceType::ROOT_SIGNATURE:
 			case Rhi::ResourceType::RESOURCE_GROUP:
@@ -13289,6 +13320,8 @@ namespace Direct3D12Rhi
 			TEXTURE_RESOURCE(Rhi::ResourceType::TEXTURE_2D_ARRAY, Texture2DArray)
 			TEXTURE_RESOURCE(Rhi::ResourceType::TEXTURE_3D, Texture3D)
 			TEXTURE_RESOURCE(Rhi::ResourceType::TEXTURE_CUBE, TextureCube)
+			// TEXTURE_RESOURCE(Rhi::ResourceType::TEXTURE_CUBE_ARRAY, TextureCubeArray)	// TODO(co) Implement me
+			case Rhi::ResourceType::TEXTURE_CUBE_ARRAY:
 
 			case Rhi::ResourceType::ROOT_SIGNATURE:
 			case Rhi::ResourceType::RESOURCE_GROUP:
