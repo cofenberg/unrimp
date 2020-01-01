@@ -170,7 +170,7 @@ namespace Rhi
 		*    Constructor
 		*
 		*  @param[in] rhiName
-		*    Case sensitive ASCII name of the RHI to instance, must be valid.
+		*    Case sensitive ASCII name of the RHI to instance, must be valid. Usually "Rhi::DEFAULT_RHI_NAME".
 		*    Example RHI names: "Null", "Vulkan", "OpenGL", "OpenGLES3", "Direct3D9", "Direct3D10", "Direct3D11", "Direct3D12"
 		*  @param[in] context
 		*    RHI context, the RHI context instance must stay valid as long as the RHI instance exists

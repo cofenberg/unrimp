@@ -154,24 +154,7 @@ int main(int arc, char* argv[])
 				const bool loadRhiApiSharedLibrary = true;
 				Rhi::X11Context rhiContext(defaultLog, defaultAssert, defaultAllocator, getX11Display(), getNativeWindowHandle(*sdlWindow));
 			#endif
-			#ifdef RHI_DIRECT3D11
-				const char* defaultRhiName = "Direct3D11";
-			#elif defined(RHI_OPENGL)
-				const char* defaultRhiName = "OpenGL";
-			#elif defined(RHI_DIRECT3D10)
-				const char* defaultRhiName = "Direct3D10";
-			#elif defined(RHI_DIRECT3D9)
-				const char* defaultRhiName = "Direct3D9";
-			#elif defined(RHI_OPENGLES3)
-				const char* defaultRhiName = "OpenGLES3";
-			#elif defined(RHI_VULKAN)
-				const char* defaultRhiName = "Vulkan";
-			#elif defined(RHI_DIRECT3D12)
-				const char* defaultRhiName = "Direct3D12";
-			#elif defined(RHI_NULL)
-				const char* defaultRhiName = "Null";
-			#endif
-			Rhi::RhiInstance rhiInstance((arc > 1) ? argv[1] : defaultRhiName, rhiContext, loadRhiApiSharedLibrary);
+			Rhi::RhiInstance rhiInstance((arc > 1) ? argv[1] : Rhi::DEFAULT_RHI_NAME, rhiContext, loadRhiApiSharedLibrary);
 			Rhi::IRhiPtr rhi = rhiInstance.getRhi();
 			if (nullptr != rhi && rhi->isInitialized())
 			{

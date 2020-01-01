@@ -78,25 +78,7 @@ ExampleRunner::ExampleRunner() :
 	// Case sensitive name of the RHI to instance, might be ignored in case e.g. "RHI_DIRECT3D12" was set as preprocessor definition
 	// -> Example RHI names: "Null", "Vulkan", "OpenGL", "OpenGLES3", "Direct3D9", "Direct3D10", "Direct3D11", "Direct3D12"
 	// -> In case the graphics driver supports it, the OpenGL ES 3 RHI can automatically also run on a desktop PC without an emulator (perfect for testing/debugging)
-	mDefaultRhiName(
-		#ifdef RHI_DIRECT3D11
-			"Direct3D11"
-		#elif defined(RHI_OPENGL)
-			"OpenGL"
-		#elif defined(RHI_DIRECT3D10)
-			"Direct3D10"
-		#elif defined(RHI_DIRECT3D9)
-			"Direct3D9"
-		#elif defined(RHI_OPENGLES3)
-			"OpenGLES3"
-		#elif defined(RHI_VULKAN)
-			"Vulkan"
-		#elif defined(RHI_DIRECT3D12)
-			"Direct3D12"
-		#elif defined(RHI_NULL)
-			"Null"
-		#endif
-	)
+	mDefaultRhiName(Rhi::DEFAULT_RHI_NAME)
 {
 	// Sets of supported RHI implementations
 	const std::array<std::string_view, 8> supportsAllRhi	   = {{"Null", "Vulkan", "OpenGL", "OpenGLES3", "Direct3D9", "Direct3D10", "Direct3D11", "Direct3D12"}};
