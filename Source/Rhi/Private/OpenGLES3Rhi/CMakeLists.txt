@@ -66,19 +66,3 @@ if(SHARED_LIBRARY)
 		target_link_libraries(OpenGLES3Rhi android)
 	endif()
 endif()
-
-
-##################################################
-## Post build
-##################################################
-if(WIN32 AND SHARED_LIBRARY)
-	add_custom_command(TARGET OpenGLES3Rhi COMMAND ${CMAKE_COMMAND} -E copy "${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_CFG_INTDIR}/OpenGLES3Rhi.lib" ${OUTPUT_LIBRARY_DIRECTORY})
-endif()
-
-
-##################################################
-## Install
-##################################################
-install(TARGETS OpenGLES3Rhi
-		RUNTIME DESTINATION "${OUTPUT_LIBRARY_BINARY_DIRECTORY}"
-		ARCHIVE DESTINATION "${OUTPUT_LIBRARY_DIRECTORY}")

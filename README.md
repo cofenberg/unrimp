@@ -269,7 +269,7 @@ Terminology and Acronyms
 Microsoft Windows: First Example Kickoff
 ======
 - [Open Visual Studio 2019 and select "File -> Open -> CMake..." -> "unrimp/CMakeLists.txt"](https://blogs.msdn.microsoft.com/vcblog/2016/10/05/cmake-support-in-visual-studio/)
-- Build "Windows_x64_Shared" project settings and when done use Visual Studio menu -> CMake -> Install -> Unrimp
+- Build "Windows_x64_Shared" project settings
 - Compile the runtime assets by starting "unrimp/Binary/Windows_x64_Shared/ExampleProjectCompiler.exe"
 - Run "unrimp/Binary/Windows_x64_Shared/Examples.exe" (is using default command line arguments "unrimp/Binary/Windows_x64_Shared/Examples.exe ImGuiExampleSelector -r Direct3D11")
 - For debugging with Visual Studio 2019, use "Examples.exe (Install with Arguments)" or "ExampleProjectCompiler.exe (Install with Arguments)" as startup item

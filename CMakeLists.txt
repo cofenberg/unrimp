@@ -362,21 +362,13 @@ endif()
 set(OS_ARCHITECTURE "${CMAKE_SYSTEM_NAME}_${ARCHITECTURE}${BUILD_TYPE_ACRONYM}_${LIBRARY_TYPE_STRING}")
 message(STATUS "Operation system + architecture: ${OS_ARCHITECTURE}")
 
-# Output paths and create the directories
+# Output paths and create the directory, in order to keep things simple we put all output artifacts in a single central output directory
 set(OUTPUT_BINARY_DIRECTORY "${CMAKE_SOURCE_DIR}/Binary/${OS_ARCHITECTURE}")
 message(STATUS "Output binary directory: ${OUTPUT_BINARY_DIRECTORY}")
 file(MAKE_DIRECTORY ${OUTPUT_BINARY_DIRECTORY})
-
-set(OUTPUT_LIBRARY_DIRECTORY "${CMAKE_SOURCE_DIR}/Library/${OS_ARCHITECTURE}")
-message(STATUS "Output library directory: ${OUTPUT_LIBRARY_DIRECTORY}")
-file(MAKE_DIRECTORY ${OUTPUT_LIBRARY_DIRECTORY})
-
-if(SHARED_LIBRARY)
-	set(OUTPUT_LIBRARY_BINARY_DIRECTORY "${OUTPUT_BINARY_DIRECTORY}")
-else()
-	set(OUTPUT_LIBRARY_BINARY_DIRECTORY "${OUTPUT_LIBRARY_DIRECTORY}")
-endif()
-message(STATUS "Output library binary directory: ${OUTPUT_LIBRARY_BINARY_DIRECTORY}")
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${OUTPUT_BINARY_DIRECTORY}")
+set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY "${OUTPUT_BINARY_DIRECTORY}")
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${OUTPUT_BINARY_DIRECTORY}")
 
 
 ##################################################

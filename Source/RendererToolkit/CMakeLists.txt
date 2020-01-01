@@ -42,7 +42,7 @@ include_directories(${CMAKE_SOURCE_DIR}/External/RendererToolkit)	# For "SimpleF
 include_directories(${CMAKE_SOURCE_DIR}/External/RendererToolkit/RapidJSON/configuration)	# RapidJSON configuration and assert to exception
 include_directories(${CMAKE_SOURCE_DIR}/External/RendererToolkit/RapidJSON/include)
 include_directories(${CMAKE_SOURCE_DIR}/External/RendererToolkit/Assimp/include)
-link_directories(${CMAKE_SOURCE_DIR}/Library/${OS_ARCHITECTURE})
+link_directories(${CMAKE_LIBRARY_OUTPUT_DIRECTORY})
 
 
 ##################################################
@@ -190,19 +190,3 @@ else()
 	target_link_libraries(RendererToolkit ${LIBRARIES})
 	add_dependencies(RendererToolkit Renderer)
 endif()
-
-
-##################################################
-## Post build
-##################################################
-if(WIN32 AND SHARED_LIBRARY)
-	add_custom_command(TARGET RendererToolkit COMMAND ${CMAKE_COMMAND} -E copy "${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_CFG_INTDIR}/RendererToolkit.lib" ${OUTPUT_LIBRARY_DIRECTORY})
-endif()
-
-
-##################################################
-## Install
-##################################################
-install(TARGETS RendererToolkit
-		RUNTIME DESTINATION "${OUTPUT_LIBRARY_BINARY_DIRECTORY}"
-		ARCHIVE DESTINATION "${OUTPUT_LIBRARY_DIRECTORY}")

@@ -38,7 +38,7 @@ unrimp_add_conditional_rhi_definitions()
 ##################################################
 include_directories(${CMAKE_SOURCE_DIR}/Example/Source)
 include_directories(${CMAKE_SOURCE_DIR}/Source)
-link_directories(${CMAKE_SOURCE_DIR}/Library/${OS_ARCHITECTURE})
+link_directories(${CMAKE_LIBRARY_OUTPUT_DIRECTORY})
 
 
 ##################################################

@@ -59,19 +59,7 @@ endif()
 ##################################################
 ## Post build
 ##################################################
-if(SHARED_LIBRARY)
-	add_custom_command(TARGET Direct3D11Rhi COMMAND ${CMAKE_COMMAND} -E copy "${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_CFG_INTDIR}/Direct3D11Rhi.lib" ${OUTPUT_LIBRARY_DIRECTORY})
-endif()
-
 # Copy AMD AGS dll (for debug builds there are no static AMD AGS libraries available)
 if(${CMAKE_BUILD_TYPE} MATCHES "Debug")
 	add_custom_command(TARGET Direct3D11Rhi COMMAND ${CMAKE_COMMAND} -E copy "${CMAKE_SOURCE_DIR}/External/Rhi/AGS_SDK/Windows_${ARCHITECTURE}/Binary/amd_ags_${ARCHITECTURE}.dll" ${OUTPUT_BINARY_DIRECTORY})
 endif()
-
-
-##################################################
-## Install
-##################################################
-install(TARGETS Direct3D11Rhi
-		RUNTIME DESTINATION "${OUTPUT_LIBRARY_BINARY_DIRECTORY}"
-		ARCHIVE DESTINATION "${OUTPUT_LIBRARY_DIRECTORY}")

@@ -101,19 +101,3 @@ add_library(OpenGLRhi ${LIBRARY_TYPE} ${SOURCE_CODES})
 if(SHARED_LIBRARY)
 	set_target_properties(OpenGLRhi PROPERTIES COMPILE_FLAGS "-DSHARED_LIBRARIES -DRHI_OPENGL_EXPORTS")
 endif()
-
-
-##################################################
-## Post build
-##################################################
-if(WIN32 AND SHARED_LIBRARY)
-	add_custom_command(TARGET OpenGLRhi COMMAND ${CMAKE_COMMAND} -E copy "${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_CFG_INTDIR}/OpenGLRhi.lib" ${OUTPUT_LIBRARY_DIRECTORY})
-endif()
-
-
-##################################################
-## Install
-##################################################
-install(TARGETS OpenGLRhi
-		RUNTIME DESTINATION "${OUTPUT_LIBRARY_BINARY_DIRECTORY}"
-		ARCHIVE DESTINATION "${OUTPUT_LIBRARY_DIRECTORY}")

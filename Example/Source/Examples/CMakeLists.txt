@@ -76,7 +76,7 @@ include_directories(${CMAKE_SOURCE_DIR}/External/Renderer)	# "glm", "PhysicsFS",
 if(RENDERER_TOOLKIT)
 	include_directories(${CMAKE_SOURCE_DIR}/Renderer/RendererToolkit/include)
 endif()
-link_directories(${CMAKE_SOURCE_DIR}/Library/${OS_ARCHITECTURE})
+link_directories(${CMAKE_LIBRARY_OUTPUT_DIRECTORY})
 if(RHI_DIRECT3D11)
 	link_directories(${CMAKE_SOURCE_DIR}/External/Rhi/AGS_SDK/Windows_${ARCHITECTURE}/Library)
 endif()

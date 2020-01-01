@@ -53,19 +53,3 @@ add_library(Direct3D10Rhi ${LIBRARY_TYPE} ${SOURCE_CODES})
 if(SHARED_LIBRARY)
 	set_target_properties(Direct3D10Rhi PROPERTIES COMPILE_FLAGS "-DSHARED_LIBRARIES -DRHI_DIRECT3D10_EXPORTS")
 endif()
-
-
-##################################################
-## Post build
-##################################################
-if(SHARED_LIBRARY)
-	add_custom_command(TARGET Direct3D10Rhi COMMAND ${CMAKE_COMMAND} -E copy "${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_CFG_INTDIR}/Direct3D10Rhi.lib" ${OUTPUT_LIBRARY_DIRECTORY})
-endif()
-
-
-##################################################
-## Install
-##################################################
-install(TARGETS Direct3D10Rhi
-		RUNTIME DESTINATION "${OUTPUT_LIBRARY_BINARY_DIRECTORY}"
-		ARCHIVE DESTINATION "${OUTPUT_LIBRARY_DIRECTORY}")

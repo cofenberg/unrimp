@@ -99,19 +99,3 @@ add_library(VulkanRhi ${LIBRARY_TYPE} ${SOURCE_CODES})
 if(SHARED_LIBRARY)
 	set_target_properties(VulkanRhi PROPERTIES COMPILE_FLAGS "-DSHARED_LIBRARIES -DRHI_VULKAN_EXPORTS")
 endif()
-
-
-##################################################
-## Post build
-##################################################
-if(WIN32 AND SHARED_LIBRARY)
-	add_custom_command(TARGET VulkanRhi COMMAND ${CMAKE_COMMAND} -E copy "${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_CFG_INTDIR}/VulkanRhi.lib" ${OUTPUT_LIBRARY_DIRECTORY})
-endif()
-
-
-##################################################
-## Install
-##################################################
-install(TARGETS VulkanRhi
-		RUNTIME DESTINATION "${OUTPUT_LIBRARY_BINARY_DIRECTORY}"
-		ARCHIVE DESTINATION "${OUTPUT_LIBRARY_DIRECTORY}")
