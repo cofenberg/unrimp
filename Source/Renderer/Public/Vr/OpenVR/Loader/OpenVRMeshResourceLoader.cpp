@@ -377,10 +377,10 @@ namespace Renderer
 		Rhi::IBufferManager& bufferManager = mRenderer.getBufferManager();
 
 		// Create the vertex buffer
-		Rhi::IVertexBuffer* vertexBuffer = bufferManager.createVertexBuffer(static_cast<uint32_t>(mVertexBufferData.size()), mVertexBufferData.data(), 0, Rhi::BufferUsage::STATIC_DRAW RHI_RESOURCE_DEBUG_NAME(getRenderModelName().c_str()));
+		Rhi::IVertexBufferPtr vertexBuffer(bufferManager.createVertexBuffer(static_cast<uint32_t>(mVertexBufferData.size()), mVertexBufferData.data(), 0, Rhi::BufferUsage::STATIC_DRAW RHI_RESOURCE_DEBUG_NAME(getRenderModelName().c_str())));
 
 		// Create the index buffer
-		Rhi::IIndexBuffer* indexBuffer = bufferManager.createIndexBuffer(static_cast<uint32_t>(mIndexBufferData.size() * sizeof(uint16_t)), mIndexBufferData.data(), 0, Rhi::BufferUsage::STATIC_DRAW, Rhi::IndexBufferFormat::UNSIGNED_SHORT RHI_RESOURCE_DEBUG_NAME(getRenderModelName().c_str()));
+		Rhi::IIndexBufferPtr indexBuffer(bufferManager.createIndexBuffer(static_cast<uint32_t>(mIndexBufferData.size() * sizeof(uint16_t)), mIndexBufferData.data(), 0, Rhi::BufferUsage::STATIC_DRAW, Rhi::IndexBufferFormat::UNSIGNED_SHORT RHI_RESOURCE_DEBUG_NAME(getRenderModelName().c_str())));
 
 		// Create vertex array object (VAO)
 		const Rhi::VertexArrayVertexBuffer vertexArrayVertexBuffers[] = { vertexBuffer, mRenderer.getMeshResourceManager().getDrawIdVertexBufferPtr() };

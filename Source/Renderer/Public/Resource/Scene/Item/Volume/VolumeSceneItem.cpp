@@ -127,7 +127,7 @@ namespace
 				0, 4, 5,	// 0
 				5, 1, 0		// 1
 			};
-			Rhi::IIndexBuffer* indexBuffer = bufferManager.createIndexBuffer(sizeof(INDICES), INDICES, 0, Rhi::BufferUsage::STATIC_DRAW, Rhi::IndexBufferFormat::UNSIGNED_SHORT RHI_RESOURCE_DEBUG_NAME("Volume"));
+			Rhi::IIndexBufferPtr indexBuffer(bufferManager.createIndexBuffer(sizeof(INDICES), INDICES, 0, Rhi::BufferUsage::STATIC_DRAW, Rhi::IndexBufferFormat::UNSIGNED_SHORT RHI_RESOURCE_DEBUG_NAME("Volume")));
 
 			// Create vertex array object (VAO)
 			const Rhi::VertexArrayVertexBuffer vertexArrayVertexBuffers[] = { vertexBuffer, renderer.getMeshResourceManager().getDrawIdVertexBufferPtr() };

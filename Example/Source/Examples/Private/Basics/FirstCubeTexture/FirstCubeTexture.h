@@ -27,15 +27,13 @@
 //[-------------------------------------------------------]
 //[ Includes                                              ]
 //[-------------------------------------------------------]
-#include "Examples/Private/Framework/IApplicationImpl.h"
+#include "Examples/Private/Framework/ExampleBase.h"
 
-#include <Renderer/Public/Core/Platform/WindowsHeader.h>
+#ifdef RENDERER
+	#include <Renderer/Public/Core/Time/Stopwatch.h>
+#endif
 
-
-//[-------------------------------------------------------]
-//[ Forward declarations                                  ]
-//[-------------------------------------------------------]
-class IApplication;
+#include <Rhi/Public/Rhi.h>
 
 
 //[-------------------------------------------------------]
@@ -43,9 +41,20 @@ class IApplication;
 //[-------------------------------------------------------]
 /**
 *  @brief
-*    Windows application implementation class
+*    A first example showing how to work with cube textures
+*
+*  @remarks
+*    Demonstrates:
+*    - Vertex buffer object (VBO)
+*    - Vertex array object (VAO)
+*    - Cube texture and cube texture array
+*    - Uniform buffer object (UBO)
+*    - Sampler state object (SO)
+*    - Vertex shader (VS) and fragment shader (FS)
+*    - Root signature
+*    - Graphics pipeline state object (PSO)
 */
-class ApplicationImplWindows final : public IApplicationImpl
+class FirstCubeTexture final : public ExampleBase
 {
 
 
@@ -56,66 +65,65 @@ public:
 	/**
 	*  @brief
 	*    Constructor
-	*
-	*  @param[in] application
-	*    The owner application instance
-	*  @param[in] windowTitle
-	*    ASCII window title, can be a null pointer
 	*/
-	ApplicationImplWindows(IApplication& application, const char* windowTitle);
+	inline FirstCubeTexture() :
+		mObjectSpaceToClipSpaceMatrixUniformHandle(NULL_HANDLE),
+		mGlobalTimer(0.0f)
+	{
+		// Nothing here
+	}
 
 	/**
 	*  @brief
 	*    Destructor
 	*/
-	inline virtual ~ApplicationImplWindows() override
+	inline virtual ~FirstCubeTexture() override
 	{
+		// The resources are released within "onDeinitialization()"
 		// Nothing here
-		// mNativeWindowHandle is destroyed within onDeinitialization()
 	}
 
 
 //[-------------------------------------------------------]
-//[ Public virtual IApplicationImpl methods               ]
+//[ Public virtual IApplication methods                   ]
 //[-------------------------------------------------------]
 public:
 	virtual void onInitialization() override;
 	virtual void onDeinitialization() override;
-	[[nodiscard]] virtual bool processMessages() override;
-	virtual void getWindowSize(int &width, int &height) const override;
-
-	[[nodiscard]] inline virtual handle getNativeWindowHandle() const override
-	{
-		return reinterpret_cast<handle>(mNativeWindowHandle);
-	}
-
-	virtual void redraw() override;
-	virtual void showUrgentMessage(const char* message, const char* title = "Urgent Message") const override;
-
-
-//[-------------------------------------------------------]
-//[ Private static Microsoft Windows callback function    ]
-//[-------------------------------------------------------]
-private:
-	[[nodiscard]] static LRESULT CALLBACK wndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
+	#ifdef RENDERER
+		virtual void onUpdate() override;
+	#endif
+	virtual void onDraw() override;
 
 
 //[-------------------------------------------------------]
 //[ Private methods                                       ]
 //[-------------------------------------------------------]
 private:
-	explicit ApplicationImplWindows(const ApplicationImplWindows& source) = delete;
-	ApplicationImplWindows& operator =(const ApplicationImplWindows& source) = delete;
+	void fillCommandBuffer();
 
 
 //[-------------------------------------------------------]
 //[ Private data                                          ]
 //[-------------------------------------------------------]
 private:
-	IApplication* mApplication;			///< The owner application instance, always valid
-	char		  mWindowTitle[128];	///< ASCII window title
-	HWND		  mNativeWindowHandle;	///< OS window handle, can be a null handler
-	bool		  mFirstUpdate;
+	Rhi::IBufferManagerPtr			mBufferManager;			///< Buffer manager, can be a null pointer
+	Rhi::ITextureManagerPtr			mTextureManager;		///< Texture manager, can be a null pointer
+	Rhi::CommandBuffer				mCommandBuffer;			///< Command buffer
+	Rhi::IRootSignaturePtr			mRootSignature;			///< Root signature, can be a null pointer
+	Rhi::IUniformBufferPtr			mUniformBuffer;			///< Uniform buffer object (UBO), can be a null pointer
+	Rhi::IResourceGroupPtr			mTextureGroup;			///< Texture group, can be a null pointer
+	Rhi::IResourceGroupPtr			mSamplerStateGroup;		///< Sampler state resource group, can be a null pointer
+	Rhi::IGraphicsPipelineStatePtr	mGraphicsPipelineState;	///< Graphics pipeline state object (PSO), can be a null pointer
+	Rhi::IGraphicsProgramPtr	    mGraphicsProgram;		///< Graphics program, can be a null pointer
+	Rhi::IVertexArrayPtr			mVertexArray;			///< Vertex array object (VAO), can be a null pointer
+	// Optimization: Cache data to not bother the RHI implementation to much
+	handle mObjectSpaceToClipSpaceMatrixUniformHandle;	///< Object space to clip space matrix uniform handle, can be "NULL_HANDLE"
+	// For timing
+	#ifdef RENDERER
+		Renderer::Stopwatch mStopwatch;		///< Stopwatch instance
+	#endif
+	float					mGlobalTimer;	///< Global timer
 
 
 };

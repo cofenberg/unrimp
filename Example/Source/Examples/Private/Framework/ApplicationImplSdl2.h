@@ -110,7 +110,7 @@ private:
 //[-------------------------------------------------------]
 private:
 	IApplication* mApplication;			///< The owner application instance, always valid
-	char		  mWindowTitle[64];		///< ASCII window title
+	char		  mWindowTitle[128];	///< ASCII window title
 	SDL_Window*	  mSdlWindow;			///< SDL2 handle, can be a null handler
 	bool		  mFirstUpdate;
 	#ifdef RENDERER_IMGUI

@@ -68,7 +68,7 @@ namespace
 //[ Public methods                                        ]
 //[-------------------------------------------------------]
 IApplicationRhi::IApplicationRhi(const char* rhiName, ExampleBase& exampleBase) :
-	IApplication(rhiName),
+	IApplication((std::string("RHI: \"") + std::string(rhiName) + "\" - Example: \"" + std::string(exampleBase.getExampleName()) + "\"").c_str()),
 	#if defined(RENDERER) && defined(RENDERER_GRAPHICS_DEBUGGER)
 		mGraphicsDebugger(nullptr),
 	#endif

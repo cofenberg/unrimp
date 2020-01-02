@@ -32,6 +32,7 @@
 #include "Examples/Private/Basics/FirstQueries/FirstQueries.h"
 #include "Examples/Private/Basics/VertexBuffer/VertexBuffer.h"
 #include "Examples/Private/Basics/FirstTexture/FirstTexture.h"
+#include "Examples/Private/Basics/FirstCubeTexture/FirstCubeTexture.h"
 #include "Examples/Private/Basics/FirstRenderToTexture/FirstRenderToTexture.h"
 #include "Examples/Private/Basics/FirstMultipleRenderTargets/FirstMultipleRenderTargets.h"
 #ifndef __ANDROID__
@@ -91,6 +92,7 @@ ExampleRunner::ExampleRunner() :
 	addExample("FirstQueries",					&runRhiExample<FirstQueries>,				supportsAllRhi);
 	addExample("VertexBuffer",					&runRhiExample<VertexBuffer>,				supportsAllRhi);
 	addExample("FirstTexture",					&runRhiExample<FirstTexture>,				supportsAllRhi);
+	addExample("FirstCubeTexture",				&runRhiExample<FirstCubeTexture>,			supportsAllRhi);
 	addExample("FirstRenderToTexture",			&runRhiExample<FirstRenderToTexture>,		supportsAllRhi);
 	addExample("FirstMultipleRenderTargets",	&runRhiExample<FirstMultipleRenderTargets>,	supportsAllRhi);
 	#ifndef __ANDROID__
@@ -283,6 +285,6 @@ int ExampleRunner::runExample(const std::string_view& rhiName, const std::string
 	else
 	{
 		// Run example
-		return selectedExample->second(*this, std::string(rhiName).c_str());
+		return selectedExample->second(*this, std::string(rhiName).c_str(), exampleName);
 	}
 }

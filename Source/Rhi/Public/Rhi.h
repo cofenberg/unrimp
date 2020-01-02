@@ -6960,7 +6960,7 @@ namespace Rhi
 		*  @remarks
 		*    The texture array data consists of a sequence of texture slices. Each the texture slice data of a single texture slice has to
 		*    be in CRN-texture layout, which means organized in mip-major order, like this:
-		*    - Mip0: Slice0, Slice1, Slice2, Slice3, Slice4, Slice5
+		*    - Mip0: Slice0, Slice1, Slice2, Slice3, Slice4, Slice5 (= positive X, negative X, positive Y, negative Y, positive Z, negative Z)
 		*    - Mip1: Slice0, Slice1, Slice2, Slice3, Slice4, Slice5
 		*    (DDS-texture layout is using face-major order)
 		*
@@ -6993,7 +6993,7 @@ namespace Rhi
 		*
 		*  @remarks
 		*    The texture data has to be in CRN-texture layout, which means organized in mip-major order, like this:
-		*    - Mip0: Slice0, Slice1, Slice2, Slice3, Slice4, Slice5
+		*    - Mip0: Slice0, Slice1, Slice2, Slice3, Slice4, Slice5 (= positive X, negative X, positive Y, negative Y, positive Z, negative Z)
 		*    - Mip1: Slice0, Slice1, Slice2, Slice3, Slice4, Slice5
 		*    (DDS-texture layout is using face-major order)
 		*/

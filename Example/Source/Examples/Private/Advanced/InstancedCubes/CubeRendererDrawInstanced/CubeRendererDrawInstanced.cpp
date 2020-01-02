@@ -268,7 +268,7 @@ CubeRendererDrawInstanced::CubeRendererDrawInstanced(Rhi::IRhi& rhi, Rhi::IRende
 			21, 20, 22,		// 10
 			23, 22, 20		// 11
 		};
-		Rhi::IIndexBuffer* indexBuffer = mBufferManager->createIndexBuffer(sizeof(INDICES), INDICES);
+		Rhi::IIndexBufferPtr indexBuffer(mBufferManager->createIndexBuffer(sizeof(INDICES), INDICES));
 
 		// Create vertex array object (VAO)
 		// -> The vertex array object (VAO) keeps a reference to the used vertex buffer object (VBO)

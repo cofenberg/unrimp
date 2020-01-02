@@ -129,7 +129,7 @@ void FirstInstancing::onInitialization()
 					{
 						0, 1, 2
 					};
-					Rhi::IIndexBuffer* indexBufferInstancedArrays = mBufferManager->createIndexBuffer(sizeof(INDICES), INDICES);
+					Rhi::IIndexBufferPtr indexBufferInstancedArrays(mBufferManager->createIndexBuffer(sizeof(INDICES), INDICES));
 
 					// Create vertex array object (VAO)
 					// -> The vertex array object (VAO) keeps a reference to the used vertex buffer object (VBO)

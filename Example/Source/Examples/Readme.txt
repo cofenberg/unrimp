@@ -53,6 +53,15 @@ Standalone renderer examples.
 		- Vertex shader (VS) and fragment shader (FS)
 		- Root signature
 		- Graphics pipeline state object (PSO)
+	- "FirstCubeTexture" demonstrates:
+		- Vertex buffer object (VBO)
+		- Vertex array object (VAO)
+		- Cube texture and cube texture array
+		- Uniform buffer object (UBO)
+		- Sampler state object (SO)
+		- Vertex shader (VS) and fragment shader (FS)
+		- Root signature
+		- Graphics pipeline state object (PSO)
 	- "FirstRenderToTexture" demonstrates:
 		- Vertex buffer object (VBO)
 		- Vertex array object (VAO)

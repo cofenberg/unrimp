@@ -29,6 +29,12 @@
 //[-------------------------------------------------------]
 #include "Examples/Private/Framework/PlatformTypes.h"
 
+// Disable warnings in external headers, we can't fix them
+PRAGMA_WARNING_PUSH
+	PRAGMA_WARNING_DISABLE_MSVC(4365)	// warning C4365: 'argument': conversion from 'long' to 'unsigned int', signed/unsigned mismatch
+	#include <string_view>
+PRAGMA_WARNING_POP
+
 
 //[-------------------------------------------------------]
 //[ Forward declarations                                  ]
@@ -104,6 +110,18 @@ public:
 	{
 		ASSERT((nullptr != mExampleRunner) && "Don't call this method inside constructors");
 		return *mExampleRunner;
+	}
+
+	/**
+	*  @brief
+	*    Return the example name
+	*
+	*  @return
+	*    The example name
+	*/
+	[[nodiscard]] inline const std::string_view& getExampleName() const
+	{
+		return mExampleName;
 	}
 
 	/**
@@ -280,6 +298,7 @@ protected:
 //[-------------------------------------------------------]
 private:
 	ExampleRunner*		  mExampleRunner;
+	std::string_view	  mExampleName;
 	Rhi::ILog*			  mCustomLog;			///< Optional custom log instance, can be a null pointer, don't destroy the instance
 	IApplicationFrontend* mApplicationFrontend;	///< RHI instance, can be a null pointer, do not destroy the instance
 

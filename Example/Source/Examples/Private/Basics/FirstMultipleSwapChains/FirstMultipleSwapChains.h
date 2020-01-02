@@ -67,10 +67,13 @@ public:
 	*  @param[in] rhiName
 	*    Case sensitive ASCII name of the RHI to instance, if null pointer or unknown RHI no RHI will be used.
 	*    Example RHI names: "Null", "OpenGL", "OpenGLES3", "Vulkan", "Direct3D9", "Direct3D10", "Direct3D11", "Direct3D12"
+	*  @param[in] exampleName
+	*    Example name
 	*/
-	inline explicit FirstMultipleSwapChains(ExampleRunner& exampleRunner, const char* rhiName) :
+	inline explicit FirstMultipleSwapChains(ExampleRunner& exampleRunner, const char* rhiName, const std::string_view& exampleName) :
 		IApplicationRhi(rhiName, mExampleBaseDummy),
-		mExampleBaseDummy(exampleRunner)
+		mExampleBaseDummy(exampleRunner),
+		mExampleName(exampleName)
 	{
 		// Nothing here
 	}
@@ -120,6 +123,7 @@ private:
 //[-------------------------------------------------------]
 private:
 	ExampleBase						mExampleBaseDummy;
+	const std::string_view			mExampleName;
 	Rhi::IBufferManagerPtr			mBufferManager;			///< Buffer manager, can be a null pointer
 	Rhi::CommandBuffer				mCommandBuffer;			///< Command buffer
 	Rhi::IRootSignaturePtr			mRootSignature;			///< Root signature, can be a null pointer

@@ -98,7 +98,10 @@ void FirstMesh::onInitialization()
 		// -> Direct3D 10, 11 and 12 do not support individual uniforms
 		// -> The RHI is just a light weight abstraction layer, so we need to handle the differences
 		// -> Allocate enough memory for two 4x4 floating point matrices
-		mUniformBuffer = renderer.getBufferManager().createUniformBuffer(2 * 4 * 4 * sizeof(float), nullptr, Rhi::BufferUsage::DYNAMIC_DRAW);
+		if (0 != rhi->getCapabilities().maximumUniformBufferSize)
+		{
+			mUniformBuffer = renderer.getBufferManager().createUniformBuffer(2 * 4 * 4 * sizeof(float), nullptr, Rhi::BufferUsage::DYNAMIC_DRAW);
+		}
 
 		// Vertex input layout
 		static constexpr Rhi::VertexAttribute vertexAttributesLayout[] =
@@ -150,9 +153,7 @@ void FirstMesh::onInitialization()
 			mSamplerStateGroup = mRootSignature->createResourceGroup(1, 1, &samplerStateResource);
 		}
 
-		// Create the graphics program
-		Rhi::IGraphicsProgramPtr graphicsProgram;
-		{
+		{ // Create the graphics program
 			// Get the shader source code (outsourced to keep an overview)
 			const char* vertexShaderSourceCode = nullptr;
 			const char* fragmentShaderSourceCode = nullptr;
@@ -165,7 +166,7 @@ void FirstMesh::onInitialization()
 
 			// Create the graphics program
 			Rhi::IShaderLanguage& shaderLanguage = rhi->getDefaultShaderLanguage();
-			mGraphicsProgram = graphicsProgram = shaderLanguage.createGraphicsProgram(
+			mGraphicsProgram = shaderLanguage.createGraphicsProgram(
 				*mRootSignature,
 				vertexAttributes,
 				shaderLanguage.createVertexShaderFromSourceCode(vertexAttributes, vertexShaderSourceCode),
@@ -173,16 +174,16 @@ void FirstMesh::onInitialization()
 		}
 
 		// Is there a valid graphics program?
-		if (nullptr != graphicsProgram)
+		if (nullptr != mGraphicsProgram)
 		{
 			// Create the graphics pipeline state object (PSO)
-			mGraphicsPipelineState = rhi->createGraphicsPipelineState(Rhi::GraphicsPipelineStateBuilder(mRootSignature, graphicsProgram, vertexAttributes, getMainRenderTarget()->getRenderPass()));
+			mGraphicsPipelineState = rhi->createGraphicsPipelineState(Rhi::GraphicsPipelineStateBuilder(mRootSignature, mGraphicsProgram, vertexAttributes, getMainRenderTarget()->getRenderPass()));
 
 			// Optimization: Cached data to not bother the RHI too much
 			if (nullptr == mUniformBuffer)
 			{
-				mObjectSpaceToClipSpaceMatrixUniformHandle = graphicsProgram->getUniformHandle("ObjectSpaceToClipSpaceMatrix");
-				mObjectSpaceToViewSpaceMatrixUniformHandle = graphicsProgram->getUniformHandle("ObjectSpaceToViewSpaceMatrix");
+				mObjectSpaceToClipSpaceMatrixUniformHandle = mGraphicsProgram->getUniformHandle("ObjectSpaceToClipSpaceMatrix");
+				mObjectSpaceToViewSpaceMatrixUniformHandle = mGraphicsProgram->getUniformHandle("ObjectSpaceToViewSpaceMatrix");
 			}
 		}
 
@@ -302,8 +303,11 @@ void FirstMesh::onDraw()
 			}
 		}
 
-		// Submit command buffer to the RHI implementation
-		mCommandBuffer.submitToRhi(*rhi);
+		// Submit command buffer to the RHI implementation, in case the referenced assets have already been loaded and the command buffer has been filled as a consequence
+		if (!mCommandBuffer.isEmpty())
+		{
+			mCommandBuffer.submitToRhi(*rhi);
+		}
 	}
 }
 

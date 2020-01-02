@@ -8119,8 +8119,14 @@ namespace Direct3D9Rhi
 			}
 			else
 			{
-				// Set no Direct3D 9 color surfaces
-				for (DWORD direct3D9RenderTargetIndex = 0; direct3D9RenderTargetIndex < mCapabilities.maximumNumberOfSimultaneousRenderTargets; ++direct3D9RenderTargetIndex)
+				// Set no Direct3D 9 color surfaces: The "IDirect3DDevice9::SetRenderTarget method"-documentation at https://docs.microsoft.com/en-us/windows/win32/api/d3d9helper/nf-d3d9helper-idirect3ddevice9-setrendertarget states
+				// "
+				// This method will return D3DERR_INVALIDCALL if either:
+				// - pRenderTarget = NULL and RenderTargetIndex = 0
+				// - pRenderTarget is != NULL and the render target is invalid.
+				// "
+				// -> As a consequence, we can't unassign the render target at index 0
+				for (DWORD direct3D9RenderTargetIndex = 1; direct3D9RenderTargetIndex < mCapabilities.maximumNumberOfSimultaneousRenderTargets; ++direct3D9RenderTargetIndex)
 				{
 					FAILED_DEBUG_BREAK(mDirect3DDevice9->SetRenderTarget(direct3D9RenderTargetIndex, nullptr))
 				}

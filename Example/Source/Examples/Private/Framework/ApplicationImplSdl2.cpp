@@ -51,7 +51,7 @@ ApplicationImplSdl2::ApplicationImplSdl2(IApplication& application, const char* 
 	// Copy the given window title
 	if (nullptr != windowTitle)
 	{
-		strncpy(mWindowTitle, windowTitle, 64);
+		strncpy(mWindowTitle, windowTitle, 128);
 	}
 	else
 	{

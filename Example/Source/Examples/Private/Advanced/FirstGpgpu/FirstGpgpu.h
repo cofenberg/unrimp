@@ -76,8 +76,10 @@ public:
 	*  @param[in] rhiName
 	*    Case sensitive ASCII name of the RHI to instance, if null pointer or unknown RHI no RHI will be used.
 	*    Example RHI names: "Null", "Vulkan", "OpenGL", "OpenGLES3", "Direct3D9", "Direct3D10", "Direct3D11", "Direct3D12"
+	*  @param[in] exampleName
+	*    Example name
 	*/
-	FirstGpgpu(ExampleRunner& exampleRunner, const char* rhiName);
+	FirstGpgpu(ExampleRunner& exampleRunner, const char* rhiName, const std::string_view& exampleName);
 
 	/**
 	*  @brief
@@ -159,6 +161,7 @@ private:
 	char					mRhiName[32];		///< Case sensitive ASCII name of the RHI to instance
 	Rhi::RhiInstance*		mRhiInstance;		///< RHI instance, can be a null pointer
 	Rhi::IRhiPtr			mRhi;				///< RHI instance, can be a null pointer
+	const std::string_view	mExampleName;
 	Rhi::IBufferManagerPtr	mBufferManager;		///< Buffer manager, can be a null pointer
 	Rhi::ITextureManagerPtr mTextureManager;	///< Buffer manager, can be a null pointer
 	Rhi::IRootSignaturePtr	mRootSignature;		///< Root signature, can be a null pointer

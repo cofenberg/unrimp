@@ -44,9 +44,10 @@ PRAGMA_WARNING_POP
 //[-------------------------------------------------------]
 //[ Public methods                                        ]
 //[-------------------------------------------------------]
-FirstGpgpu::FirstGpgpu(ExampleRunner& exampleRunner, const char* rhiName) :
+FirstGpgpu::FirstGpgpu(ExampleRunner& exampleRunner, const char* rhiName, const std::string_view& exampleName) :
 	mExampleRunner(exampleRunner),
-	mRhiInstance(nullptr)
+	mRhiInstance(nullptr),
+	mExampleName(exampleName)
 {
 	// Copy the given RHI name
 	if (nullptr != rhiName)

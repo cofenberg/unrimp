@@ -28,6 +28,7 @@
 	#include "Private/Basics/FirstQueries/FirstQueries.cpp"
 	#include "Private/Basics/VertexBuffer/VertexBuffer.cpp"
 	#include "Private/Basics/FirstTexture/FirstTexture.cpp"
+	#include "Private/Basics/FirstCubeTexture/FirstCubeTexture.cpp"
 	#include "Private/Basics/FirstRenderToTexture/FirstRenderToTexture.cpp"
 	#include "Private/Basics/FirstMultipleRenderTargets/FirstMultipleRenderTargets.cpp"
 	#ifndef __ANDROID__

@@ -65,7 +65,7 @@ class ExampleRunner final
 //[ Public definitions                                    ]
 //[-------------------------------------------------------]
 public:
-	typedef int(*RunnerMethod)(ExampleRunner&, const char*);
+	typedef int(*RunnerMethod)(ExampleRunner&, const char*, const std::string_view& exampleName);
 	typedef std::map<std::string_view, RunnerMethod>  AvailableExamples;
 	typedef std::set<std::string_view>				  AvailableRhis;
 	typedef std::vector<std::string_view>			  SupportedRhis;
@@ -130,25 +130,27 @@ public:
 //[-------------------------------------------------------]
 private:
 	template <class ExampleClass>
-	[[nodiscard]] static int runRhiExample(ExampleRunner& exampleRunner, const char* rhiName)
+	[[nodiscard]] static int runRhiExample(ExampleRunner& exampleRunner, const char* rhiName, const std::string_view& exampleName)
 	{
 		ExampleClass exampleClass;
 		exampleClass.mExampleRunner = &exampleRunner;
+		exampleClass.mExampleName = exampleName;
 		return IApplicationRhi(rhiName, exampleClass).run();
 	}
 
 	template <class ExampleClass>
-	[[nodiscard]] static int runRenderExample(ExampleRunner& exampleRunner, const char* rhiName)
+	[[nodiscard]] static int runRenderExample(ExampleRunner& exampleRunner, const char* rhiName, const std::string_view& exampleName)
 	{
 		ExampleClass exampleClass;
 		exampleClass.mExampleRunner = &exampleRunner;
+		exampleClass.mExampleName = exampleName;
 		return IApplicationRenderer(rhiName, exampleClass).run();
 	}
 
 	template <class ExampleClass>
-	[[nodiscard]] static int runBasicExample(ExampleRunner& exampleRunner, const char* rhiName)
+	[[nodiscard]] static int runBasicExample(ExampleRunner& exampleRunner, const char* rhiName, const std::string_view& exampleName)
 	{
-		ExampleClass exampleClass(exampleRunner, rhiName);
+		ExampleClass exampleClass(exampleRunner, rhiName, exampleName);
 		return exampleClass.run();
 	}
 

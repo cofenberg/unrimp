@@ -140,7 +140,7 @@ void IcosahedronTessellation::onInitialization()
 				9, 10,  5,	// 18
 				10,  6, 1	// 19
 			};
-			Rhi::IIndexBuffer* indexBuffer = mBufferManager->createIndexBuffer(sizeof(INDICES), INDICES);
+			Rhi::IIndexBufferPtr indexBuffer(mBufferManager->createIndexBuffer(sizeof(INDICES), INDICES));
 
 			// Create vertex array object (VAO)
 			// -> The vertex array object (VAO) keeps a reference to the used vertex buffer object (VBO)

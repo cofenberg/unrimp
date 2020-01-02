@@ -128,7 +128,7 @@ ApplicationImplWindows::ApplicationImplWindows(IApplication& application, const 
 	// Copy the given window title
 	if (nullptr != windowTitle)
 	{
-		strncpy(mWindowTitle, windowTitle, 64);
+		strncpy(mWindowTitle, windowTitle, 128);
 	}
 	else
 	{
