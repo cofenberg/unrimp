@@ -1574,6 +1574,45 @@ DECLARE_INTERFACE_(IDirect3DTexture9, IDirect3DBaseTexture9)
 	STDMETHOD(AddDirtyRect)(THIS_ CONST RECT* pDirtyRect) PURE;
 };
 
+// "Microsoft Direct3D SDK (June 2010)" -> "d3d9types.h"
+typedef enum D3DCUBEMAP_FACES
+{ 
+	D3DCUBEMAP_FACE_POSITIVE_X   = 0,
+	D3DCUBEMAP_FACE_NEGATIVE_X   = 1,
+	D3DCUBEMAP_FACE_POSITIVE_Y   = 2,
+	D3DCUBEMAP_FACE_NEGATIVE_Y   = 3,
+	D3DCUBEMAP_FACE_POSITIVE_Z   = 4,
+	D3DCUBEMAP_FACE_NEGATIVE_Z   = 5,
+	D3DCUBEMAP_FACE_FORCE_DWORD  = 0xffffffff
+} D3DCUBEMAP_FACES, *LPD3DCUBEMAP_FACES;
+
+// "Microsoft Direct3D SDK (June 2010)" -> "d3d9.h"
+DECLARE_INTERFACE_(IDirect3DCubeTexture9, IDirect3DBaseTexture9)
+{
+	STDMETHOD(QueryInterface)(THIS_ REFIID riid, void** ppvObj) PURE;
+	STDMETHOD_(ULONG,AddRef)(THIS) PURE;
+	STDMETHOD_(ULONG,Release)(THIS) PURE;
+	STDMETHOD(GetDevice)(THIS_ IDirect3DDevice9** ppDevice) PURE;
+	STDMETHOD(SetPrivateData)(THIS_ REFGUID refguid,CONST void* pData,DWORD SizeOfData,DWORD Flags) PURE;
+	STDMETHOD(GetPrivateData)(THIS_ REFGUID refguid,void* pData,DWORD* pSizeOfData) PURE;
+	STDMETHOD(FreePrivateData)(THIS_ REFGUID refguid) PURE;
+	STDMETHOD_(DWORD, SetPriority)(THIS_ DWORD PriorityNew) PURE;
+	STDMETHOD_(DWORD, GetPriority)(THIS) PURE;
+	STDMETHOD_(void, PreLoad)(THIS) PURE;
+	STDMETHOD_(D3DRESOURCETYPE, GetType)(THIS) PURE;
+	STDMETHOD_(DWORD, SetLOD)(THIS_ DWORD LODNew) PURE;
+	STDMETHOD_(DWORD, GetLOD)(THIS) PURE;
+	STDMETHOD_(DWORD, GetLevelCount)(THIS) PURE;
+	STDMETHOD(SetAutoGenFilterType)(THIS_ D3DTEXTUREFILTERTYPE FilterType) PURE;
+	STDMETHOD_(D3DTEXTUREFILTERTYPE, GetAutoGenFilterType)(THIS) PURE;
+	STDMETHOD_(void, GenerateMipSubLevels)(THIS) PURE;
+	STDMETHOD(GetLevelDesc)(THIS_ UINT Level,D3DSURFACE_DESC *pDesc) PURE;
+	STDMETHOD(GetCubeMapSurface)(THIS_ D3DCUBEMAP_FACES FaceType,UINT Level,IDirect3DSurface9** ppCubeMapSurface) PURE;
+	STDMETHOD(LockRect)(THIS_ D3DCUBEMAP_FACES FaceType,UINT Level,D3DLOCKED_RECT* pLockedRect,CONST RECT* pRect,DWORD Flags) PURE;
+	STDMETHOD(UnlockRect)(THIS_ D3DCUBEMAP_FACES FaceType,UINT Level) PURE;
+	STDMETHOD(AddDirtyRect)(THIS_ D3DCUBEMAP_FACES FaceType,CONST RECT* pDirtyRect) PURE;
+};
+
 // "Microsoft Direct3D SDK (June 2010)" -> "d3d9xcore.h"
 DECLARE_INTERFACE_(ID3DXBuffer, IUnknown)
 {
@@ -4606,14 +4645,15 @@ namespace Direct3D9Rhi
 		*  @param[in] textureUsage
 		*    Indication of the texture usage
 		*/
-		TextureCube(Direct3D9Rhi& direct3D9Rhi, uint32_t width, uint32_t height, [[maybe_unused]] Rhi::TextureFormat::Enum textureFormat, [[maybe_unused]] const void* data, [[maybe_unused]] uint32_t textureFlags, [[maybe_unused]] Rhi::TextureUsage textureUsage RHI_RESOURCE_DEBUG_NAME_PARAMETER) :
+		TextureCube(Direct3D9Rhi& direct3D9Rhi, uint32_t width, uint32_t height, Rhi::TextureFormat::Enum textureFormat, const void* data, uint32_t textureFlags, Rhi::TextureUsage textureUsage RHI_RESOURCE_DEBUG_NAME_PARAMETER) :
 			ITextureCube(direct3D9Rhi, width, height RHI_RESOURCE_DEBUG_PASS_PARAMETER),
-			mDirect3DTexture9(nullptr)
+			mDirect3DCubeTexture9(nullptr)
 		{
-			// TODO(co) Implement Direct3D 9 cube texture
-			/*
+			static constexpr uint32_t NUMBER_OF_SLICES = 6;
+
 			// Sanity checks
 			RHI_ASSERT(direct3D9Rhi.getContext(), 0 == (textureFlags & Rhi::TextureFlag::DATA_CONTAINS_MIPMAPS) || nullptr != data, "Invalid Direct3D 9 texture parameters")
+			RHI_ASSERT(direct3D9Rhi.getContext(), width == height, "Direct3D 9 cube texture width and height must be identical")
 
 			// Begin debug event
 			RHI_BEGIN_DEBUG_EVENT_FUNCTION(&direct3D9Rhi)
@@ -4647,7 +4687,7 @@ namespace Direct3D9Rhi
 			const D3DFORMAT d3dFormat = static_cast<D3DFORMAT>(Mapping::getDirect3D9Format(textureFormat));
 
 			// Create Direct3D 9 texture, let Direct3D create the mipmaps for us if requested by the user
-			if (direct3D9Rhi.getDirect3DDevice9()->CreateTexture(width, height, 0, direct3D9Usage, d3dFormat, D3DPOOL_DEFAULT, &mDirect3DTexture9, nullptr) == D3D_OK)
+			if (direct3D9Rhi.getDirect3DDevice9()->CreateCubeTexture(width, 0, direct3D9Usage, d3dFormat, D3DPOOL_DEFAULT, &mDirect3DCubeTexture9, nullptr) == D3D_OK)
 			{
 				// Upload the texture data
 				if (nullptr != data)
@@ -4655,6 +4695,16 @@ namespace Direct3D9Rhi
 					// Did the user provided data containing mipmaps from 0-n down to 1x1 linearly in memory?
 					if (textureFlags & Rhi::TextureFlag::DATA_CONTAINS_MIPMAPS)
 					{
+						// Data layout
+						// - Direct3D 11 wants: DDS files are organized in face-major order, like this:
+						//     Face0: Mip0, Mip1, Mip2, etc.
+						//     Face1: Mip0, Mip1, Mip2, etc.
+						//     etc.
+						// - The RHI provides: CRN and KTX files are organized in mip-major order, like this:
+						//     Mip0: Face0, Face1, Face2, Face3, Face4, Face5
+						//     Mip1: Face0, Face1, Face2, Face3, Face4, Face5
+						//     etc.
+
 						// Calculate the number of mipmaps
 						const uint32_t numberOfMipmaps = getNumberOfMipmaps(width, height);
 
@@ -4662,22 +4712,29 @@ namespace Direct3D9Rhi
 						for (uint32_t mipmap = 0; mipmap < numberOfMipmaps; ++mipmap)
 						{
 							// Upload the current mipmap
-
-							// Get the surface
-							IDirect3DSurface9* direct3DSurface9 = nullptr;
-							FAILED_DEBUG_BREAK(mDirect3DTexture9->GetSurfaceLevel(mipmap, &direct3DSurface9))
-							if (nullptr != direct3DSurface9)
+							const uint32_t numberOfBytesPerRow = Rhi::TextureFormat::getNumberOfBytesPerRow(textureFormat, width);
+							const uint32_t numberOfBytesPerSlice = Rhi::TextureFormat::getNumberOfBytesPerSlice(textureFormat, width, height);
+							for (uint32_t arraySlice = 0; arraySlice < NUMBER_OF_SLICES; ++arraySlice)
 							{
-								// Upload the texture data
-								const RECT sourceRect[] = { 0, 0, static_cast<LONG>(width), static_cast<LONG>(height) };
-								FAILED_DEBUG_BREAK(D3DXLoadSurfaceFromMemory(direct3DSurface9, nullptr, nullptr, data, d3dFormat, Rhi::TextureFormat::getNumberOfBytesPerRow(textureFormat, width), nullptr, sourceRect, D3DX_FILTER_NONE, 0))
+								// Upload the current mipmap
+								IDirect3DSurface9* direct3DSurface9 = nullptr;
+								FAILED_DEBUG_BREAK(mDirect3DCubeTexture9->GetCubeMapSurface(static_cast<D3DCUBEMAP_FACES>(arraySlice), mipmap, &direct3DSurface9))
+								if (nullptr != direct3DSurface9)
+								{
+									// Upload the texture data
+									const RECT sourceRect[] = { 0, 0, static_cast<LONG>(width), static_cast<LONG>(height) };
+									FAILED_DEBUG_BREAK(D3DXLoadSurfaceFromMemory(direct3DSurface9, nullptr, nullptr, data, d3dFormat, numberOfBytesPerRow, nullptr, sourceRect, D3DX_FILTER_NONE, 0))
 
-								// Release the surface
-								direct3DSurface9->Release();
+									// Release the surface
+									direct3DSurface9->Release();
+								}
+
+								// Move on to the cube map face
+								// -> If the data doesn't contain mipmaps, we don't need to care about this in here
+								data = static_cast<const uint8_t*>(data) + numberOfBytesPerSlice;
 							}
 
 							// Move on to the next mipmap and ensure the size is always at least 1x1
-							data = static_cast<const uint8_t*>(data) + Rhi::TextureFormat::getNumberOfBytesPerSlice(textureFormat, width, height);
 							width = getHalfSize(width);
 							height = getHalfSize(height);
 						}
@@ -4685,18 +4742,26 @@ namespace Direct3D9Rhi
 					else
 					{
 						// The user only provided us with the base texture, no mipmaps
-
-						// Get the surface
-						IDirect3DSurface9* direct3DSurface9 = nullptr;
-						FAILED_DEBUG_BREAK(mDirect3DTexture9->GetSurfaceLevel(0, &direct3DSurface9))
-						if (nullptr != direct3DSurface9)
+						const uint32_t numberOfBytesPerRow = Rhi::TextureFormat::getNumberOfBytesPerRow(textureFormat, width);
+						const uint32_t numberOfBytesPerSlice = Rhi::TextureFormat::getNumberOfBytesPerSlice(textureFormat, width, height);
+						for (uint32_t arraySlice = 0; arraySlice < NUMBER_OF_SLICES; ++arraySlice)
 						{
-							// Upload the texture data
-							const RECT sourceRect[] = { 0, 0, static_cast<LONG>(width), static_cast<LONG>(height) };
-							FAILED_DEBUG_BREAK(D3DXLoadSurfaceFromMemory(direct3DSurface9, nullptr, nullptr, data, d3dFormat, Rhi::TextureFormat::getNumberOfBytesPerRow(textureFormat, width), nullptr, sourceRect, D3DX_FILTER_NONE, 0))
+							// Upload the current mipmap
+							IDirect3DSurface9* direct3DSurface9 = nullptr;
+							FAILED_DEBUG_BREAK(mDirect3DCubeTexture9->GetCubeMapSurface(static_cast<D3DCUBEMAP_FACES>(arraySlice), 0, &direct3DSurface9))
+							if (nullptr != direct3DSurface9)
+							{
+								// Upload the texture data
+								const RECT sourceRect[] = { 0, 0, static_cast<LONG>(width), static_cast<LONG>(height) };
+								FAILED_DEBUG_BREAK(D3DXLoadSurfaceFromMemory(direct3DSurface9, nullptr, nullptr, data, d3dFormat, numberOfBytesPerRow, nullptr, sourceRect, D3DX_FILTER_NONE, 0))
 
-							// Release the surface
-							direct3DSurface9->Release();
+								// Release the surface
+								direct3DSurface9->Release();
+							}
+
+							// Move on to the cube map face
+							// -> If the data doesn't contain mipmaps, we don't need to care about this in here
+							data = static_cast<const uint8_t*>(data) + numberOfBytesPerSlice;
 						}
 					}
 				}
@@ -4705,21 +4770,24 @@ namespace Direct3D9Rhi
 				#ifdef RHI_DEBUG
 					RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "Cube texture", 15)	// 15 = "Cube texture: " including terminating zero
 					const UINT detailedDebugNameLength = static_cast<UINT>(strlen(detailedDebugName));
-					FAILED_DEBUG_BREAK(mDirect3DTexture9->SetPrivateData(WKPDID_D3DDebugObjectName, detailedDebugName, detailedDebugNameLength, 0))
+					FAILED_DEBUG_BREAK(mDirect3DCubeTexture9->SetPrivateData(WKPDID_D3DDebugObjectName, detailedDebugName, detailedDebugNameLength, 0))
 
 					// Set debug name of the texture surfaces
-					const DWORD levelCount = mDirect3DTexture9->GetLevelCount();
+					const DWORD levelCount = mDirect3DCubeTexture9->GetLevelCount();
 					for (DWORD level = 0; level < levelCount; ++level)
 					{
-						// Get the Direct3D 9 surface
-						IDirect3DSurface9 *direct3DSurface9 = nullptr;
-						FAILED_DEBUG_BREAK(mDirect3DTexture9->GetSurfaceLevel(level, &direct3DSurface9))
-						if (nullptr != direct3DSurface9)
+						for (uint32_t arraySlice = 0; arraySlice < NUMBER_OF_SLICES; ++arraySlice)
 						{
-							FAILED_DEBUG_BREAK(direct3DSurface9->SetPrivateData(WKPDID_D3DDebugObjectName, detailedDebugName, detailedDebugNameLength, 0))
+							// Get the Direct3D 9 surface
+							IDirect3DSurface9* direct3DSurface9 = nullptr;
+							FAILED_DEBUG_BREAK(mDirect3DCubeTexture9->GetCubeMapSurface(static_cast<D3DCUBEMAP_FACES>(arraySlice), level, &direct3DSurface9))
+							if (nullptr != direct3DSurface9)
+							{
+								FAILED_DEBUG_BREAK(direct3DSurface9->SetPrivateData(WKPDID_D3DDebugObjectName, detailedDebugName, detailedDebugNameLength, 0))
 
-							// Release the Direct3D 9 surface
-							direct3DSurface9->Release();
+								// Release the Direct3D 9 surface
+								direct3DSurface9->Release();
+							}
 						}
 					}
 				#endif
@@ -4727,7 +4795,6 @@ namespace Direct3D9Rhi
 
 			// End debug event
 			RHI_END_DEBUG_EVENT(&direct3D9Rhi)
-			*/
 		}
 
 		/**
@@ -4736,9 +4803,9 @@ namespace Direct3D9Rhi
 		*/
 		virtual ~TextureCube() override
 		{
-			if (nullptr != mDirect3DTexture9)
+			if (nullptr != mDirect3DCubeTexture9)
 			{
-				mDirect3DTexture9->Release();
+				mDirect3DCubeTexture9->Release();
 			}
 		}
 
@@ -4749,9 +4816,9 @@ namespace Direct3D9Rhi
 		*  @return
 		*    The Direct3D texture instance, can be a null pointer, do not release the returned instance unless you added an own reference to it
 		*/
-		[[nodiscard]] inline IDirect3DTexture9* getDirect3DTexture9() const
+		[[nodiscard]] inline IDirect3DCubeTexture9* getDirect3DCubeTexture9() const
 		{
-			return mDirect3DTexture9;
+			return mDirect3DCubeTexture9;
 		}
 
 
@@ -4777,7 +4844,7 @@ namespace Direct3D9Rhi
 	//[ Private data                                          ]
 	//[-------------------------------------------------------]
 	private:
-		IDirect3DTexture9* mDirect3DTexture9;	///< Direct3D 9 texture instance, can be a null pointer
+		IDirect3DCubeTexture9* mDirect3DCubeTexture9;	///< Direct3D 9 cube texture instance, can be a null pointer
 
 
 	};
@@ -7775,7 +7842,7 @@ namespace Direct3D9Rhi
 								break;
 
 							case Rhi::ResourceType::TEXTURE_CUBE:
-								direct3DBaseTexture9 = static_cast<TextureCube*>(resource)->getDirect3DTexture9();
+								direct3DBaseTexture9 = static_cast<TextureCube*>(resource)->getDirect3DCubeTexture9();
 								break;
 
 							case Rhi::ResourceType::TEXTURE_CUBE_ARRAY:
