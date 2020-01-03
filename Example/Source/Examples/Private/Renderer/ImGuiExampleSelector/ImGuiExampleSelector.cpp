@@ -44,11 +44,11 @@
 //[-------------------------------------------------------]
 void ImGuiExampleSelector::onInitialization()
 {
-	// Ease-of-use: If a HMD is present automatically start the "FirstScene"-example so the user can see something
+	// Ease-of-use: If a HMD is present automatically start the "Scene"-example so the user can see something
 	#ifdef RENDERER_OPENVR
 		if (getRendererSafe().getVrManager().isHmdPresent())
 		{
-			switchExample("FirstScene");
+			switchExample("Scene");
 		}
 	#endif
 }
@@ -134,9 +134,9 @@ void ImGuiExampleSelector::createDebugGui()
 					{
 						itemsSeparatedByZeros += pair.first;
 						itemsSeparatedByZeros += '\0';
-						if (-1 == selectedExampleIndex && "FirstScene" == pair.first)
+						if (-1 == selectedExampleIndex && "Scene" == pair.first)
 						{
-							// Set initially selected example index, "FirstScene" is preferred since it's the most advantaged example
+							// Set initially selected example index, "Scene" is preferred since it's the most advantaged example
 							selectedExampleIndex = exampleIndex;
 						}
 						if (exampleIndex == selectedExampleIndex)

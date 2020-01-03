@@ -23,24 +23,24 @@
 // Recommended example order
 
 // Basics
-	#include "Private/Basics/FirstTriangle/FirstTriangle.cpp"
-	#include "Private/Basics/FirstIndirectBuffer/FirstIndirectBuffer.cpp"
-	#include "Private/Basics/FirstQueries/FirstQueries.cpp"
+	#include "Private/Basics/Triangle/Triangle.cpp"
+	#include "Private/Basics/IndirectBuffer/IndirectBuffer.cpp"
+	#include "Private/Basics/Queries/Queries.cpp"
 	#include "Private/Basics/VertexBuffer/VertexBuffer.cpp"
-	#include "Private/Basics/FirstTexture/FirstTexture.cpp"
-	#include "Private/Basics/FirstCubeTexture/FirstCubeTexture.cpp"
-	#include "Private/Basics/FirstRenderToTexture/FirstRenderToTexture.cpp"
-	#include "Private/Basics/FirstMultipleRenderTargets/FirstMultipleRenderTargets.cpp"
+	#include "Private/Basics/Texture/Texture.cpp"
+	#include "Private/Basics/CubeTexture/CubeTexture.cpp"
+	#include "Private/Basics/RenderToTexture/RenderToTexture.cpp"
+	#include "Private/Basics/MultipleRenderTargets/MultipleRenderTargets.cpp"
 	#ifndef __ANDROID__
-		#include "Private/Basics/FirstMultipleSwapChains/FirstMultipleSwapChains.cpp"
+		#include "Private/Basics/MultipleSwapChains/MultipleSwapChains.cpp"
 	#endif
-	#include "Private/Basics/FirstInstancing/FirstInstancing.cpp"
-	#include "Private/Basics/FirstGeometryShader/FirstGeometryShader.cpp"
-	#include "Private/Basics/FirstTessellationShader/FirstTessellationShader.cpp"
-	#include "Private/Basics/FirstComputeShader/FirstComputeShader.cpp"
+	#include "Private/Basics/Instancing/Instancing.cpp"
+	#include "Private/Basics/GeometryShader/GeometryShader.cpp"
+	#include "Private/Basics/TessellationShader/TessellationShader.cpp"
+	#include "Private/Basics/ComputeShader/ComputeShader.cpp"
 
 // Advanced
-	#include "Private/Advanced/FirstGpgpu/FirstGpgpu.cpp"
+	#include "Private/Advanced/Gpgpu/Gpgpu.cpp"
 	#include "Private/Advanced/InstancedCubes/CubeRendererDrawInstanced/BatchDrawInstanced.cpp"
 	#include "Private/Advanced/InstancedCubes/CubeRendererDrawInstanced/CubeRendererDrawInstanced.cpp"
 	#include "Private/Advanced/InstancedCubes/CubeRendererInstancedArrays/BatchInstancedArrays.cpp"
@@ -53,13 +53,13 @@
 	#ifdef RENDERER_IMGUI
 		#include "Private/Renderer/ImGuiExampleSelector/ImGuiExampleSelector.cpp"
 	#endif
-	#include "Private/Renderer/FirstMesh/FirstMesh.cpp"
-	#include "Private/Renderer/FirstCompositor/FirstCompositor.cpp"
-	#include "Private/Renderer/FirstCompositor/CompositorInstancePassFirst.cpp"
-	#include "Private/Renderer/FirstCompositor/CompositorPassFactoryFirst.cpp"
-	#include "Private/Renderer/FirstScene/FirstScene.cpp"
-	#include "Private/Renderer/FirstScene/FreeCameraController.cpp"
+	#include "Private/Renderer/Mesh/Mesh.cpp"
+	#include "Private/Renderer/Compositor/Compositor.cpp"
+	#include "Private/Renderer/Compositor/CompositorInstancePass.cpp"
+	#include "Private/Renderer/Compositor/CompositorPassFactory.cpp"
+	#include "Private/Renderer/Scene/Scene.cpp"
+	#include "Private/Renderer/Scene/FreeCameraController.cpp"
 	#ifdef RENDERER_OPENVR
-		#include "Private/Renderer/FirstScene/VrController.cpp"
+		#include "Private/Renderer/Scene/VrController.cpp"
 	#endif
 #endif

@@ -4695,15 +4695,10 @@ namespace Direct3D9Rhi
 					// Did the user provided data containing mipmaps from 0-n down to 1x1 linearly in memory?
 					if (textureFlags & Rhi::TextureFlag::DATA_CONTAINS_MIPMAPS)
 					{
-						// Data layout
-						// - Direct3D 11 wants: DDS files are organized in face-major order, like this:
-						//     Face0: Mip0, Mip1, Mip2, etc.
-						//     Face1: Mip0, Mip1, Mip2, etc.
-						//     etc.
-						// - The RHI provides: CRN and KTX files are organized in mip-major order, like this:
-						//     Mip0: Face0, Face1, Face2, Face3, Face4, Face5
-						//     Mip1: Face0, Face1, Face2, Face3, Face4, Face5
-						//     etc.
+						// Data layout: The RHI provides: CRN and KTX files are organized in mip-major order, like this:
+						//   Mip0: Face0, Face1, Face2, Face3, Face4, Face5
+						//   Mip1: Face0, Face1, Face2, Face3, Face4, Face5
+						//   etc.
 
 						// Calculate the number of mipmaps
 						const uint32_t numberOfMipmaps = getNumberOfMipmaps(width, height);

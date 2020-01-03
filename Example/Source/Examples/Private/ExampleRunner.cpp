@@ -27,23 +27,23 @@
 #include "Examples/Private/Framework/IApplicationRhi.h"
 #include "Examples/Private/Framework/IApplicationRenderer.h"
 // Basics
-#include "Examples/Private/Basics/FirstTriangle/FirstTriangle.h"
-#include "Examples/Private/Basics/FirstIndirectBuffer/FirstIndirectBuffer.h"
-#include "Examples/Private/Basics/FirstQueries/FirstQueries.h"
+#include "Examples/Private/Basics/Triangle/Triangle.h"
+#include "Examples/Private/Basics/IndirectBuffer/IndirectBuffer.h"
+#include "Examples/Private/Basics/Queries/Queries.h"
 #include "Examples/Private/Basics/VertexBuffer/VertexBuffer.h"
-#include "Examples/Private/Basics/FirstTexture/FirstTexture.h"
-#include "Examples/Private/Basics/FirstCubeTexture/FirstCubeTexture.h"
-#include "Examples/Private/Basics/FirstRenderToTexture/FirstRenderToTexture.h"
-#include "Examples/Private/Basics/FirstMultipleRenderTargets/FirstMultipleRenderTargets.h"
+#include "Examples/Private/Basics/Texture/Texture.h"
+#include "Examples/Private/Basics/CubeTexture/CubeTexture.h"
+#include "Examples/Private/Basics/RenderToTexture/RenderToTexture.h"
+#include "Examples/Private/Basics/MultipleRenderTargets/MultipleRenderTargets.h"
 #ifndef __ANDROID__
-	#include "Examples/Private/Basics/FirstMultipleSwapChains/FirstMultipleSwapChains.h"
+	#include "Examples/Private/Basics/MultipleSwapChains/MultipleSwapChains.h"
 #endif
-#include "Examples/Private/Basics/FirstInstancing/FirstInstancing.h"
-#include "Examples/Private/Basics/FirstGeometryShader/FirstGeometryShader.h"
-#include "Examples/Private/Basics/FirstTessellationShader/FirstTessellationShader.h"
-#include "Examples/Private/Basics/FirstComputeShader/FirstComputeShader.h"
+#include "Examples/Private/Basics/Instancing/Instancing.h"
+#include "Examples/Private/Basics/GeometryShader/GeometryShader.h"
+#include "Examples/Private/Basics/TessellationShader/TessellationShader.h"
+#include "Examples/Private/Basics/ComputeShader/ComputeShader.h"
 // Advanced
-#include "Examples/Private/Advanced/FirstGpgpu/FirstGpgpu.h"
+#include "Examples/Private/Advanced/Gpgpu/Gpgpu.h"
 #include "Examples/Private/Advanced/IcosahedronTessellation/IcosahedronTessellation.h"
 #include "Examples/Private/Advanced/InstancedCubes/InstancedCubes.h"
 // Renderer
@@ -51,9 +51,9 @@
 	#ifdef RENDERER_IMGUI
 		#include "Examples/Private/Renderer/ImGuiExampleSelector/ImGuiExampleSelector.h"
 	#endif
-	#include "Examples/Private/Renderer/FirstMesh/FirstMesh.h"
-	#include "Examples/Private/Renderer/FirstCompositor/FirstCompositor.h"
-	#include "Examples/Private/Renderer/FirstScene/FirstScene.h"
+	#include "Examples/Private/Renderer/Mesh/Mesh.h"
+	#include "Examples/Private/Renderer/Compositor/Compositor.h"
+	#include "Examples/Private/Renderer/Scene/Scene.h"
 #endif
 
 // Disable warnings in external headers, we can't fix them
@@ -87,24 +87,24 @@ ExampleRunner::ExampleRunner() :
 	const std::array<std::string_view, 5> onlyShaderModel5Plus = {{"Null", "Vulkan", "OpenGL", "Direct3D11", "Direct3D12"}};
 
 	// Basics
-	addExample("FirstTriangle",					&runRhiExample<FirstTriangle>,				supportsAllRhi);
-	addExample("FirstIndirectBuffer",			&runRhiExample<FirstIndirectBuffer>,		supportsAllRhi);
-	addExample("FirstQueries",					&runRhiExample<FirstQueries>,				supportsAllRhi);
-	addExample("VertexBuffer",					&runRhiExample<VertexBuffer>,				supportsAllRhi);
-	addExample("FirstTexture",					&runRhiExample<FirstTexture>,				supportsAllRhi);
-	addExample("FirstCubeTexture",				&runRhiExample<FirstCubeTexture>,			supportsAllRhi);
-	addExample("FirstRenderToTexture",			&runRhiExample<FirstRenderToTexture>,		supportsAllRhi);
-	addExample("FirstMultipleRenderTargets",	&runRhiExample<FirstMultipleRenderTargets>,	supportsAllRhi);
+	addExample("Triangle",					&runRhiExample<Triangle>,						supportsAllRhi);
+	addExample("IndirectBuffer",			&runRhiExample<IndirectBuffer>,					supportsAllRhi);
+	addExample("Queries",					&runRhiExample<Queries>,						supportsAllRhi);
+	addExample("VertexBuffer",				&runRhiExample<VertexBuffer>,					supportsAllRhi);
+	addExample("Texture",					&runRhiExample<Texture>,						supportsAllRhi);
+	addExample("CubeTexture",				&runRhiExample<CubeTexture>,					supportsAllRhi);
+	addExample("RenderToTexture",			&runRhiExample<RenderToTexture>,				supportsAllRhi);
+	addExample("MultipleRenderTargets",		&runRhiExample<MultipleRenderTargets>,			supportsAllRhi);
 	#ifndef __ANDROID__
-		addExample("FirstMultipleSwapChains",	&runBasicExample<FirstMultipleSwapChains>,	supportsAllRhi);
+		addExample("MultipleSwapChains",	&runBasicExample<MultipleSwapChains>,			supportsAllRhi);
 	#endif
-	addExample("FirstInstancing",				&runRhiExample<FirstInstancing>,			supportsAllRhi);
-	addExample("FirstGeometryShader",			&runRhiExample<FirstGeometryShader>,		onlyShaderModel4Plus);
-	addExample("FirstTessellationShader",		&runRhiExample<FirstTessellationShader>,	onlyShaderModel5Plus);
-	addExample("FirstComputeShader",			&runRhiExample<FirstComputeShader>,			onlyShaderModel5Plus);
+	addExample("Instancing",				&runRhiExample<Instancing>,						supportsAllRhi);
+	addExample("GeometryShader",			&runRhiExample<GeometryShader>,					onlyShaderModel4Plus);
+	addExample("TessellationShader",		&runRhiExample<TessellationShader>,				onlyShaderModel5Plus);
+	addExample("ComputeShader",				&runRhiExample<ComputeShader>,					onlyShaderModel5Plus);
 
 	// Advanced
-	addExample("FirstGpgpu",					&runBasicExample<FirstGpgpu>,				supportsAllRhi);
+	addExample("Gpgpu",							&runBasicExample<Gpgpu>,					supportsAllRhi);
 	addExample("IcosahedronTessellation",		&runRhiExample<IcosahedronTessellation>,	onlyShaderModel5Plus);
 	#ifdef RENDERER_IMGUI
 		addExample("InstancedCubes",			&runRenderExample<InstancedCubes>,			supportsAllRhi);
@@ -117,12 +117,12 @@ ExampleRunner::ExampleRunner() :
 		#ifdef RENDERER_IMGUI
 			addExample("ImGuiExampleSelector",	&runRenderExample<ImGuiExampleSelector>,	supportsAllRhi);
 		#endif
-		addExample("FirstMesh",					&runRenderExample<FirstMesh>,				supportsAllRhi);
-		addExample("FirstCompositor",			&runRenderExample<FirstCompositor>,			supportsAllRhi);
-		addExample("FirstScene",				&runRenderExample<FirstScene>,				supportsAllRhi);
+		addExample("Mesh",						&runRenderExample<Mesh>,					supportsAllRhi);
+		addExample("Compositor",				&runRenderExample<Compositor>,				supportsAllRhi);
+		addExample("Scene",						&runRenderExample<Scene>,					supportsAllRhi);
 		mDefaultExampleName = "ImGuiExampleSelector";
 	#else
-		mDefaultExampleName = "FirstTriangle";
+		mDefaultExampleName = "Triangle";
 	#endif
 
 	#ifdef RHI_NULL
