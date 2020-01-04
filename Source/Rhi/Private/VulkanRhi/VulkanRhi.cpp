@@ -1066,7 +1066,7 @@ namespace
 			{
 				VK_FALSE,	// robustBufferAccess (VkBool32)
 				VK_FALSE,	// fullDrawIndexUint32 (VkBool32)
-				VK_FALSE,	// imageCubeArray (VkBool32)
+				VK_TRUE,	// imageCubeArray (VkBool32)
 				VK_FALSE,	// independentBlend (VkBool32)
 				VK_TRUE,	// geometryShader (VkBool32)
 				VK_TRUE,	// tessellationShader (VkBool32)
@@ -4092,7 +4092,7 @@ namespace VulkanRhi
 
 			// Get Vulkan format
 			const VkFormat vkFormat   = Mapping::getVulkanFormat(textureFormat);
-			const bool     layered    = (VK_IMAGE_VIEW_TYPE_2D_ARRAY == vkImageViewType || VK_IMAGE_VIEW_TYPE_CUBE == vkImageViewType);
+			const bool     layered    = (VK_IMAGE_VIEW_TYPE_2D_ARRAY == vkImageViewType || VK_IMAGE_VIEW_TYPE_CUBE == vkImageViewType || VK_IMAGE_VIEW_TYPE_CUBE_ARRAY == vkImageViewType);
 			const uint32_t layerCount = layered ? vkExtent3D.depth : 1;
 			const uint32_t depth	  = layered ? 1 : vkExtent3D.depth;
 			const VkSampleCountFlagBits vkSampleCountFlagBits = Mapping::getVulkanSampleCountFlagBits(vulkanRhi.getContext(), numberOfMultisamples);
@@ -4124,7 +4124,7 @@ namespace VulkanRhi
 			}
 
 			{ // Create and fill Vulkan image
-				const VkImageCreateFlags vkImageCreateFlags = (VK_IMAGE_VIEW_TYPE_CUBE == vkImageViewType) ? VK_IMAGE_CREATE_CUBE_COMPATIBLE_BIT : 0u;
+				const VkImageCreateFlags vkImageCreateFlags = (VK_IMAGE_VIEW_TYPE_CUBE == vkImageViewType || VK_IMAGE_VIEW_TYPE_CUBE_ARRAY == vkImageViewType) ? VK_IMAGE_CREATE_CUBE_COMPATIBLE_BIT : 0u;
 				createAndAllocateVkImage(vulkanRhi, vkImageCreateFlags, vkImageType, VkExtent3D{vkExtent3D.width, vkExtent3D.height, depth}, numberOfMipmaps, layerCount, vkFormat, vkSampleCountFlagBits, VK_IMAGE_TILING_OPTIMAL, vkImageUsageFlags, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, vkImage, vkDeviceMemory);
 			}
 
@@ -6869,6 +6869,127 @@ namespace VulkanRhi
 
 
 	//[-------------------------------------------------------]
+	//[ VulkanRhi/Texture/TextureCubeArray.h                  ]
+	//[-------------------------------------------------------]
+	/**
+	*  @brief
+	*    Vulkan cube texture array interface
+	*/
+	class TextureCubeArray final : public Rhi::ITextureCubeArray
+	{
+
+
+	//[-------------------------------------------------------]
+	//[ Public methods                                        ]
+	//[-------------------------------------------------------]
+	public:
+		/**
+		*  @brief
+		*    Constructor
+		*
+		*  @param[in] vulkanRhi
+		*    Owner Vulkan RHI instance
+		*  @param[in] width
+		*    Texture width, must be >0
+		*  @param[in] numberOfSlices
+		*    Number of slices, must be >0
+		*  @param[in] textureFormat
+		*    Texture format
+		*  @param[in] data
+		*    Texture data, can be a null pointer
+		*  @param[in] textureFlags
+		*    Texture flags, see "Rhi::TextureFlag::Enum"
+		*/
+		TextureCubeArray(VulkanRhi& vulkanRhi, uint32_t width, uint32_t numberOfSlices, Rhi::TextureFormat::Enum textureFormat, const void* data, uint32_t textureFlags RHI_RESOURCE_DEBUG_NAME_PARAMETER) :
+			ITextureCubeArray(vulkanRhi, width, numberOfSlices RHI_RESOURCE_DEBUG_PASS_PARAMETER),
+			mVkImage(VK_NULL_HANDLE),
+			mVkImageLayout(Helper::getVkImageLayoutByTextureFlags(textureFlags)),
+			mVkDeviceMemory(VK_NULL_HANDLE),
+			mVkImageView(VK_NULL_HANDLE)
+		{
+			Helper::createAndFillVkImage(vulkanRhi, VK_IMAGE_TYPE_2D, VK_IMAGE_VIEW_TYPE_CUBE_ARRAY, { width, width, numberOfSlices * 6 }, textureFormat, data, textureFlags, 1, mVkImage, mVkDeviceMemory, mVkImageView);
+
+			// Assign a default name to the resource for debugging purposes
+			#ifdef RHI_DEBUG
+				if (nullptr != vkDebugMarkerSetObjectNameEXT)
+				{
+					RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "Cube texture array", 21)	// 21 = "Cube texture array: " including terminating zero
+					const VkDevice vkDevice = vulkanRhi.getVulkanContext().getVkDevice();
+					Helper::setDebugObjectName(vkDevice, VK_DEBUG_REPORT_OBJECT_TYPE_IMAGE_EXT, (uint64_t)mVkImage, detailedDebugName);
+					Helper::setDebugObjectName(vkDevice, VK_DEBUG_REPORT_OBJECT_TYPE_DEVICE_MEMORY_EXT, (uint64_t)mVkDeviceMemory, detailedDebugName);
+					Helper::setDebugObjectName(vkDevice, VK_DEBUG_REPORT_OBJECT_TYPE_IMAGE_VIEW_EXT, (uint64_t)mVkImageView, detailedDebugName);
+				}
+			#endif
+		}
+
+		/**
+		*  @brief
+		*    Destructor
+		*/
+		inline virtual ~TextureCubeArray() override
+		{
+			Helper::destroyAndFreeVkImage(static_cast<VulkanRhi&>(getRhi()), mVkImage, mVkDeviceMemory, mVkImageView);
+		}
+
+		/**
+		*  @brief
+		*    Return the Vulkan image view
+		*
+		*  @return
+		*    The Vulkan image view
+		*/
+		[[nodiscard]] inline VkImageView getVkImageView() const
+		{
+			return mVkImageView;
+		}
+
+		/**
+		*  @brief
+		*    Return the Vulkan image layout
+		*
+		*  @return
+		*    The Vulkan image layout
+		*/
+		[[nodiscard]] inline VkImageLayout getVkImageLayout() const
+		{
+			return mVkImageLayout;
+		}
+
+
+	//[-------------------------------------------------------]
+	//[ Protected virtual Rhi::RefCount methods               ]
+	//[-------------------------------------------------------]
+	protected:
+		inline virtual void selfDestruct() override
+		{
+			RHI_DELETE(getRhi().getContext(), TextureCubeArray, this);
+		}
+
+
+	//[-------------------------------------------------------]
+	//[ Private methods                                       ]
+	//[-------------------------------------------------------]
+	private:
+		explicit TextureCubeArray(const TextureCubeArray& source) = delete;
+		TextureCubeArray& operator =(const TextureCubeArray& source) = delete;
+
+
+	//[-------------------------------------------------------]
+	//[ Private data                                          ]
+	//[-------------------------------------------------------]
+	private:
+		VkImage		   mVkImage;
+		VkImageLayout  mVkImageLayout;
+		VkDeviceMemory mVkDeviceMemory;
+		VkImageView	   mVkImageView;
+
+
+	};
+
+
+
+
+	//[-------------------------------------------------------]
 	//[ VulkanRhi/Texture/TextureManager.h                    ]
 	//[-------------------------------------------------------]
 	/**
@@ -6978,13 +7099,16 @@ namespace VulkanRhi
 			return RHI_NEW(vulkanRhi.getContext(), TextureCube)(vulkanRhi, width, textureFormat, data, textureFlags RHI_RESOURCE_DEBUG_PASS_PARAMETER);
 		}
 
-		[[nodiscard]] virtual Rhi::ITextureCubeArray* createTextureCubeArray([[maybe_unused]] uint32_t width, [[maybe_unused]] uint32_t numberOfSlices, [[maybe_unused]] Rhi::TextureFormat::Enum textureFormat, [[maybe_unused]] const void* data = nullptr, [[maybe_unused]] uint32_t textureFlags = 0, [[maybe_unused]] Rhi::TextureUsage textureUsage = Rhi::TextureUsage::DEFAULT RHI_RESOURCE_DEBUG_NAME_PARAMETER) override
+		[[nodiscard]] virtual Rhi::ITextureCubeArray* createTextureCubeArray(uint32_t width, uint32_t numberOfSlices, Rhi::TextureFormat::Enum textureFormat, const void* data = nullptr, uint32_t textureFlags = 0, [[maybe_unused]] Rhi::TextureUsage textureUsage = Rhi::TextureUsage::DEFAULT RHI_RESOURCE_DEBUG_NAME_PARAMETER) override
 		{
-			// TODO(co) Implement me
-			#ifdef RHI_DEBUG
-				debugName = debugName;
-			#endif
-			return nullptr;
+			VulkanRhi& vulkanRhi = static_cast<VulkanRhi&>(getRhi());
+
+			// Sanity check
+			RHI_ASSERT(vulkanRhi.getContext(), width > 0 && numberOfSlices > 0, "Vulkan create texture cube was called with invalid parameters")
+
+			// Create cube texture resource
+			// -> The indication of the texture usage is only relevant for Direct3D, Vulkan has no texture usage indication
+			return RHI_NEW(vulkanRhi.getContext(), TextureCubeArray)(vulkanRhi, width, numberOfSlices, textureFormat, data, textureFlags RHI_RESOURCE_DEBUG_PASS_PARAMETER);
 		}
 
 
@@ -10554,12 +10678,9 @@ namespace VulkanRhi
 
 							case Rhi::ResourceType::TEXTURE_CUBE_ARRAY:
 							{
-								// TODO(co) Implement me
-								/*
 								const TextureCubeArray* textureCubeArray = static_cast<TextureCubeArray*>(resource);
 								vkImageView = textureCubeArray->getVkImageView();
 								vkImageLayout = textureCubeArray->getVkImageLayout();
-								*/
 								break;
 							}
 
@@ -12355,6 +12476,9 @@ namespace VulkanRhi
 
 			// Maximum number of 2D texture array slices (usually 512, in case there's no support for 2D texture arrays it's 0)
 			mCapabilities.maximumNumberOf2DTextureArraySlices = 512;
+
+			// Maximum number of cube texture array slices (usually 512, in case there's no support for cube texture arrays it's 0)
+			mCapabilities.maximumNumberOfCubeTextureArraySlices = 512;
 
 			// Maximum texture buffer (TBO) size in texel (>65536, typically much larger than that of one-dimensional texture, in case there's no support for texture buffer it's 0)
 			mCapabilities.maximumTextureBufferSize = mCapabilities.maximumStructuredBufferSize = 128 * 1024 * 1024;	// TODO(co) http://msdn.microsoft.com/en-us/library/ff476876%28v=vs.85%29.aspx does not mention the texture buffer? Currently the OpenGL 3 minimum is used: 128 MiB.

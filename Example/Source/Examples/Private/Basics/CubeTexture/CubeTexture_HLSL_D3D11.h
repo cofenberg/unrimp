@@ -21,8 +21,8 @@
 //[-------------------------------------------------------]
 //[ Shader start                                          ]
 //[-------------------------------------------------------]
-#ifdef RHI_VULKAN
-if (rhi->getNameId() == Rhi::NameId::VULKAN)
+#if defined(RHI_DIRECT3D11)
+if (rhi->getNameId() == Rhi::NameId::DIRECT3D11)
 {
 
 
@@ -30,28 +30,28 @@ if (rhi->getNameId() == Rhi::NameId::VULKAN)
 //[ Vertex shader source code                             ]
 //[-------------------------------------------------------]
 // One vertex shader invocation per vertex
-vertexShaderSourceCode = R"(#version 450 core	// OpenGL 4.5
-
+vertexShaderSourceCode = R"(
 // Attribute input/output
-layout(location = 0) in  vec3 Position;	// Object space vertex position
-layout(location = 0) out gl_PerVertex
+struct VS_OUTPUT
 {
-	vec4 gl_Position;
+	float4 Position : SV_POSITION;	// Clip space vertex position as output, left/bottom is (-1,-1) and right/top is (1,1)
+	float3 TexCoord : TEXCOORD0;	// Normalized texture coordinate as output
 };
-layout(location = 1) out vec3 TexCoord;	// Normalized texture coordinate as output
 
 // Uniforms
-layout(std140, set = 0, binding = 0) uniform UniformBlockDynamicVs
+cbuffer UniformBlockDynamicVs : register(b0)
 {
-	mat4 ObjectSpaceToClipSpaceMatrix;	// Object space to clip space matrix
-};
+	float4x4 ObjectSpaceToClipSpaceMatrix;	// Object space to clip space matrix
+}
 
 // Programs
-void main()
+VS_OUTPUT main(float3 Position : POSITION)	// Object space vertex position as input
 {
-	// Calculate the clip space vertex position, left/bottom is (-1,-1) and right/top is (1,1)
-	gl_Position = ObjectSpaceToClipSpaceMatrix * vec4(Position, 1.0);
-	TexCoord = normalize(Position);
+	// Vertex output
+	VS_OUTPUT output;
+	output.Position = mul(ObjectSpaceToClipSpaceMatrix, float4(Position, 1.0)); // Calculate the clip space vertex position, left/bottom is (-1,-1) and right/top is (1,1)
+	output.TexCoord = normalize(Position);
+	return output;
 }
 )";
 
@@ -60,20 +60,17 @@ void main()
 //[ Fragment shader source code                           ]
 //[-------------------------------------------------------]
 // One fragment shader invocation per fragment
-fragmentShaderSourceCode = R"(#version 450 core	// OpenGL 4.5
-
-// Attribute input/output
-layout(location = 1) in  vec3 TexCoord;		// Normalized texture coordinate as input
-layout(location = 0) out vec4 OutputColor;	// Output variable for fragment color
-
+// "pixel shader" in Direct3D terminology
+fragmentShaderSourceCode = R"(
 // Uniforms
-layout(set = 0, binding = 1) uniform samplerCubeArray CubeMapArray;
+SamplerState SamplerPoint : register(s0);
+TextureCubeArray CubeMapArray : register(t0);
 
 // Programs
-void main()
+float4 main(float4 Position : SV_POSITION, float3 TexCoord : TEXCOORD0) : SV_TARGET
 {
 	// Fetch the texel at the given texture coordinate and return its color
-	OutputColor = texture(CubeMapArray, vec4(TexCoord, 1.0f));	// The cube at index zero is black by intent, use index one
+	return CubeMapArray.Sample(SamplerPoint, float4(TexCoord, 1.0f));	// The cube at index zero is black by intent, use index one
 }
 )";
 

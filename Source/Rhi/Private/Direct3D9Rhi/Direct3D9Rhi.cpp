@@ -9158,6 +9158,9 @@ namespace Direct3D9Rhi
 		// Maximum number of 2D texture array slices (usually 512, in case there's no support for 2D texture arrays it's 0)
 		mCapabilities.maximumNumberOf2DTextureArraySlices = 0;
 
+		// Maximum number of cube texture array slices (usually 512, in case there's no support for cube texture arrays it's 0)
+		mCapabilities.maximumNumberOfCubeTextureArraySlices = 0;
+
 		// Maximum texture buffer (TBO) size in texel (>65536, typically much larger than that of one-dimensional texture, in case there's no support for texture buffer it's 0)
 		mCapabilities.maximumTextureBufferSize = 0;
 

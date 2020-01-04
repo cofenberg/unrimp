@@ -11022,6 +11022,9 @@ namespace OpenGLES3Rhi
 		// Maximum number of 2D texture array slices (usually 512, in case there's no support for 2D texture arrays it's 0)
 		mCapabilities.maximumNumberOf2DTextureArraySlices = static_cast<uint32_t>(openGLValue);
 
+		// Maximum number of cube texture array slices (usually 512, in case there's no support for cube texture arrays it's 0)
+		mCapabilities.maximumNumberOfCubeTextureArraySlices = 0;	// TODO(co) Implement me		static_cast<uint32_t>(openGLValue);
+
 		// Maximum uniform buffer (UBO) size in bytes (usually at least 16384 bytes, in case there's no support for uniform buffer it's 0)
 		openGLValue = 0;
 		glGetIntegerv(GL_MAX_UNIFORM_BLOCK_SIZE, &openGLValue);

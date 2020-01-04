@@ -3759,6 +3759,7 @@ namespace Rhi
 		uint32_t			maximumTextureDimension;						///< Maximum texture dimension (usually 2048, 4096, 8192 or 16384)
 		uint32_t			maximumNumberOf1DTextureArraySlices;			///< Maximum number of 1D texture array slices (usually 512 up to 8192, in case there's no support for 1D texture arrays it's 0)
 		uint32_t			maximumNumberOf2DTextureArraySlices;			///< Maximum number of 2D texture array slices (usually 512 up to 8192, in case there's no support for 2D texture arrays it's 0)
+		uint32_t			maximumNumberOfCubeTextureArraySlices;			///< Maximum number of cube texture array slices (usually 512 up to 8192, in case there's no support for cube texture arrays it's 0)
 		uint32_t			maximumTextureBufferSize;						///< Maximum texture buffer (TBO) size in texel (>65536, typically much larger than that of one-dimensional texture, in case there's no support for texture buffer it's 0)
 		uint32_t			maximumStructuredBufferSize;					///< Maximum structured buffer size in bytes (>65536, typically much larger than that of one-dimensional texture, in case there's no support for structured buffer it's 0)
 		uint32_t			maximumIndirectBufferSize;						///< Maximum indirect buffer size in bytes
@@ -3799,6 +3800,7 @@ namespace Rhi
 			maximumTextureDimension(0),
 			maximumNumberOf1DTextureArraySlices(0),
 			maximumNumberOf2DTextureArraySlices(0),
+			maximumNumberOfCubeTextureArraySlices(0),
 			maximumTextureBufferSize(0),
 			maximumStructuredBufferSize(0),
 			maximumIndirectBufferSize(0),
@@ -7050,6 +7052,9 @@ namespace Rhi
 		*    - Mip0: Face0, Face1, Face2, Face3, Face4, Face5
 		*    - Mip1: Face0, Face1, Face2, Face3, Face4, Face5
 		*    (DDS-texture layout is using face-major order)
+		*
+		*  @note
+		*    - Only supported if "Rhi::Capabilities::maximumNumberOfCubeTextureArraySlices" is not 0
 		*/
 		[[nodiscard]] virtual ITextureCubeArray* createTextureCubeArray(uint32_t width, uint32_t numberOfSlices, TextureFormat::Enum textureFormat, const void* data = nullptr, uint32_t textureFlags = 0, TextureUsage textureUsage = TextureUsage::DEFAULT RHI_RESOURCE_DEBUG_NAME_PARAMETER) = 0;
 

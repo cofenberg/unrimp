@@ -13550,6 +13550,9 @@ namespace Direct3D12Rhi
 				// Maximum number of 2D texture array slices (usually 512, in case there's no support for 2D texture arrays it's 0)
 				mCapabilities.maximumNumberOf2DTextureArraySlices = 0;
 
+				// Maximum number of cube texture array slices (usually 512, in case there's no support for cube texture arrays it's 0)
+				mCapabilities.maximumNumberOfCubeTextureArraySlices = 0;
+
 				// Maximum texture buffer (TBO) size in texel (>65536, typically much larger than that of one-dimensional texture, in case there's no support for texture buffer it's 0)
 				mCapabilities.maximumTextureBufferSize = mCapabilities.maximumStructuredBufferSize = 0;
 
@@ -13594,6 +13597,9 @@ namespace Direct3D12Rhi
 				// Maximum number of 2D texture array slices (usually 512, in case there's no support for 2D texture arrays it's 0)
 				mCapabilities.maximumNumberOf2DTextureArraySlices = 0;
 
+				// Maximum number of cube texture array slices (usually 512, in case there's no support for cube texture arrays it's 0)
+				mCapabilities.maximumNumberOfCubeTextureArraySlices = 0;
+
 				// Maximum texture buffer (TBO) size in texel (>65536, typically much larger than that of one-dimensional texture, in case there's no support for texture buffer it's 0)
 				mCapabilities.maximumTextureBufferSize = mCapabilities.maximumStructuredBufferSize = 0;
 
@@ -13637,6 +13643,9 @@ namespace Direct3D12Rhi
 
 				// Maximum number of 2D texture array slices (usually 512, in case there's no support for 2D texture arrays it's 0)
 				mCapabilities.maximumNumberOf2DTextureArraySlices = 0;
+
+				// Maximum number of cube texture array slices (usually 512, in case there's no support for cube texture arrays it's 0)
+				mCapabilities.maximumNumberOfCubeTextureArraySlices = 0;
 
 				// Maximum texture buffer (TBO) size in texel (>65536, typically much larger than that of one-dimensional texture, in case there's no support for texture buffer it's 0)
 				mCapabilities.maximumTextureBufferSize = mCapabilities.maximumStructuredBufferSize = 0;
@@ -13683,6 +13692,9 @@ namespace Direct3D12Rhi
 				// Maximum number of 2D texture array slices (usually 512, in case there's no support for 2D texture arrays it's 0)
 				mCapabilities.maximumNumberOf2DTextureArraySlices = 512;
 
+				// Maximum number of cube texture array slices (usually 512, in case there's no support for cube texture arrays it's 0)
+				mCapabilities.maximumNumberOfCubeTextureArraySlices = 0;
+
 				// Maximum texture buffer (TBO) size in texel (>65536, typically much larger than that of one-dimensional texture, in case there's no support for texture buffer it's 0)
 				mCapabilities.maximumTextureBufferSize = mCapabilities.maximumStructuredBufferSize = 128 * 1024 * 1024;	// TODO(co) http://msdn.microsoft.com/en-us/library/ff476876%28v=vs.85%29.aspx does not mention the texture buffer? Currently the OpenGL 3 minimum is used: 128 MiB.
 
@@ -13727,6 +13739,9 @@ namespace Direct3D12Rhi
 
 				// Maximum number of 2D texture array slices (usually 512, in case there's no support for 2D texture arrays it's 0)
 				mCapabilities.maximumNumberOf2DTextureArraySlices = 512;
+
+				// Maximum number of cube texture array slices (usually 512, in case there's no support for cube texture arrays it's 0)
+				mCapabilities.maximumNumberOfCubeTextureArraySlices = 512;
 
 				// Maximum texture buffer (TBO) size in texel (>65536, typically much larger than that of one-dimensional texture, in case there's no support for texture buffer it's 0)
 				mCapabilities.maximumTextureBufferSize = mCapabilities.maximumStructuredBufferSize = 128 * 1024 * 1024;	// TODO(co) http://msdn.microsoft.com/en-us/library/ff476876%28v=vs.85%29.aspx does not mention the texture buffer? Currently the OpenGL 3 minimum is used: 128 MiB.
@@ -13774,6 +13789,9 @@ namespace Direct3D12Rhi
 				// Maximum number of 2D texture array slices (usually 512, in case there's no support for 2D texture arrays it's 0)
 				mCapabilities.maximumNumberOf2DTextureArraySlices = 512;
 
+				// Maximum number of cube texture array slices (usually 512, in case there's no support for cube texture arrays it's 0)
+				mCapabilities.maximumNumberOfCubeTextureArraySlices = 512;
+
 				// Maximum texture buffer (TBO) size in texel (>65536, typically much larger than that of one-dimensional texture, in case there's no support for texture buffer it's 0)
 				mCapabilities.maximumTextureBufferSize = mCapabilities.maximumStructuredBufferSize = 128 * 1024 * 1024;	// TODO(co) http://msdn.microsoft.com/en-us/library/ff476876%28v=vs.85%29.aspx does not mention the texture buffer? Currently the OpenGL 3 minimum is used: 128 MiB.
 
@@ -13799,6 +13817,9 @@ namespace Direct3D12Rhi
 				mCapabilities.maximumNumberOfGsOutputVertices = 1024;	// TODO(co) http://msdn.microsoft.com/en-us/library/ff476876%28v=vs.85%29.aspx does not mention it, so I assume it's 1024
 				break;
 		}
+
+		// TODO(co) Implement me, remove this when done
+		mCapabilities.maximumNumberOfCubeTextureArraySlices = 0;
 
 		// The rest is the same for all feature levels
 

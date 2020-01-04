@@ -18868,6 +18868,17 @@ namespace OpenGLRhi
 					}
 				#endif
 
+				// Globally enable seamless cube map texture, e.g. Direct3D 11 has this enabled by default so do the same for OpenGL
+				// -> The following is just for the sake of completeness: It's the year 2020 and OpenGL on Mac is officially dead. But if someone would still
+				//    want to support it in a productive way, one has to take care of the situation that enabling seamless cube map texture can result on
+				//    slow software rendering on Mac. For checking whether or not this is the case, see "GL_TEXTURE_CUBE_MAP_SEAMLESS on OS X" published at April 26, 2012 on http://distrustsimplicity.net/articles/gl_texture_cube_map_seamless-on-os-x/
+				//    "
+				//    GLint gpuVertex, gpuFragment;
+				//    CGLGetParameter(CGLGetCurrentContext(), kCGLCPGPUVertexProcessing, &gpuVertex);
+				//    CGLGetParameter(CGLGetCurrentContext(), kCGLCPGPUFragmentProcessing, &gpuFragment);
+				//    "
+				glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS);
+
 				// Initialize the capabilities
 				initializeCapabilities();
 
@@ -20968,16 +20979,19 @@ namespace OpenGLRhi
 
 		// Maximum number of 1D texture array slices (usually 512, in case there's no support for 1D texture arrays it's 0)
 		// Maximum number of 2D texture array slices (usually 512, in case there's no support for 2D texture arrays it's 0)
+		// Maximum number of cube texture array slices (usually 512, in case there's no support for cube texture arrays it's 0)
 		if (mExtensions->isGL_EXT_texture_array())
 		{
 			glGetIntegerv(GL_MAX_ARRAY_TEXTURE_LAYERS_EXT, &openGLValue);
 			mCapabilities.maximumNumberOf1DTextureArraySlices = static_cast<uint32_t>(openGLValue);
 			mCapabilities.maximumNumberOf2DTextureArraySlices = static_cast<uint32_t>(openGLValue);
+			mCapabilities.maximumNumberOfCubeTextureArraySlices = 0;	// TODO(co) Implement me		 static_cast<uint32_t>(openGLValue);
 		}
 		else
 		{
 			mCapabilities.maximumNumberOf1DTextureArraySlices = 0;
 			mCapabilities.maximumNumberOf2DTextureArraySlices = 0;
+			mCapabilities.maximumNumberOfCubeTextureArraySlices = 0;
 		}
 
 		// Maximum texture buffer (TBO) size in texel (>65536, typically much larger than that of one-dimensional texture, in case there's no support for texture buffer it's 0)

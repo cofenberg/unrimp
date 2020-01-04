@@ -49,6 +49,8 @@ void CubeTexture::onInitialization()
 	Rhi::IRhiPtr rhi(getRhi());
 	if (nullptr != rhi)
 	{
+		const bool textureCubeArraySupported = (rhi->getCapabilities().maximumNumberOfCubeTextureArraySlices > 0);
+
 		// Create the buffer and texture manager
 		mBufferManager = rhi->createBufferManager();
 		mTextureManager = rhi->createTextureManager();
@@ -56,7 +58,14 @@ void CubeTexture::onInitialization()
 		{ // Create the root signature
 			Rhi::DescriptorRangeBuilder ranges[4];
 			ranges[0].initialize(Rhi::ResourceType::UNIFORM_BUFFER, 0, "UniformBlockDynamicVs",	Rhi::ShaderVisibility::VERTEX);
-			ranges[1].initialize(Rhi::ResourceType::TEXTURE_CUBE,   0, "CubeMap",				Rhi::ShaderVisibility::FRAGMENT);
+			if (textureCubeArraySupported)
+			{
+				ranges[1].initialize(Rhi::ResourceType::TEXTURE_CUBE_ARRAY, 0, "CubeMapArray", Rhi::ShaderVisibility::FRAGMENT);
+			}
+			else
+			{
+				ranges[1].initialize(Rhi::ResourceType::TEXTURE_CUBE, 0, "CubeMap", Rhi::ShaderVisibility::FRAGMENT);
+			}
 			ranges[2].initializeSampler(0, Rhi::ShaderVisibility::FRAGMENT);
 			ranges[3].initializeSampler(1, Rhi::ShaderVisibility::FRAGMENT);
 
@@ -105,9 +114,10 @@ void CubeTexture::onInitialization()
 			{ // Create the cube texture
 				static constexpr uint32_t TEXTURE_WIDTH = 1;
 				static constexpr uint32_t TEXEL_ELEMENTS = 4;
-				static constexpr uint32_t NUMBER_OF_BYTES = TEXTURE_WIDTH * TEXTURE_WIDTH * TEXEL_ELEMENTS * 6;
-				uint8_t data[NUMBER_OF_BYTES];
-				uint8_t* currentData = data;
+				static constexpr uint32_t NUMBER_OF_BYTES_PER_SLICE = TEXTURE_WIDTH * TEXTURE_WIDTH * TEXEL_ELEMENTS * 6;
+				static constexpr uint32_t NUMBER_OF_BYTES = NUMBER_OF_BYTES_PER_SLICE * 2;
+				uint8_t data[NUMBER_OF_BYTES] = {};
+				uint8_t* currentData = data + NUMBER_OF_BYTES_PER_SLICE;	// The first cube slice will be black
 
 				// Face 0 = positive X = red
 				currentData[0] = 255;
@@ -151,7 +161,14 @@ void CubeTexture::onInitialization()
 				currentData[3] = 0;
 
 				// Create the texture instance
-				resources[1] = mTextureManager->createTextureCube(TEXTURE_WIDTH, Rhi::TextureFormat::R8G8B8A8, data, Rhi::TextureFlag::SHADER_RESOURCE);
+				if (textureCubeArraySupported)
+				{
+					resources[1] = mTextureManager->createTextureCubeArray(TEXTURE_WIDTH, 2, Rhi::TextureFormat::R8G8B8A8, data, Rhi::TextureFlag::SHADER_RESOURCE);
+				}
+				else
+				{
+					resources[1] = mTextureManager->createTextureCube(TEXTURE_WIDTH, Rhi::TextureFormat::R8G8B8A8, data + NUMBER_OF_BYTES_PER_SLICE, Rhi::TextureFlag::SHADER_RESOURCE);
+				}
 			}
 
 			// Create the texture group
@@ -247,7 +264,8 @@ void CubeTexture::onInitialization()
 			#include "CubeTexture_GLSL_410.h"	// macOS 10.11 only supports OpenGL 4.1 hence it's our OpenGL minimum
 			#include "CubeTexture_GLSL_ES3.h"
 			#include "CubeTexture_HLSL_D3D9.h"
-			#include "CubeTexture_HLSL_D3D10_D3D11_D3D12.h"
+			#include "CubeTexture_HLSL_D3D10_D3D12.h"
+			#include "CubeTexture_HLSL_D3D11.h"
 			#include "CubeTexture_Null.h"
 
 			// Create the graphics program

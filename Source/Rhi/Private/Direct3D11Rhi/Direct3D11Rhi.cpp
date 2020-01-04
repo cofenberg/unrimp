@@ -7758,10 +7758,9 @@ namespace Direct3D11Rhi
 				{
 					// Direct3D 11 shader resource view description
 					D3D11_SHADER_RESOURCE_VIEW_DESC d3d11ShaderResourceViewDesc = {};
-					d3d11ShaderResourceViewDesc.Format						= Mapping::getDirect3D11ShaderResourceViewFormat(textureFormat);
-					d3d11ShaderResourceViewDesc.ViewDimension				= D3D11_SRV_DIMENSION_TEXTURECUBE;
-					d3d11ShaderResourceViewDesc.TextureCube.MipLevels		= numberOfMipmaps;
-					d3d11ShaderResourceViewDesc.TextureCube.MostDetailedMip	= 0;
+					d3d11ShaderResourceViewDesc.Format				  = Mapping::getDirect3D11ShaderResourceViewFormat(textureFormat);
+					d3d11ShaderResourceViewDesc.ViewDimension		  = D3D11_SRV_DIMENSION_TEXTURECUBE;
+					d3d11ShaderResourceViewDesc.TextureCube.MipLevels = numberOfMipmaps;
 
 					// Create the Direct3D 11 shader resource view instance
 					FAILED_DEBUG_BREAK(direct3D11Rhi.getD3D11Device()->CreateShaderResourceView(mD3D11TextureCube, &d3d11ShaderResourceViewDesc, &mD3D11ShaderResourceView))
@@ -7926,6 +7925,338 @@ namespace Direct3D11Rhi
 
 
 	//[-------------------------------------------------------]
+	//[ Direct3D11Rhi/Texture/TextureCubeArray.h              ]
+	//[-------------------------------------------------------]
+	/**
+	*  @brief
+	*    Direct3D 11 cube texture array class
+	*/
+	class TextureCubeArray final : public Rhi::ITextureCubeArray
+	{
+
+
+	//[-------------------------------------------------------]
+	//[ Public methods                                        ]
+	//[-------------------------------------------------------]
+	public:
+		/**
+		*  @brief
+		*    Constructor
+		*
+		*  @param[in] direct3D11Rhi
+		*    Owner Direct3D 11 RHI instance
+		*  @param[in] width
+		*    Texture width, must be >0
+		*  @param[in] numberOfSlices
+		*    Number of slices, must be >0
+		*  @param[in] textureFormat
+		*    Texture format
+		*  @param[in] data
+		*    Texture data, can be a null pointer
+		*  @param[in] textureFlags
+		*    Texture flags, see "Rhi::TextureFlag::Enum"
+		*  @param[in] textureUsage
+		*    Indication of the texture usage
+		*/
+		TextureCubeArray(Direct3D11Rhi& direct3D11Rhi, uint32_t width, uint32_t numberOfSlices, Rhi::TextureFormat::Enum textureFormat, const void* data, uint32_t textureFlags, Rhi::TextureUsage textureUsage RHI_RESOURCE_DEBUG_NAME_PARAMETER) :
+			ITextureCubeArray(direct3D11Rhi, width, numberOfSlices RHI_RESOURCE_DEBUG_PASS_PARAMETER),
+			mTextureFormat(textureFormat),
+			mD3D11TextureCube(nullptr),
+			mD3D11ShaderResourceView(nullptr),
+			mD3D11UnorderedAccessView(nullptr)
+		{
+			static constexpr uint32_t NUMBER_OF_SLICES = 6;	// In Direct3D 11, a cube map is a 2D array texture with six slices
+			const uint32_t arraySize = NUMBER_OF_SLICES * numberOfSlices;
+
+			// Sanity checks
+			RHI_ASSERT(direct3D11Rhi.getContext(), (textureFlags & Rhi::TextureFlag::RENDER_TARGET) == 0 || nullptr == data, "Direct3D 11 render target textures can't be filled using provided data")
+
+			// Calculate the number of mipmaps
+			const bool dataContainsMipmaps = (textureFlags & Rhi::TextureFlag::DATA_CONTAINS_MIPMAPS);
+			const bool generateMipmaps = (!dataContainsMipmaps && (textureFlags & Rhi::TextureFlag::GENERATE_MIPMAPS));
+			RHI_ASSERT(direct3D11Rhi.getContext(), Rhi::TextureUsage::IMMUTABLE != textureUsage || !generateMipmaps, "Direct3D 11 immutable texture usage can't be combined with automatic mipmap generation")
+			const uint32_t numberOfMipmaps = (dataContainsMipmaps || generateMipmaps) ? getNumberOfMipmaps(width) : 1;
+
+			// Direct3D 11 2D array texture description
+			D3D11_TEXTURE2D_DESC d3d11Texture2DDesc;
+			d3d11Texture2DDesc.Width			  = width;
+			d3d11Texture2DDesc.Height			  = width;
+			d3d11Texture2DDesc.MipLevels		  = numberOfMipmaps;
+			d3d11Texture2DDesc.ArraySize		  = arraySize;
+			d3d11Texture2DDesc.Format			  = Mapping::getDirect3D11ResourceFormat(textureFormat);
+			d3d11Texture2DDesc.SampleDesc.Count	  = 1;
+			d3d11Texture2DDesc.SampleDesc.Quality = 0;
+			d3d11Texture2DDesc.Usage			  = static_cast<D3D11_USAGE>(textureUsage);	// These constants directly map to Direct3D constants, do not change them
+			d3d11Texture2DDesc.BindFlags		  = 0;
+			d3d11Texture2DDesc.CPUAccessFlags	  = (Rhi::TextureUsage::DYNAMIC == textureUsage) ? D3D11_CPU_ACCESS_WRITE : 0u;
+			d3d11Texture2DDesc.MiscFlags		  = (generateMipmaps ? D3D11_RESOURCE_MISC_GENERATE_MIPS : 0u) | D3D11_RESOURCE_MISC_TEXTURECUBE;
+
+			// Set bind flags
+			if (textureFlags & Rhi::TextureFlag::SHADER_RESOURCE)
+			{
+				d3d11Texture2DDesc.BindFlags |= D3D11_BIND_SHADER_RESOURCE;
+			}
+			if ((textureFlags & Rhi::TextureFlag::RENDER_TARGET) || generateMipmaps)
+			{
+				d3d11Texture2DDesc.BindFlags |= D3D11_BIND_RENDER_TARGET;
+			}
+			if (textureFlags & Rhi::TextureFlag::UNORDERED_ACCESS)
+			{
+				d3d11Texture2DDesc.BindFlags |= D3D11_BIND_UNORDERED_ACCESS;
+			}
+
+			// Create the Direct3D 11 2D texture instance: Did the user provided us with any texture data?
+			if (nullptr != data)
+			{
+				// We don't want dynamic allocations, so we limit the maximum number of mipmaps and hence are able to use the efficient C runtime stack
+				static constexpr uint32_t MAXIMUM_NUMBER_OF_MIPMAPS = 15;	// A 16384x16384 texture has 15 mipmaps
+				RHI_ASSERT(direct3D11Rhi.getContext(), numberOfMipmaps <= MAXIMUM_NUMBER_OF_MIPMAPS, "Invalid Direct3D 11 number of mipmaps")
+				D3D11_SUBRESOURCE_DATA* d3d11SubresourceData = RHI_MALLOC_TYPED(direct3D11Rhi.getContext(), D3D11_SUBRESOURCE_DATA, arraySize * MAXIMUM_NUMBER_OF_MIPMAPS);
+
+				// Did the user provided data containing mipmaps from 0-n down to 1x1 linearly in memory?
+				if (dataContainsMipmaps)
+				{
+					// Data layout
+					// - Direct3D 11 wants: DDS files are organized in face-major order, like this:
+					//     Face0: Mip0, Mip1, Mip2, etc.
+					//     Face1: Mip0, Mip1, Mip2, etc.
+					//     etc.
+					// - The RHI provides: CRN and KTX files are organized in mip-major order, like this:
+					//     Mip0: Face0, Face1, Face2, Face3, Face4, Face5
+					//     Mip1: Face0, Face1, Face2, Face3, Face4, Face5
+					//     etc.
+
+					// Upload all mipmaps
+					for (uint32_t mipmap = 0; mipmap < numberOfMipmaps; ++mipmap)
+					{
+						const uint32_t numberOfBytesPerRow = Rhi::TextureFormat::getNumberOfBytesPerRow(textureFormat, width);
+						const uint32_t numberOfBytesPerSlice = Rhi::TextureFormat::getNumberOfBytesPerSlice(textureFormat, width, width);
+						for (uint32_t arraySlice = 0; arraySlice < arraySize; ++arraySlice)
+						{
+							// Upload the current mipmap
+							D3D11_SUBRESOURCE_DATA& currentD3d11SubresourceData = d3d11SubresourceData[arraySlice * numberOfMipmaps + mipmap];
+							currentD3d11SubresourceData.pSysMem			 = data;
+							currentD3d11SubresourceData.SysMemPitch		 = numberOfBytesPerRow;
+							currentD3d11SubresourceData.SysMemSlicePitch = 0;	// Only relevant for 3D textures
+
+							// Move on to the cube map face
+							// -> If the data doesn't contain mipmaps, we don't need to care about this in here
+							data = static_cast<const uint8_t*>(data) + numberOfBytesPerSlice;
+						}
+
+						// Move on to the next mipmap and ensure the size is always at least 1x1
+						width = getHalfSize(width);
+					}
+				}
+				else
+				{
+					// The user only provided us with the base texture, no mipmaps
+					// -> When uploading data, we still need to upload the whole mipmap chain, so provide dummy data
+					for (uint32_t mipmap = 0; mipmap < numberOfMipmaps; ++mipmap)
+					{
+						const void* currentData = data;
+						const uint32_t numberOfBytesPerRow   = Rhi::TextureFormat::getNumberOfBytesPerRow(textureFormat, width);
+						const uint32_t numberOfBytesPerSlice = Rhi::TextureFormat::getNumberOfBytesPerSlice(textureFormat, width, width);
+						for (uint32_t arraySlice = 0; arraySlice < arraySize; ++arraySlice)
+						{
+							D3D11_SUBRESOURCE_DATA& currentD3d11SubresourceData = d3d11SubresourceData[arraySlice];
+							currentD3d11SubresourceData.pSysMem			 = currentData;
+							currentD3d11SubresourceData.SysMemPitch		 = numberOfBytesPerRow;
+							currentD3d11SubresourceData.SysMemSlicePitch = 0;	// Only relevant for 3D textures
+
+							// Move on to the next slice
+							currentData = static_cast<const uint8_t*>(currentData) + numberOfBytesPerSlice;
+						}
+
+						// Move on to the next mipmap and ensure the size is always at least 1x1
+						width = getHalfSize(width);
+					}
+				}
+				FAILED_DEBUG_BREAK(direct3D11Rhi.getD3D11Device()->CreateTexture2D(&d3d11Texture2DDesc, d3d11SubresourceData, &mD3D11TextureCube))
+				RHI_FREE(direct3D11Rhi.getContext(), d3d11SubresourceData);
+			}
+			else
+			{
+				// The user did not provide us with texture data
+				FAILED_DEBUG_BREAK(direct3D11Rhi.getD3D11Device()->CreateTexture2D(&d3d11Texture2DDesc, nullptr, &mD3D11TextureCube))
+			}
+
+			// Create requested views
+			if (nullptr != mD3D11TextureCube)
+			{
+				// Create the Direct3D 11 shader resource view instance
+				if (textureFlags & Rhi::TextureFlag::SHADER_RESOURCE)
+				{
+					// Direct3D 11 shader resource view description
+					D3D11_SHADER_RESOURCE_VIEW_DESC d3d11ShaderResourceViewDesc = {};
+					d3d11ShaderResourceViewDesc.Format					   = Mapping::getDirect3D11ShaderResourceViewFormat(textureFormat);
+					d3d11ShaderResourceViewDesc.ViewDimension			   = D3D11_SRV_DIMENSION_TEXTURECUBEARRAY;
+					d3d11ShaderResourceViewDesc.TextureCubeArray.MipLevels = numberOfMipmaps;
+					d3d11ShaderResourceViewDesc.TextureCubeArray.NumCubes  = numberOfSlices;
+
+					// Create the Direct3D 11 shader resource view instance
+					FAILED_DEBUG_BREAK(direct3D11Rhi.getD3D11Device()->CreateShaderResourceView(mD3D11TextureCube, &d3d11ShaderResourceViewDesc, &mD3D11ShaderResourceView))
+				}
+
+				// Create the Direct3D 11 unordered access view instance
+				if (textureFlags & Rhi::TextureFlag::UNORDERED_ACCESS)
+				{
+					// Direct3D 11 unordered access view description
+					D3D11_UNORDERED_ACCESS_VIEW_DESC d3d11UnorderedAccessViewDesc = {};
+					d3d11UnorderedAccessViewDesc.Format					  = Mapping::getDirect3D11ShaderResourceViewFormat(textureFormat);
+					d3d11UnorderedAccessViewDesc.ViewDimension			  = D3D11_UAV_DIMENSION_TEXTURE2DARRAY;
+					d3d11UnorderedAccessViewDesc.Texture2DArray.ArraySize = arraySize;
+
+					// Create the Direct3D 11 unordered access view instance
+					FAILED_DEBUG_BREAK(direct3D11Rhi.getD3D11Device()->CreateUnorderedAccessView(mD3D11TextureCube, &d3d11UnorderedAccessViewDesc, &mD3D11UnorderedAccessView))
+				}
+			}
+
+			// Let Direct3D 11 generate the mipmaps for us automatically, if necessary
+			if (nullptr != data && generateMipmaps)
+			{
+				direct3D11Rhi.generateAsynchronousDeferredMipmaps(*this, *mD3D11ShaderResourceView);
+			}
+
+			// Assign a default name to the resource for debugging purposes
+			#ifdef RHI_DEBUG
+				RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "Cube texture array", 21)	// 21 = "Cube texture array: " including terminating zero
+				if (nullptr != mD3D11TextureCube)
+				{
+					FAILED_DEBUG_BREAK(mD3D11TextureCube->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(detailedDebugName)), detailedDebugName))
+				}
+				if (nullptr != mD3D11ShaderResourceView)
+				{
+					FAILED_DEBUG_BREAK(mD3D11ShaderResourceView->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(detailedDebugName)), detailedDebugName))
+				}
+				if (nullptr != mD3D11UnorderedAccessView)
+				{
+					FAILED_DEBUG_BREAK(mD3D11UnorderedAccessView->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(detailedDebugName)), detailedDebugName))
+				}
+			#endif
+		}
+
+		/**
+		*  @brief
+		*    Destructor
+		*/
+		virtual ~TextureCubeArray() override
+		{
+			if (nullptr != mD3D11ShaderResourceView)
+			{
+				mD3D11ShaderResourceView->Release();
+			}
+			if (nullptr != mD3D11UnorderedAccessView)
+			{
+				mD3D11UnorderedAccessView->Release();
+			}
+			if (nullptr != mD3D11TextureCube)
+			{
+				mD3D11TextureCube->Release();
+			}
+		}
+
+		/**
+		*  @brief
+		*    Return the texture format
+		*
+		*  @return
+		*    The texture format
+		*/
+		[[nodiscard]] inline Rhi::TextureFormat::Enum getTextureFormat() const
+		{
+			return mTextureFormat;
+		}
+
+		/**
+		*  @brief
+		*    Return the Direct3D texture cube resource instance
+		*
+		*  @return
+		*    The Direct3D texture cube resource instance, can be a null pointer, do not release the returned instance unless you added an own reference to it
+		*/
+		[[nodiscard]] inline ID3D11Texture2D* getD3D11TextureCube() const
+		{
+			return mD3D11TextureCube;
+		}
+
+		/**
+		*  @brief
+		*    Return the Direct3D shader resource view instance
+		*
+		*  @return
+		*    The Direct3D shader resource view instance, can be a null pointer, do not release the returned instance unless you added an own reference to it
+		*
+		*  @note
+		*    - It's not recommended to manipulate the returned Direct3D 11 resource
+		*      view by e.g. assigning another Direct3D 11 resource to it
+		*/
+		[[nodiscard]] inline ID3D11ShaderResourceView* getD3D11ShaderResourceView() const
+		{
+			return mD3D11ShaderResourceView;
+		}
+
+		/**
+		*  @brief
+		*    Return the Direct3D unordered access view instance
+		*
+		*  @return
+		*    The Direct3D unordered access view instance, can be a null pointer, do not release the returned instance unless you added an own reference to it
+		*
+		*  @note
+		*    - It's not recommended to manipulate the returned Direct3D 11 resource
+		*      view by e.g. assigning another Direct3D 11 resource to it
+		*/
+		[[nodiscard]] inline ID3D11UnorderedAccessView* getD3D11UnorderedAccessView() const
+		{
+			return mD3D11UnorderedAccessView;
+		}
+
+
+	//[-------------------------------------------------------]
+	//[ Public virtual Rhi::IResource methods                 ]
+	//[-------------------------------------------------------]
+	public:
+		[[nodiscard]] inline virtual void* getInternalResourceHandle() const override
+		{
+			return mD3D11TextureCube;
+		}
+
+
+	//[-------------------------------------------------------]
+	//[ Protected virtual Rhi::RefCount methods               ]
+	//[-------------------------------------------------------]
+	protected:
+		inline virtual void selfDestruct() override
+		{
+			RHI_DELETE(getRhi().getContext(), TextureCubeArray, this);
+		}
+
+
+	//[-------------------------------------------------------]
+	//[ Private methods                                       ]
+	//[-------------------------------------------------------]
+	private:
+		explicit TextureCubeArray(const TextureCubeArray& source) = delete;
+		TextureCubeArray& operator =(const TextureCubeArray& source) = delete;
+
+
+	//[-------------------------------------------------------]
+	//[ Private data                                          ]
+	//[-------------------------------------------------------]
+	private:
+		Rhi::TextureFormat::Enum   mTextureFormat;
+		ID3D11Texture2D*		   mD3D11TextureCube;			///< Direct3D 11 texture cube resource, can be a null pointer
+		ID3D11ShaderResourceView*  mD3D11ShaderResourceView;	///< Direct3D 11 shader resource view, can be a null pointer
+		ID3D11UnorderedAccessView* mD3D11UnorderedAccessView;	///< Direct3D 11 unordered access view, can be a null pointer
+
+
+	};
+
+
+
+
+	//[-------------------------------------------------------]
 	//[ Direct3D11Rhi/Texture/TextureManager.h                ]
 	//[-------------------------------------------------------]
 	/**
@@ -8029,13 +8360,15 @@ namespace Direct3D11Rhi
 			return RHI_NEW(direct3D11Rhi.getContext(), TextureCube)(direct3D11Rhi, width, textureFormat, data, textureFlags, textureUsage RHI_RESOURCE_DEBUG_PASS_PARAMETER);
 		}
 
-		[[nodiscard]] virtual Rhi::ITextureCubeArray* createTextureCubeArray([[maybe_unused]] uint32_t width, [[maybe_unused]] uint32_t numberOfSlices, [[maybe_unused]] Rhi::TextureFormat::Enum textureFormat, [[maybe_unused]] const void* data = nullptr, [[maybe_unused]] uint32_t textureFlags = 0, [[maybe_unused]] Rhi::TextureUsage textureUsage = Rhi::TextureUsage::DEFAULT RHI_RESOURCE_DEBUG_NAME_PARAMETER) override
+		[[nodiscard]] virtual Rhi::ITextureCubeArray* createTextureCubeArray(uint32_t width, uint32_t numberOfSlices, Rhi::TextureFormat::Enum textureFormat, const void* data = nullptr, uint32_t textureFlags = 0, Rhi::TextureUsage textureUsage = Rhi::TextureUsage::DEFAULT RHI_RESOURCE_DEBUG_NAME_PARAMETER) override
 		{
-			// TODO(co) Implement me
-			#ifdef RHI_DEBUG
-				debugName = debugName;
-			#endif
-			return nullptr;
+			Direct3D11Rhi& direct3D11Rhi = static_cast<Direct3D11Rhi&>(getRhi());
+
+			// Sanity check
+			RHI_ASSERT(direct3D11Rhi.getContext(), width > 0 && numberOfSlices > 0, "Direct3D 11 create texture cube array was called with invalid parameters")
+
+			// Create cube texture resource
+			return RHI_NEW(direct3D11Rhi.getContext(), TextureCubeArray)(direct3D11Rhi, width, numberOfSlices, textureFormat, data, textureFlags, textureUsage RHI_RESOURCE_DEBUG_PASS_PARAMETER);
 		}
 
 
@@ -12300,8 +12633,7 @@ namespace Direct3D11Rhi
 								break;
 
 							case Rhi::ResourceType::TEXTURE_CUBE_ARRAY:
-								// TODO(co) Implement me
-								// d3d11ShaderResourceView = static_cast<const TextureCubeArray*>(resource)->getD3D11ShaderResourceView();
+								d3d11ShaderResourceView = static_cast<const TextureCubeArray*>(resource)->getD3D11ShaderResourceView();
 								break;
 
 							case Rhi::ResourceType::ROOT_SIGNATURE:
@@ -13154,8 +13486,7 @@ namespace Direct3D11Rhi
 										break;
 
 									case Rhi::ResourceType::TEXTURE_CUBE_ARRAY:
-										// TODO(co) Implement me
-										// d3d11ShaderResourceView = static_cast<const TextureCubeArray*>(resource)->getD3D11ShaderResourceView();
+										d3d11ShaderResourceView = static_cast<const TextureCubeArray*>(resource)->getD3D11ShaderResourceView();
 										break;
 
 									case Rhi::ResourceType::ROOT_SIGNATURE:
@@ -13255,8 +13586,7 @@ namespace Direct3D11Rhi
 										break;
 
 									case Rhi::ResourceType::TEXTURE_CUBE_ARRAY:
-										// TODO(co) Implement me
-										// d3d11UnorderedAccessView = static_cast<const TextureCubeArray*>(resource)->getD3D11UnorderedAccessView();
+										d3d11UnorderedAccessView = static_cast<const TextureCubeArray*>(resource)->getD3D11UnorderedAccessView();
 										break;
 
 									case Rhi::ResourceType::ROOT_SIGNATURE:
@@ -13962,8 +14292,7 @@ namespace Direct3D11Rhi
 			TEXTURE_RESOURCE(Rhi::ResourceType::TEXTURE_2D_ARRAY, Texture2DArray)
 			TEXTURE_RESOURCE(Rhi::ResourceType::TEXTURE_3D, Texture3D)
 			TEXTURE_RESOURCE(Rhi::ResourceType::TEXTURE_CUBE, TextureCube)
-			// TEXTURE_RESOURCE(Rhi::ResourceType::TEXTURE_CUBE_ARRAY, TextureCubeArray)	// TODO(co) Implement me
-			case Rhi::ResourceType::TEXTURE_CUBE_ARRAY:
+			TEXTURE_RESOURCE(Rhi::ResourceType::TEXTURE_CUBE_ARRAY, TextureCubeArray)
 
 			case Rhi::ResourceType::ROOT_SIGNATURE:
 			case Rhi::ResourceType::RESOURCE_GROUP:
@@ -14050,8 +14379,7 @@ namespace Direct3D11Rhi
 			TEXTURE_RESOURCE(Rhi::ResourceType::TEXTURE_2D_ARRAY, Texture2DArray)
 			TEXTURE_RESOURCE(Rhi::ResourceType::TEXTURE_3D, Texture3D)
 			TEXTURE_RESOURCE(Rhi::ResourceType::TEXTURE_CUBE, TextureCube)
-			// TEXTURE_RESOURCE(Rhi::ResourceType::TEXTURE_CUBE_ARRAY, TextureCubeArray)	// TODO(co) Implement me
-			case Rhi::ResourceType::TEXTURE_CUBE_ARRAY:
+			TEXTURE_RESOURCE(Rhi::ResourceType::TEXTURE_CUBE_ARRAY, TextureCubeArray)
 
 			case Rhi::ResourceType::ROOT_SIGNATURE:
 			case Rhi::ResourceType::RESOURCE_GROUP:
@@ -14214,8 +14542,7 @@ namespace Direct3D11Rhi
 							break;
 
 						case Rhi::ResourceType::TEXTURE_CUBE_ARRAY:
-							// TODO(co) Implement me
-							// d3d11ShaderResourceView = static_cast<TextureCubeArray*>(texture)->getD3D11ShaderResourceView();
+							d3d11ShaderResourceView = static_cast<TextureCubeArray*>(texture)->getD3D11ShaderResourceView();
 							break;
 
 						case Rhi::ResourceType::ROOT_SIGNATURE:
@@ -14379,6 +14706,9 @@ namespace Direct3D11Rhi
 				// Maximum number of 2D texture array slices (usually 512, in case there's no support for 2D texture arrays it's 0)
 				mCapabilities.maximumNumberOf2DTextureArraySlices = 0;
 
+				// Maximum number of cube texture array slices (usually 512, in case there's no support for cube texture arrays it's 0)
+				mCapabilities.maximumNumberOfCubeTextureArraySlices = 0;
+
 				// Maximum texture buffer (TBO) size in texel (>65536, typically much larger than that of one-dimensional texture, in case there's no support for texture buffer it's 0)
 				mCapabilities.maximumTextureBufferSize = mCapabilities.maximumStructuredBufferSize = 0;
 
@@ -14419,6 +14749,9 @@ namespace Direct3D11Rhi
 
 				// Maximum number of 2D texture array slices (usually 512, in case there's no support for 2D texture arrays it's 0)
 				mCapabilities.maximumNumberOf2DTextureArraySlices = 0;
+
+				// Maximum number of cube texture array slices (usually 512, in case there's no support for cube texture arrays it's 0)
+				mCapabilities.maximumNumberOfCubeTextureArraySlices = 0;
 
 				// Maximum texture buffer (TBO) size in texel (>65536, typically much larger than that of one-dimensional texture, in case there's no support for texture buffer it's 0)
 				mCapabilities.maximumTextureBufferSize = mCapabilities.maximumStructuredBufferSize = 0;
@@ -14461,6 +14794,9 @@ namespace Direct3D11Rhi
 				// Maximum number of 2D texture array slices (usually 512, in case there's no support for 2D texture arrays it's 0)
 				mCapabilities.maximumNumberOf2DTextureArraySlices = 0;
 
+				// Maximum number of cube texture array slices (usually 512, in case there's no support for cube texture arrays it's 0)
+				mCapabilities.maximumNumberOfCubeTextureArraySlices = 0;
+
 				// Maximum texture buffer (TBO) size in texel (>65536, typically much larger than that of one-dimensional texture, in case there's no support for texture buffer it's 0)
 				mCapabilities.maximumTextureBufferSize = mCapabilities.maximumStructuredBufferSize = 0;
 
@@ -14501,6 +14837,9 @@ namespace Direct3D11Rhi
 
 				// Maximum number of 2D texture array slices (usually 512, in case there's no support for 2D texture arrays it's 0)
 				mCapabilities.maximumNumberOf2DTextureArraySlices = 512;
+
+				// Maximum number of cube texture array slices (usually 512, in case there's no support for cube texture arrays it's 0)
+				mCapabilities.maximumNumberOfCubeTextureArraySlices = 0;
 
 				// Maximum texture buffer (TBO) size in texel (>65536, typically much larger than that of one-dimensional texture, in case there's no support for texture buffer it's 0)
 				mCapabilities.maximumTextureBufferSize = mCapabilities.maximumStructuredBufferSize = 128 * 1024 * 1024;	// TODO(co) http://msdn.microsoft.com/en-us/library/ff476876%28v=vs.85%29.aspx does not mention the texture buffer? Currently the OpenGL 3 minimum is used: 128 MiB.
@@ -14543,6 +14882,9 @@ namespace Direct3D11Rhi
 				// Maximum number of 2D texture array slices (usually 512, in case there's no support for 2D texture arrays it's 0)
 				mCapabilities.maximumNumberOf2DTextureArraySlices = 512;
 
+				// Maximum number of cube texture array slices (usually 512, in case there's no support for cube texture arrays it's 0)
+				mCapabilities.maximumNumberOfCubeTextureArraySlices = 512;
+
 				// Maximum texture buffer (TBO) size in texel (>65536, typically much larger than that of one-dimensional texture, in case there's no support for texture buffer it's 0)
 				mCapabilities.maximumTextureBufferSize = mCapabilities.maximumStructuredBufferSize = 128 * 1024 * 1024;	// TODO(co) http://msdn.microsoft.com/en-us/library/ff476876%28v=vs.85%29.aspx does not mention the texture buffer? Currently the OpenGL 3 minimum is used: 128 MiB.
 
@@ -14584,6 +14926,9 @@ namespace Direct3D11Rhi
 
 				// Maximum number of 2D texture array slices (usually 512, in case there's no support for 2D texture arrays it's 0)
 				mCapabilities.maximumNumberOf2DTextureArraySlices = 512;
+
+				// Maximum number of cube texture array slices (usually 512, in case there's no support for cube texture arrays it's 0)
+				mCapabilities.maximumNumberOfCubeTextureArraySlices = 512;
 
 				// Maximum texture buffer (TBO) size in texel (>65536, typically much larger than that of one-dimensional texture, in case there's no support for texture buffer it's 0)
 				mCapabilities.maximumTextureBufferSize = mCapabilities.maximumStructuredBufferSize = 128 * 1024 * 1024;	// TODO(co) http://msdn.microsoft.com/en-us/library/ff476876%28v=vs.85%29.aspx does not mention the texture buffer? Currently the OpenGL 3 minimum is used: 128 MiB.

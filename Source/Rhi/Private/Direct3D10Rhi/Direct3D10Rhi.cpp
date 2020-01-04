@@ -6470,12 +6470,10 @@ namespace Direct3D10Rhi
 			return RHI_NEW(direct3D10Rhi.getContext(), TextureCube)(direct3D10Rhi, width, textureFormat, data, textureFlags, textureUsage RHI_RESOURCE_DEBUG_PASS_PARAMETER);
 		}
 
-		[[nodiscard]] virtual Rhi::ITextureCubeArray* createTextureCubeArray([[maybe_unused]] uint32_t width, [[maybe_unused]] uint32_t numberOfSlices, [[maybe_unused]] Rhi::TextureFormat::Enum textureFormat, [[maybe_unused]] const void* data = nullptr, [[maybe_unused]] uint32_t textureFlags = 0, [[maybe_unused]] Rhi::TextureUsage textureUsage = Rhi::TextureUsage::DEFAULT RHI_RESOURCE_DEBUG_NAME_PARAMETER) override
+		[[nodiscard]] virtual Rhi::ITextureCubeArray* createTextureCubeArray([[maybe_unused]] uint32_t width, [[maybe_unused]] uint32_t numberOfSlices, [[maybe_unused]] Rhi::TextureFormat::Enum textureFormat, [[maybe_unused]] const void* data = nullptr, [[maybe_unused]] uint32_t textureFlags = 0, [[maybe_unused]] Rhi::TextureUsage textureUsage = Rhi::TextureUsage::DEFAULT RHI_RESOURCE_DEBUG_NAME_MAYBE_UNUSED_PARAMETER) override
 		{
-			// TODO(co) Implement me, Direct3D 10.1 has support for it ("D3D10_1_SRV_DIMENSION_TEXTURECUBEARRAY")
-			#ifdef RHI_DEBUG
-				debugName = debugName;
-			#endif
+			// Direct3D 10.1 has support for texture cube arrays ("D3D10_1_SRV_DIMENSION_TEXTURECUBEARRAY"), but supporting it inside this Direct3D 10 RHI implementation isn't really worth it (use Direct3D 11 or another newer RHI)
+			RHI_ASSERT(getRhi().getContext(), false, "Direct3D 10 has no texture cube arrays")
 			return nullptr;
 		}
 
@@ -9880,7 +9878,6 @@ namespace Direct3D10Rhi
 					case Rhi::ResourceType::TEXTURE_2D_ARRAY:
 					case Rhi::ResourceType::TEXTURE_3D:
 					case Rhi::ResourceType::TEXTURE_CUBE:
-					case Rhi::ResourceType::TEXTURE_CUBE_ARRAY:
 					{
 						ID3D10ShaderResourceView* d3d10ShaderResourceView = nullptr;
 						switch (resourceType)
@@ -9918,10 +9915,6 @@ namespace Direct3D10Rhi
 								break;
 
 							case Rhi::ResourceType::TEXTURE_CUBE_ARRAY:
-								// TODO(co) Implement me, Direct3D 10.1 has support for it ("D3D10_1_SRV_DIMENSION_TEXTURECUBEARRAY")
-								// d3d10ShaderResourceView = static_cast<const TextureCubeArray*>(resource)->getD3D10ShaderResourceView();
-								break;
-
 							case Rhi::ResourceType::ROOT_SIGNATURE:
 							case Rhi::ResourceType::RESOURCE_GROUP:
 							case Rhi::ResourceType::GRAPHICS_PROGRAM:
@@ -10031,6 +10024,7 @@ namespace Direct3D10Rhi
 						break;
 					}
 
+					case Rhi::ResourceType::TEXTURE_CUBE_ARRAY:
 					case Rhi::ResourceType::ROOT_SIGNATURE:
 					case Rhi::ResourceType::RESOURCE_GROUP:
 					case Rhi::ResourceType::GRAPHICS_PROGRAM:
@@ -11004,9 +10998,6 @@ namespace Direct3D10Rhi
 				return false;
 
 			case Rhi::ResourceType::TEXTURE_CUBE_ARRAY:
-				// TODO(co) Implement Direct3D 10.1 cube texture array
-				return false;
-
 			case Rhi::ResourceType::ROOT_SIGNATURE:
 			case Rhi::ResourceType::RESOURCE_GROUP:
 			case Rhi::ResourceType::GRAPHICS_PROGRAM:
@@ -11100,9 +11091,6 @@ namespace Direct3D10Rhi
 				break;
 
 			case Rhi::ResourceType::TEXTURE_CUBE_ARRAY:
-				// TODO(co) Implement Direct3D 10.1 cube texture array
-				break;
-
 			case Rhi::ResourceType::ROOT_SIGNATURE:
 			case Rhi::ResourceType::RESOURCE_GROUP:
 			case Rhi::ResourceType::GRAPHICS_PROGRAM:
@@ -11361,6 +11349,10 @@ namespace Direct3D10Rhi
 
 		// Maximum number of 2D texture array slices (usually 512, in case there's no support for 2D texture arrays it's 0)
 		mCapabilities.maximumNumberOf2DTextureArraySlices = 512;
+
+		// Maximum number of cube texture array slices (usually 512, in case there's no support for cube texture arrays it's 0)
+		// -> Direct3D 10.1 has support for texture cube arrays ("D3D10_1_SRV_DIMENSION_TEXTURECUBEARRAY"), but supporting it inside this Direct3D 10 RHI implementation isn't really worth it (use Direct3D 11 or another newer RHI)
+		mCapabilities.maximumNumberOfCubeTextureArraySlices = 0;
 
 		// Maximum texture buffer (TBO) size in texel (>65536, typically much larger than that of one-dimensional texture, in case there's no support for texture buffer it's 0)
 		mCapabilities.maximumTextureBufferSize = 128 * 1024 * 1024;	// TODO(co) http://msdn.microsoft.com/en-us/library/cc308052%28VS.85%29.aspx does not mention the texture buffer? Figure out the correct size! Currently the OpenGL 3 minimum is used: 128 MiB.
