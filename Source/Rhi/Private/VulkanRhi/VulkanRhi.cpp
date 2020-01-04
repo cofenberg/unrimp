@@ -6772,8 +6772,6 @@ namespace VulkanRhi
 		*    Owner Vulkan RHI instance
 		*  @param[in] width
 		*    Texture width, must be >0
-		*  @param[in] height
-		*    Texture height, must be >0
 		*  @param[in] textureFormat
 		*    Texture format
 		*  @param[in] data
@@ -6781,14 +6779,14 @@ namespace VulkanRhi
 		*  @param[in] textureFlags
 		*    Texture flags, see "Rhi::TextureFlag::Enum"
 		*/
-		TextureCube(VulkanRhi& vulkanRhi, uint32_t width, uint32_t height, Rhi::TextureFormat::Enum textureFormat, const void* data, uint32_t textureFlags RHI_RESOURCE_DEBUG_NAME_PARAMETER) :
-			ITextureCube(vulkanRhi, width, height RHI_RESOURCE_DEBUG_PASS_PARAMETER),
+		TextureCube(VulkanRhi& vulkanRhi, uint32_t width, Rhi::TextureFormat::Enum textureFormat, const void* data, uint32_t textureFlags RHI_RESOURCE_DEBUG_NAME_PARAMETER) :
+			ITextureCube(vulkanRhi, width RHI_RESOURCE_DEBUG_PASS_PARAMETER),
 			mVkImage(VK_NULL_HANDLE),
 			mVkImageLayout(Helper::getVkImageLayoutByTextureFlags(textureFlags)),
 			mVkDeviceMemory(VK_NULL_HANDLE),
 			mVkImageView(VK_NULL_HANDLE)
 		{
-			Helper::createAndFillVkImage(vulkanRhi, VK_IMAGE_TYPE_2D, VK_IMAGE_VIEW_TYPE_CUBE, { width, height, 6 }, textureFormat, data, textureFlags, 1, mVkImage, mVkDeviceMemory, mVkImageView);
+			Helper::createAndFillVkImage(vulkanRhi, VK_IMAGE_TYPE_2D, VK_IMAGE_VIEW_TYPE_CUBE, { width, width, 6 }, textureFormat, data, textureFlags, 1, mVkImage, mVkDeviceMemory, mVkImageView);
 
 			// Assign a default name to the resource for debugging purposes
 			#ifdef RHI_DEBUG
@@ -6968,19 +6966,19 @@ namespace VulkanRhi
 			return RHI_NEW(vulkanRhi.getContext(), Texture3D)(vulkanRhi, width, height, depth, textureFormat, data, textureFlags RHI_RESOURCE_DEBUG_PASS_PARAMETER);
 		}
 
-		[[nodiscard]] virtual Rhi::ITextureCube* createTextureCube(uint32_t width, uint32_t height, Rhi::TextureFormat::Enum textureFormat, const void* data = nullptr, uint32_t textureFlags = 0, [[maybe_unused]] Rhi::TextureUsage textureUsage = Rhi::TextureUsage::DEFAULT RHI_RESOURCE_DEBUG_NAME_PARAMETER) override
+		[[nodiscard]] virtual Rhi::ITextureCube* createTextureCube(uint32_t width, Rhi::TextureFormat::Enum textureFormat, const void* data = nullptr, uint32_t textureFlags = 0, [[maybe_unused]] Rhi::TextureUsage textureUsage = Rhi::TextureUsage::DEFAULT RHI_RESOURCE_DEBUG_NAME_PARAMETER) override
 		{
 			VulkanRhi& vulkanRhi = static_cast<VulkanRhi&>(getRhi());
 
 			// Sanity check
-			RHI_ASSERT(vulkanRhi.getContext(), width > 0 && height > 0, "Vulkan create texture cube was called with invalid parameters")
+			RHI_ASSERT(vulkanRhi.getContext(), width > 0, "Vulkan create texture cube was called with invalid parameters")
 
 			// Create cube texture resource
 			// -> The indication of the texture usage is only relevant for Direct3D, Vulkan has no texture usage indication
-			return RHI_NEW(vulkanRhi.getContext(), TextureCube)(vulkanRhi, width, height, textureFormat, data, textureFlags RHI_RESOURCE_DEBUG_PASS_PARAMETER);
+			return RHI_NEW(vulkanRhi.getContext(), TextureCube)(vulkanRhi, width, textureFormat, data, textureFlags RHI_RESOURCE_DEBUG_PASS_PARAMETER);
 		}
 
-		[[nodiscard]] virtual Rhi::ITextureCubeArray* createTextureCubeArray([[maybe_unused]] uint32_t width, [[maybe_unused]] uint32_t height, [[maybe_unused]] uint32_t numberOfSlices, [[maybe_unused]] Rhi::TextureFormat::Enum textureFormat, [[maybe_unused]] const void* data = nullptr, [[maybe_unused]] uint32_t textureFlags = 0, [[maybe_unused]] Rhi::TextureUsage textureUsage = Rhi::TextureUsage::DEFAULT RHI_RESOURCE_DEBUG_NAME_PARAMETER) override
+		[[nodiscard]] virtual Rhi::ITextureCubeArray* createTextureCubeArray([[maybe_unused]] uint32_t width, [[maybe_unused]] uint32_t numberOfSlices, [[maybe_unused]] Rhi::TextureFormat::Enum textureFormat, [[maybe_unused]] const void* data = nullptr, [[maybe_unused]] uint32_t textureFlags = 0, [[maybe_unused]] Rhi::TextureUsage textureUsage = Rhi::TextureUsage::DEFAULT RHI_RESOURCE_DEBUG_NAME_PARAMETER) override
 		{
 			// TODO(co) Implement me
 			#ifdef RHI_DEBUG

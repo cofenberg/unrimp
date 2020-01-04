@@ -60,7 +60,7 @@ namespace
 			};
 			Rhi::ITexturePtr whiteRgba1DTexturePtr(textureManager.createTexture1D(1, Rhi::TextureFormat::R8G8B8A8, whiteRgbaData, Rhi::TextureFlag::SHADER_RESOURCE, Rhi::TextureUsage::IMMUTABLE RHI_RESOURCE_DEBUG_NAME("White RGBA")));
 			Rhi::ITexturePtr whiteRgba2DTexturePtr(textureManager.createTexture2D(1, 1, Rhi::TextureFormat::R8G8B8A8, whiteRgbaData, Rhi::TextureFlag::SHADER_RESOURCE, Rhi::TextureUsage::IMMUTABLE, 1, nullptr RHI_RESOURCE_DEBUG_NAME("White RGBA")));
-			Rhi::ITexturePtr whiteRgbaCubeTexturePtr(textureManager.createTextureCube(1, 1, Rhi::TextureFormat::R8G8B8A8, whiteRgbaData, Rhi::TextureFlag::SHADER_RESOURCE, Rhi::TextureUsage::IMMUTABLE RHI_RESOURCE_DEBUG_NAME("White RGBA")));
+			Rhi::ITexturePtr whiteRgbaCubeTexturePtr(textureManager.createTextureCube(1, Rhi::TextureFormat::R8G8B8A8, whiteRgbaData, Rhi::TextureFlag::SHADER_RESOURCE, Rhi::TextureUsage::IMMUTABLE RHI_RESOURCE_DEBUG_NAME("White RGBA")));
 			Rhi::ITexturePtr whiteRgba3DTexturePtr(textureManager.createTexture3D(1, 1, 1, Rhi::TextureFormat::R8G8B8A8, whiteRgbaData, Rhi::TextureFlag::SHADER_RESOURCE, Rhi::TextureUsage::IMMUTABLE RHI_RESOURCE_DEBUG_NAME("White RGBA")));
 
 			// Normal map identity texture
@@ -82,7 +82,7 @@ namespace
 			};
 			Rhi::ITexturePtr blackRgba1DTexturePtr(textureManager.createTexture1D(1, Rhi::TextureFormat::R8G8B8A8, blackRgbaData, Rhi::TextureFlag::SHADER_RESOURCE, Rhi::TextureUsage::IMMUTABLE RHI_RESOURCE_DEBUG_NAME("Black RGBA")));
 			Rhi::ITexturePtr blackRgba2DTexturePtr(textureManager.createTexture2D(1, 1, Rhi::TextureFormat::R8G8B8A8, blackRgbaData, Rhi::TextureFlag::SHADER_RESOURCE, Rhi::TextureUsage::IMMUTABLE, 1, nullptr RHI_RESOURCE_DEBUG_NAME("Black RGBA")));
-			Rhi::ITexturePtr blackRgbaCubeTexturePtr(textureManager.createTextureCube(1, 1, Rhi::TextureFormat::R8G8B8A8, blackRgbaData, Rhi::TextureFlag::SHADER_RESOURCE, Rhi::TextureUsage::IMMUTABLE RHI_RESOURCE_DEBUG_NAME("Black RGBA")));
+			Rhi::ITexturePtr blackRgbaCubeTexturePtr(textureManager.createTextureCube(1, Rhi::TextureFormat::R8G8B8A8, blackRgbaData, Rhi::TextureFlag::SHADER_RESOURCE, Rhi::TextureUsage::IMMUTABLE RHI_RESOURCE_DEBUG_NAME("Black RGBA")));
 			Rhi::ITexturePtr blackRgba3DTexturePtr(textureManager.createTexture3D(1, 1, 1, Rhi::TextureFormat::R8G8B8A8, blackRgbaData, Rhi::TextureFlag::SHADER_RESOURCE, Rhi::TextureUsage::IMMUTABLE RHI_RESOURCE_DEBUG_NAME("Black RGBA")));
 
 			// Black alpha texture

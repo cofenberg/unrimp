@@ -6090,8 +6090,6 @@ namespace Direct3D10Rhi
 		*    Owner Direct3D 10 RHI instance
 		*  @param[in] width
 		*    Texture width, must be >0
-		*  @param[in] height
-		*    Texture height, must be >0
 		*  @param[in] textureFormat
 		*    Texture format
 		*  @param[in] data
@@ -6101,8 +6099,8 @@ namespace Direct3D10Rhi
 		*  @param[in] textureUsage
 		*    Indication of the texture usage
 		*/
-		TextureCube(Direct3D10Rhi& direct3D10Rhi, uint32_t width, uint32_t height, Rhi::TextureFormat::Enum textureFormat, const void* data, uint32_t textureFlags, Rhi::TextureUsage textureUsage RHI_RESOURCE_DEBUG_NAME_PARAMETER) :
-			ITextureCube(direct3D10Rhi, width, height RHI_RESOURCE_DEBUG_PASS_PARAMETER),
+		TextureCube(Direct3D10Rhi& direct3D10Rhi, uint32_t width, Rhi::TextureFormat::Enum textureFormat, const void* data, uint32_t textureFlags, Rhi::TextureUsage textureUsage RHI_RESOURCE_DEBUG_NAME_PARAMETER) :
+			ITextureCube(direct3D10Rhi, width RHI_RESOURCE_DEBUG_PASS_PARAMETER),
 			mTextureFormat(textureFormat),
 			mD3D10TextureCube(nullptr),
 			mD3D10ShaderResourceView(nullptr)
@@ -6116,12 +6114,12 @@ namespace Direct3D10Rhi
 			const bool dataContainsMipmaps = (textureFlags & Rhi::TextureFlag::DATA_CONTAINS_MIPMAPS);
 			const bool generateMipmaps = (!dataContainsMipmaps && (textureFlags & Rhi::TextureFlag::GENERATE_MIPMAPS));
 			RHI_ASSERT(direct3D10Rhi.getContext(), Rhi::TextureUsage::IMMUTABLE != textureUsage || !generateMipmaps, "Direct3D 10 immutable texture usage can't be combined with automatic mipmap generation")
-			const uint32_t numberOfMipmaps = (dataContainsMipmaps || generateMipmaps) ? getNumberOfMipmaps(width, height) : 1;
+			const uint32_t numberOfMipmaps = (dataContainsMipmaps || generateMipmaps) ? getNumberOfMipmaps(width) : 1;
 
 			// Direct3D 10 2D array texture description
 			D3D10_TEXTURE2D_DESC d3d10Texture2DDesc;
 			d3d10Texture2DDesc.Width			  = width;
-			d3d10Texture2DDesc.Height			  = height;
+			d3d10Texture2DDesc.Height			  = width;
 			d3d10Texture2DDesc.MipLevels		  = (generateMipmaps ? 0u : numberOfMipmaps);	// 0 = Let Direct3D 10 allocate the complete mipmap chain for us
 			d3d10Texture2DDesc.ArraySize		  = NUMBER_OF_SLICES;
 			d3d10Texture2DDesc.Format			  = Mapping::getDirect3D10ResourceFormat(textureFormat);
@@ -6158,7 +6156,7 @@ namespace Direct3D10Rhi
 
 						{ // Update Direct3D 10 subresource data of the base-map
 							const uint32_t numberOfBytesPerRow   = Rhi::TextureFormat::getNumberOfBytesPerRow(textureFormat, width);
-							const uint32_t numberOfBytesPerSlice = Rhi::TextureFormat::getNumberOfBytesPerSlice(textureFormat, width, height);
+							const uint32_t numberOfBytesPerSlice = Rhi::TextureFormat::getNumberOfBytesPerSlice(textureFormat, width, width);
 							for (uint32_t arraySlice = 0; arraySlice < NUMBER_OF_SLICES; ++arraySlice)
 							{
 								d3d10Device->UpdateSubresource(mD3D10TextureCube, D3D10CalcSubresource(0, arraySlice, numberOfMipmaps), nullptr, data, numberOfBytesPerRow, numberOfBytesPerSlice);
@@ -6199,7 +6197,7 @@ namespace Direct3D10Rhi
 						for (uint32_t mipmap = 0; mipmap < numberOfMipmaps; ++mipmap)
 						{
 							const uint32_t numberOfBytesPerRow = Rhi::TextureFormat::getNumberOfBytesPerRow(textureFormat, width);
-							const uint32_t numberOfBytesPerSlice = Rhi::TextureFormat::getNumberOfBytesPerSlice(textureFormat, width, height);
+							const uint32_t numberOfBytesPerSlice = Rhi::TextureFormat::getNumberOfBytesPerSlice(textureFormat, width, width);
 							for (uint32_t arraySlice = 0; arraySlice < NUMBER_OF_SLICES; ++arraySlice)
 							{
 								// Upload the current mipmap
@@ -6214,14 +6212,13 @@ namespace Direct3D10Rhi
 
 							// Move on to the next mipmap and ensure the size is always at least 1x1
 							width = getHalfSize(width);
-							height = getHalfSize(height);
 						}
 					}
 					else
 					{
 						// The user only provided us with the base texture, no mipmaps
 						const uint32_t numberOfBytesPerRow   = Rhi::TextureFormat::getNumberOfBytesPerRow(textureFormat, width);
-						const uint32_t numberOfBytesPerSlice = Rhi::TextureFormat::getNumberOfBytesPerSlice(textureFormat, width, height);
+						const uint32_t numberOfBytesPerSlice = Rhi::TextureFormat::getNumberOfBytesPerSlice(textureFormat, width, width);
 						for (uint32_t arraySlice = 0; arraySlice < NUMBER_OF_SLICES; ++arraySlice)
 						{
 							D3D10_SUBRESOURCE_DATA& currentD3d10SubresourceData = d3d10SubresourceData[arraySlice];
@@ -6462,18 +6459,18 @@ namespace Direct3D10Rhi
 			return RHI_NEW(direct3D10Rhi.getContext(), Texture3D)(direct3D10Rhi, width, height, depth, textureFormat, data, textureFlags, textureUsage RHI_RESOURCE_DEBUG_PASS_PARAMETER);
 		}
 
-		[[nodiscard]] virtual Rhi::ITextureCube* createTextureCube(uint32_t width, uint32_t height, Rhi::TextureFormat::Enum textureFormat, const void* data = nullptr, uint32_t textureFlags = 0, Rhi::TextureUsage textureUsage = Rhi::TextureUsage::DEFAULT RHI_RESOURCE_DEBUG_NAME_PARAMETER) override
+		[[nodiscard]] virtual Rhi::ITextureCube* createTextureCube(uint32_t width, Rhi::TextureFormat::Enum textureFormat, const void* data = nullptr, uint32_t textureFlags = 0, Rhi::TextureUsage textureUsage = Rhi::TextureUsage::DEFAULT RHI_RESOURCE_DEBUG_NAME_PARAMETER) override
 		{
 			Direct3D10Rhi& direct3D10Rhi = static_cast<Direct3D10Rhi&>(getRhi());
 
 			// Sanity check
-			RHI_ASSERT(direct3D10Rhi.getContext(), width > 0 && height > 0, "Direct3D 10 create texture cube was called with invalid parameters")
+			RHI_ASSERT(direct3D10Rhi.getContext(), width > 0, "Direct3D 10 create texture cube was called with invalid parameters")
 
 			// Create cube texture resource
-			return RHI_NEW(direct3D10Rhi.getContext(), TextureCube)(direct3D10Rhi, width, height, textureFormat, data, textureFlags, textureUsage RHI_RESOURCE_DEBUG_PASS_PARAMETER);
+			return RHI_NEW(direct3D10Rhi.getContext(), TextureCube)(direct3D10Rhi, width, textureFormat, data, textureFlags, textureUsage RHI_RESOURCE_DEBUG_PASS_PARAMETER);
 		}
 
-		[[nodiscard]] virtual Rhi::ITextureCubeArray* createTextureCubeArray([[maybe_unused]] uint32_t width, [[maybe_unused]] uint32_t height, [[maybe_unused]] uint32_t numberOfSlices, [[maybe_unused]] Rhi::TextureFormat::Enum textureFormat, [[maybe_unused]] const void* data = nullptr, [[maybe_unused]] uint32_t textureFlags = 0, [[maybe_unused]] Rhi::TextureUsage textureUsage = Rhi::TextureUsage::DEFAULT RHI_RESOURCE_DEBUG_NAME_PARAMETER) override
+		[[nodiscard]] virtual Rhi::ITextureCubeArray* createTextureCubeArray([[maybe_unused]] uint32_t width, [[maybe_unused]] uint32_t numberOfSlices, [[maybe_unused]] Rhi::TextureFormat::Enum textureFormat, [[maybe_unused]] const void* data = nullptr, [[maybe_unused]] uint32_t textureFlags = 0, [[maybe_unused]] Rhi::TextureUsage textureUsage = Rhi::TextureUsage::DEFAULT RHI_RESOURCE_DEBUG_NAME_PARAMETER) override
 		{
 			// TODO(co) Implement me, Direct3D 10.1 has support for it ("D3D10_1_SRV_DIMENSION_TEXTURECUBEARRAY")
 			#ifdef RHI_DEBUG

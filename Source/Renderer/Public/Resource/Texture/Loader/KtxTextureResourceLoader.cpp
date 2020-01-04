@@ -400,7 +400,8 @@ namespace Renderer
 		if (mCubeMap)
 		{
 			// Cube texture
-			return mRenderer.getTextureManager().createTextureCube(mWidth, mHeight, static_cast<Rhi::TextureFormat::Enum>(mTextureFormat), mImageData, flags, Rhi::TextureUsage::IMMUTABLE RHI_RESOURCE_DEBUG_NAME(getAsset().virtualFilename));
+			RHI_ASSERT(mRenderer.getContext(), mWidth == mHeight, "Cube texture width and height must be identical")
+			return mRenderer.getTextureManager().createTextureCube(mWidth, static_cast<Rhi::TextureFormat::Enum>(mTextureFormat), mImageData, flags, Rhi::TextureUsage::IMMUTABLE RHI_RESOURCE_DEBUG_NAME(getAsset().virtualFilename));
 		}
 		else if (1 == mWidth || 1 == mHeight)
 		{

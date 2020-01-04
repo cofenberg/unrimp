@@ -1905,11 +1905,9 @@ namespace NullRhi
 		*    Owner null RHI instance
 		*  @param[in] width
 		*    The width of the texture
-		*  @param[in] height
-		*    The height of the texture
 		*/
-		inline TextureCube(NullRhi& nullRhi, uint32_t width, uint32_t height RHI_RESOURCE_DEBUG_NAME_PARAMETER_NO_DEFAULT) :
-			ITextureCube(nullRhi, width, height RHI_RESOURCE_DEBUG_PASS_PARAMETER)
+		inline TextureCube(NullRhi& nullRhi, uint32_t width RHI_RESOURCE_DEBUG_NAME_PARAMETER_NO_DEFAULT) :
+			ITextureCube(nullRhi, width RHI_RESOURCE_DEBUG_PASS_PARAMETER)
 		{}
 
 		/**
@@ -1966,13 +1964,11 @@ namespace NullRhi
 		*    Owner null RHI instance
 		*  @param[in] width
 		*    The width of the texture
-		*  @param[in] height
-		*    The height of the texture
 		*  @param[in] numberOfSlices
 		*    The number of slices
 		*/
-		inline TextureCubeArray(NullRhi& nullRhi, uint32_t width, uint32_t height, uint32_t numberOfSlices RHI_RESOURCE_DEBUG_NAME_PARAMETER_NO_DEFAULT) :
-			ITextureCubeArray(nullRhi, width, height, numberOfSlices RHI_RESOURCE_DEBUG_PASS_PARAMETER)
+		inline TextureCubeArray(NullRhi& nullRhi, uint32_t width, uint32_t numberOfSlices RHI_RESOURCE_DEBUG_NAME_PARAMETER_NO_DEFAULT) :
+			ITextureCubeArray(nullRhi, width, numberOfSlices RHI_RESOURCE_DEBUG_PASS_PARAMETER)
 		{}
 
 		/**
@@ -2099,26 +2095,26 @@ namespace NullRhi
 			return RHI_NEW(nullRhi.getContext(), Texture3D)(nullRhi, width, height, depth RHI_RESOURCE_DEBUG_PASS_PARAMETER);
 		}
 
-		[[nodiscard]] virtual Rhi::ITextureCube* createTextureCube(uint32_t width, uint32_t height, [[maybe_unused]] Rhi::TextureFormat::Enum textureFormat, [[maybe_unused]] const void* data = nullptr, [[maybe_unused]] uint32_t textureFlags = 0, [[maybe_unused]] Rhi::TextureUsage textureUsage = Rhi::TextureUsage::DEFAULT RHI_RESOURCE_DEBUG_NAME_PARAMETER) override
+		[[nodiscard]] virtual Rhi::ITextureCube* createTextureCube(uint32_t width, [[maybe_unused]] Rhi::TextureFormat::Enum textureFormat, [[maybe_unused]] const void* data = nullptr, [[maybe_unused]] uint32_t textureFlags = 0, [[maybe_unused]] Rhi::TextureUsage textureUsage = Rhi::TextureUsage::DEFAULT RHI_RESOURCE_DEBUG_NAME_PARAMETER) override
 		{
 			NullRhi& nullRhi = static_cast<NullRhi&>(getRhi());
 
 			// Sanity check
-			RHI_ASSERT(nullRhi.getContext(), width > 0 && height > 0, "Null create texture cube was called with invalid parameters")
+			RHI_ASSERT(nullRhi.getContext(), width > 0, "Null create texture cube was called with invalid parameters")
 
 			// Create cube texture resource
-			return RHI_NEW(nullRhi.getContext(), TextureCube)(nullRhi, width, height RHI_RESOURCE_DEBUG_PASS_PARAMETER);
+			return RHI_NEW(nullRhi.getContext(), TextureCube)(nullRhi, width RHI_RESOURCE_DEBUG_PASS_PARAMETER);
 		}
 
-		[[nodiscard]] virtual Rhi::ITextureCubeArray* createTextureCubeArray(uint32_t width, uint32_t height, uint32_t numberOfSlices, [[maybe_unused]] Rhi::TextureFormat::Enum textureFormat, [[maybe_unused]] const void* data = nullptr, [[maybe_unused]] uint32_t textureFlags = 0, [[maybe_unused]] Rhi::TextureUsage textureUsage = Rhi::TextureUsage::DEFAULT RHI_RESOURCE_DEBUG_NAME_PARAMETER) override
+		[[nodiscard]] virtual Rhi::ITextureCubeArray* createTextureCubeArray(uint32_t width, uint32_t numberOfSlices, [[maybe_unused]] Rhi::TextureFormat::Enum textureFormat, [[maybe_unused]] const void* data = nullptr, [[maybe_unused]] uint32_t textureFlags = 0, [[maybe_unused]] Rhi::TextureUsage textureUsage = Rhi::TextureUsage::DEFAULT RHI_RESOURCE_DEBUG_NAME_PARAMETER) override
 		{
 			NullRhi& nullRhi = static_cast<NullRhi&>(getRhi());
 
 			// Sanity check
-			RHI_ASSERT(nullRhi.getContext(), width > 0 && height > 0, "Null create texture cube array was called with invalid parameters")
+			RHI_ASSERT(nullRhi.getContext(), width > 0, "Null create texture cube array was called with invalid parameters")
 
 			// Create cube texture array resource
-			return RHI_NEW(nullRhi.getContext(), TextureCubeArray)(nullRhi, width, height, numberOfSlices RHI_RESOURCE_DEBUG_PASS_PARAMETER);
+			return RHI_NEW(nullRhi.getContext(), TextureCubeArray)(nullRhi, width, numberOfSlices RHI_RESOURCE_DEBUG_PASS_PARAMETER);
 		}
 
 

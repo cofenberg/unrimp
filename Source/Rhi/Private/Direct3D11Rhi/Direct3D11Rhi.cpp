@@ -7620,8 +7620,6 @@ namespace Direct3D11Rhi
 		*    Owner Direct3D 11 RHI instance
 		*  @param[in] width
 		*    Texture width, must be >0
-		*  @param[in] height
-		*    Texture height, must be >0
 		*  @param[in] textureFormat
 		*    Texture format
 		*  @param[in] data
@@ -7631,8 +7629,8 @@ namespace Direct3D11Rhi
 		*  @param[in] textureUsage
 		*    Indication of the texture usage
 		*/
-		TextureCube(Direct3D11Rhi& direct3D11Rhi, uint32_t width, uint32_t height, Rhi::TextureFormat::Enum textureFormat, const void* data, uint32_t textureFlags, Rhi::TextureUsage textureUsage RHI_RESOURCE_DEBUG_NAME_PARAMETER) :
-			ITextureCube(direct3D11Rhi, width, height RHI_RESOURCE_DEBUG_PASS_PARAMETER),
+		TextureCube(Direct3D11Rhi& direct3D11Rhi, uint32_t width, Rhi::TextureFormat::Enum textureFormat, const void* data, uint32_t textureFlags, Rhi::TextureUsage textureUsage RHI_RESOURCE_DEBUG_NAME_PARAMETER) :
+			ITextureCube(direct3D11Rhi, width RHI_RESOURCE_DEBUG_PASS_PARAMETER),
 			mTextureFormat(textureFormat),
 			mD3D11TextureCube(nullptr),
 			mD3D11ShaderResourceView(nullptr),
@@ -7647,12 +7645,12 @@ namespace Direct3D11Rhi
 			const bool dataContainsMipmaps = (textureFlags & Rhi::TextureFlag::DATA_CONTAINS_MIPMAPS);
 			const bool generateMipmaps = (!dataContainsMipmaps && (textureFlags & Rhi::TextureFlag::GENERATE_MIPMAPS));
 			RHI_ASSERT(direct3D11Rhi.getContext(), Rhi::TextureUsage::IMMUTABLE != textureUsage || !generateMipmaps, "Direct3D 11 immutable texture usage can't be combined with automatic mipmap generation")
-			const uint32_t numberOfMipmaps = (dataContainsMipmaps || generateMipmaps) ? getNumberOfMipmaps(width, height) : 1;
+			const uint32_t numberOfMipmaps = (dataContainsMipmaps || generateMipmaps) ? getNumberOfMipmaps(width) : 1;
 
 			// Direct3D 11 2D array texture description
 			D3D11_TEXTURE2D_DESC d3d11Texture2DDesc;
 			d3d11Texture2DDesc.Width			  = width;
-			d3d11Texture2DDesc.Height			  = height;
+			d3d11Texture2DDesc.Height			  = width;
 			d3d11Texture2DDesc.MipLevels		  = numberOfMipmaps;
 			d3d11Texture2DDesc.ArraySize		  = NUMBER_OF_SLICES;
 			d3d11Texture2DDesc.Format			  = Mapping::getDirect3D11ResourceFormat(textureFormat);
@@ -7702,7 +7700,7 @@ namespace Direct3D11Rhi
 					for (uint32_t mipmap = 0; mipmap < numberOfMipmaps; ++mipmap)
 					{
 						const uint32_t numberOfBytesPerRow = Rhi::TextureFormat::getNumberOfBytesPerRow(textureFormat, width);
-						const uint32_t numberOfBytesPerSlice = Rhi::TextureFormat::getNumberOfBytesPerSlice(textureFormat, width, height);
+						const uint32_t numberOfBytesPerSlice = Rhi::TextureFormat::getNumberOfBytesPerSlice(textureFormat, width, width);
 						for (uint32_t arraySlice = 0; arraySlice < NUMBER_OF_SLICES; ++arraySlice)
 						{
 							// Upload the current mipmap
@@ -7718,7 +7716,6 @@ namespace Direct3D11Rhi
 
 						// Move on to the next mipmap and ensure the size is always at least 1x1
 						width = getHalfSize(width);
-						height = getHalfSize(height);
 					}
 				}
 				else
@@ -7729,7 +7726,7 @@ namespace Direct3D11Rhi
 					{
 						const void* currentData = data;
 						const uint32_t numberOfBytesPerRow   = Rhi::TextureFormat::getNumberOfBytesPerRow(textureFormat, width);
-						const uint32_t numberOfBytesPerSlice = Rhi::TextureFormat::getNumberOfBytesPerSlice(textureFormat, width, height);
+						const uint32_t numberOfBytesPerSlice = Rhi::TextureFormat::getNumberOfBytesPerSlice(textureFormat, width, width);
 						for (uint32_t arraySlice = 0; arraySlice < NUMBER_OF_SLICES; ++arraySlice)
 						{
 							D3D11_SUBRESOURCE_DATA& currentD3d11SubresourceData = d3d11SubresourceData[arraySlice];
@@ -7743,7 +7740,6 @@ namespace Direct3D11Rhi
 
 						// Move on to the next mipmap and ensure the size is always at least 1x1
 						width = getHalfSize(width);
-						height = getHalfSize(height);
 					}
 				}
 				FAILED_DEBUG_BREAK(direct3D11Rhi.getD3D11Device()->CreateTexture2D(&d3d11Texture2DDesc, d3d11SubresourceData, &mD3D11TextureCube))
@@ -8022,18 +8018,18 @@ namespace Direct3D11Rhi
 			return RHI_NEW(direct3D11Rhi.getContext(), Texture3D)(direct3D11Rhi, width, height, depth, textureFormat, data, textureFlags, textureUsage RHI_RESOURCE_DEBUG_PASS_PARAMETER);
 		}
 
-		[[nodiscard]] virtual Rhi::ITextureCube* createTextureCube(uint32_t width, uint32_t height, Rhi::TextureFormat::Enum textureFormat, const void* data = nullptr, uint32_t textureFlags = 0, Rhi::TextureUsage textureUsage = Rhi::TextureUsage::DEFAULT RHI_RESOURCE_DEBUG_NAME_PARAMETER) override
+		[[nodiscard]] virtual Rhi::ITextureCube* createTextureCube(uint32_t width, Rhi::TextureFormat::Enum textureFormat, const void* data = nullptr, uint32_t textureFlags = 0, Rhi::TextureUsage textureUsage = Rhi::TextureUsage::DEFAULT RHI_RESOURCE_DEBUG_NAME_PARAMETER) override
 		{
 			Direct3D11Rhi& direct3D11Rhi = static_cast<Direct3D11Rhi&>(getRhi());
 
 			// Sanity check
-			RHI_ASSERT(direct3D11Rhi.getContext(), width > 0 && height > 0, "Direct3D 11 create texture cube was called with invalid parameters")
+			RHI_ASSERT(direct3D11Rhi.getContext(), width > 0, "Direct3D 11 create texture cube was called with invalid parameters")
 
 			// Create cube texture resource
-			return RHI_NEW(direct3D11Rhi.getContext(), TextureCube)(direct3D11Rhi, width, height, textureFormat, data, textureFlags, textureUsage RHI_RESOURCE_DEBUG_PASS_PARAMETER);
+			return RHI_NEW(direct3D11Rhi.getContext(), TextureCube)(direct3D11Rhi, width, textureFormat, data, textureFlags, textureUsage RHI_RESOURCE_DEBUG_PASS_PARAMETER);
 		}
 
-		[[nodiscard]] virtual Rhi::ITextureCubeArray* createTextureCubeArray([[maybe_unused]] uint32_t width, [[maybe_unused]] uint32_t height, [[maybe_unused]] uint32_t numberOfSlices, [[maybe_unused]] Rhi::TextureFormat::Enum textureFormat, [[maybe_unused]] const void* data = nullptr, [[maybe_unused]] uint32_t textureFlags = 0, [[maybe_unused]] Rhi::TextureUsage textureUsage = Rhi::TextureUsage::DEFAULT RHI_RESOURCE_DEBUG_NAME_PARAMETER) override
+		[[nodiscard]] virtual Rhi::ITextureCubeArray* createTextureCubeArray([[maybe_unused]] uint32_t width, [[maybe_unused]] uint32_t numberOfSlices, [[maybe_unused]] Rhi::TextureFormat::Enum textureFormat, [[maybe_unused]] const void* data = nullptr, [[maybe_unused]] uint32_t textureFlags = 0, [[maybe_unused]] Rhi::TextureUsage textureUsage = Rhi::TextureUsage::DEFAULT RHI_RESOURCE_DEBUG_NAME_PARAMETER) override
 		{
 			// TODO(co) Implement me
 			#ifdef RHI_DEBUG

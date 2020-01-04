@@ -6322,8 +6322,6 @@ namespace OpenGLES3Rhi
 		*    Owner OpenGL ES 3 RHI instance
 		*  @param[in] width
 		*    Texture width, must be >0
-		*  @param[in] height
-		*    Texture height, must be >0
 		*  @param[in] textureFormat
 		*    Texture format
 		*  @param[in] data
@@ -6331,8 +6329,8 @@ namespace OpenGLES3Rhi
 		*  @param[in] textureFlags
 		*    Texture flags, see "Rhi::TextureFlag::Enum"
 		*/
-		TextureCube(OpenGLES3Rhi& openGLES3Rhi, uint32_t width, uint32_t height, Rhi::TextureFormat::Enum textureFormat, const void* data, uint32_t textureFlags RHI_RESOURCE_DEBUG_NAME_PARAMETER) :
-			ITextureCube(openGLES3Rhi, width, height RHI_RESOURCE_DEBUG_PASS_PARAMETER),
+		TextureCube(OpenGLES3Rhi& openGLES3Rhi, uint32_t width, Rhi::TextureFormat::Enum textureFormat, const void* data, uint32_t textureFlags RHI_RESOURCE_DEBUG_NAME_PARAMETER) :
+			ITextureCube(openGLES3Rhi, width RHI_RESOURCE_DEBUG_PASS_PARAMETER),
 			mOpenGLES3Texture(0)
 		{
 			// Sanity checks
@@ -6357,7 +6355,7 @@ namespace OpenGLES3Rhi
 			// Calculate the number of mipmaps
 			const bool dataContainsMipmaps = (textureFlags & Rhi::TextureFlag::DATA_CONTAINS_MIPMAPS);
 			const bool generateMipmaps = (!dataContainsMipmaps && (textureFlags & Rhi::TextureFlag::GENERATE_MIPMAPS));
-			const uint32_t numberOfMipmaps = (dataContainsMipmaps || generateMipmaps) ? getNumberOfMipmaps(width, height) : 1;
+			const uint32_t numberOfMipmaps = (dataContainsMipmaps || generateMipmaps) ? getNumberOfMipmaps(width) : 1;
 
 			// Create the OpenGL ES 3 texture instance
 			glGenTextures(1, &mOpenGLES3Texture);
@@ -6378,11 +6376,11 @@ namespace OpenGLES3Rhi
 					const GLenum internalFormat = Mapping::getOpenGLES3InternalFormat(textureFormat);
 					for (uint32_t mipmap = 0; mipmap < numberOfMipmaps; ++mipmap)
 					{
-						const GLsizei numberOfBytesPerSlice = static_cast<GLsizei>(Rhi::TextureFormat::getNumberOfBytesPerSlice(textureFormat, width, height));
+						const GLsizei numberOfBytesPerSlice = static_cast<GLsizei>(Rhi::TextureFormat::getNumberOfBytesPerSlice(textureFormat, width, width));
 						for (uint32_t face = 0; face < 6; ++face)
 						{
 							// Upload the current face
-							glCompressedTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + face, static_cast<GLint>(mipmap), internalFormat, static_cast<GLsizei>(width), static_cast<GLsizei>(height), 0, numberOfBytesPerSlice, data);
+							glCompressedTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + face, static_cast<GLint>(mipmap), internalFormat, static_cast<GLsizei>(width), static_cast<GLsizei>(width), 0, numberOfBytesPerSlice, data);
 
 							// Move on to the next face
 							data = static_cast<const uint8_t*>(data) + numberOfBytesPerSlice;
@@ -6390,17 +6388,16 @@ namespace OpenGLES3Rhi
 
 						// Move on to the next mipmap and ensure the size is always at least 1x1
 						width = getHalfSize(width);
-						height = getHalfSize(height);
 					}
 				}
 				else
 				{
 					// The user only provided us with the base texture, no mipmaps
-					const GLsizei numberOfBytesPerSlice = static_cast<GLsizei>(Rhi::TextureFormat::getNumberOfBytesPerSlice(textureFormat, width, height));
+					const GLsizei numberOfBytesPerSlice = static_cast<GLsizei>(Rhi::TextureFormat::getNumberOfBytesPerSlice(textureFormat, width, width));
 					const GLenum openGLES3InternalFormat = Mapping::getOpenGLES3InternalFormat(textureFormat);
 					for (uint32_t face = 0; face < 6; ++face)
 					{
-						glCompressedTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + face, 0, openGLES3InternalFormat, static_cast<GLsizei>(width), static_cast<GLsizei>(height), 0, numberOfBytesPerSlice, data);
+						glCompressedTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + face, 0, openGLES3InternalFormat, static_cast<GLsizei>(width), static_cast<GLsizei>(width), 0, numberOfBytesPerSlice, data);
 						data = static_cast<const uint8_t*>(data) + numberOfBytesPerSlice;
 					}
 				}
@@ -6423,11 +6420,11 @@ namespace OpenGLES3Rhi
 					const GLenum type = Mapping::getOpenGLES3Type(textureFormat);
 					for (uint32_t mipmap = 0; mipmap < numberOfMipmaps; ++mipmap)
 					{
-						const GLsizei numberOfBytesPerSlice = static_cast<GLsizei>(Rhi::TextureFormat::getNumberOfBytesPerSlice(textureFormat, width, height));
+						const GLsizei numberOfBytesPerSlice = static_cast<GLsizei>(Rhi::TextureFormat::getNumberOfBytesPerSlice(textureFormat, width, width));
 						for (uint32_t face = 0; face < 6; ++face)
 						{
 							// Upload the current face
-							glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + face, static_cast<GLint>(mipmap), internalFormat, static_cast<GLsizei>(width), static_cast<GLsizei>(height), 0, format, type, data);
+							glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + face, static_cast<GLint>(mipmap), internalFormat, static_cast<GLsizei>(width), static_cast<GLsizei>(width), 0, format, type, data);
 
 							// Move on to the next face
 							data = static_cast<const uint8_t*>(data) + numberOfBytesPerSlice;
@@ -6435,19 +6432,18 @@ namespace OpenGLES3Rhi
 
 						// Move on to the next mipmap and ensure the size is always at least 1x1
 						width = getHalfSize(width);
-						height = getHalfSize(height);
 					}
 				}
 				else
 				{
 					// The user only provided us with the base texture, no mipmaps
-					const uint32_t numberOfBytesPerSlice = Rhi::TextureFormat::getNumberOfBytesPerSlice(textureFormat, width, height);
+					const uint32_t numberOfBytesPerSlice = Rhi::TextureFormat::getNumberOfBytesPerSlice(textureFormat, width, width);
 					const GLenum openGLES3InternalFormat = Mapping::getOpenGLES3InternalFormat(textureFormat);
 					const GLenum openGLES3Format = Mapping::getOpenGLES3Format(textureFormat);
 					const GLenum openGLES3Type = Mapping::getOpenGLES3Type(textureFormat);
 					for (uint32_t face = 0; face < 6; ++face)
 					{
-						glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + face, 0, openGLES3InternalFormat, static_cast<GLsizei>(width), static_cast<GLsizei>(height), 0, openGLES3Format, openGLES3Type, data);
+						glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + face, 0, openGLES3InternalFormat, static_cast<GLsizei>(width), static_cast<GLsizei>(width), 0, openGLES3Format, openGLES3Type, data);
 						data = static_cast<const uint8_t*>(data) + numberOfBytesPerSlice;
 					}
 				}
@@ -6646,19 +6642,19 @@ namespace OpenGLES3Rhi
 			return RHI_NEW(openGLES3Rhi.getContext(), Texture3D)(openGLES3Rhi, width, height, depth, textureFormat, data, textureFlags RHI_RESOURCE_DEBUG_PASS_PARAMETER);
 		}
 
-		[[nodiscard]] virtual Rhi::ITextureCube* createTextureCube(uint32_t width, uint32_t height, Rhi::TextureFormat::Enum textureFormat, const void* data = nullptr, uint32_t textureFlags = 0, [[maybe_unused]] Rhi::TextureUsage textureUsage = Rhi::TextureUsage::DEFAULT RHI_RESOURCE_DEBUG_NAME_PARAMETER) override
+		[[nodiscard]] virtual Rhi::ITextureCube* createTextureCube(uint32_t width, Rhi::TextureFormat::Enum textureFormat, const void* data = nullptr, uint32_t textureFlags = 0, [[maybe_unused]] Rhi::TextureUsage textureUsage = Rhi::TextureUsage::DEFAULT RHI_RESOURCE_DEBUG_NAME_PARAMETER) override
 		{
 			OpenGLES3Rhi& openGLES3Rhi = static_cast<OpenGLES3Rhi&>(getRhi());
 
 			// Sanity check
-			RHI_ASSERT(openGLES3Rhi.getContext(), width > 0 && height > 0, "OpenGL ES 3 create texture cube was called with invalid parameters")
+			RHI_ASSERT(openGLES3Rhi.getContext(), width > 0, "OpenGL ES 3 create texture cube was called with invalid parameters")
 
 			// Create cube texture resource
 			// -> The indication of the texture usage is only relevant for Direct3D, OpenGL ES 3 has no texture usage indication
-			return RHI_NEW(openGLES3Rhi.getContext(), TextureCube)(openGLES3Rhi, width, height, textureFormat, data, textureFlags RHI_RESOURCE_DEBUG_PASS_PARAMETER);
+			return RHI_NEW(openGLES3Rhi.getContext(), TextureCube)(openGLES3Rhi, width, textureFormat, data, textureFlags RHI_RESOURCE_DEBUG_PASS_PARAMETER);
 		}
 
-		[[nodiscard]] virtual Rhi::ITextureCubeArray* createTextureCubeArray([[maybe_unused]] uint32_t width, [[maybe_unused]] uint32_t height, [[maybe_unused]] uint32_t numberOfSlices, [[maybe_unused]] Rhi::TextureFormat::Enum textureFormat, [[maybe_unused]] const void* data = nullptr, [[maybe_unused]] uint32_t textureFlags = 0, [[maybe_unused]] Rhi::TextureUsage textureUsage = Rhi::TextureUsage::DEFAULT RHI_RESOURCE_DEBUG_NAME_PARAMETER) override
+		[[nodiscard]] virtual Rhi::ITextureCubeArray* createTextureCubeArray([[maybe_unused]] uint32_t width, [[maybe_unused]] uint32_t numberOfSlices, [[maybe_unused]] Rhi::TextureFormat::Enum textureFormat, [[maybe_unused]] const void* data = nullptr, [[maybe_unused]] uint32_t textureFlags = 0, [[maybe_unused]] Rhi::TextureUsage textureUsage = Rhi::TextureUsage::DEFAULT RHI_RESOURCE_DEBUG_NAME_PARAMETER) override
 		{
 			// TODO(co) Implement me, OpenGL ES 3.1 "GL_EXT_texture_cube_map_array"-extension
 			#ifdef RHI_DEBUG

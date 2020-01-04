@@ -931,7 +931,7 @@ namespace Renderer
 						{
 							const Rhi::ITextureCube* textureCube = static_cast<const Rhi::ITextureCube*>(texture);
 							compositorContextData.mGlobalComputeSize[0] = textureCube->getWidth();
-							compositorContextData.mGlobalComputeSize[1] = textureCube->getHeight();
+							compositorContextData.mGlobalComputeSize[1] = textureCube->getWidth();
 							compositorContextData.mGlobalComputeSize[2] = 6;	// TODO(co) Or better 1?
 							break;
 						}
@@ -940,7 +940,7 @@ namespace Renderer
 						{
 							const Rhi::ITextureCubeArray* textureCubeArray = static_cast<const Rhi::ITextureCubeArray*>(texture);
 							compositorContextData.mGlobalComputeSize[0] = textureCubeArray->getWidth();
-							compositorContextData.mGlobalComputeSize[1] = textureCubeArray->getHeight();
+							compositorContextData.mGlobalComputeSize[1] = textureCubeArray->getWidth();
 							compositorContextData.mGlobalComputeSize[2] = 6;	// TODO(co) Or better 1?
 							break;
 						}

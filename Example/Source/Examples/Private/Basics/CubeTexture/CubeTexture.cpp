@@ -103,10 +103,9 @@ void CubeTexture::onInitialization()
 			resources[0] = mUniformBuffer;
 
 			{ // Create the cube texture
-				static constexpr uint32_t TEXTURE_WIDTH  = 1;
-				static constexpr uint32_t TEXTURE_HEIGHT = 1;
+				static constexpr uint32_t TEXTURE_WIDTH = 1;
 				static constexpr uint32_t TEXEL_ELEMENTS = 4;
-				static constexpr uint32_t NUMBER_OF_BYTES = TEXTURE_WIDTH * TEXTURE_HEIGHT * TEXEL_ELEMENTS * 6;
+				static constexpr uint32_t NUMBER_OF_BYTES = TEXTURE_WIDTH * TEXTURE_WIDTH * TEXEL_ELEMENTS * 6;
 				uint8_t data[NUMBER_OF_BYTES];
 				uint8_t* currentData = data;
 
@@ -152,7 +151,7 @@ void CubeTexture::onInitialization()
 				currentData[3] = 0;
 
 				// Create the texture instance
-				resources[1] = mTextureManager->createTextureCube(TEXTURE_WIDTH, TEXTURE_HEIGHT, Rhi::TextureFormat::R8G8B8A8, data, Rhi::TextureFlag::SHADER_RESOURCE);
+				resources[1] = mTextureManager->createTextureCube(TEXTURE_WIDTH, Rhi::TextureFormat::R8G8B8A8, data, Rhi::TextureFlag::SHADER_RESOURCE);
 			}
 
 			// Create the texture group

@@ -7005,8 +7005,6 @@ namespace Rhi
 		*
 		*  @param[in] width
 		*    Texture width, must be >0 else a null pointer is returned
-		*  @param[in] height
-		*    Texture height, must be >0 else a null pointer is returned
 		*  @param[in] textureFormat
 		*    Texture format
 		*  @param[in] data
@@ -7025,7 +7023,7 @@ namespace Rhi
 		*    - Mip1: Face0, Face1, Face2, Face3, Face4, Face5
 		*    (DDS-texture layout is using face-major order)
 		*/
-		[[nodiscard]] virtual ITextureCube* createTextureCube(uint32_t width, uint32_t height, TextureFormat::Enum textureFormat, const void* data = nullptr, uint32_t textureFlags = 0, TextureUsage textureUsage = TextureUsage::DEFAULT RHI_RESOURCE_DEBUG_NAME_PARAMETER) = 0;
+		[[nodiscard]] virtual ITextureCube* createTextureCube(uint32_t width, TextureFormat::Enum textureFormat, const void* data = nullptr, uint32_t textureFlags = 0, TextureUsage textureUsage = TextureUsage::DEFAULT RHI_RESOURCE_DEBUG_NAME_PARAMETER) = 0;
 
 		/**
 		*  @brief
@@ -7033,8 +7031,6 @@ namespace Rhi
 		*
 		*  @param[in] width
 		*    Texture width, must be >0 else a null pointer is returned
-		*  @param[in] height
-		*    Texture height, must be >0 else a null pointer is returned
 		*  @param[in] numberOfSlices
 		*    Number of slices, must be >0 else a null pointer is returned
 		*  @param[in] textureFormat
@@ -7055,7 +7051,7 @@ namespace Rhi
 		*    - Mip1: Face0, Face1, Face2, Face3, Face4, Face5
 		*    (DDS-texture layout is using face-major order)
 		*/
-		[[nodiscard]] virtual ITextureCubeArray* createTextureCubeArray(uint32_t width, uint32_t height, uint32_t numberOfSlices, TextureFormat::Enum textureFormat, const void* data = nullptr, uint32_t textureFlags = 0, TextureUsage textureUsage = TextureUsage::DEFAULT RHI_RESOURCE_DEBUG_NAME_PARAMETER) = 0;
+		[[nodiscard]] virtual ITextureCubeArray* createTextureCubeArray(uint32_t width, uint32_t numberOfSlices, TextureFormat::Enum textureFormat, const void* data = nullptr, uint32_t textureFlags = 0, TextureUsage textureUsage = TextureUsage::DEFAULT RHI_RESOURCE_DEBUG_NAME_PARAMETER) = 0;
 
 	// Protected methods
 	protected:
@@ -7778,18 +7774,6 @@ namespace Rhi
 			return mWidth;
 		}
 
-		/**
-		*  @brief
-		*    Return the height of the texture
-		*
-		*  @return
-		*    The height of the texture
-		*/
-		[[nodiscard]] inline uint32_t getHeight() const
-		{
-			return mHeight;
-		}
-
 	// Protected methods
 	protected:
 		/**
@@ -7800,13 +7784,10 @@ namespace Rhi
 		*    Owner RHI instance
 		*  @param[in] width
 		*    The width of the texture
-		*  @param[in] height
-		*    The height of the texture
 		*/
-		inline ITextureCube(IRhi& rhi, uint32_t width, uint32_t height RHI_RESOURCE_DEBUG_NAME_PARAMETER_NO_DEFAULT) :
+		inline ITextureCube(IRhi& rhi, uint32_t width RHI_RESOURCE_DEBUG_NAME_PARAMETER_NO_DEFAULT) :
 			ITexture(ResourceType::TEXTURE_CUBE, rhi RHI_RESOURCE_DEBUG_PASS_PARAMETER),
-			mWidth(width),
-			mHeight(height)
+			mWidth(width)
 		{
 			#ifdef RHI_STATISTICS
 				// Update the statistics
@@ -7821,7 +7802,6 @@ namespace Rhi
 	// Private data
 	private:
 		uint32_t mWidth;	///< The width of the texture
-		uint32_t mHeight;	///< The height of the texture
 
 	};
 
@@ -7871,18 +7851,6 @@ namespace Rhi
 
 		/**
 		*  @brief
-		*    Return the height of the texture
-		*
-		*  @return
-		*    The height of the texture
-		*/
-		[[nodiscard]] inline uint32_t getHeight() const
-		{
-			return mHeight;
-		}
-
-		/**
-		*  @brief
 		*    Return the number of slices
 		*
 		*  @return
@@ -7903,15 +7871,12 @@ namespace Rhi
 		*    Owner RHI instance
 		*  @param[in] width
 		*    The width of the texture
-		*  @param[in] height
-		*    The height of the texture
 		*  @param[in] numberOfSlices
 		*    The number of slices
 		*/
-		inline ITextureCubeArray(IRhi& rhi, uint32_t width, uint32_t height, uint32_t numberOfSlices RHI_RESOURCE_DEBUG_NAME_PARAMETER_NO_DEFAULT) :
+		inline ITextureCubeArray(IRhi& rhi, uint32_t width, uint32_t numberOfSlices RHI_RESOURCE_DEBUG_NAME_PARAMETER_NO_DEFAULT) :
 			ITexture(ResourceType::TEXTURE_CUBE_ARRAY, rhi RHI_RESOURCE_DEBUG_PASS_PARAMETER),
 			mWidth(width),
-			mHeight(height),
 			mNumberOfSlices(numberOfSlices)
 		{
 			#ifdef RHI_STATISTICS
@@ -7927,7 +7892,6 @@ namespace Rhi
 	// Private data
 	private:
 		uint32_t mWidth;			///< The width of the texture
-		uint32_t mHeight;			///< The height of the texture
 		uint32_t mNumberOfSlices;	///< The number of slices
 
 	};

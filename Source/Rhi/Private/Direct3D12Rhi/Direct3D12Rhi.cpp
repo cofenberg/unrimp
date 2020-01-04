@@ -7674,8 +7674,6 @@ namespace Direct3D12Rhi
 		*    Owner Direct3D 12 RHI instance
 		*  @param[in] width
 		*    Texture width, must be >0
-		*  @param[in] height
-		*    Texture height, must be >0
 		*  @param[in] textureFormat
 		*    Texture format
 		*  @param[in] data
@@ -7683,8 +7681,8 @@ namespace Direct3D12Rhi
 		*  @param[in] textureFlags
 		*    Texture flags, see "Rhi::TextureFlag::Enum"
 		*/
-		TextureCube(Direct3D12Rhi& direct3D12Rhi, uint32_t width, uint32_t height, Rhi::TextureFormat::Enum textureFormat, const void* data, uint32_t textureFlags RHI_RESOURCE_DEBUG_NAME_PARAMETER) :
-			ITextureCube(direct3D12Rhi, width, height RHI_RESOURCE_DEBUG_PASS_PARAMETER),
+		TextureCube(Direct3D12Rhi& direct3D12Rhi, uint32_t width, Rhi::TextureFormat::Enum textureFormat, const void* data, uint32_t textureFlags RHI_RESOURCE_DEBUG_NAME_PARAMETER) :
+			ITextureCube(direct3D12Rhi, width RHI_RESOURCE_DEBUG_PASS_PARAMETER),
 			mDxgiFormat(Mapping::getDirect3D12Format(textureFormat)),
 			mNumberOfMipmaps(0),
 			mD3D12Resource(nullptr)
@@ -7696,7 +7694,7 @@ namespace Direct3D12Rhi
 			// Calculate the number of mipmaps
 			const bool dataContainsMipmaps = (textureFlags & Rhi::TextureFlag::DATA_CONTAINS_MIPMAPS);
 			const bool generateMipmaps = (!dataContainsMipmaps && (textureFlags & Rhi::TextureFlag::GENERATE_MIPMAPS));
-			mNumberOfMipmaps = (dataContainsMipmaps || generateMipmaps) ? Rhi::ITexture::getNumberOfMipmaps(width, height) : 1;
+			mNumberOfMipmaps = (dataContainsMipmaps || generateMipmaps) ? Rhi::ITexture::getNumberOfMipmaps(width) : 1;
 			RHI_ASSERT(direct3D12Rhi.getContext(), !generateMipmaps, "TODO(co) Direct3D 12 texture mipmap generation isn't implemented, yet")
 			if (generateMipmaps)
 			{
@@ -7704,7 +7702,7 @@ namespace Direct3D12Rhi
 			}
 
 			// Create the Direct3D 12 texture resource
-			mD3D12Resource = TextureHelper::CreateTexture(direct3D12Rhi.getD3D12Device(), TextureHelper::TextureType::TEXTURE_CUBE, width, height, 1, NUMBER_OF_SLICES, textureFormat, 1, mNumberOfMipmaps, textureFlags, nullptr);
+			mD3D12Resource = TextureHelper::CreateTexture(direct3D12Rhi.getD3D12Device(), TextureHelper::TextureType::TEXTURE_CUBE, width, width, 1, NUMBER_OF_SLICES, textureFormat, 1, mNumberOfMipmaps, textureFlags, nullptr);
 			if (nullptr != mD3D12Resource)
 			{
 				// Upload all mipmaps in case the user provided us with texture data
@@ -7723,11 +7721,11 @@ namespace Direct3D12Rhi
 					{
 						// TODO(co) Is it somehow possible to upload a whole cube texture mipmap in one burst?
 						const uint32_t numberOfBytesPerRow   = Rhi::TextureFormat::getNumberOfBytesPerRow(textureFormat, width);
-						const uint32_t numberOfBytesPerSlice = Rhi::TextureFormat::getNumberOfBytesPerSlice(textureFormat, width, height);
+						const uint32_t numberOfBytesPerSlice = Rhi::TextureFormat::getNumberOfBytesPerSlice(textureFormat, width, width);
 						for (uint32_t arraySlice = 0; arraySlice < NUMBER_OF_SLICES; ++arraySlice)
 						{
 							// Upload the current mipmap
-							TextureHelper::SetTextureData(direct3D12Rhi.getUploadContext(), *mD3D12Resource, width, height, 1, textureFormat, mNumberOfMipmaps, mipmap, arraySlice, data, numberOfBytesPerSlice, numberOfBytesPerRow);
+							TextureHelper::SetTextureData(direct3D12Rhi.getUploadContext(), *mD3D12Resource, width, width, 1, textureFormat, mNumberOfMipmaps, mipmap, arraySlice, data, numberOfBytesPerSlice, numberOfBytesPerRow);
 
 							// Move on to the next slice
 							data = static_cast<const uint8_t*>(data) + numberOfBytesPerSlice;
@@ -7735,7 +7733,6 @@ namespace Direct3D12Rhi
 
 						// Move on to the next mipmap and ensure the size is always at least 1x1
 						width = getHalfSize(width);
-						height = getHalfSize(height);
 					}
 				}
 
@@ -7921,18 +7918,18 @@ namespace Direct3D12Rhi
 			return RHI_NEW(direct3D12Rhi.getContext(), Texture3D)(direct3D12Rhi, width, height, depth, textureFormat, data, textureFlags RHI_RESOURCE_DEBUG_PASS_PARAMETER);
 		}
 
-		[[nodiscard]] virtual Rhi::ITextureCube* createTextureCube(uint32_t width, uint32_t height, Rhi::TextureFormat::Enum textureFormat, const void* data = nullptr, uint32_t textureFlags = 0, [[maybe_unused]] Rhi::TextureUsage textureUsage = Rhi::TextureUsage::DEFAULT RHI_RESOURCE_DEBUG_NAME_PARAMETER) override
+		[[nodiscard]] virtual Rhi::ITextureCube* createTextureCube(uint32_t width, Rhi::TextureFormat::Enum textureFormat, const void* data = nullptr, uint32_t textureFlags = 0, [[maybe_unused]] Rhi::TextureUsage textureUsage = Rhi::TextureUsage::DEFAULT RHI_RESOURCE_DEBUG_NAME_PARAMETER) override
 		{
 			Direct3D12Rhi& direct3D12Rhi = static_cast<Direct3D12Rhi&>(getRhi());
 
 			// Sanity check
-			RHI_ASSERT(direct3D12Rhi.getContext(), width > 0 && height > 0, "Direct3D 12 create texture cube was called with invalid parameters")
+			RHI_ASSERT(direct3D12Rhi.getContext(), width > 0, "Direct3D 12 create texture cube was called with invalid parameters")
 
 			// Create cube texture resource, texture usage isn't supported
-			return RHI_NEW(direct3D12Rhi.getContext(), TextureCube)(direct3D12Rhi, width, height, textureFormat, data, textureFlags RHI_RESOURCE_DEBUG_PASS_PARAMETER);
+			return RHI_NEW(direct3D12Rhi.getContext(), TextureCube)(direct3D12Rhi, width, textureFormat, data, textureFlags RHI_RESOURCE_DEBUG_PASS_PARAMETER);
 		}
 
-		[[nodiscard]] virtual Rhi::ITextureCubeArray* createTextureCubeArray([[maybe_unused]] uint32_t width, [[maybe_unused]] uint32_t height, [[maybe_unused]] uint32_t numberOfSlices, [[maybe_unused]] Rhi::TextureFormat::Enum textureFormat, [[maybe_unused]] const void* data = nullptr, [[maybe_unused]] uint32_t textureFlags = 0, [[maybe_unused]] Rhi::TextureUsage textureUsage = Rhi::TextureUsage::DEFAULT RHI_RESOURCE_DEBUG_NAME_PARAMETER) override
+		[[nodiscard]] virtual Rhi::ITextureCubeArray* createTextureCubeArray([[maybe_unused]] uint32_t width, [[maybe_unused]] uint32_t numberOfSlices, [[maybe_unused]] Rhi::TextureFormat::Enum textureFormat, [[maybe_unused]] const void* data = nullptr, [[maybe_unused]] uint32_t textureFlags = 0, [[maybe_unused]] Rhi::TextureUsage textureUsage = Rhi::TextureUsage::DEFAULT RHI_RESOURCE_DEBUG_NAME_PARAMETER) override
 		{
 			// TODO(co) Implement me
 			#ifdef RHI_DEBUG
