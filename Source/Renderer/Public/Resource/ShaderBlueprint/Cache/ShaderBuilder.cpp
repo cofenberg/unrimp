@@ -1269,6 +1269,10 @@ namespace Renderer
 				{
 					outBuffer += it->second;
 				}
+				else
+				{
+					RHI_LOG(mContext, CRITICAL, "Renderer shader builder: Error at line %lu: @insertpiece is referencing unknown piece \"%s\"", static_cast<unsigned long>(calculateLineCount(subString)), argValues[0].c_str())
+				}
 			}
 
 			pos = subString.find("@insertpiece");
