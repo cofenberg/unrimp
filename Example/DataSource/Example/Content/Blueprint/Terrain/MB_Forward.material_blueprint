@@ -50,9 +50,17 @@
 			"UseTriplanarMapping":
 			{
 				"Usage": "SHADER_COMBINATION",
+				"ValueType": "BOOLEAN",
+				"Value": "FALSE",
+				"Description": "Use triplanar mapping to avoid stretched detail layer textures at steep terrain angles. Disable this feature to trade visual quality for better performance since this can eat up quite some fillrate.",
+				"VisualImportance": "100"
+			},
+			"UseTextureNoTile":
+			{
+				"Usage": "SHADER_COMBINATION",
 				"ValueType": "GLOBAL_MATERIAL_PROPERTY_ID",
 				"Value": "@GlobalHighQualityRendering",
-				"Description": "Use triplanar mapping to avoid stretched detail layer textures at steep terrain angles. Disable this feature to trade visual quality for better performance.",
+				"Description": "Hide detail layer texture tiling. Disable this feature to trade visual quality for better performance since this can eat up quite some fillrate.",
 				"VisualImportance": "100"
 			},
 			"GlobalHighQualityRendering":

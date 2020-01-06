@@ -165,7 +165,7 @@
 
 @piece(DefineGetBayerScreenSpaceDitherValue)
 	// Dither value using a Bayer matrix to hide banding artefacts when using not enough samples
-	// -> Basing on http://www.alexandre-pestana.com/volumetric-lights/
+	// -> Basing on "Volumetric lights" by Alexandre Pestana published on August 16, 2014 at http://www.alexandre-pestana.com/volumetric-lights/
 	float GetBayerScreenSpaceDitherValue(uint2 screenSpacePosition)
 	{
 		float4x4 ditherPattern;
@@ -193,7 +193,7 @@
 		fogDirection = pow(fogDirection, 15.0f);
 
 		// Calculate fogged color
-		// -> See e.g. http://www.iquilezles.org/www/articles/fog/fog.htm by Inigo Quilez
+		// -> See e.g. "better fog" by Inigo Quilez published at http://www.iquilezles.org/www/articles/fog/fog.htm
 		float3 ambientFogDiffuseColor = ambientColor * diffuseFogColor;
 		float3 sunFogDiffuseColor = sunlightColor * diffuseFogColor;
 		float3 litFog = LERP(ambientFogDiffuseColor, ambientFogDiffuseColor + sunFogDiffuseColor, fogDirection);

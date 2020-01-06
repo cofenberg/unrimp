@@ -80,6 +80,38 @@
 		return PassData.WorldPosition.y + PassData.WorldSize.y * SAMPLE_2D_LOD(HeightMap, SamplerLinearClamp, float4(uv, 0.0f, 0.0f)).r;
 	}
 @end
+@piece(DefineTextureNoTile)
+	// "texture repetition - Technique 3" by Inigo Quilez published at http://www.iquilezles.org/www/articles/texturerepetition/texturerepetition.htm and demonstrated at https://www.shadertoy.com/view/Xtl3zf
+	float4 TextureNoTile(TEXTURE_2D_ARRAY_PARAMETER textureMap, float layerIndex, float2 uv)
+	{
+		float k = noise2D(0.5f * uv);
+
+		float2 duvdx = DDX(uv);
+		float2 duvdy = DDY(uv);
+
+		float l = k * 8.0f;
+		float f = frac(l);
+
+		float ia = floor(l + 0.5f);
+		float ib = floor(l);
+		f = min(f, 1.0f - f) * 2.0f;
+
+		float2 offa = sin(float2(3.0f, 7.0f) * ia);	// Can replace with any other hash
+		float2 offb = sin(float2(3.0f, 7.0f) * ib);	// Can replace with any other hash
+
+		float4 cola = SAMPLE_2D_ARRAY_GRAD(textureMap, SamplerLinear, float3(uv + offa, layerIndex), duvdx, duvdy);
+		float4 colb = SAMPLE_2D_ARRAY_GRAD(textureMap, SamplerLinear, float3(uv + offb, layerIndex), duvdx, duvdy);
+
+		float4 colorDifference = cola - colb;
+		return lerp(cola, colb, smoothstep(0.2f, 0.8f, f - 0.1f * (colorDifference.x + colorDifference.y + colorDifference.z)));
+	}
+@end
+@piece(DefineTextureNoTileDisabled)
+	float4 TextureNoTile(TEXTURE_2D_ARRAY_PARAMETER textureMap, float layerIndex, float2 uv)
+	{
+		return SAMPLE_2D_ARRAY(textureMap, SamplerLinear, float3(uv, layerIndex));
+	}
+@end
 @piece(DefineTriplanarMapping)
 	// See "Use Tri-Planar Texture Mapping for Better Terrain" by Brent Owens published 3 Jan 2014 at https://gamedevelopment.tutsplus.com/articles/use-tri-planar-texture-mapping-for-better-terrain--gamedev-13821
 	float3 ComputeTerrainTriplanarWeights(float3 normal)
@@ -102,12 +134,12 @@
 	float4 SampleTerrainTriplanar(TEXTURE_2D_ARRAY_PARAMETER textureMap, float layerIndex, float3 triplanarWeights, float3 position)
 	{
 		// Sample the three planar projections
-		float4 northSouthValue = (triplanarWeights.x > 0.0f) ? SAMPLE_2D_ARRAY(textureMap, SamplerLinear, float3(position.yz, layerIndex)) : float4(0.0f, 0.0f, 0.0f, 0.0f);
-		float4 flatValue 	   = (triplanarWeights.y > 0.0f) ? SAMPLE_2D_ARRAY(textureMap, SamplerLinear, float3(position.xz, layerIndex)) : float4(0.0f, 0.0f, 0.0f, 0.0f);
-		float4 eastWestValue   = (triplanarWeights.z > 0.0f) ? SAMPLE_2D_ARRAY(textureMap, SamplerLinear, float3(position.xy, layerIndex)) : float4(0.0f, 0.0f, 0.0f, 0.0f);
+		float4 northSouthValue = (triplanarWeights.x > 0.0f) ? TextureNoTile(textureMap, layerIndex, position.yz) : float4(0.0f, 0.0f, 0.0f, 0.0f);
+		float4 flatValue 	   = (triplanarWeights.y > 0.0f) ? TextureNoTile(textureMap, layerIndex, position.xz) : float4(0.0f, 0.0f, 0.0f, 0.0f);
+		float4 eastWestValue   = (triplanarWeights.z > 0.0f) ? TextureNoTile(textureMap, layerIndex, position.xy) : float4(0.0f, 0.0f, 0.0f, 0.0f);
 
 		// Blend the results of the three planar projections
-		return northSouthValue * triplanarWeights.x + flatValue * triplanarWeights.y + eastWestValue * triplanarWeights.z;
+		return (northSouthValue * triplanarWeights.x + flatValue * triplanarWeights.y + eastWestValue * triplanarWeights.z);
 	}
 @end
 @piece(DefineSharedFragmentShading)
@@ -184,9 +216,9 @@
 			float4 layer_argb_nxa = SampleTerrainTriplanar(LayerArray_argb_nxa, CAST_TO(layerIndex, float), triplanarWeights, worldSpacePosition * uvMultiplier);
 			float4 layer_hr_rg_mb_nya = SampleTerrainTriplanar(LayerArray_hr_rg_mb_nya, CAST_TO(layerIndex, float), triplanarWeights, worldSpacePosition * uvMultiplier);
 		@else
-			float3 layerTexCoord = float3(worldSpacePosition.xz * uvMultiplier, CAST_TO(layerIndex, float));
-			float4 layer_argb_nxa = SAMPLE_2D_ARRAY(LayerArray_argb_nxa, SamplerLinear, layerTexCoord);
-			float4 layer_hr_rg_mb_nya = SAMPLE_2D_ARRAY(LayerArray_hr_rg_mb_nya, SamplerLinear, layerTexCoord);
+			float2 layerTexCoord = worldSpacePosition.xz * uvMultiplier;
+			float4 layer_argb_nxa = TextureNoTile(LayerArray_argb_nxa, CAST_TO(layerIndex, float), layerTexCoord);
+			float4 layer_hr_rg_mb_nya = TextureNoTile(LayerArray_hr_rg_mb_nya, CAST_TO(layerIndex, float), layerTexCoord);
 		@end
 
 		// TODO(co) Parallax occlusion mapping (POM)

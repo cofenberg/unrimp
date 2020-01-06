@@ -170,7 +170,7 @@ MAIN_BEGIN
 		color.rgb = ApplyFilmGrain(color.rgb, MAIN_INPUT(TexCoordVS), PassData.FilmGrainIntensity, PassData.GlobalTimeInSeconds);
 	@end
 
-	// Apply screen space dither
+	// Apply screen space dither to reduce color banding
 	color.rgb += ScreenSpaceDither(MAIN_INPUT(TexCoordVS) * viewportSize, PassData.GlobalTimeInSeconds);
 
 	// Ensure we're in a 0..1 range

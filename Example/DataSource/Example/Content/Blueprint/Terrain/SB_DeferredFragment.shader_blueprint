@@ -75,12 +75,18 @@ SAMPLER_STATE(3, 1, SamplerLinearClamp, 1)
 	@insertpiece(DefineUnpackTextureNormalXY)
 	@insertpiece(DefineFilterNormal)
 	@insertpiece(DefineBlendNormalUdn)
+@includepiece(../SharedShaderPiece/SP_Noise.asset)
+	@insertpiece(DefineMultipleOctavesNoise2D)
+	@insertpiece(DefineMultipleOctavesNoise3D)
 // @includepiece(./SP_Terrain.asset) is already included at the top
+	@property(UseTextureNoTile)
+		@insertpiece(DefineTextureNoTile)
+	@else
+		@insertpiece(DefineTextureNoTileDisabled)
+	@end
 	@property(UseTriplanarMapping)
 		@insertpiece(DefineTriplanarMapping)
 	@end
-@includepiece(../SharedShaderPiece/SP_Noise.asset)
-	@insertpiece(DefineMultipleOctavesNoise3D)
 @includepiece(../SharedShaderPiece/SP_Color.asset)
 	@insertpiece(DefineOverlayColorBlending)
 
