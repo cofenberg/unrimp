@@ -123,10 +123,14 @@
 	// Normal blending, see "Blending in Detail" by Colin Barré-Brisebois and Stephen Hill, published Jul 10th, 2012 at https://blog.selfshadow.com/publications/blending-in-detail/ and "Normal Mapping for a Triplanar Shader" by Ben Golus published Sep 17, 2017 at https://medium.com/@bgolus/normal-mapping-for-a-triplanar-shader-10bf39dca05a
 	float3 BlendNormalUdn(float3 n1, float3 n2)
 	{
-		float3 c = float3(2.0f, 1.0f, 0.0f);
-		float3 r;
-		r = n2 * c.yyz + n1.xyz;
-		r =  r * c.xxx -  c.xxy;
-		return normalize(r);
+		// The article says
+		// float3 c = float3(2.0f, 1.0f, 0.0f);
+		// float3 r;
+		// r = n2 * c.yyz + n1.xyz;
+		// r =  r * c.xxx -  c.xxy;
+		// return normalize(r);
+
+		// But we're using the version from https://blog.selfshadow.com/sandbox/normals.html which returned expected results
+		return normalize(float3(n1.xy + n2.xy, n1.z));
 	}
 @end

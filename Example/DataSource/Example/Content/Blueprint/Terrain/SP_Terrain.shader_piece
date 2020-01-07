@@ -274,6 +274,6 @@
 
 	// Derive data
 	float3 viewSpaceNormal = MultiplyQuaternionVector(PassData.WorldSpaceToViewSpaceQuaternion, worldSpaceNormal);
-	float3 worldSpaceIncident = normalize(-worldSpacePosition);	// Since we're using camera relative rendering, "PassData.WorldSpaceCameraPosition - worldSpacePosition" becomes just "-worldSpacePosition"
+	float3 worldSpaceIncident = normalize(PassData.UnmodifiedWorldSpaceCameraPosition - worldSpacePosition);
 	float3 viewSpaceIncident = MultiplyQuaternionVector(PassData.WorldSpaceToViewSpaceQuaternion, worldSpaceIncident);
 @end
