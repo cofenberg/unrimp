@@ -67,8 +67,8 @@ namespace Renderer
 		else if (*iterator != materialPropertyValue)
 		{
 			// Sanity checks
-			ASSERT(iterator->getValueType() == materialPropertyValue.getValueType());
-			ASSERT(MaterialProperty::Usage::UNKNOWN == materialPropertyUsage || materialPropertyUsage == iterator->getUsage());
+			ASSERT(iterator->getValueType() == materialPropertyValue.getValueType(), "Invalid value type")
+			ASSERT(MaterialProperty::Usage::UNKNOWN == materialPropertyUsage || materialPropertyUsage == iterator->getUsage(), "Invalid usage")
 
 			// Update the material property value
 			materialPropertyUsage = iterator->getUsage();

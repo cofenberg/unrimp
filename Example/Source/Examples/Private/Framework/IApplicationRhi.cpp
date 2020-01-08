@@ -100,7 +100,7 @@ IApplicationRhi::IApplicationRhi(const char* rhiName, ExampleBase& exampleBase) 
 //[-------------------------------------------------------]
 void IApplicationRhi::switchExample(const char* exampleName, const char* rhiName)
 {
-	ASSERT(nullptr != exampleName);
+	ASSERT(nullptr != exampleName, "Invalid example name")
 	mExampleBase.getExampleRunner().switchExample(exampleName, rhiName);
 	exit();
 }
@@ -219,7 +219,7 @@ void IApplicationRhi::onEscapeKey()
 //[-------------------------------------------------------]
 void IApplicationRhi::createRhi()
 {
-	ASSERT(nullptr == mRhi);
+	ASSERT(nullptr == mRhi, "Invalid RHI instance")
 
 	// Create the RHI instance
 	mRhi = createRhiInstance(mRhiName);

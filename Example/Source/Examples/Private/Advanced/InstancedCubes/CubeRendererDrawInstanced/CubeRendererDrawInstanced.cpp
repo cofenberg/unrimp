@@ -393,8 +393,8 @@ void CubeRendererDrawInstanced::setNumberOfCubes(uint32_t numberOfCubes)
 
 void CubeRendererDrawInstanced::fillCommandBuffer(float globalTimer, float globalScale, float lightPositionX, float lightPositionY, float lightPositionZ, Rhi::CommandBuffer& commandBuffer)
 {
-	// Sanity checks
-	assert(nullptr != mGraphicsProgram);
+	// Sanity check
+	RHI_ASSERT(mRhi->getContext(), nullptr != mGraphicsProgram, "Invalid graphics program")
 
 	{ // Update graphics program uniform data
 		// Some counting timer, we don't want to touch the buffers on the GPU
@@ -459,15 +459,16 @@ void CubeRendererDrawInstanced::fillCommandBuffer(float globalTimer, float globa
 void CubeRendererDrawInstanced::fillReusableCommandBuffer()
 {
 	// Sanity checks
-	assert(mCommandBuffer.isEmpty());
-	assert(nullptr != mRootSignature);
-	assert(nullptr != mTexture2DArray);
-	assert(0 == mRhi->getCapabilities().maximumUniformBufferSize || nullptr != mUniformBufferStaticVs);
-	assert(0 == mRhi->getCapabilities().maximumUniformBufferSize || nullptr != mUniformBufferDynamicVs);
-	assert(0 == mRhi->getCapabilities().maximumUniformBufferSize || nullptr != mUniformBufferDynamicFs);
-	assert(nullptr != mResourceGroupVs && nullptr != mResourceGroupFs);
-	assert(nullptr != mSamplerStateGroup);
-	assert(nullptr != mVertexArray);
+	ASSERT(nullptr != mRhi, "Invalid RHI instance")
+	RHI_ASSERT(mRhi->getContext(), mCommandBuffer.isEmpty(), "The command buffer is already filled")
+	RHI_ASSERT(mRhi->getContext(), nullptr != mRootSignature, "Invalid root signature")
+	RHI_ASSERT(mRhi->getContext(), nullptr != mTexture2DArray, "Invalid texture 2D array")
+	RHI_ASSERT(mRhi->getContext(), 0 == mRhi->getCapabilities().maximumUniformBufferSize || nullptr != mUniformBufferStaticVs, "Invalid uniform buffer static VS")
+	RHI_ASSERT(mRhi->getContext(), 0 == mRhi->getCapabilities().maximumUniformBufferSize || nullptr != mUniformBufferDynamicVs, "Invalid uniform buffer dynamic VS")
+	RHI_ASSERT(mRhi->getContext(), 0 == mRhi->getCapabilities().maximumUniformBufferSize || nullptr != mUniformBufferDynamicFs, "Invalid uniform buffer dynamic FS")
+	RHI_ASSERT(mRhi->getContext(), nullptr != mResourceGroupVs && nullptr != mResourceGroupFs, "Invalid resource group")
+	RHI_ASSERT(mRhi->getContext(), nullptr != mSamplerStateGroup, "Invalid sampler state group")
+	RHI_ASSERT(mRhi->getContext(), nullptr != mVertexArray, "Invalid vertex array")
 
 	// Scoped debug event
 	COMMAND_SCOPED_DEBUG_EVENT_FUNCTION(mCommandBuffer)

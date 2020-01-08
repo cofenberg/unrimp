@@ -85,7 +85,7 @@ namespace Renderer
 		[[nodiscard]] inline SceneItemSet& getCullableSceneItemSet() const
 		{
 			// We know that this pointer is always valid
-			ASSERT(nullptr != mCullableSceneItemSet);
+			ASSERT(nullptr != mCullableSceneItemSet, "Invalid cullable scene item set")
 			return *mCullableSceneItemSet;
 		}
 

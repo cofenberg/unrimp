@@ -424,55 +424,55 @@ namespace Renderer
 
 		[[nodiscard]] inline bool getBooleanValue() const
 		{
-			ASSERT(ValueType::BOOLEAN == mValueType);
+			ASSERT(ValueType::BOOLEAN == mValueType, "Invalid value type")
 			return mValue.Boolean;
 		}
 
 		[[nodiscard]] inline int getIntegerValue() const
 		{
-			ASSERT(ValueType::INTEGER == mValueType);
+			ASSERT(ValueType::INTEGER == mValueType, "Invalid value type")
 			return mValue.Integer;
 		}
 
 		[[nodiscard]] inline const int* getInteger2Value() const
 		{
-			ASSERT(ValueType::INTEGER_2 == mValueType);
+			ASSERT(ValueType::INTEGER_2 == mValueType, "Invalid value type")
 			return &mValue.Integer2[0];
 		}
 
 		[[nodiscard]] inline const int* getInteger3Value() const
 		{
-			ASSERT(ValueType::INTEGER_3 == mValueType);
+			ASSERT(ValueType::INTEGER_3 == mValueType, "Invalid value type")
 			return &mValue.Integer3[0];
 		}
 
 		[[nodiscard]] inline const int* getInteger4Value() const
 		{
-			ASSERT(ValueType::INTEGER_4 == mValueType);
+			ASSERT(ValueType::INTEGER_4 == mValueType, "Invalid value type")
 			return &mValue.Integer4[0];
 		}
 
 		[[nodiscard]] inline float getFloatValue() const
 		{
-			ASSERT(ValueType::FLOAT == mValueType);
+			ASSERT(ValueType::FLOAT == mValueType, "Invalid value type")
 			return mValue.Float;
 		}
 
 		[[nodiscard]] inline const float* getFloat2Value() const
 		{
-			ASSERT(ValueType::FLOAT_2 == mValueType);
+			ASSERT(ValueType::FLOAT_2 == mValueType, "Invalid value type")
 			return &mValue.Float2[0];
 		}
 
 		[[nodiscard]] inline const float* getFloat3Value() const
 		{
-			ASSERT(ValueType::FLOAT_3 == mValueType);
+			ASSERT(ValueType::FLOAT_3 == mValueType, "Invalid value type")
 			return &mValue.Float3[0];
 		}
 
 		[[nodiscard]] inline const float* getFloat4Value() const
 		{
-			ASSERT(ValueType::FLOAT_4 == mValueType);
+			ASSERT(ValueType::FLOAT_4 == mValueType, "Invalid value type")
 			return &mValue.Float4[0];
 		}
 
@@ -482,79 +482,79 @@ namespace Renderer
 		// For graphics pipeline rasterizer state property usage
 		[[nodiscard]] inline Rhi::FillMode getFillModeValue() const
 		{
-			ASSERT(ValueType::FILL_MODE == mValueType);
+			ASSERT(ValueType::FILL_MODE == mValueType, "Invalid value type")
 			return mValue.FillMode;
 		}
 
 		[[nodiscard]] inline Rhi::CullMode getCullModeValue() const
 		{
-			ASSERT(ValueType::CULL_MODE == mValueType);
+			ASSERT(ValueType::CULL_MODE == mValueType, "Invalid value type")
 			return mValue.CullMode;
 		}
 
 		[[nodiscard]] inline Rhi::ConservativeRasterizationMode getConservativeRasterizationModeValue() const
 		{
-			ASSERT(ValueType::CONSERVATIVE_RASTERIZATION_MODE == mValueType);
+			ASSERT(ValueType::CONSERVATIVE_RASTERIZATION_MODE == mValueType, "Invalid value type")
 			return mValue.ConservativeRasterizationMode;
 		}
 
 		// For graphics pipeline depth stencil state property usage
 		[[nodiscard]] inline Rhi::DepthWriteMask getDepthWriteMaskValue() const
 		{
-			ASSERT(ValueType::DEPTH_WRITE_MASK == mValueType);
+			ASSERT(ValueType::DEPTH_WRITE_MASK == mValueType, "Invalid value type")
 			return mValue.DepthWriteMask;
 		}
 
 		[[nodiscard]] inline Rhi::StencilOp getStencilOpValue() const
 		{
-			ASSERT(ValueType::STENCIL_OP == mValueType);
+			ASSERT(ValueType::STENCIL_OP == mValueType, "Invalid value type")
 			return mValue.StencilOp;
 		}
 
 		// For graphics pipeline depth stencil state and sampler state property usage
 		[[nodiscard]] inline Rhi::ComparisonFunc getComparisonFuncValue() const
 		{
-			ASSERT(ValueType::COMPARISON_FUNC == mValueType);
+			ASSERT(ValueType::COMPARISON_FUNC == mValueType, "Invalid value type")
 			return mValue.ComparisonFunc;
 		}
 
 		// For graphics pipeline blend state property usage
 		[[nodiscard]] inline Rhi::Blend getBlendValue() const
 		{
-			ASSERT(ValueType::BLEND == mValueType);
+			ASSERT(ValueType::BLEND == mValueType, "Invalid value type")
 			return mValue.Blend;
 		}
 
 		[[nodiscard]] inline Rhi::BlendOp getBlendOpValue() const
 		{
-			ASSERT(ValueType::BLEND_OP == mValueType);
+			ASSERT(ValueType::BLEND_OP == mValueType, "Invalid value type")
 			return mValue.BlendOp;
 		}
 
 		// For sampler state property usage
 		[[nodiscard]] inline Rhi::FilterMode getFilterMode() const
 		{
-			ASSERT(ValueType::FILTER_MODE == mValueType);
+			ASSERT(ValueType::FILTER_MODE == mValueType, "Invalid value type")
 			return mValue.FilterMode;
 		}
 
 		[[nodiscard]] inline Rhi::TextureAddressMode getTextureAddressModeValue() const
 		{
-			ASSERT(ValueType::TEXTURE_ADDRESS_MODE == mValueType);
+			ASSERT(ValueType::TEXTURE_ADDRESS_MODE == mValueType, "Invalid value type")
 			return mValue.TextureAddressMode;
 		}
 
 		// For texture property usage
 		[[nodiscard]] inline AssetId getTextureAssetIdValue() const
 		{
-			ASSERT(ValueType::TEXTURE_ASSET_ID == mValueType);
+			ASSERT(ValueType::TEXTURE_ASSET_ID == mValueType, "Invalid value type")
 			return mValue.TextureAssetId;
 		}
 
 		// For shader combination property usage
 		[[nodiscard]] inline MaterialPropertyId getGlobalMaterialPropertyId() const
 		{
-			ASSERT(ValueType::GLOBAL_MATERIAL_PROPERTY_ID == mValueType);
+			ASSERT(ValueType::GLOBAL_MATERIAL_PROPERTY_ID == mValueType, "Invalid value type")
 			return mValue.GlobalMaterialPropertyId;
 		}
 

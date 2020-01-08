@@ -442,10 +442,10 @@ void Scene::onLoadingStateChange(const Renderer::IResource& resource)
 		if (Renderer::IResource::LoadingState::LOADED == loadingState)
 		{
 			// Sanity checks
-			assert(nullptr == mSceneNode);
-			assert(nullptr == mCameraSceneItem);
-			assert(nullptr == mSunlightSceneItem);
-			assert(nullptr == mSkeletonMeshSceneItem);
+			RHI_ASSERT(getRendererSafe().getContext(), nullptr == mSceneNode, "Invalid scene node")
+			RHI_ASSERT(getRendererSafe().getContext(), nullptr == mCameraSceneItem, "Invalid camera scene item")
+			RHI_ASSERT(getRendererSafe().getContext(), nullptr == mSunlightSceneItem, "Invalid sunlight scene item")
+			RHI_ASSERT(getRendererSafe().getContext(), nullptr == mSkeletonMeshSceneItem, "Invalid skeleton mesh scene item")
 
 			// Loop through all scene nodes and grab the first found camera, directional light and mesh
 			const Renderer::SceneResource& sceneResource = static_cast<const Renderer::SceneResource&>(resource);

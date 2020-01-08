@@ -132,7 +132,7 @@ namespace
 			inline AndroidReadFile(AAssetManager& aAssetManager, const std::string& absoluteFilename) :
 				mAAsset(AAssetManager_open(&aAssetManager, absoluteFilename.c_str(), AASSET_MODE_STREAMING))
 			{
-				ASSERT((nullptr != mAAsset) && "Failed to open Android file for reading");
+				ASSERT(nullptr != mAAsset, "Failed to open Android file for reading")
 			}
 
 			inline virtual ~AndroidReadFile() override
@@ -160,7 +160,7 @@ namespace
 		public:
 			[[nodiscard]] inline virtual size_t getNumberOfBytes() override
 			{
-				ASSERT((nullptr != mAAsset) && "Invalid Android file access");
+				ASSERT(nullptr != mAAsset, "Invalid Android file access")
 				#ifdef ARCHITECTURE_X64
 					return AAsset_getLength64(mAAsset);
 				#else
@@ -170,31 +170,31 @@ namespace
 
 			inline virtual void read(void* destinationBuffer, size_t numberOfBytes) override
 			{
-				ASSERT((nullptr != destinationBuffer) && "Letting a file read into a null destination buffer is not allowed");
-				ASSERT((0 != numberOfBytes) && "Letting a file read zero bytes is not allowed");
-				ASSERT((nullptr != mAAsset) && "Invalid Android file access");
+				ASSERT(nullptr != destinationBuffer, "Letting a file read into a null destination buffer is not allowed")
+				ASSERT(0 != numberOfBytes, "Letting a file read zero bytes is not allowed")
+				ASSERT(nullptr != mAAsset, "Invalid Android file access")
 				[[maybe_unused]] const int numberOfReadBytes = AAsset_read(mAAsset, destinationBuffer, numberOfBytes);
-				ASSERT((numberOfReadBytes == numberOfBytes) && "Failed to read the requested number of bytes from the Android file");
+				ASSERT(numberOfReadBytes == numberOfBytes, "Failed to read the requested number of bytes from the Android file")
 			}
 
 			inline virtual void skip(size_t numberOfBytes) override
 			{
-				ASSERT((0 != numberOfBytes) && "Letting a file skip zero bytes is not allowed");
-				ASSERT((nullptr != mAAsset) && "Invalid Android file access");
+				ASSERT(0 != numberOfBytes, "Letting a file skip zero bytes is not allowed")
+				ASSERT(nullptr != mAAsset, "Invalid Android file access")
 				#ifdef ARCHITECTURE_X64
 					[[maybe_unused]] const off64_t newPosition = AAsset_seek64(mAAsset, numberOfBytes, SEEK_CUR);
 				#else
 					[[maybe_unused]] const off_t newPosition = AAsset_seek(mAAsset, numberOfBytes, SEEK_CUR);
 				#endif
-				ASSERT((-1 != newPosition) && "Failed to skip the requested number of bytes from the Android file");
+				ASSERT(-1 != newPosition, "Failed to skip the requested number of bytes from the Android file")
 			}
 
 			inline virtual void write([[maybe_unused]] const void* sourceBuffer, [[maybe_unused]] size_t numberOfBytes) override
 			{
-				ASSERT((nullptr != sourceBuffer) && "Letting a file write from a null source buffer is not allowed");
-				ASSERT((0 != numberOfBytes) && "Letting a file write zero bytes is not allowed");
-				ASSERT((nullptr != mAAsset) && "Invalid Android file access");
-				ASSERT(false && "File write method not supported by the Android implementation");
+				ASSERT(nullptr != sourceBuffer, "Letting a file write from a null source buffer is not allowed")
+				ASSERT(0 != numberOfBytes, "Letting a file write zero bytes is not allowed")
+				ASSERT(nullptr != mAAsset, "Invalid Android file access")
+				ASSERT(false, "File write method not supported by the Android implementation")
 			}
 
 
@@ -264,7 +264,7 @@ namespace Renderer
 
 		inline virtual ~AndroidFileManager() override
 		{
-			ASSERT((0 == mNumberOfCurrentlyOpenedFiles) && "File leak detected, not all opened files were closed");
+			ASSERT(0 == mNumberOfCurrentlyOpenedFiles, "File leak detected, not all opened files were closed")
 		}
 
 
@@ -279,7 +279,7 @@ namespace Renderer
 
 		[[nodiscard]] inline virtual const char* getMountPoint(const char* mountPoint) const override
 		{
-			ASSERT(nullptr != mountPoint);
+			ASSERT(nullptr != mountPoint, "Invalid mount point")
 			const MountedDirectories::const_iterator mountedDirectoriesIterator = mMountedDirectories.find(mountPoint);
 			if (mMountedDirectories.cend() != mountedDirectoriesIterator)
 			{
@@ -296,8 +296,8 @@ namespace Renderer
 		inline virtual bool mountDirectory(AbsoluteDirectoryName absoluteDirectoryName, const char* mountPoint, bool appendToPath = false) override
 		{
 			// Sanity check
-			ASSERT(nullptr != absoluteDirectoryName);
-			ASSERT(nullptr != mountPoint);
+			ASSERT(nullptr != absoluteDirectoryName, "Invalid absolute directory name")
+			ASSERT(nullptr != mountPoint, "Invalid mount point")
 			#ifdef RHI_DEBUG
 				// Additional sanity check: The same absolute directory name shouldn't be added to too different mount points
 				for (const auto& pair : mMountedDirectories)
@@ -305,7 +305,7 @@ namespace Renderer
 					if (pair.first != mountPoint)
 					{
 						const AbsoluteDirectoryNames& absoluteDirectoryNames = pair.second;
-						ASSERT((absoluteDirectoryNames.cend() == std::find(absoluteDirectoryNames.begin(), absoluteDirectoryNames.end(), absoluteDirectoryName)) && "The same absolute directory name shouldn't be added to too different Android mount points");
+						ASSERT(absoluteDirectoryNames.cend() == std::find(absoluteDirectoryNames.begin(), absoluteDirectoryNames.end(), absoluteDirectoryName), "The same absolute directory name shouldn't be added to too different Android mount points")
 					}
 				}
 			#endif
@@ -337,7 +337,7 @@ namespace Renderer
 				}
 				else
 				{
-					ASSERT(false && "Duplicate absolute Android directory name detected, this situation should be avoided by the caller");
+					ASSERT(false, "Duplicate absolute Android directory name detected, this situation should be avoided by the caller")
 				}
 			}
 
@@ -386,7 +386,7 @@ namespace Renderer
 
 		[[nodiscard]] inline virtual int64_t getLastModificationTime(VirtualFilename) const override
 		{
-			ASSERT(false && "Renderer::IFileManager::getLastModificationTime() isn't supported on Android");
+			ASSERT(false, "Renderer::IFileManager::getLastModificationTime() isn't supported on Android")
 			return -1;
 		}
 
@@ -413,10 +413,10 @@ namespace Renderer
 		inline virtual bool createDirectories([[maybe_unused]] VirtualDirectoryName virtualDirectoryName) const override
 		{
 			// Sanity check
-			ASSERT(nullptr != virtualDirectoryName);
+			ASSERT(nullptr != virtualDirectoryName, "Invalid virtual directory name")
 
 			// Error, not supported on Android
-			ASSERT(false && "Renderer::IFileManager::createDirectories() isn't supported on Android");
+			ASSERT(false, "\"Renderer::IFileManager::createDirectories()\" isn't supported on Android")
 			return false;
 		}
 
@@ -433,7 +433,7 @@ namespace Renderer
 				else
 				{
 					// Error, not supported on Android
-					ASSERT(false && "Renderer::IFileManager::openFile() with writing file mode isn't supported on Android");
+					ASSERT(false, "\"Renderer::IFileManager::openFile()\" with writing file mode isn't supported on Android")
 					return nullptr;
 				}
 				if (file->isInvalid())
@@ -449,7 +449,7 @@ namespace Renderer
 				{
 					#ifdef RHI_DEBUG
 						++mNumberOfCurrentlyOpenedFiles;
-						ASSERT((mNumberOfCurrentlyOpenedFiles < 256) && "Too many simultaneously opened files");
+						ASSERT(mNumberOfCurrentlyOpenedFiles < 256, "Too many simultaneously opened files")
 					#endif
 				}
 			}
@@ -462,7 +462,7 @@ namespace Renderer
 		{
 			#ifdef RHI_DEBUG
 				--mNumberOfCurrentlyOpenedFiles;
-				ASSERT((mNumberOfCurrentlyOpenedFiles >= 0) && "Error, more files closed as opened");
+				ASSERT(mNumberOfCurrentlyOpenedFiles >= 0, "Error, more files closed as opened")
 			#endif
 			delete static_cast< ::detail::AndroidFile*>(&file);
 		}
@@ -490,7 +490,7 @@ namespace Renderer
 	private:
 		[[nodiscard]] inline bool getAbsoluteDirectoryNamesByMountPoint(VirtualFilename virtualFilename, const AbsoluteDirectoryNames** absoluteDirectoryNames, std::string& relativeFilename, std::string& mountPoint) const
 		{
-			ASSERT(nullptr != absoluteDirectoryNames);
+			ASSERT(nullptr != absoluteDirectoryNames, "Invalid absolute directory names")
 
 			// Get mount point
 			const std::string_view stdVirtualFilename = virtualFilename;
@@ -528,7 +528,7 @@ namespace Renderer
 		[[nodiscard]] inline std::string mapVirtualToAbsoluteFilenameAndMountPoint(FileMode fileMode, VirtualFilename virtualFilename, std::string& mountPoint) const
 		{
 			// Sanity check
-			ASSERT(nullptr != virtualFilename);
+			ASSERT(nullptr != virtualFilename, "Invalid virtual filename")
 
 			// Get absolute directory names
 			const AbsoluteDirectoryNames* absoluteDirectoryNames = nullptr;

@@ -371,32 +371,32 @@ void ComputeShader::onDraw()
 void ComputeShader::fillCommandBuffer()
 {
 	// Sanity checks
-	ASSERT(nullptr != getRhi());
-	RHI_ASSERT(getRhi()->getContext(), nullptr != getMainRenderTarget(), "Invalid main render target");
-	RHI_ASSERT(getRhi()->getContext(), mCommandBuffer.isEmpty(), "The command buffer is already filled");
-	RHI_ASSERT(getRhi()->getContext(), nullptr != mGraphicsRootSignature, "Invalid graphics root signature");
-	RHI_ASSERT(getRhi()->getContext(), nullptr != mComputeRootSignature1, "Invalid compute root signature 1");
-	RHI_ASSERT(getRhi()->getContext(), nullptr != mComputeRootSignature2, "Invalid compute root signature 2");
-	RHI_ASSERT(getRhi()->getContext(), nullptr != mFramebuffer, "Invalid framebuffer");
-	RHI_ASSERT(getRhi()->getContext(), nullptr != mComputeResourceGroup1, "Invalid compute resource group 1");
-	RHI_ASSERT(getRhi()->getContext(), nullptr != mComputeResourceGroup2, "Invalid compute resource group 2");
-	RHI_ASSERT(getRhi()->getContext(), nullptr != mGraphicsResourceGroup, "Invalid graphics resource group");
-	RHI_ASSERT(getRhi()->getContext(), nullptr != mGraphicsSamplerStateGroup, "Invalid graphics sampler state group");
-	RHI_ASSERT(getRhi()->getContext(), nullptr != mGraphicsPipelineState, "Invalid graphics pipeline state");
-	RHI_ASSERT(getRhi()->getContext(), nullptr != mComputePipelineState1, "Invalid compute pipeline state 1");
-	RHI_ASSERT(getRhi()->getContext(), nullptr != mComputePipelineState2, "Invalid compute pipeline state 2");
-	RHI_ASSERT(getRhi()->getContext(), nullptr != mComputeInputVertexBuffer, "Invalid compute input vertex buffer");
-	RHI_ASSERT(getRhi()->getContext(), nullptr != mComputeOutputVertexBuffer, "Invalid compute output vertex buffer");
-	RHI_ASSERT(getRhi()->getContext(), nullptr != mComputeInputIndexBuffer, "Invalid compute input index buffer");
-	RHI_ASSERT(getRhi()->getContext(), nullptr != mComputeOutputIndexBuffer, "Invalid compute output index buffer");
-	RHI_ASSERT(getRhi()->getContext(), nullptr != mVertexArray, "Invalid vertex array");
-	RHI_ASSERT(getRhi()->getContext(), nullptr != mComputeOutputTextureBuffer, "Invalid compute output texture buffer");
-	RHI_ASSERT(getRhi()->getContext(), nullptr != mComputeInputTextureBuffer, "Invalid compute input texture buffer");
-	RHI_ASSERT(getRhi()->getContext(), nullptr != mComputeOutputStructuredBuffer, "Invalid compute output structured buffer");
-	RHI_ASSERT(getRhi()->getContext(), nullptr != mComputeInputStructuredBuffer, "Invalid compute input structured buffer");
-	RHI_ASSERT(getRhi()->getContext(), nullptr != mComputeOutputIndirectBuffer, "Invalid compute output indirect buffer");
-	RHI_ASSERT(getRhi()->getContext(), nullptr != mComputeInputIndirectBuffer, "Invalid compute input indirect buffer");
-	RHI_ASSERT(getRhi()->getContext(), nullptr != mComputeInputUniformBuffer, "Invalid compute input uniform buffer");
+	ASSERT(nullptr != getRhi(), "Invalid RHI instance")
+	RHI_ASSERT(getRhi()->getContext(), nullptr != getMainRenderTarget(), "Invalid main render target")
+	RHI_ASSERT(getRhi()->getContext(), mCommandBuffer.isEmpty(), "The command buffer is already filled")
+	RHI_ASSERT(getRhi()->getContext(), nullptr != mGraphicsRootSignature, "Invalid graphics root signature")
+	RHI_ASSERT(getRhi()->getContext(), nullptr != mComputeRootSignature1, "Invalid compute root signature 1")
+	RHI_ASSERT(getRhi()->getContext(), nullptr != mComputeRootSignature2, "Invalid compute root signature 2")
+	RHI_ASSERT(getRhi()->getContext(), nullptr != mFramebuffer, "Invalid framebuffer")
+	RHI_ASSERT(getRhi()->getContext(), nullptr != mComputeResourceGroup1, "Invalid compute resource group 1")
+	RHI_ASSERT(getRhi()->getContext(), nullptr != mComputeResourceGroup2, "Invalid compute resource group 2")
+	RHI_ASSERT(getRhi()->getContext(), nullptr != mGraphicsResourceGroup, "Invalid graphics resource group")
+	RHI_ASSERT(getRhi()->getContext(), nullptr != mGraphicsSamplerStateGroup, "Invalid graphics sampler state group")
+	RHI_ASSERT(getRhi()->getContext(), nullptr != mGraphicsPipelineState, "Invalid graphics pipeline state")
+	RHI_ASSERT(getRhi()->getContext(), nullptr != mComputePipelineState1, "Invalid compute pipeline state 1")
+	RHI_ASSERT(getRhi()->getContext(), nullptr != mComputePipelineState2, "Invalid compute pipeline state 2")
+	RHI_ASSERT(getRhi()->getContext(), nullptr != mComputeInputVertexBuffer, "Invalid compute input vertex buffer")
+	RHI_ASSERT(getRhi()->getContext(), nullptr != mComputeOutputVertexBuffer, "Invalid compute output vertex buffer")
+	RHI_ASSERT(getRhi()->getContext(), nullptr != mComputeInputIndexBuffer, "Invalid compute input index buffer")
+	RHI_ASSERT(getRhi()->getContext(), nullptr != mComputeOutputIndexBuffer, "Invalid compute output index buffer")
+	RHI_ASSERT(getRhi()->getContext(), nullptr != mVertexArray, "Invalid vertex array")
+	RHI_ASSERT(getRhi()->getContext(), nullptr != mComputeOutputTextureBuffer, "Invalid compute output texture buffer")
+	RHI_ASSERT(getRhi()->getContext(), nullptr != mComputeInputTextureBuffer, "Invalid compute input texture buffer")
+	RHI_ASSERT(getRhi()->getContext(), nullptr != mComputeOutputStructuredBuffer, "Invalid compute output structured buffer")
+	RHI_ASSERT(getRhi()->getContext(), nullptr != mComputeInputStructuredBuffer, "Invalid compute input structured buffer")
+	RHI_ASSERT(getRhi()->getContext(), nullptr != mComputeOutputIndirectBuffer, "Invalid compute output indirect buffer")
+	RHI_ASSERT(getRhi()->getContext(), nullptr != mComputeInputIndirectBuffer, "Invalid compute input indirect buffer")
+	RHI_ASSERT(getRhi()->getContext(), nullptr != mComputeInputUniformBuffer, "Invalid compute input uniform buffer")
 
 	// Scoped debug event
 	COMMAND_SCOPED_DEBUG_EVENT_FUNCTION(mCommandBuffer)

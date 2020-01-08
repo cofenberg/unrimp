@@ -38,14 +38,13 @@ namespace Renderer
 	void CompositorResourcePassResolveMultisample::deserialize([[maybe_unused]] uint32_t numberOfBytes, const uint8_t* data)
 	{
 		// Sanity check
-		ASSERT(sizeof(v1CompositorNode::PassResolveMultisample) == numberOfBytes);
+		ASSERT(sizeof(v1CompositorNode::PassResolveMultisample) == numberOfBytes, "Invalid number of bytes")
 
 		// Call the base implementation
 		ICompositorResourcePass::deserialize(sizeof(v1CompositorNode::Pass), data);
 
 		// Read data
-		const v1CompositorNode::PassResolveMultisample* passResolveMultisample = reinterpret_cast<const v1CompositorNode::PassResolveMultisample*>(data);
-		mSourceMultisampleCompositorFramebufferId = passResolveMultisample->sourceMultisampleCompositorFramebufferId;
+		mSourceMultisampleCompositorFramebufferId = reinterpret_cast<const v1CompositorNode::PassResolveMultisample*>(data)->sourceMultisampleCompositorFramebufferId;
 	}
 
 

@@ -62,7 +62,7 @@ RendererToolkit::IRendererToolkit* IApplicationRenderer::getRendererToolkit()
 		// Create the renderer toolkit instance, if required
 		if (nullptr == mRendererToolkitInstance)
 		{
-			ASSERT((nullptr != mRendererInstance) && "The renderer instance must be valid");
+			ASSERT(nullptr != mRendererInstance, "The renderer instance must be valid")
 			const Renderer::IRenderer* renderer = mRendererInstance->getRenderer();
 			Rhi::ILog& log = renderer->getRhi().getContext().getLog();
 			Rhi::IAssert& assert = renderer->getRhi().getContext().getAssert();
@@ -93,7 +93,7 @@ bool IApplicationRenderer::onInitialization()
 		// Create the renderer instance
 		#ifdef __ANDROID__
 			struct android_app androidApp;	// TODO(co) Get Android app instance
-			assert((nullptr != androidApp.activity->assetManager) && "Invalid Android asset manager instance");
+			RHI_ASSERT(rhi->getContext(), nullptr != androidApp.activity->assetManager, "Invalid Android asset manager instance")
 			mFileManager = new Renderer::AndroidFileManager(rhi->getContext().getLog(), rhi->getContext().getAssert(), rhi->getContext().getAllocator(), std_filesystem::canonical(std_filesystem::current_path() / "..").generic_string(), *androidApp.activity->assetManager);
 		#else
 			mFileManager = new Renderer::PhysicsFSFileManager(rhi->getContext().getLog(), std_filesystem::canonical(std_filesystem::current_path() / "..").generic_string());

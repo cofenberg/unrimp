@@ -320,16 +320,16 @@ namespace Renderer
 		if (isValid(mMaterialResourceId))
 		{
 			// Sanity checks
-			ASSERT(nullptr != mMaterialResourceManager);
-			ASSERT(isValid(mMaterialResourceAttachmentIndex));
+			ASSERT(nullptr != mMaterialResourceManager, "Invalid material resource manager")
+			ASSERT(isValid(mMaterialResourceAttachmentIndex), "Invalid material resource attachment index")
 
 			// Get the material resource we're going to detach from
 			MaterialResource& materialResource = mMaterialResourceManager->getById(mMaterialResourceId);
 
 			// Sanity checks
-			ASSERT(mMaterialResourceAttachmentIndex < static_cast<int>(materialResource.mAttachedRenderables.size()));
-			ASSERT(this == *(materialResource.mAttachedRenderables.begin() + mMaterialResourceAttachmentIndex));
-			ASSERT(materialResource.getId() == mMaterialResourceId);
+			ASSERT(mMaterialResourceAttachmentIndex < static_cast<int>(materialResource.mAttachedRenderables.size()), "Invalid material resource attachment index")
+			ASSERT(this == *(materialResource.mAttachedRenderables.begin() + mMaterialResourceAttachmentIndex), "Invalid material resource attachment index")
+			ASSERT(materialResource.getId() == mMaterialResourceId, "Invalid material resource ID")
 
 			// Detach the renderable from the material resource
 			MaterialResource::AttachedRenderables::iterator iterator = materialResource.mAttachedRenderables.begin() + mMaterialResourceAttachmentIndex;

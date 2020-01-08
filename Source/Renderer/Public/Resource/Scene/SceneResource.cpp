@@ -96,7 +96,7 @@ namespace Renderer
 		{
 			mSceneFactory = &getResourceManager<SceneResourceManager>().getSceneFactory();
 		}
-		ASSERT(nullptr != mSceneFactory);
+		ASSERT(nullptr != mSceneFactory, "Invalid scene factory")
 		ISceneItem* sceneItem = mSceneFactory->createSceneItem(sceneItemTypeId, *this);
 		if (nullptr != sceneItem)
 		{
@@ -141,10 +141,10 @@ namespace Renderer
 	void SceneResource::initializeElement(SceneResourceId sceneResourceId)
 	{
 		// Sanity checks
-		ASSERT(nullptr == mSceneFactory);
-		ASSERT(nullptr == mSceneCullingManager);
-		ASSERT(mSceneNodes.empty());
-		ASSERT(mSceneItems.empty());
+		ASSERT(nullptr == mSceneFactory, "Invalid scene factory")
+		ASSERT(nullptr == mSceneCullingManager, "Invalid scene culling manager")
+		ASSERT(mSceneNodes.empty(), "Invalid scene nodes")
+		ASSERT(mSceneItems.empty(), "Invalid scene items")
 
 		// Create scene culling manager
 		mSceneCullingManager = new SceneCullingManager();

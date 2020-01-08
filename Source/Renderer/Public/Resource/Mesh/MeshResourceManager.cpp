@@ -169,7 +169,7 @@ namespace Renderer
 
 			default:
 				// TODO(co) Error handling
-				ASSERT(false);
+				ASSERT(false, "Invalid resource loader type ID")
 				return nullptr;
 		}
 	}

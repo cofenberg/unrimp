@@ -34,9 +34,9 @@
 		__pragma(warning(disable: 4668)) // warning C4668: '_M_HYBRID_X86_ARM64' is not defined as a preprocessor macro, replacing with '0' for '#if/#elif'
 		#ifdef RHI_DEBUG
 			#include <cassert>
-			#define ASSERT assert	// TODO(co) "RHI_ASSERT()" should be used everywhere
+			#define ASSERT(expression, message) assert((expression) && message);	// TODO(co) "RHI_ASSERT()" should be used everywhere
 		#else
-			#define ASSERT(x)	// TODO(co) "RHI_ASSERT()" should be used everywhere
+			#define ASSERT(expression, message)	// TODO(co) "RHI_ASSERT()" should be used everywhere
 		#endif
 		#include <inttypes.h>	// For uint32_t, uint64_t etc.
 		#include <type_traits>	// For "std::integral_constant"
@@ -44,9 +44,9 @@
 #else
 	#ifdef RHI_DEBUG
 		#include <cassert>
-		#define ASSERT assert	// TODO(co) "RHI_ASSERT()" should be used everywhere
+		#define ASSERT(expression, message) assert((expression) && message);	// TODO(co) "RHI_ASSERT()" should be used everywhere
 	#else
-		#define ASSERT(x)	// TODO(co) "RHI_ASSERT()" should be used everywhere
+		#define ASSERT(expression, message)	// TODO(co) "RHI_ASSERT()" should be used everywhere
 	#endif
 	#include <inttypes.h>	// For uint32_t, uint64_t etc.
 	#include <type_traits>	// For "std::integral_constant"
@@ -151,7 +151,7 @@ namespace Renderer
 		[[nodiscard]] static inline uint32_t calculateFNV(const char* string)
 		{
 			// Sanity check
-			ASSERT((nullptr != string) && "The string must be valid to be able to calculate a FNV1a32 hash");
+			ASSERT(nullptr != string, "The string must be valid to be able to calculate a FNV1a32 hash")
 
 			// 32-bit FNV-1a implementation basing on http://www.isthe.com/chongo/tech/comp/fnv/
 			uint32_t hash = FNV1a_INITIAL_HASH_32;

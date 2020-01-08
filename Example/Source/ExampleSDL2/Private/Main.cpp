@@ -63,7 +63,7 @@ Rhi::handle getNativeWindowHandle(SDL_Window& sdlWindow)
 		{
 			#if defined _WIN32
 				case SDL_SYSWM_UNKNOWN:
-					ASSERT(false);
+					ASSERT(false, "Unknown subsystem")
 					break;
 
 				case SDL_SYSWM_WINDOWS:
@@ -80,14 +80,14 @@ Rhi::handle getNativeWindowHandle(SDL_Window& sdlWindow)
 				case SDL_SYSWM_ANDROID:
 				case SDL_SYSWM_VIVANTE:
 				case SDL_SYSWM_OS2:
-					ASSERT(false);
+					ASSERT(false, "Unknown subsystem")
 					break;
 			#elif defined __ANDROID__
 				#warning "TODO(co) The Android support is work-in-progress"
 			#elif defined LINUX
 				case SDL_SYSWM_UNKNOWN:
 				case SDL_SYSWM_WINDOWS:
-					ASSERT(false);
+					ASSERT(false, "Unknown subsystem")
 					break;
 
 				case SDL_SYSWM_X11:
@@ -97,7 +97,7 @@ Rhi::handle getNativeWindowHandle(SDL_Window& sdlWindow)
 				case SDL_SYSWM_DIRECTFB:
 				case SDL_SYSWM_COCOA:
 				case SDL_SYSWM_UIKIT:
-					ASSERT(false);
+					ASSERT(false, "Unknown subsystem")
 					break;
 
 				case SDL_SYSWM_WAYLAND:
@@ -109,7 +109,7 @@ Rhi::handle getNativeWindowHandle(SDL_Window& sdlWindow)
 				case SDL_SYSWM_ANDROID:
 				case SDL_SYSWM_VIVANTE:
 				case SDL_SYSWM_OS2:
-					ASSERT(false);
+					ASSERT(false, "Unknown subsystem")
 					break;
 			#else
 				#error "Unsupported platform"

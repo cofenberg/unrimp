@@ -449,9 +449,10 @@ void MultipleSwapChains::onEscapeKey()
 void MultipleSwapChains::fillCommandBuffer(const float color[4], Rhi::CommandBuffer& commandBuffer) const
 {
 	// Sanity checks
-	assert(nullptr != mRootSignature);
-	assert(nullptr != mGraphicsPipelineState);
-	assert(nullptr != mVertexArray);
+	ASSERT(nullptr != getRhi(), "Invalid RHI instance")
+	RHI_ASSERT(getRhi()->getContext(), nullptr != mRootSignature, "Invalid root signature")
+	RHI_ASSERT(getRhi()->getContext(), nullptr != mGraphicsPipelineState, "Invalid graphics pipeline state")
+	RHI_ASSERT(getRhi()->getContext(), nullptr != mVertexArray, "Invalid vertex array")
 
 	// Scoped debug event
 	COMMAND_SCOPED_DEBUG_EVENT_FUNCTION(commandBuffer)

@@ -39,7 +39,7 @@
 void CompositorInstancePass::onFillCommandBuffer([[maybe_unused]] const Rhi::IRenderTarget* renderTarget, const Renderer::CompositorContextData&, [[maybe_unused]] Rhi::CommandBuffer& commandBuffer)
 {
 	// Sanity check
-	assert((nullptr != renderTarget) && "The example compositor instance pass needs a valid render target");
+	RHI_ASSERT(getCompositorNodeInstance().getCompositorWorkspaceInstance().getRenderer().getContext(), nullptr != renderTarget, "The example compositor instance pass needs a valid render target")
 
 	// Well right now I'm not that creative and the purpose of this example is to show how to add custom compositor passes, so, draw a simple text
 	#ifdef RENDERER_IMGUI
@@ -49,7 +49,7 @@ void CompositorInstancePass::onFillCommandBuffer([[maybe_unused]] const Rhi::IRe
 		Renderer::DebugGuiHelper::drawText("42", 100.0f, 100.0f);
 		debugGuiManager.fillGraphicsCommandBufferUsingFixedBuildInRhiConfiguration(commandBuffer);
 	#else
-		assert(false && "ImGui support is disabled");
+		RHI_ASSERT(getCompositorNodeInstance().getCompositorWorkspaceInstance().getRenderer().getContext(), false, "ImGui support is disabled")
 	#endif
 }
 

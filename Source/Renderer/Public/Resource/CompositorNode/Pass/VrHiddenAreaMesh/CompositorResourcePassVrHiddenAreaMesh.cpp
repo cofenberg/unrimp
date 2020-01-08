@@ -38,7 +38,7 @@ namespace Renderer
 	void CompositorResourcePassVrHiddenAreaMesh::deserialize([[maybe_unused]] uint32_t numberOfBytes, const uint8_t* data)
 	{
 		// Sanity check
-		ASSERT(sizeof(v1CompositorNode::PassVrHiddenAreaMesh) == numberOfBytes);
+		ASSERT(sizeof(v1CompositorNode::PassVrHiddenAreaMesh) == numberOfBytes, "Invalid number of bytes")
 
 		// Call the base implementation
 		ICompositorResourcePass::deserialize(sizeof(v1CompositorNode::Pass), data);
@@ -49,9 +49,9 @@ namespace Renderer
 		mStencil = passVrHiddenAreaMesh->stencil;
 
 		// Sanity checks
-		ASSERT((0 != mFlags) && "The VR hidden area mesh compositor resource pass flags must not be null");
-		ASSERT(((mFlags & Rhi::ClearFlag::COLOR) == 0) && "The VR hidden area mesh compositor resource pass doesn't support the color flag");
-		ASSERT(((mFlags & Rhi::ClearFlag::STENCIL) == 0) && "TODO(co) The VR hidden area mesh compositor resource pass doesn't support the stencil flag, yet");
+		ASSERT(0 != mFlags, "The VR hidden area mesh compositor resource pass flags must not be null")
+		ASSERT((mFlags & Rhi::ClearFlag::COLOR) == 0, "The VR hidden area mesh compositor resource pass doesn't support the color flag")
+		ASSERT((mFlags & Rhi::ClearFlag::STENCIL) == 0, "TODO(co) The VR hidden area mesh compositor resource pass doesn't support the stencil flag, yet")
 	}
 
 

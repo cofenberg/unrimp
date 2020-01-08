@@ -99,8 +99,8 @@ namespace Renderer
 			}
 		}
 
-		// Sanity check: At least for now a compositor node must end with a valid current render target
-		ASSERT(nullptr != currentRenderTarget);
+		// Sanity check
+		ASSERT(nullptr != currentRenderTarget, "At least for now a compositor node must end with a valid current render target")
 
 		// Done
 		return *currentRenderTarget;

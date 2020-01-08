@@ -38,7 +38,7 @@ namespace Renderer
 	void CompositorResourcePassGenerateMipmaps::deserialize([[maybe_unused]] uint32_t numberOfBytes, const uint8_t* data)
 	{
 		// Sanity check
-		ASSERT(sizeof(v1CompositorNode::PassGenerateMipmaps) == numberOfBytes);
+		ASSERT(sizeof(v1CompositorNode::PassGenerateMipmaps) == numberOfBytes, "Invalid number of bytes")
 
 		// Call the base implementation
 		ICompositorResourcePass::deserialize(sizeof(v1CompositorNode::Pass), data);
@@ -50,7 +50,7 @@ namespace Renderer
 		mTextureMaterialBlueprintProperty = passGenerateMipmaps->textureMaterialBlueprintProperty;
 
 		// Sanity check
-		ASSERT((isInvalid(mMaterialBlueprintAssetId) && isInvalid(mTextureMaterialBlueprintProperty)) || (isValid(mMaterialBlueprintAssetId) && isValid(mTextureMaterialBlueprintProperty)));
+		ASSERT((isInvalid(mMaterialBlueprintAssetId) && isInvalid(mTextureMaterialBlueprintProperty)) || (isValid(mMaterialBlueprintAssetId) && isValid(mTextureMaterialBlueprintProperty)), "Invalid material blueprint asset")
 	}
 
 

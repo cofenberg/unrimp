@@ -89,7 +89,7 @@ namespace Renderer
 		inline void setTexture(Rhi::ITexture* texture)
 		{
 			// Sanity check
-			ASSERT((LoadingState::LOADED == getLoadingState() || LoadingState::UNLOADED == getLoadingState()) && "Texture resource change while in-flight inside the resource streamer");
+			ASSERT(LoadingState::LOADED == getLoadingState() || LoadingState::UNLOADED == getLoadingState(), "Texture resource change while in-flight inside the resource streamer")
 
 			// Set new RHI texture
 			if (nullptr != mTexture)
@@ -113,8 +113,8 @@ namespace Renderer
 
 		inline virtual ~TextureResource() override
 		{
-			// Sanity checks
-			ASSERT(nullptr == mTexture.getPointer());
+			// Sanity check
+			ASSERT(nullptr == mTexture.getPointer(), "Invalid texture")
 		}
 
 		explicit TextureResource(const TextureResource&) = delete;
@@ -138,8 +138,8 @@ namespace Renderer
 		//[-------------------------------------------------------]
 		inline void initializeElement(TextureResourceId textureResourceId)
 		{
-			// Sanity checks
-			ASSERT(nullptr == mTexture.getPointer());
+			// Sanity check
+			ASSERT(nullptr == mTexture.getPointer(), "Invalid texture")
 
 			// Call base implementation
 			IResource::initializeElement(textureResourceId);

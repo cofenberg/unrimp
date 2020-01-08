@@ -134,7 +134,7 @@ namespace Renderer
 
 		[[nodiscard]] inline uint32_t getTotalNumberOfBoneSpaceDataBytes() const
 		{
-			ASSERT((0 != mNumberOfBones) && "Each skeleton must have at least one bone");
+			ASSERT(0 != mNumberOfBones, "Each skeleton must have at least one bone")
 			return static_cast<uint32_t>(NUMBER_OF_BONE_SPACE_DATA_BYTES * mNumberOfBones);
 		}
 
@@ -166,13 +166,13 @@ namespace Renderer
 		inline virtual ~SkeletonResource() override
 		{
 			// Sanity checks
-			ASSERT(0 == mNumberOfBones);
-			ASSERT(nullptr == mBoneParentIndices);
-			ASSERT(nullptr == mBoneIds);
-			ASSERT(nullptr == mLocalBoneMatrices);
-			ASSERT(nullptr == mBoneOffsetMatrices);
-			ASSERT(nullptr == mGlobalBoneMatrices);
-			ASSERT(nullptr == mBoneSpaceData);
+			ASSERT(0 == mNumberOfBones, "Invalid number of bones")
+			ASSERT(nullptr == mBoneParentIndices, "Invalid bone parent indices")
+			ASSERT(nullptr == mBoneIds, "Invalid bone IDs")
+			ASSERT(nullptr == mLocalBoneMatrices, "Invalid local bone matrices")
+			ASSERT(nullptr == mBoneOffsetMatrices, "Invalid bone offset matrices")
+			ASSERT(nullptr == mGlobalBoneMatrices, "Invalid global bone matrices")
+			ASSERT(nullptr == mBoneSpaceData, "Invalid bone space data")
 		}
 
 		explicit SkeletonResource(const SkeletonResource&) = delete;
@@ -201,13 +201,13 @@ namespace Renderer
 		inline void initializeElement(SkeletonResourceId skeletonResourceId)
 		{
 			// Sanity checks
-			ASSERT(0 == mNumberOfBones);
-			ASSERT(nullptr == mBoneParentIndices);
-			ASSERT(nullptr == mBoneIds);
-			ASSERT(nullptr == mLocalBoneMatrices);
-			ASSERT(nullptr == mBoneOffsetMatrices);
-			ASSERT(nullptr == mGlobalBoneMatrices);
-			ASSERT(nullptr == mBoneSpaceData);
+			ASSERT(0 == mNumberOfBones, "Invalid number of bones")
+			ASSERT(nullptr == mBoneParentIndices, "Invalid bone parent indices")
+			ASSERT(nullptr == mBoneIds, "Invalid bone IDs")
+			ASSERT(nullptr == mLocalBoneMatrices, "Invalid local bone matrices")
+			ASSERT(nullptr == mBoneOffsetMatrices, "Invalid bone offset matrices")
+			ASSERT(nullptr == mGlobalBoneMatrices, "Invalid global bone matrices")
+			ASSERT(nullptr == mBoneSpaceData, "Invalid bone space data")
 
 			// Call base implementation
 			IResource::initializeElement(skeletonResourceId);

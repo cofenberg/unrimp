@@ -386,7 +386,10 @@ namespace RendererToolkit
 					{
 						throw std::runtime_error("ACL failed to compress the given skeleton animation clip \"" + virtualInputFilename + "\": " + aclErrorResult.c_str());
 					}
-					RHI_ASSERT(context, nullptr != aclCompressedClip && aclCompressedClip->is_valid(true).empty(), "Compressed ACL clip is invalid");
+					if (nullptr == aclCompressedClip || !aclCompressedClip->is_valid(true).empty())
+					{
+						throw std::runtime_error("Compressed ACL clip \"" + virtualInputFilename + "\" is invalid");
+					}
 
 					// Open file
 					// -> There's no need for additional LZ4 compression when using ACL

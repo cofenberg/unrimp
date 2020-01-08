@@ -112,7 +112,7 @@ namespace
 				case Renderer::MaterialPropertyValue::ValueType::TEXTURE_ASSET_ID:
 				case Renderer::MaterialPropertyValue::ValueType::GLOBAL_MATERIAL_PROPERTY_ID:
 				default:
-					ASSERT(false);	// TODO(co) Error handling
+					ASSERT(false, "Invalid material property value type")	// TODO(co) Error handling
 					break;
 			}
 		}
@@ -157,7 +157,7 @@ namespace
 									else
 									{
 										// Error, can't resolve reference
-										ASSERT(false);	// TODO(co) Error handling
+										ASSERT(false, "Unknown global material property")	// TODO(co) Error handling
 									}
 								}
 								break;
@@ -185,7 +185,7 @@ namespace
 							case Renderer::MaterialPropertyValue::ValueType::TEXTURE_ADDRESS_MODE:
 							case Renderer::MaterialPropertyValue::ValueType::TEXTURE_ASSET_ID:
 							default:
-								ASSERT(false);	// TODO(co) Error handling
+								ASSERT(false, "Unknown material property value type")	// TODO(co) Error handling
 								break;
 						}
 					}

@@ -45,9 +45,9 @@ Renderer::IRenderer* ExampleBase::getRenderer() const
 
 Renderer::IRenderer& ExampleBase::getRendererSafe() const
 {
-	ASSERT(nullptr != mApplicationFrontend);
+	ASSERT(nullptr != mApplicationFrontend, "Invalid application frontend")
 	Renderer::IRenderer* renderer = mApplicationFrontend->getRenderer();
-	ASSERT(nullptr != renderer);
+	ASSERT(nullptr != renderer, "Invalid renderer instance")
 	return *renderer;
 }
 
@@ -58,7 +58,7 @@ RendererToolkit::IRendererToolkit* ExampleBase::getRendererToolkit()
 
 void ExampleBase::switchExample(const char* exampleName, const char* rendererName)
 {
-	ASSERT(nullptr != exampleName);
+	ASSERT(nullptr != exampleName, "Invalid example name")
 	if (nullptr != mApplicationFrontend)
 	{
 		mApplicationFrontend->switchExample(exampleName, rendererName);

@@ -97,8 +97,8 @@ namespace Renderer
 	void PlatformManager::setCurrentThreadName([[maybe_unused]] const char* shortName, [[maybe_unused]] const char* descriptiveName)
 	{
 		// "pthread_setname_np()" support only up to 16 characters (including the terminating zero), so this is our limiting factor
-		ASSERT((strlen(shortName) + 1) <= 16);	// +1 for the terminating zero
-		ASSERT(strlen(descriptiveName) >= strlen(shortName));
+		ASSERT((strlen(shortName) + 1) <= 16, "Invalid short name")	// +1 for the terminating zero
+		ASSERT(strlen(descriptiveName) >= strlen(shortName), "Invalid descriptive name")
 
 		// Platform specific part
 		#ifdef _WIN32
@@ -116,10 +116,10 @@ namespace Renderer
 	bool PlatformManager::execute([[maybe_unused]] const char* command, [[maybe_unused]] const char* parameters, [[maybe_unused]] AbsoluteDirectoryName workingDirectory)
 	{
 		// Sanity checks
-		ASSERT(nullptr != command);
-		ASSERT(strlen(command) != 0);
-		ASSERT(nullptr != parameters);
-		ASSERT(nullptr != workingDirectory);
+		ASSERT(nullptr != command, "Invalid command")
+		ASSERT(strlen(command) != 0, "Invalid command")
+		ASSERT(nullptr != parameters, "Invalid parameters")
+		ASSERT(nullptr != workingDirectory, "Invalid working directory")
 
 		// Platform specific part
 		#ifdef _WIN32
@@ -153,8 +153,8 @@ namespace Renderer
 	bool PlatformManager::openUrlExternal([[maybe_unused]] const char* url)
 	{
 		// Sanity checks
-		ASSERT(nullptr != url);
-		ASSERT(strlen(url) != 0);
+		ASSERT(nullptr != url, "Invalid URL")
+		ASSERT(strlen(url) != 0, "Invalid URL")
 
 		// Platform specific part
 		#ifdef _WIN32

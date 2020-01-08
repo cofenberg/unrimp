@@ -1087,11 +1087,11 @@ namespace RendererToolkit
 
 					// "MaximumIntegerValue" (inclusive)
 					const bool hasMaximumIntegerValue = rapidJsonValueProperty.HasMember("MaximumIntegerValue");
-					ASSERT(hasMaximumIntegerValue);
+					ASSERT(hasMaximumIntegerValue, "There's no maximum integer value")
 					if (hasMaximumIntegerValue)
 					{
 						const int maximumIntegerValue = std::atoi(rapidJsonValueProperty["MaximumIntegerValue"].GetString());
-						ASSERT(maximumIntegerValue > 0);
+						ASSERT(maximumIntegerValue > 0, "Maximum integer value must be positive and not zero")
 						maximumIntegerValueOfShaderProperties.setPropertyValue(materialPropertyId, maximumIntegerValue);	// We're using the same string hashing for material property ID and shader property ID
 					}
 				}

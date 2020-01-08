@@ -228,12 +228,12 @@ namespace Renderer
 				texture = renderTargetTextureElement.texture;
 				// break;	// TODO(co) The render target texture and framebuffer handling is still under construction regarding recycling RHI resources etc. - so for now, just add render target textures to have something to start with
 			}
-			ASSERT(nullptr != texture);
+			ASSERT(nullptr != texture, "Invalid texture")
 		}
 		else
 		{
-			// Error! Unknown asset ID, this shouldn't have happened.
-			ASSERT(false);
+			// Error!
+			ASSERT(false, "Unknown asset ID, this shouldn't have happened")
 			if (nullptr != outRenderTargetTextureSignature)
 			{
 				*outRenderTargetTextureSignature = nullptr;
@@ -277,8 +277,8 @@ namespace Renderer
 		}
 		else
 		{
-			// Error! Render target texture signature isn't registered.
-			ASSERT(false);
+			// Error!
+			ASSERT(false, "Render target texture signature isn't registered")
 		}
 	}
 

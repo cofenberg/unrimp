@@ -91,7 +91,7 @@ namespace Renderer
 		if (isValid(getAssignedMaterialSlot()))
 		{
 			MaterialBufferManager* materialBufferManager = getMaterialBufferManager();
-			ASSERT(nullptr != materialBufferManager);
+			ASSERT(nullptr != materialBufferManager, "Invalid material buffer manager")
 			materialBufferManager->releaseSlot(*this);
 		}
 	}

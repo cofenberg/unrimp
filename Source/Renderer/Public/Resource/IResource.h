@@ -115,7 +115,7 @@ namespace Renderer
 
 			inline void setDebugName(const char debugName[])
 			{
-				ASSERT((strlen(debugName) < 256) && "Renderable debug name is not allowed to exceed 255 characters");
+				ASSERT(strlen(debugName) < 256, "Renderable debug name is not allowed to exceed 255 characters")
 				strncpy(mDebugName, debugName, 256);
 				mDebugName[255] = '\0';
 			}
@@ -123,14 +123,14 @@ namespace Renderer
 
 		[[nodiscard]] inline IResourceManager& getResourceManager() const
 		{
-			ASSERT(nullptr != mResourceManager);
+			ASSERT(nullptr != mResourceManager, "Invalid resource manager")
 			return *mResourceManager;
 		}
 
 		template <typename T>
 		[[nodiscard]] inline T& getResourceManager() const
 		{
-			ASSERT(nullptr != mResourceManager);
+			ASSERT(nullptr != mResourceManager, "Invalid resource manager")
 			return *static_cast<T*>(mResourceManager);
 		}
 
@@ -178,13 +178,13 @@ namespace Renderer
 		inline virtual ~IResource()
 		{
 			// Sanity checks
-			ASSERT('\0' == mDebugName[0]);
-			ASSERT(nullptr == mResourceManager);
-			ASSERT(isInvalid(mResourceId));
-			ASSERT(isInvalid(mAssetId));
-			ASSERT(isInvalid(mResourceLoaderTypeId));
-			ASSERT(LoadingState::UNLOADED == mLoadingState || LoadingState::FAILED == mLoadingState);
-			ASSERT(mSortedResourceListeners.empty());
+			ASSERT('\0' == mDebugName[0], "Invalid debug name")
+			ASSERT(nullptr == mResourceManager, "Invalid resource manager")
+			ASSERT(isInvalid(mResourceId), "Invalid resource ID")
+			ASSERT(isInvalid(mAssetId), "Invalid asset ID")
+			ASSERT(isInvalid(mResourceLoaderTypeId), "Invalid resource loader type ID")
+			ASSERT(LoadingState::UNLOADED == mLoadingState || LoadingState::FAILED == mLoadingState, "Invalid loading state")
+			ASSERT(mSortedResourceListeners.empty(), "Invalid sorted resource listeners")
 		}
 
 		explicit IResource(const IResource&) = delete;
@@ -214,13 +214,13 @@ namespace Renderer
 		inline void initializeElement(ResourceId resourceId)
 		{
 			// Sanity checks
-			ASSERT('\0' == mDebugName[0]);
-			ASSERT(nullptr == mResourceManager);
-			ASSERT(isInvalid(mResourceId));
-			ASSERT(isInvalid(mAssetId));
-			ASSERT(isInvalid(mResourceLoaderTypeId));
-			ASSERT(LoadingState::UNLOADED == mLoadingState);
-			ASSERT(mSortedResourceListeners.empty());
+			ASSERT('\0' == mDebugName[0], "Invalid debug name")
+			ASSERT(nullptr == mResourceManager, "Invalid resource manager")
+			ASSERT(isInvalid(mResourceId), "Invalid resource ID")
+			ASSERT(isInvalid(mAssetId), "Invalid asset ID")
+			ASSERT(isInvalid(mResourceLoaderTypeId), "Invalid resource loader type ID")
+			ASSERT(LoadingState::UNLOADED == mLoadingState, "Invalid loading state")
+			ASSERT(mSortedResourceListeners.empty(), "Invalid sorted resource listeners")
 
 			// Set data
 			mResourceId = resourceId;

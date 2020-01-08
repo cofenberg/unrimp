@@ -118,7 +118,7 @@ namespace
 
 			[[nodiscard]] inline vr::TrackedDeviceIndex_t getVrControllerTrackedDeviceIndices(uint32_t vrControllerIndex) const
 			{
-				assert(vrControllerIndex < vr::k_unMaxTrackedDeviceCount);
+				ASSERT(vrControllerIndex < vr::k_unMaxTrackedDeviceCount, "Invalid VR controller index")
 				return mVrControllerTrackedDeviceIndices[vrControllerIndex];
 			}
 
@@ -233,7 +233,7 @@ namespace
 				#ifdef RENDERER_IMGUI
 					if (::detail::IMGUI_OBJECT_SPACE_TO_CLIP_SPACE_MATRIX == referenceValue && mVrManagerOpenVRListener->getNumberOfVrControllers() > SECOND_CONTROLLER_INDEX)
 					{
-						assert(sizeof(float) * 4 * 4 == numberOfBytes);
+						ASSERT(sizeof(float) * 4 * 4 == numberOfBytes, "Invalid number of bytes")
 						const ImGuiIO& imGuiIo = ImGui::GetIO();
 						const glm::quat rotationOffset = Renderer::EulerAngles::eulerToQuaternion(glm::vec3(glm::degrees(0.0f), glm::degrees(180.0f), 0.0f));
 						const glm::mat4 guiScaleMatrix = glm::scale(Renderer::Math::MAT4_IDENTITY, glm::vec3(1.0f / imGuiIo.DisplaySize.x, 1.0f / imGuiIo.DisplaySize.y, 1.0f));
@@ -310,9 +310,9 @@ VrController::VrController(Renderer::CameraSceneItem& cameraSceneItem) :
 	{ // Create the teleport indication light scene item
 		Renderer::SceneResource& sceneResource = cameraSceneItem.getSceneResource();
 		Renderer::SceneNode* sceneNode = sceneResource.createSceneNode(Renderer::Transform::IDENTITY);
-		assert(nullptr != sceneNode);
+		RHI_ASSERT(mRenderer.getContext(), nullptr != sceneNode, "Invalid scene node")
 		mTeleportIndicationLightSceneItem = sceneResource.createSceneItem<Renderer::LightSceneItem>(*sceneNode);
-		assert(nullptr != mTeleportIndicationLightSceneItem);
+		RHI_ASSERT(mRenderer.getContext(), nullptr != mTeleportIndicationLightSceneItem, "Invalid teleport indication light scene item")
 		mTeleportIndicationLightSceneItem->setColor(glm::vec3(0.0f, 1.0f, 0.0f));
 		mTeleportIndicationLightSceneItem->setVisible(false);
 	}
@@ -332,7 +332,7 @@ VrController::~VrController()
 
 const Renderer::LightSceneItem& VrController::getTeleportIndicationLightSceneItemSafe() const
 {
-	assert(nullptr != mTeleportIndicationLightSceneItem);
+	RHI_ASSERT(mRenderer.getContext(), nullptr != mTeleportIndicationLightSceneItem, "Invalid teleport indication light scene item")
 	return *mTeleportIndicationLightSceneItem;
 }
 

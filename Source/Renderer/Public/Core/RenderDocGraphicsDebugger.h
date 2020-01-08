@@ -201,7 +201,7 @@ namespace Renderer
 
 		inline virtual ~RenderDocGraphicsDebugger() override
 		{
-			ASSERT((0 == mNumberOfCurrentlyStartedFrameCaptures) && "Graphics debugger capturing leak detected, not all started frame capturings were ended");
+			ASSERT(0 == mNumberOfCurrentlyStartedFrameCaptures, "Graphics debugger capturing leak detected, not all started frame capturings were ended")
 
 			// Unload the shared library instance
 			#ifdef _WIN32
@@ -232,8 +232,8 @@ namespace Renderer
 		virtual void startFrameCapture(Rhi::handle nativeWindowHandle) override
 		{
 			#ifdef RHI_DEBUG
-				ASSERT(nullptr != mRenderDocApi);
-				ASSERT(getCaptureNextFrame());
+				ASSERT(nullptr != mRenderDocApi, "Invalid RenderDoc API instance")
+				ASSERT(getCaptureNextFrame(), "Get capture next frame failed")
 				++mNumberOfCurrentlyStartedFrameCaptures;
 			#endif
 			mRenderDocApi->StartFrameCapture(nullptr, reinterpret_cast<RENDERDOC_WindowHandle>(nativeWindowHandle));
@@ -242,8 +242,8 @@ namespace Renderer
 		virtual void endFrameCapture(Rhi::handle nativeWindowHandle) override
 		{
 			#ifdef RHI_DEBUG
-				ASSERT(nullptr != mRenderDocApi);
-				ASSERT(getCaptureNextFrame());
+				ASSERT(nullptr != mRenderDocApi, "Invalid RenderDoc API instance")
+				ASSERT(getCaptureNextFrame(), "Get capture next frame failed")
 				--mNumberOfCurrentlyStartedFrameCaptures;
 			#endif
 			mRenderDocApi->EndFrameCapture(nullptr, reinterpret_cast<RENDERDOC_WindowHandle>(nativeWindowHandle));

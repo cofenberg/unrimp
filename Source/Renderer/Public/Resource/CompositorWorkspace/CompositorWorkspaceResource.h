@@ -115,8 +115,8 @@ namespace Renderer
 
 		inline virtual ~CompositorWorkspaceResource() override
 		{
-			// Sanity checks
-			ASSERT(mCompositorNodeAssetIds.empty());
+			// Sanity check
+			ASSERT(mCompositorNodeAssetIds.empty(), "Invalid compositor node asset IDs")
 		}
 
 		explicit CompositorWorkspaceResource(const CompositorWorkspaceResource&) = delete;
@@ -127,8 +127,8 @@ namespace Renderer
 		//[-------------------------------------------------------]
 		inline void initializeElement(CompositorWorkspaceResourceId compositorWorkspaceResourceId)
 		{
-			// Sanity checks
-			ASSERT(mCompositorNodeAssetIds.empty());
+			// Sanity check
+			ASSERT(mCompositorNodeAssetIds.empty(), "Invalid compositor node asset IDs")
 
 			// Call base implementation
 			IResource::initializeElement(compositorWorkspaceResourceId);

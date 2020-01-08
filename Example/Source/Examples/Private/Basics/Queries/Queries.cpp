@@ -69,9 +69,9 @@ void Queries::onDraw()
 	if (nullptr != rhi)
 	{
 		// Sanity checks
-		RHI_ASSERT(rhi->getContext(), nullptr != mOcclusionQueryPool, "Invalid occlusion query pool");
-		RHI_ASSERT(rhi->getContext(), nullptr != mPipelineStatisticsQueryPool, "Invalid pipeline statistics query pool");
-		RHI_ASSERT(rhi->getContext(), nullptr != mTimestampQueryPool, "Invalid timestamp query pool");
+		RHI_ASSERT(rhi->getContext(), nullptr != mOcclusionQueryPool, "Invalid occlusion query pool")
+		RHI_ASSERT(rhi->getContext(), nullptr != mPipelineStatisticsQueryPool, "Invalid pipeline statistics query pool")
+		RHI_ASSERT(rhi->getContext(), nullptr != mTimestampQueryPool, "Invalid timestamp query pool")
 
 		{ // Occlusion query pool
 			uint64_t numberOfSamples = 0;
@@ -106,14 +106,14 @@ void Queries::onDraw()
 void Queries::fillCommandBuffer()
 {
 	// Sanity checks
-	ASSERT(nullptr != getRhi());
-	RHI_ASSERT(getRhi()->getContext(), mCommandBuffer.isEmpty(), "Command buffer is already filled");
-	RHI_ASSERT(getRhi()->getContext(), nullptr != mRootSignature, "Invalid root signature");
-	RHI_ASSERT(getRhi()->getContext(), nullptr != mGraphicsPipelineState, "Invalid graphics pipeline state");
-	RHI_ASSERT(getRhi()->getContext(), nullptr != mVertexArray, "Invalid vertex array");
-	RHI_ASSERT(getRhi()->getContext(), nullptr != mOcclusionQueryPool, "Invalid occlusion query pool");
-	RHI_ASSERT(getRhi()->getContext(), nullptr != mPipelineStatisticsQueryPool, "Invalid pipeline statistics query pool");
-	RHI_ASSERT(getRhi()->getContext(), nullptr != mTimestampQueryPool, "Invalid timestamp query pool");
+	ASSERT(nullptr != getRhi(), "Invalid RHI instance")
+	RHI_ASSERT(getRhi()->getContext(), mCommandBuffer.isEmpty(), "Command buffer is already filled")
+	RHI_ASSERT(getRhi()->getContext(), nullptr != mRootSignature, "Invalid root signature")
+	RHI_ASSERT(getRhi()->getContext(), nullptr != mGraphicsPipelineState, "Invalid graphics pipeline state")
+	RHI_ASSERT(getRhi()->getContext(), nullptr != mVertexArray, "Invalid vertex array")
+	RHI_ASSERT(getRhi()->getContext(), nullptr != mOcclusionQueryPool, "Invalid occlusion query pool")
+	RHI_ASSERT(getRhi()->getContext(), nullptr != mPipelineStatisticsQueryPool, "Invalid pipeline statistics query pool")
+	RHI_ASSERT(getRhi()->getContext(), nullptr != mTimestampQueryPool, "Invalid timestamp query pool")
 
 	// Scoped debug event
 	COMMAND_SCOPED_DEBUG_EVENT_FUNCTION(mCommandBuffer)

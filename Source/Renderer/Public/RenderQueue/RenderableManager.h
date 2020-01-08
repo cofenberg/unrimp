@@ -100,7 +100,7 @@ namespace Renderer
 
 			inline void setDebugName(const char debugName[])
 			{
-				ASSERT((strlen(debugName) < 256) && "Renderable manager debug name is not allowed to exceed 255 characters");
+				ASSERT(strlen(debugName) < 256, "Renderable manager debug name is not allowed to exceed 255 characters")
 				strncpy(mDebugName, debugName, 256);
 				mDebugName[255] = '\0';
 			}
@@ -132,7 +132,7 @@ namespace Renderer
 		[[nodiscard]] inline const Transform& getTransform() const
 		{
 			// We know that this pointer is always valid
-			ASSERT(nullptr != mTransform);
+			ASSERT(nullptr != mTransform, "Invalid transform")
 			return *mTransform;
 		}
 

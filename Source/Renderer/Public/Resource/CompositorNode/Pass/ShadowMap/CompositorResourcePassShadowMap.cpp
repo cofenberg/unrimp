@@ -38,7 +38,7 @@ namespace Renderer
 	void CompositorResourcePassShadowMap::deserialize([[maybe_unused]] uint32_t numberOfBytes, const uint8_t* data)
 	{
 		// Sanity check
-		ASSERT(sizeof(v1CompositorNode::PassShadowMap) == numberOfBytes);
+		ASSERT(sizeof(v1CompositorNode::PassShadowMap) == numberOfBytes, "Invalid number of bytes")
 
 		// Call the base implementation
 		CompositorResourcePassScene::deserialize(sizeof(v1CompositorNode::PassScene), data);

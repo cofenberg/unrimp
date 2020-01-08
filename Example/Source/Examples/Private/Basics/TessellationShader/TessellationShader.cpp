@@ -166,10 +166,11 @@ void TessellationShader::onDraw()
 void TessellationShader::fillCommandBuffer()
 {
 	// Sanity checks
-	assert(mCommandBuffer.isEmpty());
-	assert(nullptr != mRootSignature);
-	assert(nullptr != mGraphicsPipelineState);
-	assert(nullptr != mVertexArray);
+	ASSERT(nullptr != getRhi(), "Invalid RHI instance")
+	RHI_ASSERT(getRhi()->getContext(), mCommandBuffer.isEmpty(), "The command buffer is already filled")
+	RHI_ASSERT(getRhi()->getContext(), nullptr != mRootSignature, "Invalid root signature")
+	RHI_ASSERT(getRhi()->getContext(), nullptr != mGraphicsPipelineState, "Invalid graphics pipeline state")
+	RHI_ASSERT(getRhi()->getContext(), nullptr != mVertexArray, "Invalid vertex array")
 
 	// Scoped debug event
 	COMMAND_SCOPED_DEBUG_EVENT_FUNCTION(mCommandBuffer)

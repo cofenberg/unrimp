@@ -100,7 +100,7 @@ namespace Renderer
 
 		[[nodiscard]] inline ELEMENT_TYPE& getElementById(ID_TYPE id) const
 		{
-			ASSERT(isElementIdValid(id));
+			ASSERT(isElementIdValid(id), "Invalid ID")
 			return mElements[mIndices[id & INDEX_MASK].index];
 		}
 
@@ -132,7 +132,7 @@ namespace Renderer
 
 		inline void removeElement(ID_TYPE id)
 		{
-			ASSERT(isElementIdValid(id));
+			ASSERT(isElementIdValid(id), "Invalid ID")
 			Index& index = mIndices[id & INDEX_MASK];
 			ELEMENT_TYPE& element = mElements[index.index];
 

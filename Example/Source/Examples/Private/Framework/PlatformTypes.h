@@ -201,9 +201,9 @@ PRAGMA_WARNING_POP
 		PRAGMA_WARNING_DISABLE_MSVC(4574)	// warning C4574: '_HAS_ITERATOR_DEBUGGING' is defined to be '0': did you mean to use '#if _HAS_ITERATOR_DEBUGGING'?
 		#include <cassert>
 	PRAGMA_WARNING_POP
-	#define ASSERT assert	// TODO(co) "RHI_ASSERT()" should be used everywhere
+	#define ASSERT(expression, message) assert((expression) && message);	// TODO(co) "RHI_ASSERT()" should be used everywhere
 #else
-	#define ASSERT(x)	// TODO(co) "RHI_ASSERT()" should be used everywhere
+	#define ASSERT(expression, message)	// TODO(co) "RHI_ASSERT()" should be used everywhere
 #endif
 
 

@@ -164,13 +164,13 @@ namespace
 		//[-------------------------------------------------------]
 		void* allocate(size_t numberOfBytes) noexcept
 		{
-			ASSERT(nullptr != allocator);
+			ASSERT(nullptr != allocator, "Invalid allocator")
 			return allocator->reallocate(nullptr, 0, numberOfBytes, 1);
 		}
 
 		void deallocate(void* data) noexcept
 		{
-			ASSERT(nullptr != allocator);
+			ASSERT(nullptr != allocator, "Invalid allocator")
 			allocator->reallocate(data, 0, 0, 1);
 		}
 

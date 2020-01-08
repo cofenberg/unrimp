@@ -94,19 +94,19 @@ namespace Renderer
 
 		[[nodiscard]] inline RenderTargetTextureManager& getRenderTargetTextureManager()
 		{
-			ASSERT(nullptr != mRenderTargetTextureManager);
+			ASSERT(nullptr != mRenderTargetTextureManager, "Invalid render target texture manager")
 			return *mRenderTargetTextureManager;
 		}
 
 		[[nodiscard]] inline RenderPassManager& getRenderPassManager()
 		{
-			ASSERT(nullptr != mRenderPassManager);
+			ASSERT(nullptr != mRenderPassManager, "Invalid render pass manager")
 			return *mRenderPassManager;
 		}
 
 		[[nodiscard]] inline FramebufferManager& getFramebufferManager()
 		{
-			ASSERT(nullptr != mFramebufferManager);
+			ASSERT(nullptr != mFramebufferManager, "Invalid framebuffer manager")
 			return *mFramebufferManager;
 		}
 

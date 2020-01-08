@@ -115,10 +115,10 @@ void GeometryShader::onDraw()
 void GeometryShader::fillCommandBuffer()
 {
 	// Sanity checks
-	ASSERT(nullptr != getRhi());
-	RHI_ASSERT(getRhi()->getContext(), mCommandBuffer.isEmpty(), "Command buffer is already filled");
-	RHI_ASSERT(getRhi()->getContext(), nullptr != mRootSignature, "Invalid root signature");
-	RHI_ASSERT(getRhi()->getContext(), nullptr != mGraphicsPipelineState, "Invalid graphics pipeline state");
+	ASSERT(nullptr != getRhi(), "Invalid RHI instance")
+	RHI_ASSERT(getRhi()->getContext(), mCommandBuffer.isEmpty(), "Command buffer is already filled")
+	RHI_ASSERT(getRhi()->getContext(), nullptr != mRootSignature, "Invalid root signature")
+	RHI_ASSERT(getRhi()->getContext(), nullptr != mGraphicsPipelineState, "Invalid graphics pipeline state")
 
 	// Scoped debug event
 	COMMAND_SCOPED_DEBUG_EVENT_FUNCTION(mCommandBuffer)

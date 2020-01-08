@@ -101,7 +101,7 @@ namespace Renderer
 		*/
 		[[nodiscard]] inline MaterialResourceManager& getMaterialResourceManager() const
 		{
-			ASSERT(nullptr != mMaterialResourceManager);
+			ASSERT(nullptr != mMaterialResourceManager, "Invalid material resource manager")
 			return *mMaterialResourceManager;
 		}
 

@@ -83,8 +83,8 @@ FreeCameraController::~FreeCameraController()
 //[-------------------------------------------------------]
 void FreeCameraController::onUpdate(float pastSecondsSinceLastFrame, bool inputEnabled)
 {
-	// Sanity check: No negative time, no useless update calls
-	assert(pastSecondsSinceLastFrame > 0.0f);
+	// Sanity check 
+	ASSERT(pastSecondsSinceLastFrame > 0.0f, "No negative time, no useless update calls")
 
 	Renderer::SceneNode* sceneNode = mCameraSceneItem.getParentSceneNode();
 	if (nullptr != sceneNode)

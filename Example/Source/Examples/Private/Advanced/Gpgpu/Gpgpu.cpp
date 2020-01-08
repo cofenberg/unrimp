@@ -294,12 +294,12 @@ void Gpgpu::onDeinitialization()
 void Gpgpu::fillCommandBufferContentGeneration()
 {
 	// Sanity checks
-	ASSERT(nullptr != mRhi);
-	RHI_ASSERT(mRhi->getContext(), nullptr != mFramebuffer[0], "Invalid framebuffer at index 0");
-	RHI_ASSERT(mRhi->getContext(), nullptr != mRootSignature, "Invalid root signature");
-	RHI_ASSERT(mRhi->getContext(), nullptr != mGraphicsPipelineStateContentGeneration, "Invalid graphics pipeline state content generation");
-	RHI_ASSERT(mRhi->getContext(), nullptr != mVertexArrayContentGeneration, "Invalid vertex array content generation");
-	RHI_ASSERT(mRhi->getContext(), mCommandBufferContentGeneration.isEmpty(), "Command buffer content generation is already filled");
+	ASSERT(nullptr != mRhi, "Invalid RHI instance")
+	RHI_ASSERT(mRhi->getContext(), nullptr != mFramebuffer[0], "Invalid framebuffer at index 0")
+	RHI_ASSERT(mRhi->getContext(), nullptr != mRootSignature, "Invalid root signature")
+	RHI_ASSERT(mRhi->getContext(), nullptr != mGraphicsPipelineStateContentGeneration, "Invalid graphics pipeline state content generation")
+	RHI_ASSERT(mRhi->getContext(), nullptr != mVertexArrayContentGeneration, "Invalid vertex array content generation")
+	RHI_ASSERT(mRhi->getContext(), mCommandBufferContentGeneration.isEmpty(), "Command buffer content generation is already filled")
 
 	// Scoped debug event
 	COMMAND_SCOPED_DEBUG_EVENT(mCommandBufferContentGeneration, "Generate the content of the 2D texture to process later on")
@@ -340,14 +340,14 @@ void Gpgpu::fillCommandBufferContentGeneration()
 void Gpgpu::fillCommandBufferContentProcessing()
 {
 	// Sanity checks
-	ASSERT(nullptr != mRhi);
-	RHI_ASSERT(mRhi->getContext(), nullptr != mFramebuffer[1], "Invalid framebuffer at index 1");
-	RHI_ASSERT(mRhi->getContext(), nullptr != mRootSignature, "Invalid root signature");
-	RHI_ASSERT(mRhi->getContext(), nullptr != mGraphicsPipelineStateContentProcessing, "Invalid graphics pipeline state content processing");
-	RHI_ASSERT(mRhi->getContext(), nullptr != mTextureGroup, "Invalid texture group");
-	RHI_ASSERT(mRhi->getContext(), nullptr != mSamplerStateGroup, "Invalid sampler state group");
-	RHI_ASSERT(mRhi->getContext(), nullptr != mTexture2D[0], "Invalid texture 2D at index 0");
-	RHI_ASSERT(mRhi->getContext(), mCommandBufferContentProcessing.isEmpty(), "Command buffer content processing is already filled");
+	ASSERT(nullptr != mRhi, "Invalid RHI instance")
+	RHI_ASSERT(mRhi->getContext(), nullptr != mFramebuffer[1], "Invalid framebuffer at index 1")
+	RHI_ASSERT(mRhi->getContext(), nullptr != mRootSignature, "Invalid root signature")
+	RHI_ASSERT(mRhi->getContext(), nullptr != mGraphicsPipelineStateContentProcessing, "Invalid graphics pipeline state content processing")
+	RHI_ASSERT(mRhi->getContext(), nullptr != mTextureGroup, "Invalid texture group")
+	RHI_ASSERT(mRhi->getContext(), nullptr != mSamplerStateGroup, "Invalid sampler state group")
+	RHI_ASSERT(mRhi->getContext(), nullptr != mTexture2D[0], "Invalid texture 2D at index 0")
+	RHI_ASSERT(mRhi->getContext(), mCommandBufferContentProcessing.isEmpty(), "Command buffer content processing is already filled")
 
 	// Scoped debug event
 	COMMAND_SCOPED_DEBUG_EVENT(mCommandBufferContentProcessing, "Content processing")

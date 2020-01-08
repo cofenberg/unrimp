@@ -47,7 +47,7 @@ namespace
 		[[nodiscard]] void* reallocate(Rhi::IAllocator&, void* oldPointer, size_t, size_t newNumberOfBytes, size_t alignment)
 		{
 			// Sanity check
-			ASSERT((0 != alignment && !(alignment & (alignment - 1))) && "The alignment must be a power of two");
+			ASSERT(0 != alignment && !(alignment & (alignment - 1)), "The alignment must be a power of two")
 
 			// Do the work
 			if (nullptr != oldPointer && 0 != newNumberOfBytes)

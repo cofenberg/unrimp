@@ -108,7 +108,7 @@ public:
 	*/
 	[[nodiscard]] inline ExampleRunner& getExampleRunner()
 	{
-		ASSERT((nullptr != mExampleRunner) && "Don't call this method inside constructors");
+		ASSERT(nullptr != mExampleRunner, "Don't call this method inside constructors")
 		return *mExampleRunner;
 	}
 

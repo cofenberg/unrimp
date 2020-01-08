@@ -76,8 +76,8 @@ namespace Renderer
 		// Get the minimum/maximum squared length
 		const float minimumSquaredLength = glm::dot(minimumBoundingBoxPosition, minimumBoundingBoxPosition);
 		const float maximumSquaredLength = glm::dot(maximumBoundingBoxPosition, maximumBoundingBoxPosition);
-		ASSERT(0 != minimumSquaredLength);
-		ASSERT(0 != maximumSquaredLength);
+		ASSERT(0 != minimumSquaredLength, "Invalid minimum squared length")
+		ASSERT(0 != maximumSquaredLength, "Invalid maximum squared length")
 
 		// The greater one has to be used for the radius
 		return (maximumSquaredLength > minimumSquaredLength) ? sqrt(maximumSquaredLength) : sqrt(minimumSquaredLength);
@@ -136,8 +136,8 @@ namespace Renderer
 	uint32_t Math::calculateFNV1a32(const uint8_t* content, uint32_t numberOfBytes, uint32_t hash)
 	{
 		// Sanity checks
-		ASSERT((nullptr != content) && "The content must be valid to be able to calculate a FNV1a32 hash");
-		ASSERT((0 != numberOfBytes) && "The content must be valid to be able to calculate a FNV1a32 hash");
+		ASSERT(nullptr != content, "The content must be valid to be able to calculate a FNV1a32 hash")
+		ASSERT(0 != numberOfBytes, "The content must be valid to be able to calculate a FNV1a32 hash")
 
 		// 32-bit FNV-1a implementation basing on http://www.isthe.com/chongo/tech/comp/fnv/
 		static constexpr uint32_t FNV1a_MAGIC_PRIME_32 = 0x1000193u;
@@ -152,8 +152,8 @@ namespace Renderer
 	uint64_t Math::calculateFNV1a64(const uint8_t* content, uint32_t numberOfBytes, uint64_t hash)
 	{
 		// Sanity checks
-		ASSERT((nullptr != content) && "The content must be valid to be able to calculate a FNV1a32 hash");
-		ASSERT((0 != numberOfBytes) && "The content must be valid to be able to calculate a FNV1a32 hash");
+		ASSERT(nullptr != content, "The content must be valid to be able to calculate a FNV1a32 hash")
+		ASSERT(0 != numberOfBytes, "The content must be valid to be able to calculate a FNV1a32 hash")
 
 		// 64-bit FNV-1a implementation basing on http://www.isthe.com/chongo/tech/comp/fnv/
 		static constexpr uint64_t FNV1a_MAGIC_PRIME_64 = 0x100000001B3u;
@@ -199,7 +199,7 @@ namespace Renderer
 		}
 		else
 		{
-			ASSERT(false && "Failed to open the file");
+			ASSERT(false, "Failed to open the file")
 		}
 
 		// Done

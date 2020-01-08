@@ -165,7 +165,7 @@ namespace Renderer
 
 		[[nodiscard]] inline const FramebufferSignatureAttachment& getColorFramebufferSignatureAttachment(uint8_t index) const
 		{
-			ASSERT(index < mNumberOfColorAttachments);
+			ASSERT(index < mNumberOfColorAttachments, "Invalid index")
 			return mColorFramebufferSignatureAttachments[index];
 		}
 

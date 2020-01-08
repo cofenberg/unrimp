@@ -182,7 +182,7 @@ int ExampleRunner::run(const CommandLineArguments& commandLineArguments)
 
 void ExampleRunner::switchExample(const char* exampleName, const char* rhiName)
 {
-	assert(nullptr != exampleName);
+	ASSERT(nullptr != exampleName, "Invalid example name")
 	mNextRhiName = (nullptr != rhiName) ? rhiName : mDefaultRhiName;
 	mNextExampleName = exampleName;
 }

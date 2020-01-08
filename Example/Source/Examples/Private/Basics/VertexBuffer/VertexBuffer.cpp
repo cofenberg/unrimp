@@ -243,12 +243,13 @@ void VertexBuffer::onDraw()
 void VertexBuffer::fillCommandBuffer()
 {
 	// Sanity checks
-	assert(mCommandBuffer.isEmpty());
-	assert(nullptr != mRootSignature);
-	assert(nullptr != mGraphicsPipelineStateVbo);
-	assert(nullptr != mVertexArrayVbo);
-	assert(nullptr != mGraphicsPipelineStateVbos);
-	assert(nullptr != mVertexArrayVbos);
+	ASSERT(nullptr != getRhi(), "Invalid RHI instance")
+	RHI_ASSERT(getRhi()->getContext(), mCommandBuffer.isEmpty(), "The command buffer is already filled")
+	RHI_ASSERT(getRhi()->getContext(), nullptr != mRootSignature, "Invalid root signature")
+	RHI_ASSERT(getRhi()->getContext(), nullptr != mGraphicsPipelineStateVbo, "Invalid graphics pipeline state VBO")
+	RHI_ASSERT(getRhi()->getContext(), nullptr != mVertexArrayVbo, "Invalid vertex array VBO")
+	RHI_ASSERT(getRhi()->getContext(), nullptr != mGraphicsPipelineStateVbos, "Invalid graphics pipeline state VBOs")
+	RHI_ASSERT(getRhi()->getContext(), nullptr != mVertexArrayVbos, "Invalid vertex array VBOs")
 
 	// Scoped debug event
 	COMMAND_SCOPED_DEBUG_EVENT_FUNCTION(mCommandBuffer)

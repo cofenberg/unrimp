@@ -94,7 +94,7 @@ namespace
 
 			[[nodiscard]] inline uint32_t getCurrentCombinationIntegerProperty(size_t index) const
 			{
-				ASSERT(index < mCurrentCombination.size());
+				ASSERT(index < mCurrentCombination.size(), "Invalid index")
 				return mCurrentCombination[index];
 			}
 
@@ -108,7 +108,7 @@ namespace
 			[[nodiscard]] bool iterate()
 			{
 				// Just a sanity check, in case someone forgot to start iterating first
-				ASSERT(mCurrentCombination.size() == mNumberOfPropertyValuesByPropertyIndex.size());
+				ASSERT(mCurrentCombination.size() == mNumberOfPropertyValuesByPropertyIndex.size(), "Start iterate missing")
 
 				for (size_t index = 0; index < mCurrentCombination.size(); ++index)
 				{
@@ -175,7 +175,7 @@ namespace
 				case Renderer::MaterialPropertyValue::ValueType::TEXTURE_ASSET_ID:
 				case Renderer::MaterialPropertyValue::ValueType::GLOBAL_MATERIAL_PROPERTY_ID:
 				default:
-					ASSERT(false);	// TODO(co) Error handling
+					ASSERT(false, "Invalid value type")	// TODO(co) Error handling
 					break;
 			}
 		}

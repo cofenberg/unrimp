@@ -273,13 +273,13 @@ void Instancing::onDraw()
 void Instancing::fillCommandBuffer()
 {
 	// Sanity checks
-	assert(nullptr != getRhi());
-	assert(mCommandBuffer.isEmpty());
-	assert(nullptr != mRootSignature);
-	assert(nullptr != mGraphicsPipelineStateInstancedArrays);
-	assert(nullptr != mVertexArrayInstancedArrays);
-	assert(!getRhi()->getCapabilities().drawInstanced || nullptr != mGraphicsPipelineStateDrawInstanced);
-	assert(!getRhi()->getCapabilities().drawInstanced || nullptr != mVertexArrayDrawInstanced);
+	ASSERT(nullptr != getRhi(), "Invalid RHI instance")
+	RHI_ASSERT(getRhi()->getContext(), mCommandBuffer.isEmpty(), "The command buffer is already filled")
+	RHI_ASSERT(getRhi()->getContext(), nullptr != mRootSignature, "Invalid root signature")
+	RHI_ASSERT(getRhi()->getContext(), nullptr != mGraphicsPipelineStateInstancedArrays, "Invalid graphics pipeline state instanced arrays")
+	RHI_ASSERT(getRhi()->getContext(), nullptr != mVertexArrayInstancedArrays, "Invalid vertex array instanced arrays")
+	RHI_ASSERT(getRhi()->getContext(), !getRhi()->getCapabilities().drawInstanced || nullptr != mGraphicsPipelineStateDrawInstanced, "Invalid graphics pipeline state draw instanced")
+	RHI_ASSERT(getRhi()->getContext(), !getRhi()->getCapabilities().drawInstanced || nullptr != mVertexArrayDrawInstanced, "Invalid vertex array draw instanced")
 
 	// Scoped debug event
 	COMMAND_SCOPED_DEBUG_EVENT_FUNCTION(mCommandBuffer)

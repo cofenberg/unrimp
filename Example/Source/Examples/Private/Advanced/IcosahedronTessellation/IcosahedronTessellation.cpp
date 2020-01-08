@@ -278,13 +278,13 @@ void IcosahedronTessellation::onDraw()
 void IcosahedronTessellation::fillCommandBuffer()
 {
 	// Sanity checks
-	ASSERT(nullptr != getRhi());
-	RHI_ASSERT(getRhi()->getContext(), mCommandBuffer.isEmpty(), "The command buffer is already filled");
-	RHI_ASSERT(getRhi()->getContext(), nullptr != mRootSignature, "Invalid root signature");
-	RHI_ASSERT(getRhi()->getContext(), nullptr != mUniformBufferDynamicTcs, "Invalid uniform buffer dynamic TCS");
-	RHI_ASSERT(getRhi()->getContext(), nullptr != mUniformBufferGroupTcs && nullptr != mUniformBufferGroupTes && nullptr != mUniformBufferGroupGs && nullptr != mUniformBufferGroupFs, "Invalid uniform buffer group");
-	RHI_ASSERT(getRhi()->getContext(), nullptr != mGraphicsPipelineState, "Invalid graphics pipeline state");
-	RHI_ASSERT(getRhi()->getContext(), nullptr != mVertexArray, "Invalid vertex array");
+	ASSERT(nullptr != getRhi(), "Invalid RHI instance")
+	RHI_ASSERT(getRhi()->getContext(), mCommandBuffer.isEmpty(), "The command buffer is already filled")
+	RHI_ASSERT(getRhi()->getContext(), nullptr != mRootSignature, "Invalid root signature")
+	RHI_ASSERT(getRhi()->getContext(), nullptr != mUniformBufferDynamicTcs, "Invalid uniform buffer dynamic TCS")
+	RHI_ASSERT(getRhi()->getContext(), nullptr != mUniformBufferGroupTcs && nullptr != mUniformBufferGroupTes && nullptr != mUniformBufferGroupGs && nullptr != mUniformBufferGroupFs, "Invalid uniform buffer group")
+	RHI_ASSERT(getRhi()->getContext(), nullptr != mGraphicsPipelineState, "Invalid graphics pipeline state")
+	RHI_ASSERT(getRhi()->getContext(), nullptr != mVertexArray, "Invalid vertex array")
 
 	// Scoped debug event
 	COMMAND_SCOPED_DEBUG_EVENT_FUNCTION(mCommandBuffer)

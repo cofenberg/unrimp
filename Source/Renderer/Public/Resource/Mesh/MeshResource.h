@@ -239,17 +239,16 @@ namespace Renderer
 		inline virtual ~MeshResource() override
 		{
 			// Sanity checks
-			ASSERT(isInvalid(mMinimumBoundingBoxPosition.x) && isInvalid(mMinimumBoundingBoxPosition.y) && isInvalid(mMinimumBoundingBoxPosition.z));
-			ASSERT(isInvalid(mMaximumBoundingBoxPosition.x) && isInvalid(mMaximumBoundingBoxPosition.y) && isInvalid(mMaximumBoundingBoxPosition.z));
-			ASSERT(isInvalid(mBoundingSpherePosition.x) && isInvalid(mBoundingSpherePosition.y) && isInvalid(mBoundingSpherePosition.z));
-			ASSERT(isInvalid(mBoundingSphereRadius));
-			ASSERT(0 == mNumberOfVertices);
-			ASSERT(0 == mNumberOfIndices);
-			ASSERT(nullptr == mVertexArray.getPointer());
-			ASSERT(nullptr == mPositionOnlyVertexArray.getPointer());
-			ASSERT(mSubMeshes.empty());
-			ASSERT(0 == mNumberOfIndices);
-			ASSERT(isInvalid(mSkeletonResourceId));
+			ASSERT(isInvalid(mMinimumBoundingBoxPosition.x) && isInvalid(mMinimumBoundingBoxPosition.y) && isInvalid(mMinimumBoundingBoxPosition.z), "Invalid bounding box")
+			ASSERT(isInvalid(mMaximumBoundingBoxPosition.x) && isInvalid(mMaximumBoundingBoxPosition.y) && isInvalid(mMaximumBoundingBoxPosition.z), "Invalid bounding box")
+			ASSERT(isInvalid(mBoundingSpherePosition.x) && isInvalid(mBoundingSpherePosition.y) && isInvalid(mBoundingSpherePosition.z), "Invalid bounding sphere")
+			ASSERT(isInvalid(mBoundingSphereRadius), "Invalid bounding sphere")
+			ASSERT(0 == mNumberOfVertices, "Invalid number of vertices")
+			ASSERT(0 == mNumberOfIndices, "Invalid number of indices")
+			ASSERT(nullptr == mVertexArray.getPointer(), "Invalid vertex array")
+			ASSERT(nullptr == mPositionOnlyVertexArray.getPointer(), "Invalid position only vertex array")
+			ASSERT(mSubMeshes.empty(), "Invalid sub-meshes")
+			ASSERT(isInvalid(mSkeletonResourceId), "Invalid skeleton resource ID")
 		}
 
 		explicit MeshResource(const MeshResource&) = delete;
@@ -261,17 +260,16 @@ namespace Renderer
 		inline void initializeElement(MeshResourceId meshResourceId)
 		{
 			// Sanity checks
-			ASSERT(isInvalid(mMinimumBoundingBoxPosition.x) && isInvalid(mMinimumBoundingBoxPosition.y) && isInvalid(mMinimumBoundingBoxPosition.z));
-			ASSERT(isInvalid(mMaximumBoundingBoxPosition.x) && isInvalid(mMaximumBoundingBoxPosition.y) && isInvalid(mMaximumBoundingBoxPosition.z));
-			ASSERT(isInvalid(mBoundingSpherePosition.x) && isInvalid(mBoundingSpherePosition.y) && isInvalid(mBoundingSpherePosition.z));
-			ASSERT(isInvalid(mBoundingSphereRadius));
-			ASSERT(0 == mNumberOfVertices);
-			ASSERT(0 == mNumberOfIndices);
-			ASSERT(nullptr == mVertexArray.getPointer());
-			ASSERT(nullptr == mPositionOnlyVertexArray.getPointer());
-			ASSERT(mSubMeshes.empty());
-			ASSERT(0 == mNumberOfIndices);
-			ASSERT(isInvalid(mSkeletonResourceId));
+			ASSERT(isInvalid(mMinimumBoundingBoxPosition.x) && isInvalid(mMinimumBoundingBoxPosition.y) && isInvalid(mMinimumBoundingBoxPosition.z), "Invalid bounding box")
+			ASSERT(isInvalid(mMaximumBoundingBoxPosition.x) && isInvalid(mMaximumBoundingBoxPosition.y) && isInvalid(mMaximumBoundingBoxPosition.z), "Invalid bounding box")
+			ASSERT(isInvalid(mBoundingSpherePosition.x) && isInvalid(mBoundingSpherePosition.y) && isInvalid(mBoundingSpherePosition.z), "Invalid bounding sphere")
+			ASSERT(isInvalid(mBoundingSphereRadius), "Invalid bounding sphere")
+			ASSERT(0 == mNumberOfVertices, "Invalid number of vertices")
+			ASSERT(0 == mNumberOfIndices, "Invalid number of indices")
+			ASSERT(nullptr == mVertexArray.getPointer(), "Invalid vertex array")
+			ASSERT(nullptr == mPositionOnlyVertexArray.getPointer(), "Invalid position only vertex array")
+			ASSERT(mSubMeshes.empty(), "Invalid sub-meshes")
+			ASSERT(isInvalid(mSkeletonResourceId), "Invalid skeleton resource ID")
 
 			// Call base implementation
 			IResource::initializeElement(meshResourceId);

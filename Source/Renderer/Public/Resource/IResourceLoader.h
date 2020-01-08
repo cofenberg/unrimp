@@ -93,7 +93,7 @@ namespace Renderer
 		*/
 		[[nodiscard]] inline const Asset& getAsset() const
 		{
-			ASSERT(nullptr != mAsset);
+			ASSERT(nullptr != mAsset, "Invalid asset")
 			return *mAsset;
 		}
 

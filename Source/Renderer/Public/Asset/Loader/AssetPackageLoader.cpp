@@ -50,7 +50,7 @@ namespace Renderer
 			memoryFile.read(&assetPackageHeader, sizeof(v1AssetPackage::AssetPackageHeader));
 
 			// Sanity check
-			ASSERT((assetPackageHeader.numberOfAssets > 0) && "Invalid empty asset package detected");
+			ASSERT(assetPackageHeader.numberOfAssets > 0, "Invalid empty asset package detected")
 
 			// Read in the asset package content in one single burst
 			AssetPackage::SortedAssetVector& sortedAssetVector = assetPackage.getWritableSortedAssetVector();

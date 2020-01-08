@@ -96,16 +96,16 @@ namespace
 
 			[[nodiscard]] inline virtual size_t Write(const void*, size_t, size_t) override
 			{
-				ASSERT(false && "We only support read-only Assimp files");
+				ASSERT(false, "We only support read-only Assimp files")
 				return 0;
 			}
 
 			[[nodiscard]] virtual aiReturn Seek(size_t pOffset, aiOrigin pOrigin) override
 			{
-				ASSERT((aiOrigin_END != pOrigin) && "We don't support \"aiOrigin_END\" in read-only Assimp files");
+				ASSERT(aiOrigin_END != pOrigin, "We don't support \"aiOrigin_END\" in read-only Assimp files")
 				if (aiOrigin_SET == pOrigin)
 				{
-					ASSERT((pOffset >= mCurrentPosition) && "We only support unidirectional sequential byte skipping");
+					ASSERT(pOffset >= mCurrentPosition, "We only support unidirectional sequential byte skipping")
 					pOffset = pOffset - mCurrentPosition;
 				}
 				if (0 != pOffset)
@@ -128,7 +128,7 @@ namespace
 
 			inline virtual void Flush() override
 			{
-				ASSERT(false && "We only support read-only Assimp files");
+				ASSERT(false, "We only support read-only Assimp files")
 			}
 
 
@@ -177,8 +177,8 @@ namespace RendererToolkit
 
 	Assimp::IOStream* AssimpIOSystem::Open(const char* pFile, const char* pMode)
 	{
-		ASSERT(nullptr != pFile);
-		ASSERT(nullptr != pMode);
+		ASSERT(nullptr != pFile, "Invalid file name")
+		ASSERT(nullptr != pMode, "Invalid mode")
 		if (stricmp(pMode, "rb") != 0)
 		{
 			throw std::runtime_error("We only support read-only Assimp files");
@@ -206,7 +206,7 @@ namespace RendererToolkit
 		// -> In here just destroy the Assimp file wrapper object, not the underlying file object
 		// -> Sadly, this Assimp file interface usage makes our custom "AssimpIOStream"-implementation a little bit more fat since we also need to store a reference our file manager with each file wrapper object
 		// -> Discussed this behaviour at "Leak: "Assimp::ObjFileImporter::InternReadFile()" doesn't close the opened file #1926" - https://github.com/assimp/assimp/issues/1926
-		ASSERT(nullptr != pFile);
+		ASSERT(nullptr != pFile, "Invalid file instance")
 		delete pFile;
 	}
 

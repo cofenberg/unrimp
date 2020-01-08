@@ -249,7 +249,7 @@ PRAGMA_WARNING_PUSH
 PRAGMA_WARNING_POP
 #ifdef RHI_DEBUG
 	#include <cassert>
-	#define ASSERT assert	// TODO(co) "RHI_ASSERT()" should be used everywhere
+	#define ASSERT(expression, message) assert((expression) && message);	// TODO(co) "RHI_ASSERT()" should be used everywhere
 
 	/**
 	*  @brief
@@ -267,7 +267,7 @@ PRAGMA_WARNING_POP
 	*/
 	#define RHI_RESOURCE_DEBUG_PASS_PARAMETER , debugName
 #else
-	#define ASSERT(x)	// TODO(co) "RHI_ASSERT()" should be used everywhere
+	#define ASSERT(expression, message)	// TODO(co) "RHI_ASSERT()" should be used everywhere
 
 	/**
 	*  @brief
@@ -929,8 +929,8 @@ namespace Rhi
 		*/
 		inline void* reallocate(void* oldPointer, size_t oldNumberOfBytes, size_t newNumberOfBytes, size_t alignment)
 		{
-			ASSERT(nullptr != mReallocateFuntion);
-			ASSERT(nullptr != oldPointer || 0 == oldNumberOfBytes);
+			ASSERT(nullptr != mReallocateFuntion, "Invalid reallocate function")
+			ASSERT(nullptr != oldPointer || 0 == oldNumberOfBytes, "Invalid old pointer")
 			return (*mReallocateFuntion)(*this, oldPointer, oldNumberOfBytes, newNumberOfBytes, alignment);
 		}
 
@@ -943,7 +943,7 @@ namespace Rhi
 		inline explicit IAllocator(ReallocateFuntion reallocateFuntion) :
 			mReallocateFuntion(reallocateFuntion)
 		{
-			ASSERT(nullptr != mReallocateFuntion);
+			ASSERT(nullptr != mReallocateFuntion, "Invalid reallocate funtion")
 		}
 
 		inline virtual ~IAllocator()
@@ -1443,7 +1443,7 @@ namespace Rhi
 					case ResourceType::GEOMETRY_SHADER:
 					case ResourceType::FRAGMENT_SHADER:
 					case ResourceType::COMPUTE_SHADER:
-						ASSERT(false);	// Invalid resource type
+						ASSERT(false, "Invalid resource type")
 						break;
 				}
 			}
@@ -1458,7 +1458,7 @@ namespace Rhi
 			strcpy(range.baseShaderRegisterName, _baseShaderRegisterName);
 			range.shaderVisibility = _shaderVisibility;
 			range.resourceType = _resourceType;
-			ASSERT((ResourceType::UNIFORM_BUFFER != range.resourceType || DescriptorRangeType::UAV != range.rangeType) && "Uniform buffer doesn't support UAV");
+			ASSERT(ResourceType::UNIFORM_BUFFER != range.resourceType || DescriptorRangeType::UAV != range.rangeType, "Uniform buffer doesn't support UAV")
 		}
 		inline DescriptorRangeBuilder()
 		{}
@@ -5315,7 +5315,7 @@ namespace Rhi
 				mResourceType(resourceType),
 				mRhi(nullptr)	// Only used for rare border cases, use the constructor with the RHI reference whenever possible. Normally the RHI pointer should never ever be a null pointer. So if you're in here, you're considered to be evil.
 			{
-				ASSERT((strlen(debugName) < 256) && "Resource debug name is not allowed to exceed 255 characters");
+				ASSERT(strlen(debugName) < 256, "Resource debug name is not allowed to exceed 255 characters")
 				strncpy(mDebugName, debugName, 256);
 				mDebugName[255] = '\0';
 			}
@@ -8857,7 +8857,7 @@ namespace Rhi
 
 			// 4294967295 is the maximum value of an "uint32_t"-type: Check for overflow
 			// -> We use the magic number here to avoid "std::numeric_limits::max()" usage
-			ASSERT((static_cast<uint64_t>(mCurrentCommandPacketByteIndex) + numberOfCommandBytes) < 4294967295u);
+			ASSERT((static_cast<uint64_t>(mCurrentCommandPacketByteIndex) + numberOfCommandBytes) < 4294967295u, "Invalid current command packet byte index")
 
 			// Grow command packet buffer, if required
 			if (mCommandPacketBufferNumberOfBytes < mCurrentCommandPacketByteIndex + numberOfCommandBytes)
@@ -8932,16 +8932,16 @@ namespace Rhi
 		*/
 		inline void submitToCommandBuffer(CommandBuffer& commandBuffer) const
 		{
-			// Sanity check
-			ASSERT((this != &commandBuffer) && "Can't submit a command buffer to itself");
-			ASSERT(!isEmpty() && "Can't submit empty command buffers");
+			// Sanity checks
+			ASSERT(this != &commandBuffer, "Can't submit a command buffer to itself")
+			ASSERT(!isEmpty(), "Can't submit empty command buffers")
 
 			// How many command package buffer bytes are consumed by the command to add?
 			const uint32_t numberOfCommandBytes = mCurrentCommandPacketByteIndex;
 
 			// 4294967295 is the maximum value of an "uint32_t"-type: Check for overflow
 			// -> We use the magic number here to avoid "std::numeric_limits::max()" usage
-			ASSERT((static_cast<uint64_t>(commandBuffer.mCurrentCommandPacketByteIndex) + numberOfCommandBytes) < 4294967295u);
+			ASSERT((static_cast<uint64_t>(commandBuffer.mCurrentCommandPacketByteIndex) + numberOfCommandBytes) < 4294967295u, "Invalid current command packet byte index")
 
 			// Grow command packet buffer, if required
 			if (commandBuffer.mCommandPacketBufferNumberOfBytes < commandBuffer.mCurrentCommandPacketByteIndex + numberOfCommandBytes)
@@ -9033,7 +9033,7 @@ namespace Rhi
 			// Static methods
 			static inline void create(CommandBuffer& commandBuffer, CommandBuffer* commandBufferToExecute)
 			{
-				ASSERT(nullptr != commandBufferToExecute);
+				ASSERT(nullptr != commandBufferToExecute, "Invalid command buffer to execute")
 				*commandBuffer.addCommand<ExecuteCommandBuffer>() = ExecuteCommandBuffer(commandBufferToExecute);
 			}
 			// Constructor
@@ -9863,7 +9863,7 @@ namespace Rhi
 			// Constructor
 			inline explicit SetDebugMarker(const char* _name)
 			{
-				ASSERT(strlen(_name) < 128);
+				ASSERT(strlen(_name) < 128, "Invalid name")
 				strncpy(name, _name, 128);
 				name[127] = '\0';
 			}
@@ -9893,7 +9893,7 @@ namespace Rhi
 			// Constructor
 			inline explicit BeginDebugEvent(const char* _name)
 			{
-				ASSERT(strlen(_name) < 128);
+				ASSERT(strlen(_name) < 128, "Invalid name")
 				strncpy(name, _name, 128);
 				name[127] = '\0';
 			}

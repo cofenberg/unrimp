@@ -193,11 +193,11 @@ namespace Renderer
 		inline virtual ~CompositorNodeResource() override
 		{
 			// Sanity checks
-			ASSERT(mInputChannels.empty());
-			ASSERT(mCompositorRenderTargetTextures.empty());
-			ASSERT(mCompositorFramebuffers.empty());
-			ASSERT(mCompositorTargets.empty());
-			ASSERT(mOutputChannels.empty());
+			ASSERT(mInputChannels.empty(), "Invalid input channels")
+			ASSERT(mCompositorRenderTargetTextures.empty(), "Invalid compositor render target textures")
+			ASSERT(mCompositorFramebuffers.empty(), "Invalid compositor framebuffers")
+			ASSERT(mCompositorTargets.empty(), "Invalid compositor targets")
+			ASSERT(mOutputChannels.empty(), "Invalid output channels")
 		}
 
 		explicit CompositorNodeResource(const CompositorNodeResource&) = delete;
@@ -209,11 +209,11 @@ namespace Renderer
 		inline void initializeElement(CompositorNodeResourceId compositorNodeResourceId)
 		{
 			// Sanity checks
-			ASSERT(mInputChannels.empty());
-			ASSERT(mCompositorRenderTargetTextures.empty());
-			ASSERT(mCompositorFramebuffers.empty());
-			ASSERT(mCompositorTargets.empty());
-			ASSERT(mOutputChannels.empty());
+			ASSERT(mInputChannels.empty(), "Invalid input channels")
+			ASSERT(mCompositorRenderTargetTextures.empty(), "Invalid compositor render target textures")
+			ASSERT(mCompositorFramebuffers.empty(), "Invalid compositor framebuffers")
+			ASSERT(mCompositorTargets.empty(), "Invalid compositor targets")
+			ASSERT(mOutputChannels.empty(), "Invalid output channels")
 
 			// Call base implementation
 			IResource::initializeElement(compositorNodeResourceId);

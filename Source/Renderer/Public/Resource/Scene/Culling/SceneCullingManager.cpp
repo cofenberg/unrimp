@@ -292,7 +292,7 @@ namespace
 					// Execute scene item on rendering?
 					if (sceneItem.getCallExecuteOnRendering())
 					{
-						ASSERT(std::find(executeOnRenderingSceneItems.cbegin(), executeOnRenderingSceneItems.cend(), &sceneItem) == executeOnRenderingSceneItems.cend() && "Execute on rendering scene items contains duplicates");
+						ASSERT(std::find(executeOnRenderingSceneItems.cbegin(), executeOnRenderingSceneItems.cend(), &sceneItem) == executeOnRenderingSceneItems.cend(), "Execute on rendering scene items contains duplicates")
 						executeOnRenderingSceneItems.push_back(&sceneItem);
 					}
 				}

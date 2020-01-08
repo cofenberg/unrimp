@@ -185,7 +185,7 @@ handle ApplicationImplSdl2::getNativeWindowHandle() const
 			{
 				#if defined _WIN32
 					case SDL_SYSWM_UNKNOWN:
-						assert(false);
+						ASSERT(false, "Unknown subsystem")
 						break;
 
 					case SDL_SYSWM_WINDOWS:
@@ -202,14 +202,14 @@ handle ApplicationImplSdl2::getNativeWindowHandle() const
 					case SDL_SYSWM_ANDROID:
 					case SDL_SYSWM_VIVANTE:
 					case SDL_SYSWM_OS2:
-						assert(false);
+						ASSERT(false, "Unknown subsystem")
 						break;
 				#elif defined __ANDROID__
 					#warning "TODO(co) The Android support is work-in-progress"
 				#elif defined LINUX
 					case SDL_SYSWM_UNKNOWN:
 					case SDL_SYSWM_WINDOWS:
-						assert(false);
+						ASSERT(false, "Unknown subsystem")
 						break;
 
 					case SDL_SYSWM_X11:
@@ -219,7 +219,7 @@ handle ApplicationImplSdl2::getNativeWindowHandle() const
 					case SDL_SYSWM_DIRECTFB:
 					case SDL_SYSWM_COCOA:
 					case SDL_SYSWM_UIKIT:
-						assert(false);
+						ASSERT(false, "Unknown subsystem")
 						break;
 
 					case SDL_SYSWM_WAYLAND:
@@ -231,7 +231,7 @@ handle ApplicationImplSdl2::getNativeWindowHandle() const
 					case SDL_SYSWM_ANDROID:
 					case SDL_SYSWM_VIVANTE:
 					case SDL_SYSWM_OS2:
-						assert(false);
+						ASSERT(false, "Unknown subsystem")
 						break;
 				#else
 					#error "Unsupported platform"
@@ -295,7 +295,7 @@ void ApplicationImplSdl2::showUrgentMessage(const char* message, const char* tit
 
 	void ApplicationImplSdl2::processImGuiSdl2Event(const SDL_Event& sdlEvent)
 	{
-		assert(ImGui::GetCurrentContext() != nullptr);
+		ASSERT(ImGui::GetCurrentContext() != nullptr, "Invalid ImGui context")
 		ImGuiIO& imGuiIo = ImGui::GetIO();
 		switch (sdlEvent.type)
 		{
@@ -349,7 +349,7 @@ void ApplicationImplSdl2::showUrgentMessage(const char* message, const char* tit
 			case SDL_KEYUP:
 			{
 				const int key = sdlEvent.key.keysym.scancode;
-				assert(key >= 0 && key < IM_ARRAYSIZE(imGuiIo.KeysDown));
+				ASSERT(key >= 0 && key < IM_ARRAYSIZE(imGuiIo.KeysDown), "Invalid ImGui key")
 				imGuiIo.KeysDown[key] = (SDL_KEYDOWN == sdlEvent.type);
 				imGuiIo.KeyShift	  = ((SDL_GetModState() & KMOD_SHIFT) != 0);
 				imGuiIo.KeyCtrl		  = ((SDL_GetModState() & KMOD_CTRL) != 0);
@@ -362,7 +362,7 @@ void ApplicationImplSdl2::showUrgentMessage(const char* message, const char* tit
 
 	void ApplicationImplSdl2::updateImGuiMousePositionAndButtons()
 	{
-		assert(ImGui::GetCurrentContext() != nullptr);
+		ASSERT(ImGui::GetCurrentContext() != nullptr, "Invalid ImGui context")
 		ImGuiIO& imGuiIo = ImGui::GetIO();
 		int mousePositionX, mousePositionY;
 		const Uint32 sdlMouseButtons = SDL_GetMouseState(&mousePositionX, &mousePositionY);

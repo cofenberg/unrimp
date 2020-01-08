@@ -122,12 +122,12 @@ namespace Renderer
 					break;
 				}
 			}
-			ASSERT(nullptr != framebuffer);
+			ASSERT(nullptr != framebuffer, "Invalid framebuffer")
 		}
 		else
 		{
-			// Error! Unknown compositor framebuffer ID, this shouldn't have happened.
-			ASSERT(false);
+			// Error!
+			ASSERT(false, "Unknown compositor framebuffer ID, this shouldn't have happened")
 		}
 
 		// Done
@@ -155,7 +155,7 @@ namespace Renderer
 						// Get the color texture instances
 						Rhi::TextureFormat::Enum colorTextureFormats[8] = { Rhi::TextureFormat::Enum::UNKNOWN, Rhi::TextureFormat::Enum::UNKNOWN, Rhi::TextureFormat::Enum::UNKNOWN, Rhi::TextureFormat::Enum::UNKNOWN, Rhi::TextureFormat::Enum::UNKNOWN, Rhi::TextureFormat::Enum::UNKNOWN, Rhi::TextureFormat::Enum::UNKNOWN, Rhi::TextureFormat::Enum::UNKNOWN };
 						const uint8_t numberOfColorAttachments = framebufferSignature.getNumberOfColorAttachments();
-						ASSERT(numberOfColorAttachments < 8);
+						ASSERT(numberOfColorAttachments < 8, "Invalid number of color attachments")
 						Rhi::FramebufferAttachment colorFramebufferAttachments[8];
 						uint8_t usedNumberOfMultisamples = 0;
 						for (uint8_t i = 0; i < numberOfColorAttachments; ++i)
@@ -165,17 +165,17 @@ namespace Renderer
 							const RenderTargetTextureSignature* colorRenderTargetTextureSignature = nullptr;
 							Rhi::FramebufferAttachment& framebufferAttachment = colorFramebufferAttachments[i];
 							framebufferAttachment.texture = isValid(colorTextureAssetId) ? mRenderTargetTextureManager.getTextureByAssetId(colorTextureAssetId, renderTarget, numberOfMultisamples, resolutionScale, &colorRenderTargetTextureSignature) : nullptr;
-							ASSERT(nullptr != framebufferAttachment.texture);
+							ASSERT(nullptr != framebufferAttachment.texture, "Invalid framebuffer attachment texture")
 							framebufferAttachment.mipmapIndex = framebufferSignatureAttachment.mipmapIndex;
 							framebufferAttachment.layerIndex = framebufferSignatureAttachment.layerIndex;
-							ASSERT(nullptr != colorRenderTargetTextureSignature);
+							ASSERT(nullptr != colorRenderTargetTextureSignature, "Invalid color render target texture signature")
 							if (0 == usedNumberOfMultisamples)
 							{
 								usedNumberOfMultisamples = ((colorRenderTargetTextureSignature->getFlags() & RenderTargetTextureSignature::Flag::ALLOW_MULTISAMPLE) != 0) ? numberOfMultisamples : 1u;
 							}
 							else
 							{
-								ASSERT(1 == usedNumberOfMultisamples || ((colorRenderTargetTextureSignature->getFlags() & RenderTargetTextureSignature::Flag::ALLOW_MULTISAMPLE) != 0));
+								ASSERT(1 == usedNumberOfMultisamples || ((colorRenderTargetTextureSignature->getFlags() & RenderTargetTextureSignature::Flag::ALLOW_MULTISAMPLE) != 0), "Invalid number of multisamples")
 							}
 							colorTextureFormats[i] = colorRenderTargetTextureSignature->getTextureFormat();
 						}
@@ -192,14 +192,14 @@ namespace Renderer
 							}
 							else
 							{
-								ASSERT(1 == usedNumberOfMultisamples || ((depthStencilRenderTargetTextureSignature->getFlags() & RenderTargetTextureSignature::Flag::ALLOW_MULTISAMPLE) != 0));
+								ASSERT(1 == usedNumberOfMultisamples || ((depthStencilRenderTargetTextureSignature->getFlags() & RenderTargetTextureSignature::Flag::ALLOW_MULTISAMPLE) != 0), "Invalid number of multisamples")
 							}
 						}
 						const Rhi::TextureFormat::Enum depthStencilTextureFormat = (nullptr != depthStencilRenderTargetTextureSignature) ? depthStencilRenderTargetTextureSignature->getTextureFormat() : Rhi::TextureFormat::Enum::UNKNOWN;
 
 						// Get or create the managed render pass
 						Rhi::IRenderPass* renderPass = mRenderPassManager.getOrCreateRenderPass(numberOfColorAttachments, colorTextureFormats, depthStencilTextureFormat, usedNumberOfMultisamples);
-						ASSERT(nullptr != renderPass);
+						ASSERT(nullptr != renderPass, "Invalid render pass")
 
 						// Create the framebuffer object (FBO) instance
 						// -> The framebuffer automatically adds a reference to the provided textures
@@ -210,12 +210,12 @@ namespace Renderer
 					break;
 				}
 			}
-			ASSERT(nullptr != framebuffer);
+			ASSERT(nullptr != framebuffer, "Invalid framebuffer")
 		}
 		else
 		{
-			// Error! Unknown compositor framebuffer ID, this shouldn't have happened.
-			ASSERT(false);
+			// Error!
+			ASSERT(false, "Unknown compositor framebuffer ID, this shouldn't have happened.")
 		}
 
 		// Done
@@ -244,8 +244,8 @@ namespace Renderer
 		}
 		else
 		{
-			// Error! Framebuffer signature isn't registered.
-			ASSERT(false);
+			// Error!
+			ASSERT(false, "Framebuffer signature isn't registered")
 		}
 	}
 

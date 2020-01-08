@@ -219,7 +219,7 @@ namespace Renderer
 		}
 
 		// Not identical
-		ASSERT(false);
+		ASSERT(false, "Invalid value type")
 		return false;
 	}
 
