@@ -62,7 +62,7 @@ namespace Renderer
 	//[-------------------------------------------------------]
 	public:
 		static constexpr uint32_t TYPE_ID = STRING_ID("ParticlesSceneItem");
-		struct ParticleDataStruct
+		struct ParticleDataStruct final
 		{
 			float PositionSize[4];	// Object space particle xyz-position, w = particle size
 			float Color[4];			// Linear RGBA particle color and opacity
@@ -70,13 +70,20 @@ namespace Renderer
 
 
 	//[-------------------------------------------------------]
-	//[ Public Renderer::ISceneItem methods                   ]
+	//[ Public virtual Renderer::ISceneItem methods           ]
 	//[-------------------------------------------------------]
 	public:
 		[[nodiscard]] inline virtual SceneItemTypeId getSceneItemTypeId() const override
 		{
 			return TYPE_ID;
 		}
+
+
+	//[-------------------------------------------------------]
+	//[ Protected virtual Renderer::ISceneItem methods        ]
+	//[-------------------------------------------------------]
+	protected:
+		[[nodiscard]] virtual void onExecuteOnRendering(const Rhi::IRenderTarget& renderTarget, const CompositorContextData& compositorContextData, Rhi::CommandBuffer& commandBuffer) const override;
 
 
 	//[-------------------------------------------------------]

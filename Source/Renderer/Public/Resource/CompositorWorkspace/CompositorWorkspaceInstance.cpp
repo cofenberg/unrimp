@@ -74,9 +74,9 @@ namespace Renderer
 		mResolutionScale(1.0f),
 		mRenderTargetWidth(getInvalid<uint32_t>()),
 		mRenderTargetHeight(getInvalid<uint32_t>()),
-		mExecutionRenderTarget(nullptr),
 		mCompositorWorkspaceResourceId(getInvalid<CompositorWorkspaceResourceId>()),
 		mFramebufferManagerInitialized(false),
+		mExecutionRenderTarget(nullptr),
 		mCompositorInstancePassShadowMap(nullptr)
 		#ifdef RHI_STATISTICS
 			, mPipelineStatisticsQueryPoolPtr((renderer.getRhi().getNameId() == Rhi::NameId::OPENGL && strstr(renderer.getRhi().getCapabilities().deviceName, "AMD ") != nullptr) ? nullptr : renderer.getRhi().createQueryPool(Rhi::QueryType::PIPELINE_STATISTICS, 2 RHI_RESOURCE_DEBUG_NAME("Compositor workspace instance"))),	// TODO(co) When using OpenGL "GL_ARB_pipeline_statistics_query" features, "glCopyImageSubData()" will horribly stall/freeze on Windows using AMD Radeon 18.12.2 (tested on 16 December 2018). No issues with NVIDIA GeForce game ready driver 417.35 (release data 12/12/2018).
@@ -234,7 +234,14 @@ namespace Renderer
 				if (nullptr != cameraSceneItem)
 				{
 					// Gather render queue index ranges renderable managers
-					cameraSceneItem->getSceneResource().getSceneCullingManager().gatherRenderQueueIndexRangesRenderableManagers(renderTarget, compositorContextData, mRenderQueueIndexRanges);
+					mExecuteOnRenderingSceneItems.clear();
+					cameraSceneItem->getSceneResource().getSceneCullingManager().gatherRenderQueueIndexRangesRenderableManagers(renderTarget, compositorContextData, mRenderQueueIndexRanges, mExecuteOnRenderingSceneItems);
+
+					// Execute on rendering scene items
+					for (ISceneItem* sceneItem : mExecuteOnRenderingSceneItems)
+					{
+						sceneItem->onExecuteOnRendering(renderTarget, compositorContextData, mCommandBuffer);
+					}
 
 					// Fill the light buffer manager
 					materialBlueprintResourceManager.getLightBufferManager().fillBuffer(compositorContextData.getWorldSpaceCameraPosition(), cameraSceneItem->getSceneResource(), mCommandBuffer);

@@ -158,7 +158,7 @@ namespace Renderer
 
 
 	//[-------------------------------------------------------]
-	//[ Public Renderer::ISceneItem methods                   ]
+	//[ Public virtual Renderer::ISceneItem methods           ]
 	//[-------------------------------------------------------]
 	public:
 		[[nodiscard]] inline virtual SceneItemTypeId getSceneItemTypeId() const override
@@ -168,11 +168,6 @@ namespace Renderer
 
 		virtual void deserialize(uint32_t numberOfBytes, const uint8_t* data) override;
 
-
-	//[-------------------------------------------------------]
-	//[ Public Renderer::ISceneItem methods                   ]
-	//[-------------------------------------------------------]
-	public:
 		inline virtual void onAttachedToSceneNode(SceneNode& sceneNode) override
 		{
 			// Call base implementation

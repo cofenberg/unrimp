@@ -265,16 +265,13 @@ namespace
 			}
 		}
 
-		FORCEINLINE void gatherRenderQueueIndexRangesRenderableManagersBySceneItem(const Renderer::ISceneItem& sceneItem, const glm::dvec3& cameraPosition, Renderer::CompositorWorkspaceInstance::RenderQueueIndexRanges& renderQueueIndexRanges)
+		FORCEINLINE void gatherRenderQueueIndexRangesRenderableManagersBySceneItem(Renderer::ISceneItem& sceneItem, const glm::dvec3& cameraPosition, Renderer::CompositorWorkspaceInstance::RenderQueueIndexRanges& renderQueueIndexRanges, std::vector<Renderer::ISceneItem*>& executeOnRenderingSceneItems)
 		{
 			Renderer::RenderableManager* renderableManager = const_cast<Renderer::RenderableManager*>(sceneItem.getRenderableManager());	// TODO(co) Get rid of the evil const-cast
 			if (nullptr != renderableManager && renderableManager->isVisible() && !renderableManager->getRenderables().empty())
 			{
-				// Calculate the distance to the camera
-				// -> While using a 64 bit world space position, a 32 bit distance to camera is sufficient
-				renderableManager->setCachedDistanceToCamera(static_cast<float>(glm::distance(cameraPosition, sceneItem.getParentSceneNodeSafe().getGlobalTransform().position)));
-
 				// A renderable manager can be inside multiple render queue index ranges
+				bool added = false;
 				for (Renderer::CompositorWorkspaceInstance::RenderQueueIndexRange& renderQueueIndexRange : renderQueueIndexRanges)
 				{
 					const uint8_t minimumRenderQueueIndex = renderableManager->getMinimumRenderQueueIndex();
@@ -283,6 +280,20 @@ namespace
 						(maximumRenderQueueIndex >= renderQueueIndexRange.minimumRenderQueueIndex && maximumRenderQueueIndex <= renderQueueIndexRange.maximumRenderQueueIndex))
 					{
 						renderQueueIndexRange.renderableManagers.push_back(renderableManager);
+						added = true;
+					}
+				}
+				if (added)
+				{
+					// Calculate the distance to the camera
+					// -> While using a 64 bit world space position, a 32 bit distance to camera is sufficient
+					renderableManager->setCachedDistanceToCamera(static_cast<float>(glm::distance(cameraPosition, sceneItem.getParentSceneNodeSafe().getGlobalTransform().position)));
+
+					// Execute scene item on rendering?
+					if (sceneItem.getCallExecuteOnRendering())
+					{
+						ASSERT(std::find(executeOnRenderingSceneItems.cbegin(), executeOnRenderingSceneItems.cend(), &sceneItem) == executeOnRenderingSceneItems.cend() && "Execute on rendering scene items contains duplicates");
+						executeOnRenderingSceneItems.push_back(&sceneItem);
 					}
 				}
 			}
@@ -551,7 +562,7 @@ namespace Renderer
 		delete mCullableShadowCastersSceneItemSet;
 	}
 
-	void SceneCullingManager::gatherRenderQueueIndexRangesRenderableManagers(const Rhi::IRenderTarget& renderTarget, const CompositorContextData& compositorContextData, CompositorWorkspaceInstance::RenderQueueIndexRanges& renderQueueIndexRanges)
+	void SceneCullingManager::gatherRenderQueueIndexRangesRenderableManagers(const Rhi::IRenderTarget& renderTarget, const CompositorContextData& compositorContextData, CompositorWorkspaceInstance::RenderQueueIndexRanges& renderQueueIndexRanges, std::vector<ISceneItem*>& executeOnRenderingSceneItems)
 	{
 		// Overview over the basic workflow of "The Implementation of Frustum Culling in Stingray" - http://bitsquid.blogspot.de/2016/10/the-implementation-of-frustum-culling.html
 		// - Kick jobs to do frustum vs sphere culling
@@ -579,12 +590,12 @@ namespace Renderer
 					const glm::dvec3& cameraPosition = cameraSceneItem->getParentSceneNodeSafe().getGlobalTransform().position;	// 64 bit world space position of the camera
 					for (uint32_t i = 0; i < mCullableSceneItemSet->numberOfSceneItems; ++i)
 					{
-						::detail::gatherRenderQueueIndexRangesRenderableManagersBySceneItem(*mCullableSceneItemSet->sceneItemVector[i], cameraPosition, renderQueueIndexRanges);
+						::detail::gatherRenderQueueIndexRangesRenderableManagersBySceneItem(*mCullableSceneItemSet->sceneItemVector[i], cameraPosition, renderQueueIndexRanges, executeOnRenderingSceneItems);
 					}
 					// Fill render queue index ranges with the always-visible stuff
-					for (const ISceneItem* sceneItem : mUncullableSceneItems)
+					for (ISceneItem* sceneItem : mUncullableSceneItems)
 					{
-						::detail::gatherRenderQueueIndexRangesRenderableManagersBySceneItem(*sceneItem, cameraPosition, renderQueueIndexRanges);
+						::detail::gatherRenderQueueIndexRangesRenderableManagersBySceneItem(*sceneItem, cameraPosition, renderQueueIndexRanges, executeOnRenderingSceneItems);
 					}
 					return;
 
@@ -781,20 +792,20 @@ namespace Renderer
 			}
 		}
 
-		// Build up the indirection array that represents the objects that survived the frustum-oobb culling
+		// Build up the indirection array that represents the objects that survived the frustum-OOBB culling
 		const uint32_t numberOfOobbVisible = ::detail::removeNotVisible(*mCullableSceneItemSet, numberOfVisibleItems, mIndirection.data(), mIndirection.data());
 
 		// Fill render queue index ranges with the visible stuff
 		const glm::dvec3& cameraPosition = cameraSceneItem->getParentSceneNodeSafe().getGlobalTransform().position;
 		for (uint32_t indirectionIndex = 0; indirectionIndex < numberOfOobbVisible; ++indirectionIndex)
 		{
-			::detail::gatherRenderQueueIndexRangesRenderableManagersBySceneItem(*mCullableSceneItemSet->sceneItemVector[mIndirection[indirectionIndex]], cameraPosition, renderQueueIndexRanges);
+			::detail::gatherRenderQueueIndexRangesRenderableManagersBySceneItem(*mCullableSceneItemSet->sceneItemVector[mIndirection[indirectionIndex]], cameraPosition, renderQueueIndexRanges, executeOnRenderingSceneItems);
 		}
 
 		// Fill render queue index ranges with the always-visible stuff
-		for (const ISceneItem* sceneItem : mUncullableSceneItems)
+		for (ISceneItem* sceneItem : mUncullableSceneItems)
 		{
-			::detail::gatherRenderQueueIndexRangesRenderableManagersBySceneItem(*sceneItem, cameraPosition, renderQueueIndexRanges);
+			::detail::gatherRenderQueueIndexRangesRenderableManagersBySceneItem(*sceneItem, cameraPosition, renderQueueIndexRanges, executeOnRenderingSceneItems);
 		}
 	}
 

@@ -48,7 +48,7 @@ namespace Renderer
 
 
 	//[-------------------------------------------------------]
-	//[ Public Renderer::ISceneItem methods                   ]
+	//[ Public virtual Renderer::ISceneItem methods           ]
 	//[-------------------------------------------------------]
 	void SkeletonMeshSceneItem::deserialize(uint32_t numberOfBytes, const uint8_t* data)
 	{

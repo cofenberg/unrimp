@@ -62,7 +62,7 @@ namespace Renderer
 	//[-------------------------------------------------------]
 	public:
 		static constexpr uint32_t TYPE_ID = STRING_ID("GrassSceneItem");
-		struct GrassDataStruct
+		struct GrassDataStruct final
 		{
 			float PositionSize[4];	// Object space grass xyz-position, w = grass size
 			float ColorRotation[4];	// Linear RGB grass color and rotation in radians
@@ -70,13 +70,20 @@ namespace Renderer
 
 
 	//[-------------------------------------------------------]
-	//[ Public Renderer::ISceneItem methods                   ]
+	//[ Public virtual Renderer::ISceneItem methods           ]
 	//[-------------------------------------------------------]
 	public:
 		[[nodiscard]] inline virtual SceneItemTypeId getSceneItemTypeId() const override
 		{
 			return TYPE_ID;
 		}
+
+
+	//[-------------------------------------------------------]
+	//[ Protected virtual Renderer::ISceneItem methods        ]
+	//[-------------------------------------------------------]
+	protected:
+		[[nodiscard]] virtual void onExecuteOnRendering(const Rhi::IRenderTarget& renderTarget, const CompositorContextData& compositorContextData, Rhi::CommandBuffer& commandBuffer) const override;
 
 
 	//[-------------------------------------------------------]

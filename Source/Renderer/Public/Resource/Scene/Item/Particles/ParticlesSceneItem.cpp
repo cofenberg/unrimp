@@ -35,6 +35,15 @@ namespace Renderer
 
 
 	//[-------------------------------------------------------]
+	//[ Protected virtual Renderer::ISceneItem methods        ]
+	//[-------------------------------------------------------]
+	void ParticlesSceneItem::onExecuteOnRendering([[maybe_unused]] const Rhi::IRenderTarget& renderTarget, [[maybe_unused]] const CompositorContextData& compositorContextData, [[maybe_unused]] Rhi::CommandBuffer& commandBuffer) const
+	{
+		// TODO(co) Implement me
+	}
+
+
+	//[-------------------------------------------------------]
 	//[ Protected virtual Renderer::MaterialSceneItem methods ]
 	//[-------------------------------------------------------]
 	void ParticlesSceneItem::initialize()
@@ -64,6 +73,9 @@ namespace Renderer
 		{
 			materialTechnique->setStructuredBufferPtr(mStructuredBufferPtr);
 		}
+
+		// We need "Renderer::ISceneItem::onExecuteOnRendering()" calls during runtime
+		setCallExecuteOnRendering(true);
 	}
 
 

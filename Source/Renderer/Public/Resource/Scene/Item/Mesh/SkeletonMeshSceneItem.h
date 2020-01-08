@@ -89,7 +89,7 @@ namespace Renderer
 
 
 	//[-------------------------------------------------------]
-	//[ Public Renderer::ISceneItem methods                   ]
+	//[ Public virtual Renderer::ISceneItem methods           ]
 	//[-------------------------------------------------------]
 	public:
 		[[nodiscard]] inline virtual SceneItemTypeId getSceneItemTypeId() const override

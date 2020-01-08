@@ -80,7 +80,7 @@ namespace Renderer
 	public:
 		SceneCullingManager();
 		~SceneCullingManager();
-		void gatherRenderQueueIndexRangesRenderableManagers(const Rhi::IRenderTarget& renderTarget, const CompositorContextData& compositorContextData, CompositorWorkspaceInstance::RenderQueueIndexRanges& renderQueueIndexRanges);
+		void gatherRenderQueueIndexRangesRenderableManagers(const Rhi::IRenderTarget& renderTarget, const CompositorContextData& compositorContextData, CompositorWorkspaceInstance::RenderQueueIndexRanges& renderQueueIndexRanges, std::vector<ISceneItem*>& executeOnRenderingSceneItems);
 
 		[[nodiscard]] inline SceneItemSet& getCullableSceneItemSet() const
 		{

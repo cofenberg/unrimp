@@ -39,6 +39,7 @@ namespace Renderer
 	class LightSceneItem;
 	class CameraSceneItem;
 	class IRenderer;
+	class ISceneItem;
 	class RenderableManager;
 	class CompositorNodeInstance;
 	class ICompositorInstancePass;
@@ -141,14 +142,14 @@ namespace Renderer
 		RENDERER_API_EXPORT void executeVr(Rhi::IRenderTarget& renderTarget, CameraSceneItem* cameraSceneItem, const LightSceneItem* lightSceneItem);	// If "Renderer::IVrManager::isRunning()" is true, virtual reality rendering is used, don't use this method if you want to render e.g. into a texture for other purposes
 		RENDERER_API_EXPORT void execute(Rhi::IRenderTarget& renderTarget, const CameraSceneItem* cameraSceneItem, const LightSceneItem* lightSceneItem, bool singlePassStereoInstancing = false);
 
-		[[nodiscard]] inline Rhi::IRenderTarget* getExecutionRenderTarget() const	// Only valid during compositor workspace instance execution
-		{
-			return mExecutionRenderTarget;
-		}
-
 		[[nodiscard]] inline const CompositorNodeInstances& getSequentialCompositorNodeInstances() const
 		{
 			return mSequentialCompositorNodeInstances;
+		}
+
+		[[nodiscard]] inline Rhi::IRenderTarget* getExecutionRenderTarget() const	// Only valid during compositor workspace instance execution
+		{
+			return mExecutionRenderTarget;
 		}
 
 		[[nodiscard]] inline const Rhi::CommandBuffer& getCommandBuffer() const
@@ -194,11 +195,14 @@ namespace Renderer
 		float							 mResolutionScale;
 		uint32_t						 mRenderTargetWidth;
 		uint32_t						 mRenderTargetHeight;
-		Rhi::IRenderTarget*				 mExecutionRenderTarget;				///< Only valid during compositor workspace instance execution
 		CompositorWorkspaceResourceId	 mCompositorWorkspaceResourceId;
 		CompositorNodeInstances			 mSequentialCompositorNodeInstances;	///< We're responsible to destroy the compositor node instances if we no longer need them
 		bool							 mFramebufferManagerInitialized;
 		RenderQueueIndexRanges			 mRenderQueueIndexRanges;				///< The render queue index ranges layout is fixed during runtime
+
+		// The rest is temporary "CompositorWorkspaceInstance::execute()" data to e.g. avoid reallocations
+		Rhi::IRenderTarget*				 mExecutionRenderTarget;				///< Only valid during compositor workspace instance execution
+		std::vector<ISceneItem*>		 mExecuteOnRenderingSceneItems;			///< Scene items which requested an execute call on rendering, no duplicates allowed
 		Rhi::CommandBuffer				 mCommandBuffer;						///< RHI command buffer
 		CompositorInstancePassShadowMap* mCompositorInstancePassShadowMap;		///< Can be a null pointer, don't destroy the instance
 		#ifdef RHI_STATISTICS

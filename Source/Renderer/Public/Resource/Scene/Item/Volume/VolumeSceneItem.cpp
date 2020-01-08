@@ -150,7 +150,7 @@ namespace Renderer
 
 
 	//[-------------------------------------------------------]
-	//[ Public Renderer::ISceneItem methods                   ]
+	//[ Public virtual Renderer::ISceneItem methods           ]
 	//[-------------------------------------------------------]
 	const RenderableManager* VolumeSceneItem::getRenderableManager() const
 	{

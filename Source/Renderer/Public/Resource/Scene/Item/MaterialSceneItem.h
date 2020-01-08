@@ -90,7 +90,7 @@ namespace Renderer
 
 
 	//[-------------------------------------------------------]
-	//[ Public Renderer::ISceneItem methods                   ]
+	//[ Public virtual Renderer::ISceneItem methods           ]
 	//[-------------------------------------------------------]
 	public:
 		virtual void deserialize(uint32_t numberOfBytes, const uint8_t* data) override;
