@@ -56,6 +56,60 @@
 	#include "Examples/Private/Renderer/Scene/Scene.h"
 #endif
 
+#ifdef _WIN32
+	// Disable warnings in external headers, we can't fix them
+	PRAGMA_WARNING_PUSH
+		// Set Windows version to Windows Vista (0x0600), we don't support Windows XP (0x0501)
+		#ifdef WINVER
+			#undef WINVER
+		#endif
+		#define WINVER			0x0600
+		#ifdef _WIN32_WINNT
+			#undef _WIN32_WINNT
+		#endif
+		#define _WIN32_WINNT	0x0600
+
+		// Exclude some stuff from "windows.h" to speed up compilation a bit
+		#define WIN32_LEAN_AND_MEAN
+		#define NOGDICAPMASKS
+		#define NOMENUS
+		#define NOICONS
+		#define NOKEYSTATES
+		#define NOSYSCOMMANDS
+		#define NORASTEROPS
+		#define OEMRESOURCE
+		#define NOATOM
+		#define NOMEMMGR
+		#define NOMETAFILE
+		#define NOOPENFILE
+		#define NOSCROLL
+		#define NOSERVICE
+		#define NOSOUND
+		#define NOWH
+		#define NOCOMM
+		#define NOKANJI
+		#define NOHELP
+		#define NOPROFILER
+		#define NODEFERWINDOWPOS
+		#define NOMCX
+		#define NOCRYPT
+
+		// Disable warnings in external headers, we can't fix them
+		__pragma(warning(push))
+			__pragma(warning(disable: 5039))	// warning C5039: 'TpSetCallbackCleanupGroup': pointer or reference to potentially throwing function passed to extern C function under -EHc. Undefined behavior may occur if this function throws an exception. (compiling source file src\CommandLineArguments.cpp)
+			#include <Windows.h>
+		__pragma(warning(pop))
+
+		// Get rid of some nasty OS macros
+		#undef min
+		#undef max
+	PRAGMA_WARNING_POP
+#elif __ANDROID__
+	#include <android/log.h>
+#else
+	#error "Unsupported platform"
+#endif
+
 // Disable warnings in external headers, we can't fix them
 PRAGMA_WARNING_PUSH
 	PRAGMA_WARNING_DISABLE_MSVC(4365)	// warning C4365: 'return': conversion from 'int' to 'std::char_traits<wchar_t>::int_type', signed/unsigned mismatch
@@ -208,7 +262,7 @@ bool ExampleRunner::parseCommandLineArguments(const CommandLineArguments& comman
 		}
 		else
 		{
-			showError("Missing argument for parameter -r");
+			showMessage("Missing argument for parameter -r", true);
 
 			// Error!
 			return false;
@@ -226,26 +280,73 @@ bool ExampleRunner::parseCommandLineArguments(const CommandLineArguments& comman
 
 void ExampleRunner::printUsage(const AvailableExamples& availableExamples, const AvailableRhis& availableRhis)
 {
-	std::cout << "Usage: ./Examples <ExampleName> [-r <RhiName>]\n";
+	showMessage("Usage: ./Examples <ExampleName> [-r <RhiName>]");
 
 	// Available examples
-	std::cout << "Available Examples:\n";
+	showMessage("Available Examples:");
 	for (const auto& pair : availableExamples)
 	{
-		std::cout << "\t" << pair.first << '\n';
+		showMessage("\t" + std::string(pair.first));
 	}
 
 	// Available RHIs
-	std::cout << "Available RHIs:\n";
+	showMessage("Available RHIs:");
 	for (const std::string_view& rhiName : availableRhis)
 	{
-		std::cout << "\t" << rhiName << '\n';
+		showMessage("\t" + std::string(rhiName));
 	}
 }
 
-void ExampleRunner::showError(const std::string& errorMessage)
+void ExampleRunner::showMessage(const std::string& message, bool isError)
 {
-	std::cout << errorMessage << "\n";
+	std::string fullMessage;
+	if (isError)
+	{
+		fullMessage += "Error: ";
+	}	
+	fullMessage += message;
+	fullMessage += '\n';
+
+	// Platform specific handling
+	#ifdef _WIN32
+	{
+		// Convert UTF-8 string to UTF-16
+		std::wstring utf16Line;
+		utf16Line.resize(static_cast<std::wstring::size_type>(::MultiByteToWideChar(CP_UTF8, 0, fullMessage.c_str(), static_cast<int>(fullMessage.size()), nullptr , 0)));
+		::MultiByteToWideChar(CP_UTF8, 0, fullMessage.c_str(), static_cast<int>(fullMessage.size()), utf16Line.data(), static_cast<int>(utf16Line.size()));
+
+		// Write into standard output stream
+		if (isError)
+		{
+			std::wcerr << utf16Line.c_str();
+		}
+		else
+		{
+			std::wcout << utf16Line.c_str();
+		}
+
+		// On Microsoft Windows, ensure the output can be seen inside the Visual Studio output window as well
+		::OutputDebugStringW(utf16Line.c_str());
+		if (isError && ::IsDebuggerPresent())
+		{
+			__debugbreak();
+		}
+	}
+	#elif __ANDROID__
+		__android_log_write(isError ? ANDROID_LOG_ERROR : ANDROID_LOG_INFO, "Unrimp", fullMessage.c_str());	// TODO(co) Might make sense to make the app-name customizable
+	#elif LINUX
+		// Write into standard output stream
+		if (isError)
+		{
+			std::cerr << fullMessage.c_str();
+		}
+		else
+		{
+			std::cout << fullMessage.c_str();
+		}
+	#else
+		#error "Unsupported platform"
+	#endif
 }
 
 int ExampleRunner::runExample(const std::string_view& rhiName, const std::string_view& exampleName)
@@ -267,15 +368,15 @@ int ExampleRunner::runExample(const std::string_view& rhiName, const std::string
 	{
 		if (mAvailableExamples.end() == selectedExample)
 		{
-			showError("No or unknown example given");
+			showMessage("No or unknown example given", true);
 		}
 		if (mAvailableRhis.end() == selectedRhi)
 		{
-			showError("Unknown RHI: \"" + std::string(rhiName) + "\"");
+			showMessage("Unknown RHI: \"" + std::string(rhiName) + "\"", true);
 		}
 		if (rhiNotSupportedByExample)
 		{
-			showError("The example \"" + std::string(selectedExampleName) + "\" doesn't support RHI: \"" + std::string(rhiName) + "\"");
+			showMessage("The example \"" + std::string(selectedExampleName) + "\" doesn't support RHI: \"" + std::string(rhiName) + "\"", true);
 		}
 
 		// Print usage

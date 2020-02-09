@@ -161,7 +161,7 @@ private:
 private:
 	[[nodiscard]] bool parseCommandLineArguments(const CommandLineArguments& commandLineArguments);
 	void printUsage(const AvailableExamples& availableExamples, const AvailableRhis& availableRhis);
-	void showError(const std::string& errorMessage);
+	void showMessage(const std::string& message, bool isError = false);
 	[[nodiscard]] int runExample(const std::string_view& rhiName, const std::string_view& exampleName);
 
 	template<typename T>
