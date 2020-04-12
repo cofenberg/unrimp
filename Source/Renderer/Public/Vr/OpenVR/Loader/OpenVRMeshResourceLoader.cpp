@@ -33,7 +33,11 @@
 #include "Renderer/Public/IRenderer.h"
 #include "Renderer/Public/Context.h"
 
-#include <OpenVR/openvr.h>
+// Disable warnings in external headers, we can't fix them
+PRAGMA_WARNING_PUSH
+	PRAGMA_WARNING_DISABLE_MSVC(5204)	// warning C5204: 'crnlib::task_pool::executable_task': class has virtual functions, but its trivial destructor is not virtual; instances of objects derived from this class may not be destructed correctly
+	#include <OpenVR/openvr.h>
+PRAGMA_WARNING_POP
 
 #include <mikktspace/mikktspace.h>
 

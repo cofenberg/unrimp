@@ -954,14 +954,16 @@ struct DXGI_SAMPLE_DESC
 };
 
 // "Microsoft DirectX SDK (June 2010)" -> "DXGI.h"
-struct IDXGIObject : public IUnknown
-{
-	public:
+PRAGMA_WARNING_PUSH
+PRAGMA_WARNING_DISABLE_MSVC(5204)	// warning C5204: 'IDXGIObject': class has virtual functions, but its trivial destructor is not virtual; instances of objects derived from this class may not be destructed correctly
+	struct IDXGIObject : public IUnknown
+	{
 		virtual HRESULT STDMETHODCALLTYPE SetPrivateData(__in REFGUID Name, UINT DataSize, __in_bcount(DataSize) const void *pData) = 0;
 		virtual HRESULT STDMETHODCALLTYPE SetPrivateDataInterface(__in REFGUID Name, __in const IUnknown *pUnknown) = 0;
 		virtual HRESULT STDMETHODCALLTYPE GetPrivateData(__in REFGUID Name, __inout UINT *pDataSize, __out_bcount(*pDataSize) void *pData) = 0;
 		virtual HRESULT STDMETHODCALLTYPE GetParent(__in REFIID riid, __out void **ppParent) = 0;
-};
+	};
+PRAGMA_WARNING_POP
 
 // "Microsoft DirectX SDK (June 2010)" -> "DXGIType.h"
 struct DXGI_RATIONAL
@@ -1045,21 +1047,19 @@ struct DXGI_SWAP_CHAIN_DESC
 MIDL_INTERFACE("7b7166ec-21c7-44ae-b21a-c9ae321ae369")
 IDXGIFactory : public IDXGIObject
 {
-	public:
-		virtual HRESULT STDMETHODCALLTYPE EnumAdapters(UINT Adapter, __out IDXGIAdapter **ppAdapter) = 0;
-		virtual HRESULT STDMETHODCALLTYPE MakeWindowAssociation(HWND WindowHandle, UINT Flags) = 0;
-		virtual HRESULT STDMETHODCALLTYPE GetWindowAssociation(__out HWND *pWindowHandle) = 0;
-		virtual HRESULT STDMETHODCALLTYPE CreateSwapChain(__in IUnknown *pDevice, __in DXGI_SWAP_CHAIN_DESC *pDesc, __out IDXGISwapChain **ppSwapChain) = 0;
-		virtual HRESULT STDMETHODCALLTYPE CreateSoftwareAdapter(HMODULE Module, __out IDXGIAdapter **ppAdapter) = 0;
+	virtual HRESULT STDMETHODCALLTYPE EnumAdapters(UINT Adapter, __out IDXGIAdapter **ppAdapter) = 0;
+	virtual HRESULT STDMETHODCALLTYPE MakeWindowAssociation(HWND WindowHandle, UINT Flags) = 0;
+	virtual HRESULT STDMETHODCALLTYPE GetWindowAssociation(__out HWND *pWindowHandle) = 0;
+	virtual HRESULT STDMETHODCALLTYPE CreateSwapChain(__in IUnknown *pDevice, __in DXGI_SWAP_CHAIN_DESC *pDesc, __out IDXGISwapChain **ppSwapChain) = 0;
+	virtual HRESULT STDMETHODCALLTYPE CreateSoftwareAdapter(HMODULE Module, __out IDXGIAdapter **ppAdapter) = 0;
 };
 
 // "Microsoft DirectX SDK (June 2010)" -> "DXGI.h"
 MIDL_INTERFACE("770aae78-f26f-4dba-a829-253c83d1b387")
 IDXGIFactory1 : public IDXGIFactory
 {
-	public:
-		virtual HRESULT STDMETHODCALLTYPE EnumAdapters1(UINT Adapter, __out IDXGIAdapter1 **ppAdapter) = 0;
-		virtual BOOL STDMETHODCALLTYPE IsCurrent(void) = 0;
+	virtual HRESULT STDMETHODCALLTYPE EnumAdapters1(UINT Adapter, __out IDXGIAdapter1 **ppAdapter) = 0;
+	virtual BOOL STDMETHODCALLTYPE IsCurrent(void) = 0;
 };
 
 // "Windows 10 SDK" -> "dxgi1_2.h"
@@ -1109,35 +1109,32 @@ typedef struct DXGI_SWAP_CHAIN_FULLSCREEN_DESC
 MIDL_INTERFACE("50c83a1c-e072-4c48-87b0-3630fa36a6d0")
 IDXGIFactory2 : public IDXGIFactory1
 {
-	public:
-		virtual BOOL STDMETHODCALLTYPE IsWindowedStereoEnabled(void) = 0;
-		virtual HRESULT STDMETHODCALLTYPE CreateSwapChainForHwnd(_In_ IUnknown *pDevice, _In_ HWND hWnd, _In_ const DXGI_SWAP_CHAIN_DESC1 *pDesc, _In_opt_ const DXGI_SWAP_CHAIN_FULLSCREEN_DESC *pFullscreenDesc, _In_opt_ IDXGIOutput *pRestrictToOutput, _COM_Outptr_ IDXGISwapChain1 **ppSwapChain) = 0;
-		virtual HRESULT STDMETHODCALLTYPE CreateSwapChainForCoreWindow(_In_ IUnknown *pDevice, _In_ IUnknown *pWindow, _In_ const DXGI_SWAP_CHAIN_DESC1 *pDesc, _In_opt_ IDXGIOutput *pRestrictToOutput, _COM_Outptr_ IDXGISwapChain1 **ppSwapChain) = 0;
-		virtual HRESULT STDMETHODCALLTYPE GetSharedResourceAdapterLuid(_In_ HANDLE hResource, _Out_ LUID *pLuid) = 0;
-		virtual HRESULT STDMETHODCALLTYPE RegisterStereoStatusWindow(_In_ HWND WindowHandle, _In_ UINT wMsg, _Out_ DWORD *pdwCookie) = 0;
-		virtual HRESULT STDMETHODCALLTYPE RegisterStereoStatusEvent(_In_ HANDLE hEvent, _Out_ DWORD *pdwCookie) = 0;
-		virtual void STDMETHODCALLTYPE UnregisterStereoStatus(_In_ DWORD dwCookie) = 0;
-		virtual HRESULT STDMETHODCALLTYPE RegisterOcclusionStatusWindow(_In_ HWND WindowHandle, _In_ UINT wMsg, _Out_ DWORD *pdwCookie) = 0;
-		virtual HRESULT STDMETHODCALLTYPE RegisterOcclusionStatusEvent(_In_ HANDLE hEvent, _Out_ DWORD *pdwCookie) = 0;
-		virtual void STDMETHODCALLTYPE UnregisterOcclusionStatus(_In_ DWORD dwCookie) = 0;
-		virtual HRESULT STDMETHODCALLTYPE CreateSwapChainForComposition(_In_ IUnknown *pDevice, _In_ const DXGI_SWAP_CHAIN_DESC1 *pDesc, _In_opt_ IDXGIOutput *pRestrictToOutput, _COM_Outptr_ IDXGISwapChain1 **ppSwapChain) = 0;
+	virtual BOOL STDMETHODCALLTYPE IsWindowedStereoEnabled(void) = 0;
+	virtual HRESULT STDMETHODCALLTYPE CreateSwapChainForHwnd(_In_ IUnknown *pDevice, _In_ HWND hWnd, _In_ const DXGI_SWAP_CHAIN_DESC1 *pDesc, _In_opt_ const DXGI_SWAP_CHAIN_FULLSCREEN_DESC *pFullscreenDesc, _In_opt_ IDXGIOutput *pRestrictToOutput, _COM_Outptr_ IDXGISwapChain1 **ppSwapChain) = 0;
+	virtual HRESULT STDMETHODCALLTYPE CreateSwapChainForCoreWindow(_In_ IUnknown *pDevice, _In_ IUnknown *pWindow, _In_ const DXGI_SWAP_CHAIN_DESC1 *pDesc, _In_opt_ IDXGIOutput *pRestrictToOutput, _COM_Outptr_ IDXGISwapChain1 **ppSwapChain) = 0;
+	virtual HRESULT STDMETHODCALLTYPE GetSharedResourceAdapterLuid(_In_ HANDLE hResource, _Out_ LUID *pLuid) = 0;
+	virtual HRESULT STDMETHODCALLTYPE RegisterStereoStatusWindow(_In_ HWND WindowHandle, _In_ UINT wMsg, _Out_ DWORD *pdwCookie) = 0;
+	virtual HRESULT STDMETHODCALLTYPE RegisterStereoStatusEvent(_In_ HANDLE hEvent, _Out_ DWORD *pdwCookie) = 0;
+	virtual void STDMETHODCALLTYPE UnregisterStereoStatus(_In_ DWORD dwCookie) = 0;
+	virtual HRESULT STDMETHODCALLTYPE RegisterOcclusionStatusWindow(_In_ HWND WindowHandle, _In_ UINT wMsg, _Out_ DWORD *pdwCookie) = 0;
+	virtual HRESULT STDMETHODCALLTYPE RegisterOcclusionStatusEvent(_In_ HANDLE hEvent, _Out_ DWORD *pdwCookie) = 0;
+	virtual void STDMETHODCALLTYPE UnregisterOcclusionStatus(_In_ DWORD dwCookie) = 0;
+	virtual HRESULT STDMETHODCALLTYPE CreateSwapChainForComposition(_In_ IUnknown *pDevice, _In_ const DXGI_SWAP_CHAIN_DESC1 *pDesc, _In_opt_ IDXGIOutput *pRestrictToOutput, _COM_Outptr_ IDXGISwapChain1 **ppSwapChain) = 0;
 };
 
 // "Windows 10 SDK" -> "dxgi1_3.h"
 MIDL_INTERFACE("25483823-cd46-4c7d-86ca-47aa95b837bd")
 IDXGIFactory3 : public IDXGIFactory2
 {
-	public:
-		virtual UINT STDMETHODCALLTYPE GetCreationFlags(void) = 0;
+	virtual UINT STDMETHODCALLTYPE GetCreationFlags(void) = 0;
 };
 
 // "Windows 10 SDK" -> "dxgi1_4.h"
 MIDL_INTERFACE("1bc6ea02-ef36-464f-bf0c-21ca39e5168a")
 IDXGIFactory4 : public IDXGIFactory3
 {
-	public:
-		virtual HRESULT STDMETHODCALLTYPE EnumAdapterByLuid(_In_ LUID AdapterLuid, _In_ REFIID riid, _COM_Outptr_ void **ppvAdapter) = 0;
-		virtual HRESULT STDMETHODCALLTYPE EnumWarpAdapter(_In_ REFIID riid, _COM_Outptr_ void **ppvAdapter) = 0;
+	virtual HRESULT STDMETHODCALLTYPE EnumAdapterByLuid(_In_ LUID AdapterLuid, _In_ REFIID riid, _COM_Outptr_ void **ppvAdapter) = 0;
+	virtual HRESULT STDMETHODCALLTYPE EnumWarpAdapter(_In_ REFIID riid, _COM_Outptr_ void **ppvAdapter) = 0;
 };
 
 // "Windows 10 SDK" -> "dxgi1_5.h"
@@ -1150,8 +1147,7 @@ typedef enum DXGI_FEATURE
 MIDL_INTERFACE("7632e1f5-ee65-4dca-87fd-84cd75f8838d")
 IDXGIFactory5 : public IDXGIFactory4
 {
-	public:
-		virtual HRESULT STDMETHODCALLTYPE CheckFeatureSupport(DXGI_FEATURE Feature, _Inout_updates_bytes_(FeatureSupportDataSize) void *pFeatureSupportData, UINT FeatureSupportDataSize) = 0;
+	virtual HRESULT STDMETHODCALLTYPE CheckFeatureSupport(DXGI_FEATURE Feature, _Inout_updates_bytes_(FeatureSupportDataSize) void *pFeatureSupportData, UINT FeatureSupportDataSize) = 0;
 };
 
 // "Microsoft DirectX SDK (June 2010)" -> "DXGI.h"
@@ -1169,13 +1165,15 @@ struct DXGI_ADAPTER_DESC
 };
 
 // "Microsoft DirectX SDK (June 2010)" -> "DXGI.h"
-struct IDXGIAdapter : public IDXGIObject
-{
-	public:
+PRAGMA_WARNING_PUSH
+PRAGMA_WARNING_DISABLE_MSVC(5204)	// warning C5204: 'IDXGIObject': class has virtual functions, but its trivial destructor is not virtual; instances of objects derived from this class may not be destructed correctly
+	struct IDXGIAdapter : public IDXGIObject
+	{
 		virtual HRESULT STDMETHODCALLTYPE EnumOutputs(UINT Output, __out IDXGIOutput **ppOutput) = 0;
 		virtual HRESULT STDMETHODCALLTYPE GetDesc(__out DXGI_ADAPTER_DESC *pDesc) = 0;
 		virtual HRESULT STDMETHODCALLTYPE CheckInterfaceSupport(__in REFGUID InterfaceName, __out LARGE_INTEGER *pUMDVersion) = 0;
-};
+	};
+PRAGMA_WARNING_POP
 
 // "Microsoft DirectX SDK (June 2010)" -> "DXGI.h"
 struct DXGI_SURFACE_DESC
@@ -1204,25 +1202,27 @@ enum DXGI_RESIDENCY
 MIDL_INTERFACE("54ec77fa-1377-44e6-8c32-88fd5f44c84c")
 IDXGIDevice : public IDXGIObject
 {
-	public:
-		virtual HRESULT STDMETHODCALLTYPE GetAdapter(__out IDXGIAdapter **pAdapter) = 0;
-		virtual HRESULT STDMETHODCALLTYPE CreateSurface(__in const DXGI_SURFACE_DESC *pDesc, UINT NumSurfaces, DXGI_USAGE Usage, __in_opt const DXGI_SHARED_RESOURCE *pSharedResource, __out IDXGISurface **ppSurface) = 0;
-		virtual HRESULT STDMETHODCALLTYPE QueryResourceResidency(__in_ecount(NumResources) IUnknown *const *ppResources, __out_ecount(NumResources) DXGI_RESIDENCY *pResidencyStatus, UINT NumResources) = 0;
-		virtual HRESULT STDMETHODCALLTYPE SetGPUThreadPriority(INT Priority) = 0;
-		virtual HRESULT STDMETHODCALLTYPE GetGPUThreadPriority(__out INT *pPriority) = 0;
+	virtual HRESULT STDMETHODCALLTYPE GetAdapter(__out IDXGIAdapter **pAdapter) = 0;
+	virtual HRESULT STDMETHODCALLTYPE CreateSurface(__in const DXGI_SURFACE_DESC *pDesc, UINT NumSurfaces, DXGI_USAGE Usage, __in_opt const DXGI_SHARED_RESOURCE *pSharedResource, __out IDXGISurface **ppSurface) = 0;
+	virtual HRESULT STDMETHODCALLTYPE QueryResourceResidency(__in_ecount(NumResources) IUnknown *const *ppResources, __out_ecount(NumResources) DXGI_RESIDENCY *pResidencyStatus, UINT NumResources) = 0;
+	virtual HRESULT STDMETHODCALLTYPE SetGPUThreadPriority(INT Priority) = 0;
+	virtual HRESULT STDMETHODCALLTYPE GetGPUThreadPriority(__out INT *pPriority) = 0;
 };
 
 // "Microsoft DirectX SDK (June 2010)" -> "DXGI.h"
-struct IDXGIDeviceSubObject : public IDXGIObject
-{
-	public:
+PRAGMA_WARNING_PUSH
+PRAGMA_WARNING_DISABLE_MSVC(5204)	// warning C5204: 'IDXGIObject': class has virtual functions, but its trivial destructor is not virtual; instances of objects derived from this class may not be destructed correctly
+	struct IDXGIDeviceSubObject : public IDXGIObject
+	{
 		virtual HRESULT STDMETHODCALLTYPE GetDevice(__in REFIID riid, __out void **ppDevice) = 0;
-};
+	};
+PRAGMA_WARNING_POP
 
 // "Microsoft DirectX SDK (June 2010)" -> "DXGI.h"
-struct IDXGISwapChain : public IDXGIDeviceSubObject
-{
-	public:
+PRAGMA_WARNING_PUSH
+PRAGMA_WARNING_DISABLE_MSVC(5204)	// warning C5204: 'IDXGIObject': class has virtual functions, but its trivial destructor is not virtual; instances of objects derived from this class may not be destructed correctly
+	struct IDXGISwapChain : public IDXGIDeviceSubObject
+	{
 		virtual HRESULT STDMETHODCALLTYPE Present(UINT SyncInterval, UINT Flags) = 0;
 		virtual HRESULT STDMETHODCALLTYPE GetBuffer(UINT Buffer, __in REFIID riid, __out void **ppSurface) = 0;
 		virtual HRESULT STDMETHODCALLTYPE SetFullscreenState(BOOL Fullscreen, __in_opt IDXGIOutput *pTarget) = 0;
@@ -1233,7 +1233,8 @@ struct IDXGISwapChain : public IDXGIDeviceSubObject
 		virtual HRESULT STDMETHODCALLTYPE GetContainingOutput(__out IDXGIOutput **ppOutput) = 0;
 		virtual HRESULT STDMETHODCALLTYPE GetFrameStatistics(__out DXGI_FRAME_STATISTICS *pStats) = 0;
 		virtual HRESULT STDMETHODCALLTYPE GetLastPresentCount(__out UINT *pLastPresentCount) = 0;
-};
+	};
+PRAGMA_WARNING_POP
 
 // "Microsoft DirectX SDK (June 2010)" -> "D3D11.h"
 enum D3D11_DEVICE_CONTEXT_TYPE
@@ -1902,9 +1903,10 @@ typedef struct D3D11_BLEND_DESC
 //[ Classes                                               ]
 //[-------------------------------------------------------]
 // "Microsoft DirectX SDK (June 2010)" -> "D3D11.h"
-struct ID3D11Device : public IUnknown
-{
-	public:
+PRAGMA_WARNING_PUSH
+PRAGMA_WARNING_DISABLE_MSVC(5204)	// warning C5204: 'IDXGIObject': class has virtual functions, but its trivial destructor is not virtual; instances of objects derived from this class may not be destructed correctly
+	struct ID3D11Device : public IUnknown
+	{
 		virtual HRESULT STDMETHODCALLTYPE CreateBuffer(__in const D3D11_BUFFER_DESC *pDesc, __in_opt const D3D11_SUBRESOURCE_DATA *pInitialData, __out_opt ID3D11Buffer* *ppBuffer) = 0;
 		virtual HRESULT STDMETHODCALLTYPE CreateTexture1D(__in const D3D11_TEXTURE1D_DESC *pDesc, __in_xcount_opt(pDesc->MipLevels * pDesc->ArraySize) const D3D11_SUBRESOURCE_DATA *pInitialData, __out_opt ID3D11Texture1D **ppTexture1D) = 0;
 		virtual HRESULT STDMETHODCALLTYPE CreateTexture2D(__in const D3D11_TEXTURE2D_DESC *pDesc, __in_xcount_opt(pDesc->MipLevels * pDesc->ArraySize) const D3D11_SUBRESOURCE_DATA *pInitialData, __out_opt ID3D11Texture2D **ppTexture2D) = 0;
@@ -1945,22 +1947,26 @@ struct ID3D11Device : public IUnknown
 		virtual void STDMETHODCALLTYPE GetImmediateContext(__out ID3D11DeviceContext **ppImmediateContext) = 0;
 		virtual HRESULT STDMETHODCALLTYPE SetExceptionMode(UINT RaiseFlags) = 0;
 		virtual UINT STDMETHODCALLTYPE GetExceptionMode(void) = 0;
-};
+	};
+PRAGMA_WARNING_POP
 
 // "Microsoft DirectX SDK (June 2010)" -> "D3D11.h"
-struct ID3D11DeviceChild : public IUnknown
-{
-	public:
+PRAGMA_WARNING_PUSH
+PRAGMA_WARNING_DISABLE_MSVC(5204)	// warning C5204: 'IDXGIObject': class has virtual functions, but its trivial destructor is not virtual; instances of objects derived from this class may not be destructed correctly
+	struct ID3D11DeviceChild : public IUnknown
+	{
 		virtual void STDMETHODCALLTYPE GetDevice(__out ID3D11Device **ppDevice) = 0;
 		virtual HRESULT STDMETHODCALLTYPE GetPrivateData(__in REFGUID guid, __inout UINT *pDataSize, __out_bcount_opt(*pDataSize) void *pData) = 0;
 		virtual HRESULT STDMETHODCALLTYPE SetPrivateData(__in REFGUID guid, __in UINT DataSize, __in_bcount_opt(DataSize) const void *pData) = 0;
 		virtual HRESULT STDMETHODCALLTYPE SetPrivateDataInterface(__in REFGUID guid, __in_opt const IUnknown *pData) = 0;
-};
+	};
+PRAGMA_WARNING_POP
 
 // "Microsoft DirectX SDK (June 2010)" -> "D3D11.h"
-struct ID3D11DeviceContext : public ID3D11DeviceChild
-{
-	public:
+PRAGMA_WARNING_PUSH
+PRAGMA_WARNING_DISABLE_MSVC(5204)	// warning C5204: 'IDXGIObject': class has virtual functions, but its trivial destructor is not virtual; instances of objects derived from this class may not be destructed correctly
+	struct ID3D11DeviceContext : public ID3D11DeviceChild
+	{
 		virtual void STDMETHODCALLTYPE VSSetConstantBuffers(__in_range(0, D3D11_COMMONSHADER_CONSTANT_BUFFER_API_SLOT_COUNT - 1) UINT StartSlot, __in_range(0, D3D11_COMMONSHADER_CONSTANT_BUFFER_API_SLOT_COUNT - StartSlot) UINT NumBuffers, __in_ecount(NumBuffers) ID3D11Buffer* const *ppConstantBuffers) = 0;
 		virtual void STDMETHODCALLTYPE PSSetShaderResources(__in_range(0, D3D11_COMMONSHADER_INPUT_RESOURCE_SLOT_COUNT - 1) UINT StartSlot, __in_range(0, D3D11_COMMONSHADER_INPUT_RESOURCE_SLOT_COUNT - StartSlot) UINT NumViews, __in_ecount(NumViews) ID3D11ShaderResourceView* const *ppShaderResourceViews) = 0;
 		virtual void STDMETHODCALLTYPE PSSetShader(__in_opt ID3D11PixelShader *pPixelShader, __in_ecount_opt(NumClassInstances) ID3D11ClassInstance *const *ppClassInstances, UINT NumClassInstances) = 0;
@@ -2069,193 +2075,237 @@ struct ID3D11DeviceContext : public ID3D11DeviceChild
 		virtual D3D11_DEVICE_CONTEXT_TYPE STDMETHODCALLTYPE GetType(void) = 0;
 		virtual UINT STDMETHODCALLTYPE GetContextFlags(void) = 0;
 		virtual HRESULT STDMETHODCALLTYPE FinishCommandList(BOOL RestoreDeferredContextState, __out_opt ID3D11CommandList **ppCommandList) = 0;
-};
+	};
+PRAGMA_WARNING_POP
 
 // "Windows 10 SDK" -> "d3d11_1.h"
 MIDL_INTERFACE("bb2c6faa-b5fb-4082-8e6b-388b8cfa90e1")
 ID3D11DeviceContext1 : public ID3D11DeviceContext
 {
-	public:
-		virtual void STDMETHODCALLTYPE CopySubresourceRegion1(_In_ ID3D11Resource *pDstResource, _In_ UINT DstSubresource, _In_ UINT DstX, _In_ UINT DstY, _In_ UINT DstZ, _In_ ID3D11Resource *pSrcResource, _In_ UINT SrcSubresource, _In_opt_ const D3D11_BOX *pSrcBox, _In_ UINT CopyFlags) = 0;
-		virtual void STDMETHODCALLTYPE UpdateSubresource1(_In_ ID3D11Resource *pDstResource, _In_ UINT DstSubresource, _In_opt_ const D3D11_BOX *pDstBox, _In_ const void *pSrcData, _In_ UINT SrcRowPitch, _In_ UINT SrcDepthPitch, _In_ UINT CopyFlags) = 0;
-		virtual void STDMETHODCALLTYPE DiscardResource(_In_ ID3D11Resource *pResource) = 0;
-		virtual void STDMETHODCALLTYPE DiscardView(_In_ ID3D11View *pResourceView) = 0;
-		virtual void STDMETHODCALLTYPE VSSetConstantBuffers1(_In_range_( 0, D3D11_COMMONSHADER_CONSTANT_BUFFER_API_SLOT_COUNT - 1 ) UINT StartSlot, _In_range_( 0, D3D11_COMMONSHADER_CONSTANT_BUFFER_API_SLOT_COUNT - StartSlot ) UINT NumBuffers, _In_reads_opt_(NumBuffers) ID3D11Buffer *const *ppConstantBuffers, _In_reads_opt_(NumBuffers) const UINT *pFirstConstant, _In_reads_opt_(NumBuffers) const UINT *pNumConstants) = 0;
-		virtual void STDMETHODCALLTYPE HSSetConstantBuffers1(_In_range_( 0, D3D11_COMMONSHADER_CONSTANT_BUFFER_API_SLOT_COUNT - 1 ) UINT StartSlot, _In_range_( 0, D3D11_COMMONSHADER_CONSTANT_BUFFER_API_SLOT_COUNT - StartSlot ) UINT NumBuffers, _In_reads_opt_(NumBuffers) ID3D11Buffer *const *ppConstantBuffers, _In_reads_opt_(NumBuffers) const UINT *pFirstConstant, _In_reads_opt_(NumBuffers) const UINT *pNumConstants) = 0;
-		virtual void STDMETHODCALLTYPE DSSetConstantBuffers1(_In_range_( 0, D3D11_COMMONSHADER_CONSTANT_BUFFER_API_SLOT_COUNT - 1 ) UINT StartSlot, _In_range_( 0, D3D11_COMMONSHADER_CONSTANT_BUFFER_API_SLOT_COUNT - StartSlot ) UINT NumBuffers, _In_reads_opt_(NumBuffers) ID3D11Buffer *const *ppConstantBuffers, _In_reads_opt_(NumBuffers) const UINT *pFirstConstant, _In_reads_opt_(NumBuffers) const UINT *pNumConstants) = 0;
-		virtual void STDMETHODCALLTYPE GSSetConstantBuffers1(_In_range_( 0, D3D11_COMMONSHADER_CONSTANT_BUFFER_API_SLOT_COUNT - 1 ) UINT StartSlot, _In_range_( 0, D3D11_COMMONSHADER_CONSTANT_BUFFER_API_SLOT_COUNT - StartSlot ) UINT NumBuffers, _In_reads_opt_(NumBuffers) ID3D11Buffer *const *ppConstantBuffers, _In_reads_opt_(NumBuffers) const UINT *pFirstConstant, _In_reads_opt_(NumBuffers) const UINT *pNumConstants) = 0;
-		virtual void STDMETHODCALLTYPE PSSetConstantBuffers1(_In_range_( 0, D3D11_COMMONSHADER_CONSTANT_BUFFER_API_SLOT_COUNT - 1 ) UINT StartSlot, _In_range_( 0, D3D11_COMMONSHADER_CONSTANT_BUFFER_API_SLOT_COUNT - StartSlot ) UINT NumBuffers, _In_reads_opt_(NumBuffers) ID3D11Buffer *const *ppConstantBuffers, _In_reads_opt_(NumBuffers) const UINT *pFirstConstant, _In_reads_opt_(NumBuffers) const UINT *pNumConstants) = 0;
-		virtual void STDMETHODCALLTYPE CSSetConstantBuffers1(_In_range_( 0, D3D11_COMMONSHADER_CONSTANT_BUFFER_API_SLOT_COUNT - 1 ) UINT StartSlot, _In_range_( 0, D3D11_COMMONSHADER_CONSTANT_BUFFER_API_SLOT_COUNT - StartSlot ) UINT NumBuffers, _In_reads_opt_(NumBuffers) ID3D11Buffer *const *ppConstantBuffers, _In_reads_opt_(NumBuffers) const UINT *pFirstConstant, _In_reads_opt_(NumBuffers) const UINT *pNumConstants) = 0;
-		virtual void STDMETHODCALLTYPE VSGetConstantBuffers1(_In_range_( 0, D3D11_COMMONSHADER_CONSTANT_BUFFER_API_SLOT_COUNT - 1 ) UINT StartSlot, _In_range_( 0, D3D11_COMMONSHADER_CONSTANT_BUFFER_API_SLOT_COUNT - StartSlot ) UINT NumBuffers, _Out_writes_opt_(NumBuffers) ID3D11Buffer **ppConstantBuffers, _Out_writes_opt_(NumBuffers) UINT *pFirstConstant, _Out_writes_opt_(NumBuffers) UINT *pNumConstants) = 0;
-		virtual void STDMETHODCALLTYPE HSGetConstantBuffers1(_In_range_( 0, D3D11_COMMONSHADER_CONSTANT_BUFFER_API_SLOT_COUNT - 1 ) UINT StartSlot, _In_range_( 0, D3D11_COMMONSHADER_CONSTANT_BUFFER_API_SLOT_COUNT - StartSlot ) UINT NumBuffers, _Out_writes_opt_(NumBuffers) ID3D11Buffer **ppConstantBuffers, _Out_writes_opt_(NumBuffers) UINT *pFirstConstant, _Out_writes_opt_(NumBuffers) UINT *pNumConstants) = 0;
-		virtual void STDMETHODCALLTYPE DSGetConstantBuffers1(_In_range_( 0, D3D11_COMMONSHADER_CONSTANT_BUFFER_API_SLOT_COUNT - 1 ) UINT StartSlot, _In_range_( 0, D3D11_COMMONSHADER_CONSTANT_BUFFER_API_SLOT_COUNT - StartSlot ) UINT NumBuffers, _Out_writes_opt_(NumBuffers) ID3D11Buffer **ppConstantBuffers, _Out_writes_opt_(NumBuffers) UINT *pFirstConstant, _Out_writes_opt_(NumBuffers) UINT *pNumConstants) = 0;
-		virtual void STDMETHODCALLTYPE GSGetConstantBuffers1(_In_range_( 0, D3D11_COMMONSHADER_CONSTANT_BUFFER_API_SLOT_COUNT - 1 ) UINT StartSlot, _In_range_( 0, D3D11_COMMONSHADER_CONSTANT_BUFFER_API_SLOT_COUNT - StartSlot ) UINT NumBuffers, _Out_writes_opt_(NumBuffers) ID3D11Buffer **ppConstantBuffers, _Out_writes_opt_(NumBuffers) UINT *pFirstConstant, _Out_writes_opt_(NumBuffers) UINT *pNumConstants) = 0;
-		virtual void STDMETHODCALLTYPE PSGetConstantBuffers1(_In_range_( 0, D3D11_COMMONSHADER_CONSTANT_BUFFER_API_SLOT_COUNT - 1 ) UINT StartSlot, _In_range_( 0, D3D11_COMMONSHADER_CONSTANT_BUFFER_API_SLOT_COUNT - StartSlot ) UINT NumBuffers, _Out_writes_opt_(NumBuffers) ID3D11Buffer **ppConstantBuffers, _Out_writes_opt_(NumBuffers) UINT *pFirstConstant, _Out_writes_opt_(NumBuffers) UINT *pNumConstants) = 0;
-		virtual void STDMETHODCALLTYPE CSGetConstantBuffers1(_In_range_( 0, D3D11_COMMONSHADER_CONSTANT_BUFFER_API_SLOT_COUNT - 1 ) UINT StartSlot, _In_range_( 0, D3D11_COMMONSHADER_CONSTANT_BUFFER_API_SLOT_COUNT - StartSlot ) UINT NumBuffers, _Out_writes_opt_(NumBuffers) ID3D11Buffer **ppConstantBuffers, _Out_writes_opt_(NumBuffers) UINT *pFirstConstant, _Out_writes_opt_(NumBuffers) UINT *pNumConstants) = 0;
-		virtual void STDMETHODCALLTYPE SwapDeviceContextState(_In_ ID3DDeviceContextState *pState, _Outptr_opt_ ID3DDeviceContextState **ppPreviousState) = 0;
-		virtual void STDMETHODCALLTYPE ClearView(_In_ ID3D11View *pView, _In_ const FLOAT Color[ 4 ], _In_reads_opt_(NumRects) const D3D11_RECT *pRect, UINT NumRects) = 0;
-		virtual void STDMETHODCALLTYPE DiscardView1(_In_ ID3D11View *pResourceView, _In_reads_opt_(NumRects) const D3D11_RECT *pRects, UINT NumRects) = 0;
+	virtual void STDMETHODCALLTYPE CopySubresourceRegion1(_In_ ID3D11Resource *pDstResource, _In_ UINT DstSubresource, _In_ UINT DstX, _In_ UINT DstY, _In_ UINT DstZ, _In_ ID3D11Resource *pSrcResource, _In_ UINT SrcSubresource, _In_opt_ const D3D11_BOX *pSrcBox, _In_ UINT CopyFlags) = 0;
+	virtual void STDMETHODCALLTYPE UpdateSubresource1(_In_ ID3D11Resource *pDstResource, _In_ UINT DstSubresource, _In_opt_ const D3D11_BOX *pDstBox, _In_ const void *pSrcData, _In_ UINT SrcRowPitch, _In_ UINT SrcDepthPitch, _In_ UINT CopyFlags) = 0;
+	virtual void STDMETHODCALLTYPE DiscardResource(_In_ ID3D11Resource *pResource) = 0;
+	virtual void STDMETHODCALLTYPE DiscardView(_In_ ID3D11View *pResourceView) = 0;
+	virtual void STDMETHODCALLTYPE VSSetConstantBuffers1(_In_range_( 0, D3D11_COMMONSHADER_CONSTANT_BUFFER_API_SLOT_COUNT - 1 ) UINT StartSlot, _In_range_( 0, D3D11_COMMONSHADER_CONSTANT_BUFFER_API_SLOT_COUNT - StartSlot ) UINT NumBuffers, _In_reads_opt_(NumBuffers) ID3D11Buffer *const *ppConstantBuffers, _In_reads_opt_(NumBuffers) const UINT *pFirstConstant, _In_reads_opt_(NumBuffers) const UINT *pNumConstants) = 0;
+	virtual void STDMETHODCALLTYPE HSSetConstantBuffers1(_In_range_( 0, D3D11_COMMONSHADER_CONSTANT_BUFFER_API_SLOT_COUNT - 1 ) UINT StartSlot, _In_range_( 0, D3D11_COMMONSHADER_CONSTANT_BUFFER_API_SLOT_COUNT - StartSlot ) UINT NumBuffers, _In_reads_opt_(NumBuffers) ID3D11Buffer *const *ppConstantBuffers, _In_reads_opt_(NumBuffers) const UINT *pFirstConstant, _In_reads_opt_(NumBuffers) const UINT *pNumConstants) = 0;
+	virtual void STDMETHODCALLTYPE DSSetConstantBuffers1(_In_range_( 0, D3D11_COMMONSHADER_CONSTANT_BUFFER_API_SLOT_COUNT - 1 ) UINT StartSlot, _In_range_( 0, D3D11_COMMONSHADER_CONSTANT_BUFFER_API_SLOT_COUNT - StartSlot ) UINT NumBuffers, _In_reads_opt_(NumBuffers) ID3D11Buffer *const *ppConstantBuffers, _In_reads_opt_(NumBuffers) const UINT *pFirstConstant, _In_reads_opt_(NumBuffers) const UINT *pNumConstants) = 0;
+	virtual void STDMETHODCALLTYPE GSSetConstantBuffers1(_In_range_( 0, D3D11_COMMONSHADER_CONSTANT_BUFFER_API_SLOT_COUNT - 1 ) UINT StartSlot, _In_range_( 0, D3D11_COMMONSHADER_CONSTANT_BUFFER_API_SLOT_COUNT - StartSlot ) UINT NumBuffers, _In_reads_opt_(NumBuffers) ID3D11Buffer *const *ppConstantBuffers, _In_reads_opt_(NumBuffers) const UINT *pFirstConstant, _In_reads_opt_(NumBuffers) const UINT *pNumConstants) = 0;
+	virtual void STDMETHODCALLTYPE PSSetConstantBuffers1(_In_range_( 0, D3D11_COMMONSHADER_CONSTANT_BUFFER_API_SLOT_COUNT - 1 ) UINT StartSlot, _In_range_( 0, D3D11_COMMONSHADER_CONSTANT_BUFFER_API_SLOT_COUNT - StartSlot ) UINT NumBuffers, _In_reads_opt_(NumBuffers) ID3D11Buffer *const *ppConstantBuffers, _In_reads_opt_(NumBuffers) const UINT *pFirstConstant, _In_reads_opt_(NumBuffers) const UINT *pNumConstants) = 0;
+	virtual void STDMETHODCALLTYPE CSSetConstantBuffers1(_In_range_( 0, D3D11_COMMONSHADER_CONSTANT_BUFFER_API_SLOT_COUNT - 1 ) UINT StartSlot, _In_range_( 0, D3D11_COMMONSHADER_CONSTANT_BUFFER_API_SLOT_COUNT - StartSlot ) UINT NumBuffers, _In_reads_opt_(NumBuffers) ID3D11Buffer *const *ppConstantBuffers, _In_reads_opt_(NumBuffers) const UINT *pFirstConstant, _In_reads_opt_(NumBuffers) const UINT *pNumConstants) = 0;
+	virtual void STDMETHODCALLTYPE VSGetConstantBuffers1(_In_range_( 0, D3D11_COMMONSHADER_CONSTANT_BUFFER_API_SLOT_COUNT - 1 ) UINT StartSlot, _In_range_( 0, D3D11_COMMONSHADER_CONSTANT_BUFFER_API_SLOT_COUNT - StartSlot ) UINT NumBuffers, _Out_writes_opt_(NumBuffers) ID3D11Buffer **ppConstantBuffers, _Out_writes_opt_(NumBuffers) UINT *pFirstConstant, _Out_writes_opt_(NumBuffers) UINT *pNumConstants) = 0;
+	virtual void STDMETHODCALLTYPE HSGetConstantBuffers1(_In_range_( 0, D3D11_COMMONSHADER_CONSTANT_BUFFER_API_SLOT_COUNT - 1 ) UINT StartSlot, _In_range_( 0, D3D11_COMMONSHADER_CONSTANT_BUFFER_API_SLOT_COUNT - StartSlot ) UINT NumBuffers, _Out_writes_opt_(NumBuffers) ID3D11Buffer **ppConstantBuffers, _Out_writes_opt_(NumBuffers) UINT *pFirstConstant, _Out_writes_opt_(NumBuffers) UINT *pNumConstants) = 0;
+	virtual void STDMETHODCALLTYPE DSGetConstantBuffers1(_In_range_( 0, D3D11_COMMONSHADER_CONSTANT_BUFFER_API_SLOT_COUNT - 1 ) UINT StartSlot, _In_range_( 0, D3D11_COMMONSHADER_CONSTANT_BUFFER_API_SLOT_COUNT - StartSlot ) UINT NumBuffers, _Out_writes_opt_(NumBuffers) ID3D11Buffer **ppConstantBuffers, _Out_writes_opt_(NumBuffers) UINT *pFirstConstant, _Out_writes_opt_(NumBuffers) UINT *pNumConstants) = 0;
+	virtual void STDMETHODCALLTYPE GSGetConstantBuffers1(_In_range_( 0, D3D11_COMMONSHADER_CONSTANT_BUFFER_API_SLOT_COUNT - 1 ) UINT StartSlot, _In_range_( 0, D3D11_COMMONSHADER_CONSTANT_BUFFER_API_SLOT_COUNT - StartSlot ) UINT NumBuffers, _Out_writes_opt_(NumBuffers) ID3D11Buffer **ppConstantBuffers, _Out_writes_opt_(NumBuffers) UINT *pFirstConstant, _Out_writes_opt_(NumBuffers) UINT *pNumConstants) = 0;
+	virtual void STDMETHODCALLTYPE PSGetConstantBuffers1(_In_range_( 0, D3D11_COMMONSHADER_CONSTANT_BUFFER_API_SLOT_COUNT - 1 ) UINT StartSlot, _In_range_( 0, D3D11_COMMONSHADER_CONSTANT_BUFFER_API_SLOT_COUNT - StartSlot ) UINT NumBuffers, _Out_writes_opt_(NumBuffers) ID3D11Buffer **ppConstantBuffers, _Out_writes_opt_(NumBuffers) UINT *pFirstConstant, _Out_writes_opt_(NumBuffers) UINT *pNumConstants) = 0;
+	virtual void STDMETHODCALLTYPE CSGetConstantBuffers1(_In_range_( 0, D3D11_COMMONSHADER_CONSTANT_BUFFER_API_SLOT_COUNT - 1 ) UINT StartSlot, _In_range_( 0, D3D11_COMMONSHADER_CONSTANT_BUFFER_API_SLOT_COUNT - StartSlot ) UINT NumBuffers, _Out_writes_opt_(NumBuffers) ID3D11Buffer **ppConstantBuffers, _Out_writes_opt_(NumBuffers) UINT *pFirstConstant, _Out_writes_opt_(NumBuffers) UINT *pNumConstants) = 0;
+	virtual void STDMETHODCALLTYPE SwapDeviceContextState(_In_ ID3DDeviceContextState *pState, _Outptr_opt_ ID3DDeviceContextState **ppPreviousState) = 0;
+	virtual void STDMETHODCALLTYPE ClearView(_In_ ID3D11View *pView, _In_ const FLOAT Color[ 4 ], _In_reads_opt_(NumRects) const D3D11_RECT *pRect, UINT NumRects) = 0;
+	virtual void STDMETHODCALLTYPE DiscardView1(_In_ ID3D11View *pResourceView, _In_reads_opt_(NumRects) const D3D11_RECT *pRects, UINT NumRects) = 0;
 };
 
 // "Microsoft DirectX SDK (June 2010)" -> "D3D11.h"
-struct ID3D11InputLayout : public ID3D11DeviceChild
-{
-	// Nothing here
-};
+PRAGMA_WARNING_PUSH
+PRAGMA_WARNING_DISABLE_MSVC(5204)	// warning C5204: 'IDXGIObject': class has virtual functions, but its trivial destructor is not virtual; instances of objects derived from this class may not be destructed correctly
+	struct ID3D11InputLayout : public ID3D11DeviceChild
+	{
+		// Nothing here
+	};
+PRAGMA_WARNING_POP
 
 // "Microsoft DirectX SDK (June 2010)" -> "D3D11.h"
-struct ID3D11SamplerState : public ID3D11DeviceChild
-{
-	public:
+PRAGMA_WARNING_PUSH
+PRAGMA_WARNING_DISABLE_MSVC(5204)	// warning C5204: 'IDXGIObject': class has virtual functions, but its trivial destructor is not virtual; instances of objects derived from this class may not be destructed correctly
+	struct ID3D11SamplerState : public ID3D11DeviceChild
+	{
 		virtual void STDMETHODCALLTYPE GetDesc(__out D3D11_SAMPLER_DESC *pDesc) = 0;
-};
+	};
+PRAGMA_WARNING_POP
 
 // "Microsoft DirectX SDK (June 2010)" -> "D3D11.h"
-struct ID3D11RasterizerState : public ID3D11DeviceChild
-{
-	public:
+PRAGMA_WARNING_PUSH
+PRAGMA_WARNING_DISABLE_MSVC(5204)	// warning C5204: 'IDXGIObject': class has virtual functions, but its trivial destructor is not virtual; instances of objects derived from this class may not be destructed correctly
+	struct ID3D11RasterizerState : public ID3D11DeviceChild
+	{
 		virtual void STDMETHODCALLTYPE GetDesc(__out D3D11_RASTERIZER_DESC *pDesc) = 0;
-};
+	};
+PRAGMA_WARNING_POP
 
 // "Microsoft DirectX SDK (June 2010)" -> "D3D11.h"
-struct ID3D11BlendState : public ID3D11DeviceChild
-{
-	public:
+PRAGMA_WARNING_PUSH
+PRAGMA_WARNING_DISABLE_MSVC(5204)	// warning C5204: 'IDXGIObject': class has virtual functions, but its trivial destructor is not virtual; instances of objects derived from this class may not be destructed correctly
+	struct ID3D11BlendState : public ID3D11DeviceChild
+	{
 		virtual void STDMETHODCALLTYPE GetDesc(__out D3D11_BLEND_DESC *pDesc) = 0;
-};
+	};
+PRAGMA_WARNING_POP
 
 // "Microsoft DirectX SDK (June 2010)" -> "D3D11.h"
-struct ID3D11DepthStencilState : public ID3D11DeviceChild
-{
-	public:
+PRAGMA_WARNING_PUSH
+PRAGMA_WARNING_DISABLE_MSVC(5204)	// warning C5204: 'IDXGIObject': class has virtual functions, but its trivial destructor is not virtual; instances of objects derived from this class may not be destructed correctly
+	struct ID3D11DepthStencilState : public ID3D11DeviceChild
+	{
 		virtual void STDMETHODCALLTYPE GetDesc(__out D3D11_DEPTH_STENCIL_DESC *pDesc) = 0;
-};
+	};
+PRAGMA_WARNING_POP
 
 // "Microsoft DirectX SDK (June 2010)" -> "D3D11.h"
-struct ID3D11VertexShader : public ID3D11DeviceChild
-{
-	// Nothing here
-};
+PRAGMA_WARNING_PUSH
+PRAGMA_WARNING_DISABLE_MSVC(5204)	// warning C5204: 'IDXGIObject': class has virtual functions, but its trivial destructor is not virtual; instances of objects derived from this class may not be destructed correctly
+	struct ID3D11VertexShader : public ID3D11DeviceChild
+	{
+		// Nothing here
+	};
+PRAGMA_WARNING_POP
 
 // "Microsoft DirectX SDK (June 2010)" -> "D3D11.h"
-struct ID3D11HullShader : public ID3D11DeviceChild
-{
-	// Nothing here
-};
+PRAGMA_WARNING_PUSH
+PRAGMA_WARNING_DISABLE_MSVC(5204)	// warning C5204: 'IDXGIObject': class has virtual functions, but its trivial destructor is not virtual; instances of objects derived from this class may not be destructed correctly
+	struct ID3D11HullShader : public ID3D11DeviceChild
+	{
+		// Nothing here
+	};
+PRAGMA_WARNING_POP
 
 // "Microsoft DirectX SDK (June 2010)" -> "D3D11.h"
-struct ID3D11DomainShader : public ID3D11DeviceChild
-{
-	// Nothing here
-};
+PRAGMA_WARNING_PUSH
+PRAGMA_WARNING_DISABLE_MSVC(5204)	// warning C5204: 'IDXGIObject': class has virtual functions, but its trivial destructor is not virtual; instances of objects derived from this class may not be destructed correctly
+	struct ID3D11DomainShader : public ID3D11DeviceChild
+	{
+		// Nothing here
+	};
+PRAGMA_WARNING_POP
 
 // "Microsoft DirectX SDK (June 2010)" -> "D3D11.h"
-struct ID3D11GeometryShader : public ID3D11DeviceChild
-{
-	// Nothing here
-};
+PRAGMA_WARNING_PUSH
+PRAGMA_WARNING_DISABLE_MSVC(5204)	// warning C5204: 'IDXGIObject': class has virtual functions, but its trivial destructor is not virtual; instances of objects derived from this class may not be destructed correctly
+	struct ID3D11GeometryShader : public ID3D11DeviceChild
+	{
+		// Nothing here
+	};
+PRAGMA_WARNING_POP
 
 // "Microsoft DirectX SDK (June 2010)" -> "D3D11.h"
-struct ID3D11PixelShader : public ID3D11DeviceChild
-{
-	// Nothing here
-};
+PRAGMA_WARNING_PUSH
+PRAGMA_WARNING_DISABLE_MSVC(5204)	// warning C5204: 'IDXGIObject': class has virtual functions, but its trivial destructor is not virtual; instances of objects derived from this class may not be destructed correctly
+	struct ID3D11PixelShader : public ID3D11DeviceChild
+	{
+		// Nothing here
+	};
+PRAGMA_WARNING_POP
 
 // "Microsoft DirectX SDK (June 2010)" -> "D3D11.h"
-struct ID3D11ComputeShader : public ID3D11DeviceChild
-{
-	// Nothing here
-};
+PRAGMA_WARNING_PUSH
+PRAGMA_WARNING_DISABLE_MSVC(5204)	// warning C5204: 'IDXGIObject': class has virtual functions, but its trivial destructor is not virtual; instances of objects derived from this class may not be destructed correctly
+	struct ID3D11ComputeShader : public ID3D11DeviceChild
+	{
+		// Nothing here
+	};
+PRAGMA_WARNING_POP
 
 // "Microsoft DirectX SDK (June 2010)" -> "D3D11.h"
-struct ID3D11Resource : public ID3D11DeviceChild
-{
-	public:
+PRAGMA_WARNING_PUSH
+PRAGMA_WARNING_DISABLE_MSVC(5204)	// warning C5204: 'IDXGIObject': class has virtual functions, but its trivial destructor is not virtual; instances of objects derived from this class may not be destructed correctly
+	struct ID3D11Resource : public ID3D11DeviceChild
+	{
 		virtual void STDMETHODCALLTYPE GetType(__out D3D11_RESOURCE_DIMENSION *pResourceDimension) = 0;
 		virtual void STDMETHODCALLTYPE SetEvictionPriority(__in UINT EvictionPriority) = 0;
 		virtual UINT STDMETHODCALLTYPE GetEvictionPriority(void) = 0;
-};
+	};
+PRAGMA_WARNING_POP
 
 // "Microsoft DirectX SDK (June 2010)" -> "D3D11.h"
-struct ID3D11Buffer : public ID3D11Resource
-{
-	public:
+PRAGMA_WARNING_PUSH
+PRAGMA_WARNING_DISABLE_MSVC(5204)	// warning C5204: 'IDXGIObject': class has virtual functions, but its trivial destructor is not virtual; instances of objects derived from this class may not be destructed correctly
+	struct ID3D11Buffer : public ID3D11Resource
+	{
 		virtual void STDMETHODCALLTYPE GetDesc(__out D3D11_BUFFER_DESC *pDesc) = 0;
-};
+	};
+PRAGMA_WARNING_POP
 
 // "Microsoft DirectX SDK (June 2010)" -> "D3D11.h"
 MIDL_INTERFACE("f8fb5c27-c6b3-4f75-a4c8-439af2ef564c")
 ID3D11Texture1D : public ID3D11Resource
 {
-	public:
-		virtual void STDMETHODCALLTYPE GetDesc(_Out_ D3D11_TEXTURE1D_DESC *pDesc) = 0;
+	virtual void STDMETHODCALLTYPE GetDesc(_Out_ D3D11_TEXTURE1D_DESC *pDesc) = 0;
 };
 
 // "Microsoft DirectX SDK (June 2010)" -> "D3D11.h"
 MIDL_INTERFACE("6f15aaf2-d208-4e89-9ab4-489535d34f9c")
 ID3D11Texture2D : public ID3D11Resource
 {
-	public:
-		virtual void STDMETHODCALLTYPE GetDesc(__out D3D11_TEXTURE2D_DESC *pDesc) = 0;
+	virtual void STDMETHODCALLTYPE GetDesc(__out D3D11_TEXTURE2D_DESC *pDesc) = 0;
 };
 
 // "Microsoft DirectX SDK (June 2010)" -> "D3D11.h"
 MIDL_INTERFACE("037e866e-f56d-4357-a8af-9dabbe6e250e")
 ID3D11Texture3D : public ID3D11Resource
 {
-	public:
-		virtual void STDMETHODCALLTYPE GetDesc(_Out_ D3D11_TEXTURE3D_DESC *pDesc) = 0;
+	virtual void STDMETHODCALLTYPE GetDesc(_Out_ D3D11_TEXTURE3D_DESC *pDesc) = 0;
 };
 
 // "Microsoft DirectX SDK (June 2010)" -> "D3D11.h"
-struct ID3D11View : public ID3D11DeviceChild
-{
-	public:
+PRAGMA_WARNING_PUSH
+PRAGMA_WARNING_DISABLE_MSVC(5204)	// warning C5204: 'IDXGIObject': class has virtual functions, but its trivial destructor is not virtual; instances of objects derived from this class may not be destructed correctly
+	struct ID3D11View : public ID3D11DeviceChild
+	{
 		virtual void STDMETHODCALLTYPE GetResource(__out ID3D11Resource **ppResource) = 0;
-};
+	};
+PRAGMA_WARNING_POP
 
 // "Microsoft DirectX SDK (June 2010)" -> "D3D11.h"
-struct ID3D11ShaderResourceView : public ID3D11View
-{
-	public:
+PRAGMA_WARNING_PUSH
+PRAGMA_WARNING_DISABLE_MSVC(5204)	// warning C5204: 'IDXGIObject': class has virtual functions, but its trivial destructor is not virtual; instances of objects derived from this class may not be destructed correctly
+	struct ID3D11ShaderResourceView : public ID3D11View
+	{
 		virtual void STDMETHODCALLTYPE GetDesc(__out D3D11_SHADER_RESOURCE_VIEW_DESC *pDesc) = 0;
-};
+	};
+PRAGMA_WARNING_POP
 
 // "Microsoft DirectX SDK (June 2010)" -> "D3D11.h"
-struct ID3D11UnorderedAccessView : public ID3D11View
-{
-	public:
+PRAGMA_WARNING_PUSH
+PRAGMA_WARNING_DISABLE_MSVC(5204)	// warning C5204: 'IDXGIObject': class has virtual functions, but its trivial destructor is not virtual; instances of objects derived from this class may not be destructed correctly
+	struct ID3D11UnorderedAccessView : public ID3D11View
+	{
 		virtual void STDMETHODCALLTYPE GetDesc(__out D3D11_UNORDERED_ACCESS_VIEW_DESC *pDesc) = 0;
-};
+	};
+PRAGMA_WARNING_POP
 
 // "Microsoft DirectX SDK (June 2010)" -> "D3D11.h"
-struct ID3D11RenderTargetView : public ID3D11View
-{
-	public:
+PRAGMA_WARNING_PUSH
+PRAGMA_WARNING_DISABLE_MSVC(5204)	// warning C5204: 'IDXGIObject': class has virtual functions, but its trivial destructor is not virtual; instances of objects derived from this class may not be destructed correctly
+	struct ID3D11RenderTargetView : public ID3D11View
+	{
 		virtual void STDMETHODCALLTYPE GetDesc(__out D3D11_RENDER_TARGET_VIEW_DESC *pDesc) = 0;
-};
+	};
+PRAGMA_WARNING_POP
 
 // "Microsoft DirectX SDK (June 2010)" -> "D3D11.h"
-struct ID3D11DepthStencilView : public ID3D11View
-{
-	public:
+PRAGMA_WARNING_PUSH
+PRAGMA_WARNING_DISABLE_MSVC(5204)	// warning C5204: 'IDXGIObject': class has virtual functions, but its trivial destructor is not virtual; instances of objects derived from this class may not be destructed correctly
+	struct ID3D11DepthStencilView : public ID3D11View
+	{
 		virtual void STDMETHODCALLTYPE GetDesc(__out D3D11_DEPTH_STENCIL_VIEW_DESC *pDesc) = 0;
-};
+	};
+PRAGMA_WARNING_POP
 
 // "Microsoft DirectX SDK (June 2010)" -> "D3Dcommon.h"
-struct ID3D10Blob : public IUnknown
-{
-	public:
+PRAGMA_WARNING_PUSH
+PRAGMA_WARNING_DISABLE_MSVC(5204)	// warning C5204: 'IDXGIObject': class has virtual functions, but its trivial destructor is not virtual; instances of objects derived from this class may not be destructed correctly
+	struct ID3D10Blob : public IUnknown
+	{
 		virtual LPVOID STDMETHODCALLTYPE GetBufferPointer(void) = 0;
 		virtual SIZE_T STDMETHODCALLTYPE GetBufferSize(void) = 0;
-};
+	};
+PRAGMA_WARNING_POP
 
 // "Microsoft DirectX SDK (June 2010)" -> "D3D11.h"
-struct ID3D11Asynchronous : public ID3D11DeviceChild
-{
-	public:
+PRAGMA_WARNING_PUSH
+PRAGMA_WARNING_DISABLE_MSVC(5204)	// warning C5204: 'IDXGIObject': class has virtual functions, but its trivial destructor is not virtual; instances of objects derived from this class may not be destructed correctly
+	struct ID3D11Asynchronous : public ID3D11DeviceChild
+	{
 		virtual UINT STDMETHODCALLTYPE GetDataSize(void) = 0;
-};
+	};
+PRAGMA_WARNING_POP
 
 // "Microsoft DirectX SDK (June 2010)" -> "D3D11.h"
 enum D3D11_QUERY
@@ -2286,11 +2336,13 @@ struct D3D11_QUERY_DESC
 };
 
 // "Microsoft DirectX SDK (June 2010)" -> "D3D11.h"
-struct ID3D11Query : public ID3D11Asynchronous
-{
-	public:
+PRAGMA_WARNING_PUSH
+PRAGMA_WARNING_DISABLE_MSVC(5204)	// warning C5204: 'IDXGIObject': class has virtual functions, but its trivial destructor is not virtual; instances of objects derived from this class may not be destructed correctly
+	struct ID3D11Query : public ID3D11Asynchronous
+	{
 		virtual void STDMETHODCALLTYPE GetDesc(__out D3D11_QUERY_DESC *pDesc) = 0;
-};
+	};
+PRAGMA_WARNING_POP
 
 // "Microsoft DirectX SDK (June 2010)" -> "D3D11.h"
 typedef struct D3D11_QUERY_DATA_PIPELINE_STATISTICS
@@ -2319,16 +2371,15 @@ typedef enum D3D11_RLDO_FLAGS
 MIDL_INTERFACE("79cf2233-7536-4948-9d36-1e4692dc5760")
 ID3D11Debug : public IUnknown
 {
-	public:
-		virtual HRESULT STDMETHODCALLTYPE SetFeatureMask(UINT Mask) = 0;
-		virtual UINT STDMETHODCALLTYPE GetFeatureMask(void) = 0;
-		virtual HRESULT STDMETHODCALLTYPE SetPresentPerRenderOpDelay(UINT Milliseconds) = 0;
-		virtual UINT STDMETHODCALLTYPE GetPresentPerRenderOpDelay(void) = 0;
-		virtual HRESULT STDMETHODCALLTYPE SetSwapChain(__in_opt IDXGISwapChain *pSwapChain) = 0;
-		virtual HRESULT STDMETHODCALLTYPE GetSwapChain(__out IDXGISwapChain **ppSwapChain) = 0;
-		virtual HRESULT STDMETHODCALLTYPE ValidateContext(__in ID3D11DeviceContext *pContext) = 0;
-		virtual HRESULT STDMETHODCALLTYPE ReportLiveDeviceObjects(D3D11_RLDO_FLAGS Flags) = 0;
-		virtual HRESULT STDMETHODCALLTYPE ValidateContextForDispatch(__in ID3D11DeviceContext *pContext) = 0;
+	virtual HRESULT STDMETHODCALLTYPE SetFeatureMask(UINT Mask) = 0;
+	virtual UINT STDMETHODCALLTYPE GetFeatureMask(void) = 0;
+	virtual HRESULT STDMETHODCALLTYPE SetPresentPerRenderOpDelay(UINT Milliseconds) = 0;
+	virtual UINT STDMETHODCALLTYPE GetPresentPerRenderOpDelay(void) = 0;
+	virtual HRESULT STDMETHODCALLTYPE SetSwapChain(__in_opt IDXGISwapChain *pSwapChain) = 0;
+	virtual HRESULT STDMETHODCALLTYPE GetSwapChain(__out IDXGISwapChain **ppSwapChain) = 0;
+	virtual HRESULT STDMETHODCALLTYPE ValidateContext(__in ID3D11DeviceContext *pContext) = 0;
+	virtual HRESULT STDMETHODCALLTYPE ReportLiveDeviceObjects(D3D11_RLDO_FLAGS Flags) = 0;
+	virtual HRESULT STDMETHODCALLTYPE ValidateContextForDispatch(__in ID3D11DeviceContext *pContext) = 0;
 };
 
 // "Microsoft DirectX SDK (June 2010)" -> "D3D11SDKLayers.h"
@@ -2404,53 +2455,51 @@ typedef struct D3D11_INFO_QUEUE_FILTER
 MIDL_INTERFACE("6543dbb6-1b48-42f5-ab82-e97ec74326f6")
 ID3D11InfoQueue : public IUnknown
 {
-	public:
-		virtual HRESULT STDMETHODCALLTYPE SetMessageCountLimit(_In_ UINT64 MessageCountLimit) = 0;
-		virtual void STDMETHODCALLTYPE ClearStoredMessages(void) = 0;
-		virtual HRESULT STDMETHODCALLTYPE GetMessage(_In_ UINT64 MessageIndex, _Out_writes_bytes_opt_(*pMessageByteLength) D3D11_MESSAGE *pMessage, _Inout_ SIZE_T *pMessageByteLength) = 0;
-		virtual UINT64 STDMETHODCALLTYPE GetNumMessagesAllowedByStorageFilter(void) = 0;
-		virtual UINT64 STDMETHODCALLTYPE GetNumMessagesDeniedByStorageFilter(void) = 0;
-		virtual UINT64 STDMETHODCALLTYPE GetNumStoredMessages(void) = 0;
-		virtual UINT64 STDMETHODCALLTYPE GetNumStoredMessagesAllowedByRetrievalFilter(void) = 0;
-		virtual UINT64 STDMETHODCALLTYPE GetNumMessagesDiscardedByMessageCountLimit(void) = 0;
-		virtual UINT64 STDMETHODCALLTYPE GetMessageCountLimit(void) = 0;
-		virtual HRESULT STDMETHODCALLTYPE AddStorageFilterEntries(_In_ D3D11_INFO_QUEUE_FILTER *pFilter) = 0;
-		virtual HRESULT STDMETHODCALLTYPE GetStorageFilter(_Out_writes_bytes_opt_(*pFilterByteLength) D3D11_INFO_QUEUE_FILTER *pFilter, _Inout_ SIZE_T *pFilterByteLength) = 0;
-		virtual void STDMETHODCALLTYPE ClearStorageFilter(void) = 0;
-		virtual HRESULT STDMETHODCALLTYPE PushEmptyStorageFilter(void) = 0;
-		virtual HRESULT STDMETHODCALLTYPE PushCopyOfStorageFilter(void) = 0;
-		virtual HRESULT STDMETHODCALLTYPE PushStorageFilter(_In_ D3D11_INFO_QUEUE_FILTER *pFilter) = 0;
-		virtual void STDMETHODCALLTYPE PopStorageFilter(void) = 0;
-		virtual UINT STDMETHODCALLTYPE GetStorageFilterStackSize(void) = 0;
-		virtual HRESULT STDMETHODCALLTYPE AddRetrievalFilterEntries(_In_ D3D11_INFO_QUEUE_FILTER *pFilter) = 0;
-		virtual HRESULT STDMETHODCALLTYPE GetRetrievalFilter(_Out_writes_bytes_opt_(*pFilterByteLength) D3D11_INFO_QUEUE_FILTER *pFilter, _Inout_ SIZE_T *pFilterByteLength) = 0;
-		virtual void STDMETHODCALLTYPE ClearRetrievalFilter(void) = 0;
-		virtual HRESULT STDMETHODCALLTYPE PushEmptyRetrievalFilter(void) = 0;
-		virtual HRESULT STDMETHODCALLTYPE PushCopyOfRetrievalFilter(void) = 0;
-		virtual HRESULT STDMETHODCALLTYPE PushRetrievalFilter(_In_ D3D11_INFO_QUEUE_FILTER *pFilter) = 0;
-		virtual void STDMETHODCALLTYPE PopRetrievalFilter(void) = 0;
-		virtual UINT STDMETHODCALLTYPE GetRetrievalFilterStackSize(void) = 0;
-		virtual HRESULT STDMETHODCALLTYPE AddMessage(_In_ D3D11_MESSAGE_CATEGORY Category, _In_ D3D11_MESSAGE_SEVERITY Severity, _In_ D3D11_MESSAGE_ID ID, _In_ LPCSTR pDescription) = 0;
-		virtual HRESULT STDMETHODCALLTYPE AddApplicationMessage(_In_ D3D11_MESSAGE_SEVERITY Severity, _In_ LPCSTR pDescription) = 0;
-		virtual HRESULT STDMETHODCALLTYPE SetBreakOnCategory(_In_ D3D11_MESSAGE_CATEGORY Category, _In_ BOOL bEnable) = 0;
-		virtual HRESULT STDMETHODCALLTYPE SetBreakOnSeverity(_In_ D3D11_MESSAGE_SEVERITY Severity, _In_ BOOL bEnable) = 0;
-		virtual HRESULT STDMETHODCALLTYPE SetBreakOnID(_In_ D3D11_MESSAGE_ID ID, _In_ BOOL bEnable) = 0;
-		virtual BOOL STDMETHODCALLTYPE GetBreakOnCategory(_In_ D3D11_MESSAGE_CATEGORY Category) = 0;
-		virtual BOOL STDMETHODCALLTYPE GetBreakOnSeverity(_In_ D3D11_MESSAGE_SEVERITY Severity) = 0;
-		virtual BOOL STDMETHODCALLTYPE GetBreakOnID(_In_ D3D11_MESSAGE_ID ID) = 0;
-		virtual void STDMETHODCALLTYPE SetMuteDebugOutput(_In_ BOOL bMute) = 0;
-		virtual BOOL STDMETHODCALLTYPE GetMuteDebugOutput(void) = 0;
+	virtual HRESULT STDMETHODCALLTYPE SetMessageCountLimit(_In_ UINT64 MessageCountLimit) = 0;
+	virtual void STDMETHODCALLTYPE ClearStoredMessages(void) = 0;
+	virtual HRESULT STDMETHODCALLTYPE GetMessage(_In_ UINT64 MessageIndex, _Out_writes_bytes_opt_(*pMessageByteLength) D3D11_MESSAGE *pMessage, _Inout_ SIZE_T *pMessageByteLength) = 0;
+	virtual UINT64 STDMETHODCALLTYPE GetNumMessagesAllowedByStorageFilter(void) = 0;
+	virtual UINT64 STDMETHODCALLTYPE GetNumMessagesDeniedByStorageFilter(void) = 0;
+	virtual UINT64 STDMETHODCALLTYPE GetNumStoredMessages(void) = 0;
+	virtual UINT64 STDMETHODCALLTYPE GetNumStoredMessagesAllowedByRetrievalFilter(void) = 0;
+	virtual UINT64 STDMETHODCALLTYPE GetNumMessagesDiscardedByMessageCountLimit(void) = 0;
+	virtual UINT64 STDMETHODCALLTYPE GetMessageCountLimit(void) = 0;
+	virtual HRESULT STDMETHODCALLTYPE AddStorageFilterEntries(_In_ D3D11_INFO_QUEUE_FILTER *pFilter) = 0;
+	virtual HRESULT STDMETHODCALLTYPE GetStorageFilter(_Out_writes_bytes_opt_(*pFilterByteLength) D3D11_INFO_QUEUE_FILTER *pFilter, _Inout_ SIZE_T *pFilterByteLength) = 0;
+	virtual void STDMETHODCALLTYPE ClearStorageFilter(void) = 0;
+	virtual HRESULT STDMETHODCALLTYPE PushEmptyStorageFilter(void) = 0;
+	virtual HRESULT STDMETHODCALLTYPE PushCopyOfStorageFilter(void) = 0;
+	virtual HRESULT STDMETHODCALLTYPE PushStorageFilter(_In_ D3D11_INFO_QUEUE_FILTER *pFilter) = 0;
+	virtual void STDMETHODCALLTYPE PopStorageFilter(void) = 0;
+	virtual UINT STDMETHODCALLTYPE GetStorageFilterStackSize(void) = 0;
+	virtual HRESULT STDMETHODCALLTYPE AddRetrievalFilterEntries(_In_ D3D11_INFO_QUEUE_FILTER *pFilter) = 0;
+	virtual HRESULT STDMETHODCALLTYPE GetRetrievalFilter(_Out_writes_bytes_opt_(*pFilterByteLength) D3D11_INFO_QUEUE_FILTER *pFilter, _Inout_ SIZE_T *pFilterByteLength) = 0;
+	virtual void STDMETHODCALLTYPE ClearRetrievalFilter(void) = 0;
+	virtual HRESULT STDMETHODCALLTYPE PushEmptyRetrievalFilter(void) = 0;
+	virtual HRESULT STDMETHODCALLTYPE PushCopyOfRetrievalFilter(void) = 0;
+	virtual HRESULT STDMETHODCALLTYPE PushRetrievalFilter(_In_ D3D11_INFO_QUEUE_FILTER *pFilter) = 0;
+	virtual void STDMETHODCALLTYPE PopRetrievalFilter(void) = 0;
+	virtual UINT STDMETHODCALLTYPE GetRetrievalFilterStackSize(void) = 0;
+	virtual HRESULT STDMETHODCALLTYPE AddMessage(_In_ D3D11_MESSAGE_CATEGORY Category, _In_ D3D11_MESSAGE_SEVERITY Severity, _In_ D3D11_MESSAGE_ID ID, _In_ LPCSTR pDescription) = 0;
+	virtual HRESULT STDMETHODCALLTYPE AddApplicationMessage(_In_ D3D11_MESSAGE_SEVERITY Severity, _In_ LPCSTR pDescription) = 0;
+	virtual HRESULT STDMETHODCALLTYPE SetBreakOnCategory(_In_ D3D11_MESSAGE_CATEGORY Category, _In_ BOOL bEnable) = 0;
+	virtual HRESULT STDMETHODCALLTYPE SetBreakOnSeverity(_In_ D3D11_MESSAGE_SEVERITY Severity, _In_ BOOL bEnable) = 0;
+	virtual HRESULT STDMETHODCALLTYPE SetBreakOnID(_In_ D3D11_MESSAGE_ID ID, _In_ BOOL bEnable) = 0;
+	virtual BOOL STDMETHODCALLTYPE GetBreakOnCategory(_In_ D3D11_MESSAGE_CATEGORY Category) = 0;
+	virtual BOOL STDMETHODCALLTYPE GetBreakOnSeverity(_In_ D3D11_MESSAGE_SEVERITY Severity) = 0;
+	virtual BOOL STDMETHODCALLTYPE GetBreakOnID(_In_ D3D11_MESSAGE_ID ID) = 0;
+	virtual void STDMETHODCALLTYPE SetMuteDebugOutput(_In_ BOOL bMute) = 0;
+	virtual BOOL STDMETHODCALLTYPE GetMuteDebugOutput(void) = 0;
 };
 
 // "Microsoft DirectX SDK (June 2010)" -> "d3d11_1.h"
 MIDL_INTERFACE("b2daad8b-03d4-4dbf-95eb-32ab4b63d0ab")
 ID3DUserDefinedAnnotation : public IUnknown
 {
-	public:
-		virtual INT STDMETHODCALLTYPE BeginEvent(_In_ LPCWSTR Name) = 0;
-		virtual INT STDMETHODCALLTYPE EndEvent(void) = 0;
-		virtual void STDMETHODCALLTYPE SetMarker(_In_ LPCWSTR Name) = 0;
-		virtual BOOL STDMETHODCALLTYPE GetStatus(void) = 0;
+	virtual INT STDMETHODCALLTYPE BeginEvent(_In_ LPCWSTR Name) = 0;
+	virtual INT STDMETHODCALLTYPE EndEvent(void) = 0;
+	virtual void STDMETHODCALLTYPE SetMarker(_In_ LPCWSTR Name) = 0;
+	virtual BOOL STDMETHODCALLTYPE GetStatus(void) = 0;
 };
 
 

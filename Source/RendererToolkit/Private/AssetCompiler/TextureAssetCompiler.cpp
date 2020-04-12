@@ -64,7 +64,7 @@ PRAGMA_WARNING_PUSH
 	PRAGMA_WARNING_DISABLE_MSVC(4668)						// warning C4668: 'CRNLIB_SUPPORT_ETC_A1' is not defined as a preprocessor macro, replacing with '0' for '#if/#elif'
 	PRAGMA_WARNING_DISABLE_MSVC(5026)						// warning C5026: 'crnlib::pack_etc1_block_context': move constructor was implicitly defined as deleted
 	PRAGMA_WARNING_DISABLE_MSVC(5027)						// warning C5027: 'crnlib::pack_etc1_block_context': move assignment operator was implicitly defined as deleted
-	PRAGMA_WARNING_DISABLE_MSVC(5027)						// warning C5027: 'crnlib::pack_etc1_block_context': move assignment operator was implicitly defined as deleted
+	PRAGMA_WARNING_DISABLE_MSVC(5204)						// warning C5204: 'crnlib::task_pool::executable_task': class has virtual functions, but its trivial destructor is not virtual; instances of objects derived from this class may not be destructed correctly
 	PRAGMA_WARNING_DISABLE_CLANG("-Wunused-value")			// warning: expression result unused [-Wunused-value]
 	PRAGMA_WARNING_DISABLE_CLANG("-Warray-bounds")			// warning: array index 1 is past the end of the array (which contains 1 element) [-Warray-bounds]
 	PRAGMA_WARNING_DISABLE_GCC("-Wunused-value")			// warning: expression result unused [-Wunused-value]
