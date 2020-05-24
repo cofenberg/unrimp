@@ -943,7 +943,7 @@ namespace Rhi
 		inline explicit IAllocator(ReallocateFuntion reallocateFuntion) :
 			mReallocateFuntion(reallocateFuntion)
 		{
-			ASSERT(nullptr != mReallocateFuntion, "Invalid reallocate funtion")
+			ASSERT(nullptr != mReallocateFuntion, "Invalid reallocate function")
 		}
 
 		inline virtual ~IAllocator()
