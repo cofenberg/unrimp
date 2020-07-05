@@ -141,6 +141,7 @@ PRAGMA_WARNING_POP
 // Disable warnings in external headers, we can't fix them
 PRAGMA_WARNING_PUSH
 	PRAGMA_WARNING_DISABLE_MSVC(4365)	// warning C4365: 'return': conversion from 'int' to 'std::char_traits<wchar_t>::int_type', signed/unsigned mismatch
+	PRAGMA_WARNING_DISABLE_MSVC(4530)	// warning C4530: C++ exception handler used, but unwind semantics are not enabled. Specify /EHsc
 	PRAGMA_WARNING_DISABLE_MSVC(4571)	// warning C4571: Informational: catch(...) semantics changed since Visual C++ 7.1; structured exceptions (SEH) are no longer caught
 	PRAGMA_WARNING_DISABLE_MSVC(4574)	// warning C4574: '_HAS_ITERATOR_DEBUGGING' is defined to be '0': did you mean to use '#if _HAS_ITERATOR_DEBUGGING'?
 	PRAGMA_WARNING_DISABLE_MSVC(4625)	// warning C4625: 'std::codecvt_base': copy constructor was implicitly defined as deleted
@@ -719,6 +720,8 @@ FNPTR(vkDestroySwapchainKHR)
 FNPTR(vkGetSwapchainImagesKHR)
 FNPTR(vkAcquireNextImageKHR)
 FNPTR(vkQueuePresentKHR)
+// "VK_NV_mesh_shader"-extension
+FNPTR(vkCmdDrawMeshTasksNV)
 
 
 
@@ -969,10 +972,11 @@ namespace
 
 				{ // Reject physical Vulkan devices basing on swap chain support
 					// Check device extensions
-					static constexpr std::array<const char*, 2> deviceExtensions =
+					static constexpr std::array<const char*, 3> deviceExtensions =
 					{
 						VK_KHR_SWAPCHAIN_EXTENSION_NAME,
 						VK_KHR_MAINTENANCE1_EXTENSION_NAME	// We want to be able to specify a negative viewport height, this way we don't have to apply "<output position>.y = -<output position>.y" inside vertex shaders to compensate for the Vulkan coordinate system
+						// VK_NV_MESH_SHADER_EXTENSION_NAME	// TODO(co) Mesh shader support must be optional
 					};
 					bool rejectDevice = false;
 					for (const char* deviceExtension : deviceExtensions)
@@ -1056,12 +1060,18 @@ namespace
 		[[nodiscard]] VkResult createVkDevice(const Rhi::Context& context, const VkAllocationCallbacks* vkAllocationCallbacks, VkPhysicalDevice vkPhysicalDevice, const VkDeviceQueueCreateInfo& vkDeviceQueueCreateInfo, bool enableValidation, bool enableDebugMarker, VkDevice& vkDevice)
 		{
 			// See http://vulkan.gpuinfo.org/listfeatures.php to check out GPU hardware capabilities
-			static constexpr std::array<const char*, 3> enabledExtensions =
+			static constexpr std::array<const char*, 4> enabledExtensions =
 			{
 				VK_KHR_SWAPCHAIN_EXTENSION_NAME,
-				VK_KHR_MAINTENANCE1_EXTENSION_NAME,	// We want to be able to specify a negative viewport height, this way we don't have to apply "<output position>.y = -<output position>.y" inside vertex shaders to compensate for the Vulkan coordinate system
+				VK_KHR_MAINTENANCE1_EXTENSION_NAME,		// We want to be able to specify a negative viewport height, this way we don't have to apply "<output position>.y = -<output position>.y" inside vertex shaders to compensate for the Vulkan coordinate system
+				// VK_NV_MESH_SHADER_EXTENSION_NAME,	// TODO(co) Mesh shader support must be optional
 				VK_EXT_DEBUG_MARKER_EXTENSION_NAME
 			};
+
+			// This will only be used if meshShadingSupported=true (see below)
+			VkPhysicalDeviceMeshShaderFeaturesNV vkPhysicalDeviceMeshShaderFeaturesNV = { VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MESH_SHADER_FEATURES_NV };
+			vkPhysicalDeviceMeshShaderFeaturesNV.taskShader = true;
+			vkPhysicalDeviceMeshShaderFeaturesNV.meshShader = true;
 			static constexpr VkPhysicalDeviceFeatures vkPhysicalDeviceFeatures =
 			{
 				VK_FALSE,	// robustBufferAccess (VkBool32)
@@ -1123,13 +1133,13 @@ namespace
 			const VkDeviceCreateInfo vkDeviceCreateInfo =
 			{
 				VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO,							// sType (VkStructureType)
-				nullptr,														// pNext (const void*)
+				&vkPhysicalDeviceMeshShaderFeaturesNV,							// pNext (const void*)
 				0,																// flags (VkDeviceCreateFlags)
 				1,																// queueCreateInfoCount (uint32_t)
 				&vkDeviceQueueCreateInfo,										// pQueueCreateInfos (const VkDeviceQueueCreateInfo*)
 				enableValidation ? NUMBER_OF_VALIDATION_LAYERS : 0,				// enabledLayerCount (uint32_t)
 				enableValidation ? VALIDATION_LAYER_NAMES : nullptr,			// ppEnabledLayerNames (const char* const*)
-				enableDebugMarker ? 3u : 2u,									// enabledExtensionCount (uint32_t)
+				enableDebugMarker ? 4u : 3u,									// enabledExtensionCount (uint32_t)
 				enabledExtensions.empty() ? nullptr : enabledExtensions.data(),	// ppEnabledExtensionNames (const char* const*)
 				&vkPhysicalDeviceFeatures										// pEnabledFeatures (const VkPhysicalDeviceFeatures*)
 			};
@@ -1311,19 +1321,16 @@ namespace
 				VALUE(VK_DEBUG_REPORT_OBJECT_TYPE_DEBUG_REPORT_CALLBACK_EXT_EXT)
 				VALUE(VK_DEBUG_REPORT_OBJECT_TYPE_DISPLAY_KHR_EXT)
 				VALUE(VK_DEBUG_REPORT_OBJECT_TYPE_DISPLAY_MODE_KHR_EXT)
-				VALUE(VK_DEBUG_REPORT_OBJECT_TYPE_OBJECT_TABLE_NVX_EXT)
-				VALUE(VK_DEBUG_REPORT_OBJECT_TYPE_INDIRECT_COMMANDS_LAYOUT_NVX_EXT)
 				VALUE(VK_DEBUG_REPORT_OBJECT_TYPE_VALIDATION_CACHE_EXT_EXT)
 				VALUE(VK_DEBUG_REPORT_OBJECT_TYPE_SAMPLER_YCBCR_CONVERSION_EXT)
 				VALUE(VK_DEBUG_REPORT_OBJECT_TYPE_DESCRIPTOR_UPDATE_TEMPLATE_EXT)
 				VALUE(VK_DEBUG_REPORT_OBJECT_TYPE_ACCELERATION_STRUCTURE_NV_EXT)
 			//	VALUE(VK_DEBUG_REPORT_OBJECT_TYPE_DEBUG_REPORT_EXT)	not possible
-			//	VALUE(VK_DEBUG_REPORT_OBJECT_TYPE_VALIDATION_CACHE_EXT)	not possible	
+			//	VALUE(VK_DEBUG_REPORT_OBJECT_TYPE_VALIDATION_CACHE_EXT)	not possible
 			//	VALUE(VK_DEBUG_REPORT_OBJECT_TYPE_DESCRIPTOR_UPDATE_TEMPLATE_KHR_EXT)	not possible
 			//	VALUE(VK_DEBUG_REPORT_OBJECT_TYPE_SAMPLER_YCBCR_CONVERSION_KHR_EXT)	not possible
 			//	VALUE(VK_DEBUG_REPORT_OBJECT_TYPE_BEGIN_RANGE_EXT)	not possible
 			//	VALUE(VK_DEBUG_REPORT_OBJECT_TYPE_END_RANGE_EXT)	not possible
-				VALUE(VK_DEBUG_REPORT_OBJECT_TYPE_RANGE_SIZE_EXT)
 				VALUE(VK_DEBUG_REPORT_OBJECT_TYPE_MAX_ENUM_EXT)
 			}
 
@@ -1861,6 +1868,14 @@ namespace
 				{
 					shLanguage = EShLangFragment;
 				}
+				else if ((vkShaderStageFlagBits & VK_SHADER_STAGE_TASK_BIT_NV) != 0)
+				{
+					shLanguage = EShLangTaskNV;
+				}
+				else if ((vkShaderStageFlagBits & VK_SHADER_STAGE_MESH_BIT_NV) != 0)
+				{
+					shLanguage = EShLangMeshNV;
+				}
 				else if ((vkShaderStageFlagBits & VK_SHADER_STAGE_COMPUTE_BIT) != 0)
 				{
 					shLanguage = EShLangCompute;
@@ -2078,6 +2093,8 @@ namespace VulkanRhi
 		void drawGraphicsEmulated(const uint8_t* emulationData, uint32_t indirectBufferOffset = 0, uint32_t numberOfDraws = 1);
 		void drawIndexedGraphics(const Rhi::IIndirectBuffer& indirectBuffer, uint32_t indirectBufferOffset = 0, uint32_t numberOfDraws = 1);
 		void drawIndexedGraphicsEmulated(const uint8_t* emulationData, uint32_t indirectBufferOffset = 0, uint32_t numberOfDraws = 1);
+		void drawMeshTasks(const Rhi::IIndirectBuffer& indirectBuffer, uint32_t indirectBufferOffset = 0, uint32_t numberOfDraws = 1);
+		void drawMeshTasksEmulated(const uint8_t* emulationData, uint32_t indirectBufferOffset = 0, uint32_t numberOfDraws = 1);
 		//[-------------------------------------------------------]
 		//[ Compute                                               ]
 		//[-------------------------------------------------------]
@@ -2483,6 +2500,8 @@ namespace VulkanRhi
 			IMPORT_FUNC(vkGetSwapchainImagesKHR)
 			IMPORT_FUNC(vkAcquireNextImageKHR)
 			IMPORT_FUNC(vkQueuePresentKHR)
+			// "VK_NV_mesh_shader"-extension
+			IMPORT_FUNC(vkCmdDrawMeshTasksNV)
 
 			// Undefine the helper macro
 			#undef IMPORT_FUNC
@@ -3890,14 +3909,18 @@ namespace VulkanRhi
 
 				case VK_IMAGE_LAYOUT_GENERAL:
 				case VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL:
+				case VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_OPTIMAL:
+				case VK_IMAGE_LAYOUT_DEPTH_READ_ONLY_OPTIMAL:
+				case VK_IMAGE_LAYOUT_STENCIL_ATTACHMENT_OPTIMAL:
+				case VK_IMAGE_LAYOUT_STENCIL_READ_ONLY_OPTIMAL:
 				case VK_IMAGE_LAYOUT_PRESENT_SRC_KHR:
 				case VK_IMAGE_LAYOUT_SHARED_PRESENT_KHR:
 				case VK_IMAGE_LAYOUT_SHADING_RATE_OPTIMAL_NV:
+				case VK_IMAGE_LAYOUT_FRAGMENT_DENSITY_MAP_OPTIMAL_EXT:
 				case VK_IMAGE_LAYOUT_DEPTH_READ_ONLY_STENCIL_ATTACHMENT_OPTIMAL_KHR:
 				case VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_STENCIL_READ_ONLY_OPTIMAL_KHR:
 				// case VK_IMAGE_LAYOUT_BEGIN_RANGE:	not possible
 				// case VK_IMAGE_LAYOUT_END_RANGE:		not possible
-				case VK_IMAGE_LAYOUT_RANGE_SIZE:
 				case VK_IMAGE_LAYOUT_MAX_ENUM:
 				default:
 					// Other source layouts aren't handled (yet)
@@ -3947,14 +3970,18 @@ namespace VulkanRhi
 				case VK_IMAGE_LAYOUT_GENERAL:
 				case VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL:
 				case VK_IMAGE_LAYOUT_PREINITIALIZED:
+				case VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_OPTIMAL:
+				case VK_IMAGE_LAYOUT_DEPTH_READ_ONLY_OPTIMAL:
+				case VK_IMAGE_LAYOUT_STENCIL_ATTACHMENT_OPTIMAL:
+				case VK_IMAGE_LAYOUT_STENCIL_READ_ONLY_OPTIMAL:
 				case VK_IMAGE_LAYOUT_PRESENT_SRC_KHR:
 				case VK_IMAGE_LAYOUT_SHARED_PRESENT_KHR:
 				case VK_IMAGE_LAYOUT_SHADING_RATE_OPTIMAL_NV:
+				case VK_IMAGE_LAYOUT_FRAGMENT_DENSITY_MAP_OPTIMAL_EXT:
 				case VK_IMAGE_LAYOUT_DEPTH_READ_ONLY_STENCIL_ATTACHMENT_OPTIMAL_KHR:
 				case VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_STENCIL_READ_ONLY_OPTIMAL_KHR:
 				// case VK_IMAGE_LAYOUT_BEGIN_RANGE:	not possible
 				// case VK_IMAGE_LAYOUT_END_RANGE:		not possible
-				case VK_IMAGE_LAYOUT_RANGE_SIZE:
 				case VK_IMAGE_LAYOUT_MAX_ENUM:
 				default:
 					// Other source layouts aren't handled (yet)
@@ -4594,6 +4621,8 @@ namespace VulkanRhi
 								case Rhi::ResourceType::TESSELLATION_EVALUATION_SHADER:
 								case Rhi::ResourceType::GEOMETRY_SHADER:
 								case Rhi::ResourceType::FRAGMENT_SHADER:
+								case Rhi::ResourceType::TASK_SHADER:
+								case Rhi::ResourceType::MESH_SHADER:
 								case Rhi::ResourceType::COMPUTE_SHADER:
 									RHI_ASSERT(vulkanRhi.getContext(), false, "Vulkan RHI implementation: Invalid resource type")
 									break;
@@ -4625,6 +4654,14 @@ namespace VulkanRhi
 
 								case Rhi::ShaderVisibility::FRAGMENT:
 									vkShaderStageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
+									break;
+
+								case Rhi::ShaderVisibility::TASK:
+									vkShaderStageFlags = VK_SHADER_STAGE_TASK_BIT_NV;
+									break;
+
+								case Rhi::ShaderVisibility::MESH:
+									vkShaderStageFlags = VK_SHADER_STAGE_MESH_BIT_NV;
 									break;
 
 								case Rhi::ShaderVisibility::COMPUTE:
@@ -8496,6 +8533,8 @@ namespace VulkanRhi
 						case Rhi::ResourceType::TESSELLATION_EVALUATION_SHADER:
 						case Rhi::ResourceType::GEOMETRY_SHADER:
 						case Rhi::ResourceType::FRAGMENT_SHADER:
+						case Rhi::ResourceType::TASK_SHADER:
+						case Rhi::ResourceType::MESH_SHADER:
 						case Rhi::ResourceType::COMPUTE_SHADER:
 						default:
 							// Nothing here
@@ -8571,6 +8610,8 @@ namespace VulkanRhi
 					case Rhi::ResourceType::TESSELLATION_EVALUATION_SHADER:
 					case Rhi::ResourceType::GEOMETRY_SHADER:
 					case Rhi::ResourceType::FRAGMENT_SHADER:
+					case Rhi::ResourceType::TASK_SHADER:
+					case Rhi::ResourceType::MESH_SHADER:
 					case Rhi::ResourceType::COMPUTE_SHADER:
 					default:
 						// Nothing here
@@ -9375,6 +9416,256 @@ namespace VulkanRhi
 
 
 	//[-------------------------------------------------------]
+	//[ VulkanRhi/Shader/TaskShaderGlsl.h                     ]
+	//[-------------------------------------------------------]
+	/**
+	*  @brief
+	*    GLSL task shader (TS, "amplification shader" in Direct3D terminology) class
+	*/
+	class TaskShaderGlsl final : public Rhi::ITaskShader
+	{
+
+
+	//[-------------------------------------------------------]
+	//[ Public methods                                        ]
+	//[-------------------------------------------------------]
+	public:
+		/**
+		*  @brief
+		*    Constructor for creating a task shader from shader bytecode
+		*
+		*  @param[in] vulkanRhi
+		*    Owner Vulkan RHI instance
+		*  @param[in] shaderBytecode
+		*    Shader bytecode
+		*/
+		TaskShaderGlsl(VulkanRhi& vulkanRhi, const Rhi::ShaderBytecode& shaderBytecode RHI_RESOURCE_DEBUG_NAME_PARAMETER) :
+			ITaskShader(vulkanRhi RHI_RESOURCE_DEBUG_PASS_PARAMETER),
+			mVkShaderModule(::detail::createVkShaderModuleFromBytecode(vulkanRhi.getContext(), vulkanRhi.getVkAllocationCallbacks(), vulkanRhi.getVulkanContext().getVkDevice(), shaderBytecode))
+		{
+			#ifdef RHI_DEBUG
+				if (nullptr != vkDebugMarkerSetObjectNameEXT)
+				{
+					RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "TS", 5)	// 5 = "TS: " including terminating zero
+					Helper::setDebugObjectName(vulkanRhi.getVulkanContext().getVkDevice(), VK_DEBUG_REPORT_OBJECT_TYPE_SHADER_MODULE_EXT, (uint64_t)mVkShaderModule, detailedDebugName);
+				}
+			#endif
+		}
+
+		/**
+		*  @brief
+		*    Constructor for creating a task shader from shader source code
+		*
+		*  @param[in] vulkanRhi
+		*    Owner Vulkan RHI instance
+		*  @param[in] sourceCode
+		*    Shader ASCII source code, must be valid
+		*/
+		TaskShaderGlsl(VulkanRhi& vulkanRhi, const char* sourceCode, Rhi::ShaderBytecode* shaderBytecode RHI_RESOURCE_DEBUG_NAME_PARAMETER) :
+			ITaskShader(vulkanRhi RHI_RESOURCE_DEBUG_PASS_PARAMETER),
+			mVkShaderModule(::detail::createVkShaderModuleFromSourceCode(vulkanRhi.getContext(), vulkanRhi.getVkAllocationCallbacks(), vulkanRhi.getVulkanContext().getVkDevice(), VK_SHADER_STAGE_TASK_BIT_NV, sourceCode, shaderBytecode))
+		{
+			#ifdef RHI_DEBUG
+				if (nullptr != vkDebugMarkerSetObjectNameEXT)
+				{
+					RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "TS", 5)	// 5 = "TS: " including terminating zero
+					Helper::setDebugObjectName(vulkanRhi.getVulkanContext().getVkDevice(), VK_DEBUG_REPORT_OBJECT_TYPE_SHADER_MODULE_EXT, (uint64_t)mVkShaderModule, detailedDebugName);
+				}
+			#endif
+		}
+
+		/**
+		*  @brief
+		*    Destructor
+		*/
+		virtual ~TaskShaderGlsl() override
+		{
+			if (VK_NULL_HANDLE != mVkShaderModule)
+			{
+				const VulkanRhi& vulkanRhi = static_cast<VulkanRhi&>(getRhi());
+				vkDestroyShaderModule(vulkanRhi.getVulkanContext().getVkDevice(), mVkShaderModule, vulkanRhi.getVkAllocationCallbacks());
+			}
+		}
+
+		/**
+		*  @brief
+		*    Return the Vulkan shader module
+		*
+		*  @return
+		*    The Vulkan shader module
+		*/
+		[[nodiscard]] inline VkShaderModule getVkShaderModule() const
+		{
+			return mVkShaderModule;
+		}
+
+
+	//[-------------------------------------------------------]
+	//[ Public virtual Rhi::IShader methods                   ]
+	//[-------------------------------------------------------]
+	public:
+		[[nodiscard]] inline virtual const char* getShaderLanguageName() const override
+		{
+			return ::detail::GLSL_NAME;
+		}
+
+
+	//[-------------------------------------------------------]
+	//[ Protected virtual Rhi::RefCount methods               ]
+	//[-------------------------------------------------------]
+	protected:
+		inline virtual void selfDestruct() override
+		{
+			RHI_DELETE(getRhi().getContext(), TaskShaderGlsl, this);
+		}
+
+
+	//[-------------------------------------------------------]
+	//[ Private methods                                       ]
+	//[-------------------------------------------------------]
+	private:
+		explicit TaskShaderGlsl(const TaskShaderGlsl& source) = delete;
+		TaskShaderGlsl& operator =(const TaskShaderGlsl& source) = delete;
+
+
+	//[-------------------------------------------------------]
+	//[ Private data                                          ]
+	//[-------------------------------------------------------]
+	private:
+		VkShaderModule mVkShaderModule;	///< Vulkan shader module, destroy it if you no longer need it
+
+
+	};
+
+
+
+
+	//[-------------------------------------------------------]
+	//[ VulkanRhi/Shader/MeshShaderGlsl.h                     ]
+	//[-------------------------------------------------------]
+	/**
+	*  @brief
+	*    GLSL mesh shader (MS) class
+	*/
+	class MeshShaderGlsl final : public Rhi::IMeshShader
+	{
+
+
+	//[-------------------------------------------------------]
+	//[ Public methods                                        ]
+	//[-------------------------------------------------------]
+	public:
+		/**
+		*  @brief
+		*    Constructor for creating a mesh shader from shader bytecode
+		*
+		*  @param[in] vulkanRhi
+		*    Owner Vulkan RHI instance
+		*  @param[in] shaderBytecode
+		*    Shader bytecode
+		*/
+		MeshShaderGlsl(VulkanRhi& vulkanRhi, const Rhi::ShaderBytecode& shaderBytecode RHI_RESOURCE_DEBUG_NAME_PARAMETER) :
+			IMeshShader(vulkanRhi RHI_RESOURCE_DEBUG_PASS_PARAMETER),
+			mVkShaderModule(::detail::createVkShaderModuleFromBytecode(vulkanRhi.getContext(), vulkanRhi.getVkAllocationCallbacks(), vulkanRhi.getVulkanContext().getVkDevice(), shaderBytecode))
+		{
+			#ifdef RHI_DEBUG
+				if (nullptr != vkDebugMarkerSetObjectNameEXT)
+				{
+					RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "MS", 5)	// 5 = "MS: " including terminating zero
+					Helper::setDebugObjectName(vulkanRhi.getVulkanContext().getVkDevice(), VK_DEBUG_REPORT_OBJECT_TYPE_SHADER_MODULE_EXT, (uint64_t)mVkShaderModule, detailedDebugName);
+				}
+			#endif
+		}
+
+		/**
+		*  @brief
+		*    Constructor for creating a mesh shader from shader source code
+		*
+		*  @param[in] vulkanRhi
+		*    Owner Vulkan RHI instance
+		*  @param[in] sourceCode
+		*    Shader ASCII source code, must be valid
+		*/
+		MeshShaderGlsl(VulkanRhi& vulkanRhi, const char* sourceCode, Rhi::ShaderBytecode* shaderBytecode RHI_RESOURCE_DEBUG_NAME_PARAMETER) :
+			IMeshShader(vulkanRhi RHI_RESOURCE_DEBUG_PASS_PARAMETER),
+			mVkShaderModule(::detail::createVkShaderModuleFromSourceCode(vulkanRhi.getContext(), vulkanRhi.getVkAllocationCallbacks(), vulkanRhi.getVulkanContext().getVkDevice(), VK_SHADER_STAGE_MESH_BIT_NV, sourceCode, shaderBytecode))
+		{
+			#ifdef RHI_DEBUG
+				if (nullptr != vkDebugMarkerSetObjectNameEXT)
+				{
+					RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "MS", 5)	// 5 = "MS: " including terminating zero
+					Helper::setDebugObjectName(vulkanRhi.getVulkanContext().getVkDevice(), VK_DEBUG_REPORT_OBJECT_TYPE_SHADER_MODULE_EXT, (uint64_t)mVkShaderModule, detailedDebugName);
+				}
+			#endif
+		}
+
+		/**
+		*  @brief
+		*    Destructor
+		*/
+		virtual ~MeshShaderGlsl() override
+		{
+			if (VK_NULL_HANDLE != mVkShaderModule)
+			{
+				const VulkanRhi& vulkanRhi = static_cast<VulkanRhi&>(getRhi());
+				vkDestroyShaderModule(vulkanRhi.getVulkanContext().getVkDevice(), mVkShaderModule, vulkanRhi.getVkAllocationCallbacks());
+			}
+		}
+
+		/**
+		*  @brief
+		*    Return the Vulkan shader module
+		*
+		*  @return
+		*    The Vulkan shader module
+		*/
+		[[nodiscard]] inline VkShaderModule getVkShaderModule() const
+		{
+			return mVkShaderModule;
+		}
+
+
+	//[-------------------------------------------------------]
+	//[ Public virtual Rhi::IShader methods                   ]
+	//[-------------------------------------------------------]
+	public:
+		[[nodiscard]] inline virtual const char* getShaderLanguageName() const override
+		{
+			return ::detail::GLSL_NAME;
+		}
+
+
+	//[-------------------------------------------------------]
+	//[ Protected virtual Rhi::RefCount methods               ]
+	//[-------------------------------------------------------]
+	protected:
+		inline virtual void selfDestruct() override
+		{
+			RHI_DELETE(getRhi().getContext(), MeshShaderGlsl, this);
+		}
+
+
+	//[-------------------------------------------------------]
+	//[ Private methods                                       ]
+	//[-------------------------------------------------------]
+	private:
+		explicit MeshShaderGlsl(const MeshShaderGlsl& source) = delete;
+		MeshShaderGlsl& operator =(const MeshShaderGlsl& source) = delete;
+
+
+	//[-------------------------------------------------------]
+	//[ Private data                                          ]
+	//[-------------------------------------------------------]
+	private:
+		VkShaderModule mVkShaderModule;	///< Vulkan shader module, destroy it if you no longer need it
+
+
+	};
+
+
+
+
+	//[-------------------------------------------------------]
 	//[ VulkanRhi/Shader/ComputeShaderGlsl.h                  ]
 	//[-------------------------------------------------------]
 	/**
@@ -9516,12 +9807,10 @@ namespace VulkanRhi
 	public:
 		/**
 		*  @brief
-		*    Constructor
+		*    Constructor for traditional graphics program
 		*
 		*  @param[in] vulkanRhi
 		*    Owner Vulkan RHI instance
-		*  @param[in] rootSignature
-		*    Root signature
 		*  @param[in] vertexAttributes
 		*    Vertex attributes ("vertex declaration" in Direct3D 9 terminology, "input layout" in Direct3D 10 & 11 terminology)
 		*  @param[in] vertexShaderGlsl
@@ -9538,14 +9827,18 @@ namespace VulkanRhi
 		*  @note
 		*    - The graphics program keeps a reference to the provided shaders and releases it when no longer required
 		*/
-		// TODO(co) Remove unused parameters
-		GraphicsProgramGlsl(VulkanRhi& vulkanRhi, [[maybe_unused]] const Rhi::IRootSignature& rootSignature, [[maybe_unused]] const Rhi::VertexAttributes& vertexAttributes, VertexShaderGlsl *vertexShaderGlsl, TessellationControlShaderGlsl *tessellationControlShaderGlsl, TessellationEvaluationShaderGlsl *tessellationEvaluationShaderGlsl, GeometryShaderGlsl *geometryShaderGlsl, FragmentShaderGlsl *fragmentShaderGlsl RHI_RESOURCE_DEBUG_NAME_PARAMETER_NO_DEFAULT) :
+		GraphicsProgramGlsl(VulkanRhi& vulkanRhi, VertexShaderGlsl* vertexShaderGlsl, TessellationControlShaderGlsl* tessellationControlShaderGlsl, TessellationEvaluationShaderGlsl* tessellationEvaluationShaderGlsl, GeometryShaderGlsl* geometryShaderGlsl, FragmentShaderGlsl* fragmentShaderGlsl RHI_RESOURCE_DEBUG_NAME_PARAMETER_NO_DEFAULT) :
 			IGraphicsProgram(vulkanRhi RHI_RESOURCE_DEBUG_PASS_PARAMETER),
+			// Traditional graphics program
 			mVertexShaderGlsl(vertexShaderGlsl),
 			mTessellationControlShaderGlsl(tessellationControlShaderGlsl),
 			mTessellationEvaluationShaderGlsl(tessellationEvaluationShaderGlsl),
 			mGeometryShaderGlsl(geometryShaderGlsl),
-			mFragmentShaderGlsl(fragmentShaderGlsl)
+			// Both graphics programs
+			mFragmentShaderGlsl(fragmentShaderGlsl),
+			// Task and mesh shader based graphics program
+			mTaskShaderGlsl(nullptr),
+			mMeshShaderGlsl(nullptr)
 		{
 			// Add references to the provided shaders
 			if (nullptr != mVertexShaderGlsl)
@@ -9564,6 +9857,47 @@ namespace VulkanRhi
 			{
 				mGeometryShaderGlsl->addReference();
 			}
+			if (nullptr != mFragmentShaderGlsl)
+			{
+				mFragmentShaderGlsl->addReference();
+			}
+		}
+
+		/**
+		*  @brief
+		*    Constructor for task and mesh shader based graphics program
+		*
+		*  @param[in] vulkanRhi
+		*    Owner Vulkan RHI instance
+		*  @param[in] taskShaderGlsl
+		*    Task shader the graphics program is using, can be a null pointer
+		*  @param[in] meshShaderGlsl
+		*    Mesh shader the graphics program is using
+		*  @param[in] fragmentShaderGlsl
+		*    Fragment shader the graphics program is using, can be a null pointer
+		*
+		*  @note
+		*    - The graphics program keeps a reference to the provided shaders and releases it when no longer required
+		*/
+		GraphicsProgramGlsl(VulkanRhi& vulkanRhi, TaskShaderGlsl* taskShaderGlsl, MeshShaderGlsl& meshShaderGlsl, FragmentShaderGlsl* fragmentShaderGlsl RHI_RESOURCE_DEBUG_NAME_PARAMETER_NO_DEFAULT) :
+			IGraphicsProgram(vulkanRhi RHI_RESOURCE_DEBUG_PASS_PARAMETER),
+			// Traditional graphics program
+			mVertexShaderGlsl(nullptr),
+			mTessellationControlShaderGlsl(nullptr),
+			mTessellationEvaluationShaderGlsl(nullptr),
+			mGeometryShaderGlsl(nullptr),
+			// Both graphics programs
+			mFragmentShaderGlsl(fragmentShaderGlsl),
+			// Task and mesh shader based graphics program
+			mTaskShaderGlsl(taskShaderGlsl),
+			mMeshShaderGlsl(&meshShaderGlsl)
+		{
+			// Add references to the provided shaders
+			if (nullptr != mTaskShaderGlsl)
+			{
+				mTaskShaderGlsl->addReference();
+			}
+			mMeshShaderGlsl->addReference();
 			if (nullptr != mFragmentShaderGlsl)
 			{
 				mFragmentShaderGlsl->addReference();
@@ -9597,8 +9931,19 @@ namespace VulkanRhi
 			{
 				mFragmentShaderGlsl->releaseReference();
 			}
+			if (nullptr != mTaskShaderGlsl)
+			{
+				mTaskShaderGlsl->releaseReference();
+			}
+			if (nullptr != mMeshShaderGlsl)
+			{
+				mMeshShaderGlsl->releaseReference();
+			}
 		}
 
+		//[-------------------------------------------------------]
+		//[ Traditional graphics program                          ]
+		//[-------------------------------------------------------]
 		/**
 		*  @brief
 		*    Return the GLSL vertex shader the graphics program is using
@@ -9647,6 +9992,9 @@ namespace VulkanRhi
 			return mGeometryShaderGlsl;
 		}
 
+		//[-------------------------------------------------------]
+		//[ Both graphics programs                                ]
+		//[-------------------------------------------------------]
 		/**
 		*  @brief
 		*    Return the GLSL fragment shader the graphics program is using
@@ -9657,6 +10005,33 @@ namespace VulkanRhi
 		[[nodiscard]] inline FragmentShaderGlsl* getFragmentShaderGlsl() const
 		{
 			return mFragmentShaderGlsl;
+		}
+
+		//[-------------------------------------------------------]
+		//[ Task and mesh shader based graphics program           ]
+		//[-------------------------------------------------------]
+		/**
+		*  @brief
+		*    Return the GLSL task shader the graphics program is using
+		*
+		*  @return
+		*    The GLSL task shader the graphics program is using, can be a null pointer, do not release the returned instance unless you added an own reference to it
+		*/
+		[[nodiscard]] inline TaskShaderGlsl* getTaskShaderGlsl() const
+		{
+			return mTaskShaderGlsl;
+		}
+
+		/**
+		*  @brief
+		*    Return the GLSL mesh shader the graphics program is using
+		*
+		*  @return
+		*    The GLSL mesh shader the graphics program is using, can be a null pointer, do not release the returned instance unless you added an own reference to it
+		*/
+		[[nodiscard]] inline MeshShaderGlsl* getMeshShaderGlsl() const
+		{
+			return mMeshShaderGlsl;
 		}
 
 
@@ -9682,11 +10057,16 @@ namespace VulkanRhi
 	//[ Private data                                          ]
 	//[-------------------------------------------------------]
 	private:
+		// Traditional graphics program
 		VertexShaderGlsl*				  mVertexShaderGlsl;					///< Vertex shader the graphics program is using (we keep a reference to it), can be a null pointer
 		TessellationControlShaderGlsl*	  mTessellationControlShaderGlsl;		///< Tessellation control shader the graphics program is using (we keep a reference to it), can be a null pointer
 		TessellationEvaluationShaderGlsl* mTessellationEvaluationShaderGlsl;	///< Tessellation evaluation shader the graphics program is using (we keep a reference to it), can be a null pointer
 		GeometryShaderGlsl*				  mGeometryShaderGlsl;					///< Geometry shader the graphics program is using (we keep a reference to it), can be a null pointer
-		FragmentShaderGlsl*				  mFragmentShaderGlsl;					///< Fragment shader the graphics program is using (we keep a reference to it), can be a null pointer
+		// Both graphics programs
+		FragmentShaderGlsl* mFragmentShaderGlsl;	///< Fragment shader the graphics program is using (we keep a reference to it), can be a null pointer
+		// Task and mesh shader based graphics program
+		TaskShaderGlsl* mTaskShaderGlsl;	///< Task shader the graphics program is using (we keep a reference to it), can be a null pointer
+		MeshShaderGlsl* mMeshShaderGlsl;	///< Mesh shader the graphics program is using (we keep a reference to it), can be a null pointer
 
 
 	};
@@ -9834,6 +10214,40 @@ namespace VulkanRhi
 			return RHI_NEW(vulkanRhi.getContext(), FragmentShaderGlsl)(vulkanRhi, shaderSourceCode.sourceCode, shaderBytecode RHI_RESOURCE_DEBUG_PASS_PARAMETER);
 		}
 
+		[[nodiscard]] inline virtual Rhi::ITaskShader* createTaskShaderFromBytecode(const Rhi::ShaderBytecode& shaderBytecode RHI_RESOURCE_DEBUG_NAME_PARAMETER) override
+		{
+			VulkanRhi& vulkanRhi = static_cast<VulkanRhi&>(getRhi());
+
+			// Sanity check
+			RHI_ASSERT(vulkanRhi.getContext(), shaderBytecode.getNumberOfBytes() > 0 && nullptr != shaderBytecode.getBytecode(), "Vulkan task shader bytecode is invalid")
+
+			// Create shader instance
+			return RHI_NEW(vulkanRhi.getContext(), TaskShaderGlsl)(vulkanRhi, shaderBytecode RHI_RESOURCE_DEBUG_PASS_PARAMETER);
+		}
+
+		[[nodiscard]] inline virtual Rhi::ITaskShader* createTaskShaderFromSourceCode(const Rhi::ShaderSourceCode& shaderSourceCode, Rhi::ShaderBytecode* shaderBytecode = nullptr RHI_RESOURCE_DEBUG_NAME_PARAMETER) override
+		{
+			VulkanRhi& vulkanRhi = static_cast<VulkanRhi&>(getRhi());
+			return RHI_NEW(vulkanRhi.getContext(), TaskShaderGlsl)(vulkanRhi, shaderSourceCode.sourceCode, shaderBytecode RHI_RESOURCE_DEBUG_PASS_PARAMETER);
+		}
+
+		[[nodiscard]] inline virtual Rhi::IMeshShader* createMeshShaderFromBytecode(const Rhi::ShaderBytecode& shaderBytecode RHI_RESOURCE_DEBUG_NAME_PARAMETER) override
+		{
+			VulkanRhi& vulkanRhi = static_cast<VulkanRhi&>(getRhi());
+
+			// Sanity check
+			RHI_ASSERT(vulkanRhi.getContext(), shaderBytecode.getNumberOfBytes() > 0 && nullptr != shaderBytecode.getBytecode(), "Vulkan mesh shader bytecode is invalid")
+
+			// Create shader instance
+			return RHI_NEW(vulkanRhi.getContext(), MeshShaderGlsl)(vulkanRhi, shaderBytecode RHI_RESOURCE_DEBUG_PASS_PARAMETER);
+		}
+
+		[[nodiscard]] inline virtual Rhi::IMeshShader* createMeshShaderFromSourceCode(const Rhi::ShaderSourceCode& shaderSourceCode, Rhi::ShaderBytecode* shaderBytecode = nullptr RHI_RESOURCE_DEBUG_NAME_PARAMETER) override
+		{
+			VulkanRhi& vulkanRhi = static_cast<VulkanRhi&>(getRhi());
+			return RHI_NEW(vulkanRhi.getContext(), MeshShaderGlsl)(vulkanRhi, shaderSourceCode.sourceCode, shaderBytecode RHI_RESOURCE_DEBUG_PASS_PARAMETER);
+		}
+
 		[[nodiscard]] inline virtual Rhi::IComputeShader* createComputeShaderFromBytecode(const Rhi::ShaderBytecode& shaderBytecode RHI_RESOURCE_DEBUG_NAME_PARAMETER) override
 		{
 			VulkanRhi& vulkanRhi = static_cast<VulkanRhi&>(getRhi());
@@ -9851,7 +10265,7 @@ namespace VulkanRhi
 			return RHI_NEW(vulkanRhi.getContext(), ComputeShaderGlsl)(vulkanRhi, shaderSourceCode.sourceCode, shaderBytecode RHI_RESOURCE_DEBUG_PASS_PARAMETER);
 		}
 
-		[[nodiscard]] virtual Rhi::IGraphicsProgram* createGraphicsProgram(const Rhi::IRootSignature& rootSignature, const Rhi::VertexAttributes& vertexAttributes, Rhi::IVertexShader* vertexShader, Rhi::ITessellationControlShader* tessellationControlShader, Rhi::ITessellationEvaluationShader* tessellationEvaluationShader, Rhi::IGeometryShader* geometryShader, Rhi::IFragmentShader* fragmentShader RHI_RESOURCE_DEBUG_NAME_PARAMETER) override
+		[[nodiscard]] virtual Rhi::IGraphicsProgram* createGraphicsProgram([[maybe_unused]] const Rhi::IRootSignature& rootSignature, [[maybe_unused]] const Rhi::VertexAttributes& vertexAttributes, Rhi::IVertexShader* vertexShader, Rhi::ITessellationControlShader* tessellationControlShader, Rhi::ITessellationEvaluationShader* tessellationEvaluationShader, Rhi::IGeometryShader* geometryShader, Rhi::IFragmentShader* fragmentShader RHI_RESOURCE_DEBUG_NAME_PARAMETER) override
 		{
 			VulkanRhi& vulkanRhi = static_cast<VulkanRhi&>(getRhi());
 
@@ -9867,7 +10281,24 @@ namespace VulkanRhi
 			RHI_ASSERT(vulkanRhi.getContext(), nullptr == fragmentShader || fragmentShader->getShaderLanguageName() == ::detail::GLSL_NAME, "Vulkan fragment shader language mismatch")
 
 			// Create the graphics program
-			return RHI_NEW(vulkanRhi.getContext(), GraphicsProgramGlsl)(vulkanRhi, rootSignature, vertexAttributes, static_cast<VertexShaderGlsl*>(vertexShader), static_cast<TessellationControlShaderGlsl*>(tessellationControlShader), static_cast<TessellationEvaluationShaderGlsl*>(tessellationEvaluationShader), static_cast<GeometryShaderGlsl*>(geometryShader), static_cast<FragmentShaderGlsl*>(fragmentShader) RHI_RESOURCE_DEBUG_PASS_PARAMETER);
+			return RHI_NEW(vulkanRhi.getContext(), GraphicsProgramGlsl)(vulkanRhi, static_cast<VertexShaderGlsl*>(vertexShader), static_cast<TessellationControlShaderGlsl*>(tessellationControlShader), static_cast<TessellationEvaluationShaderGlsl*>(tessellationEvaluationShader), static_cast<GeometryShaderGlsl*>(geometryShader), static_cast<FragmentShaderGlsl*>(fragmentShader) RHI_RESOURCE_DEBUG_PASS_PARAMETER);
+		}
+
+		[[nodiscard]] virtual Rhi::IGraphicsProgram* createGraphicsProgram([[maybe_unused]] const Rhi::IRootSignature& rootSignature, Rhi::ITaskShader* taskShader, Rhi::IMeshShader& meshShader, Rhi::IFragmentShader* fragmentShader RHI_RESOURCE_DEBUG_NAME_PARAMETER)
+		{
+			VulkanRhi& vulkanRhi = static_cast<VulkanRhi&>(getRhi());
+
+			// Sanity checks
+			// -> A shader can be a null pointer, but if it's not the shader and graphics program language must match
+			// -> Optimization: Comparing the shader language name by directly comparing the pointer address of
+			//    the name is safe because we know that we always reference to one and the same name address
+			// TODO(co) Add security check: Is the given resource one of the currently used RHI?
+			RHI_ASSERT(vulkanRhi.getContext(), nullptr == taskShader || taskShader->getShaderLanguageName() == ::detail::GLSL_NAME, "Vulkan task shader language mismatch")
+			RHI_ASSERT(vulkanRhi.getContext(), meshShader.getShaderLanguageName() == ::detail::GLSL_NAME, "Vulkan mesh shader language mismatch")
+			RHI_ASSERT(vulkanRhi.getContext(), nullptr == fragmentShader || fragmentShader->getShaderLanguageName() == ::detail::GLSL_NAME, "Vulkan fragment shader language mismatch")
+
+			// Create the graphics program
+			return RHI_NEW(vulkanRhi.getContext(), GraphicsProgramGlsl)(vulkanRhi, static_cast<TaskShaderGlsl*>(taskShader), static_cast<MeshShaderGlsl&>(meshShader), static_cast<FragmentShaderGlsl*>(fragmentShader) RHI_RESOURCE_DEBUG_PASS_PARAMETER);
 		}
 
 
@@ -9938,6 +10369,7 @@ namespace VulkanRhi
 
 			// Shaders
 			GraphicsProgramGlsl* graphicsProgramGlsl = static_cast<GraphicsProgramGlsl*>(mGraphicsProgram);
+			const bool hasMeshShader = (nullptr != graphicsProgramGlsl->getMeshShaderGlsl());
 			uint32_t stageCount = 0;
 			::detail::VkPipelineShaderStageCreateInfos vkPipelineShaderStageCreateInfos;
 			{
@@ -9950,6 +10382,8 @@ namespace VulkanRhi
 					}
 
 				// Shader stages
+				SHADER_STAGE(VK_SHADER_STAGE_TASK_BIT_NV,				  graphicsProgramGlsl->getTaskShaderGlsl())
+				SHADER_STAGE(VK_SHADER_STAGE_MESH_BIT_NV,				  graphicsProgramGlsl->getMeshShaderGlsl())
 				SHADER_STAGE(VK_SHADER_STAGE_VERTEX_BIT,				  graphicsProgramGlsl->getVertexShaderGlsl())
 				SHADER_STAGE(VK_SHADER_STAGE_TESSELLATION_CONTROL_BIT,	  graphicsProgramGlsl->getTessellationControlShaderGlsl())
 				SHADER_STAGE(VK_SHADER_STAGE_TESSELLATION_EVALUATION_BIT, graphicsProgramGlsl->getTessellationEvaluationShaderGlsl())
@@ -10158,8 +10592,8 @@ namespace VulkanRhi
 				stageCount,															// stageCount (uint32_t)
 				vkPipelineShaderStageCreateInfos.data(),							// pStages (const VkPipelineShaderStageCreateInfo*)
 				&vkPipelineVertexInputStateCreateInfo,								// pVertexInputState (const VkPipelineVertexInputStateCreateInfo*)
-				&vkPipelineInputAssemblyStateCreateInfo,							// pInputAssemblyState (const VkPipelineInputAssemblyStateCreateInfo*)
-				&vkPipelineTessellationStateCreateInfo,								// pTessellationState (const VkPipelineTessellationStateCreateInfo*)
+				hasMeshShader ? nullptr : &vkPipelineInputAssemblyStateCreateInfo,	// pInputAssemblyState (const VkPipelineInputAssemblyStateCreateInfo*)
+				hasMeshShader ? nullptr : &vkPipelineTessellationStateCreateInfo,	// pTessellationState (const VkPipelineTessellationStateCreateInfo*)
 				&vkPipelineViewportStateCreateInfo,									// pViewportState (const VkPipelineViewportStateCreateInfo*)
 				&vkPipelineRasterizationStateCreateInfo,							// pRasterizationState (const VkPipelineRasterizationStateCreateInfo*)
 				&vkPipelineMultisampleStateCreateInfo,								// pMultisampleState (const VkPipelineMultisampleStateCreateInfo*)
@@ -10706,6 +11140,8 @@ namespace VulkanRhi
 							case Rhi::ResourceType::TESSELLATION_EVALUATION_SHADER:
 							case Rhi::ResourceType::GEOMETRY_SHADER:
 							case Rhi::ResourceType::FRAGMENT_SHADER:
+							case Rhi::ResourceType::TASK_SHADER:
+							case Rhi::ResourceType::MESH_SHADER:
 							case Rhi::ResourceType::COMPUTE_SHADER:
 								RHI_LOG(vulkanRhi.getContext(), CRITICAL, "Invalid Vulkan RHI implementation resource type")
 								break;
@@ -10757,6 +11193,8 @@ namespace VulkanRhi
 					case Rhi::ResourceType::TESSELLATION_EVALUATION_SHADER:
 					case Rhi::ResourceType::GEOMETRY_SHADER:
 					case Rhi::ResourceType::FRAGMENT_SHADER:
+					case Rhi::ResourceType::TASK_SHADER:
+					case Rhi::ResourceType::MESH_SHADER:
 					case Rhi::ResourceType::COMPUTE_SHADER:
 						RHI_LOG(vulkanRhi.getContext(), CRITICAL, "Invalid Vulkan RHI implementation resource type")
 						break;
@@ -11025,6 +11463,19 @@ namespace
 				}
 			}
 
+			void DrawMeshTasks(const void* data, Rhi::IRhi& rhi)
+			{
+				const Rhi::Command::DrawMeshTasks* realData = static_cast<const Rhi::Command::DrawMeshTasks*>(data);
+				if (nullptr != realData->indirectBuffer)
+				{
+					static_cast<VulkanRhi::VulkanRhi&>(rhi).drawMeshTasks(*realData->indirectBuffer, realData->indirectBufferOffset, realData->numberOfDraws);
+				}
+				else
+				{
+					static_cast<VulkanRhi::VulkanRhi&>(rhi).drawMeshTasksEmulated(Rhi::CommandPacketHelper::getAuxiliaryMemory(realData), realData->indirectBufferOffset, realData->numberOfDraws);
+				}
+			}
+
 			//[-------------------------------------------------------]
 			//[ Compute                                               ]
 			//[-------------------------------------------------------]
@@ -11196,6 +11647,7 @@ namespace
 			&ImplementationDispatch::ClearGraphics,
 			&ImplementationDispatch::DrawGraphics,
 			&ImplementationDispatch::DrawIndexedGraphics,
+			&ImplementationDispatch::DrawMeshTasks,
 			// Compute
 			&ImplementationDispatch::SetComputeRootSignature,
 			&ImplementationDispatch::SetComputePipelineState,
@@ -11689,6 +12141,49 @@ namespace VulkanRhi
 		#endif
 	}
 
+	void VulkanRhi::drawMeshTasks([[maybe_unused]] const Rhi::IIndirectBuffer& indirectBuffer, [[maybe_unused]] uint32_t indirectBufferOffset, uint32_t numberOfDraws)
+	{
+		// Sanity checks
+		RHI_ASSERT(mContext, numberOfDraws > 0, "The number of null draws must not be zero")
+
+		// TODO(co) Implement me
+		// vkCmdDrawMeshTasksIndirectNV
+		// vkCmdDrawMeshTasksIndirectCountNV
+	}
+
+	void VulkanRhi::drawMeshTasksEmulated([[maybe_unused]] const uint8_t* emulationData, uint32_t indirectBufferOffset, uint32_t numberOfDraws)
+	{
+		// Sanity checks
+		RHI_ASSERT(mContext, nullptr != emulationData, "The Vulkan emulation data must be valid")
+		RHI_ASSERT(mContext, numberOfDraws > 0, "The number of Vulkan draws must not be zero")
+
+		// TODO(co) Currently no buffer overflow check due to lack of interface provided data
+		emulationData += indirectBufferOffset;
+
+		// Emit the draw calls
+		#ifdef RHI_DEBUG
+			if (numberOfDraws > 1)
+			{
+				beginDebugEvent("Multi-indexed-draw-indirect emulation");
+			}
+		#endif
+		const VkCommandBuffer vkCommandBuffer = getVulkanContext().getVkCommandBuffer();
+		for (uint32_t i = 0; i < numberOfDraws; ++i)
+		{
+			const Rhi::DrawMeshTasksArguments& drawMeshTasksArguments = *reinterpret_cast<const Rhi::DrawMeshTasksArguments*>(emulationData);
+
+			// Draw and advance
+			vkCmdDrawMeshTasksNV(vkCommandBuffer, drawMeshTasksArguments.numberOfTasks, drawMeshTasksArguments.firstTask);
+			emulationData += sizeof(Rhi::DrawMeshTasksArguments);
+		}
+		#ifdef RHI_DEBUG
+			if (numberOfDraws > 1)
+			{
+				endDebugEvent();
+			}
+		#endif
+	}
+
 
 	//[-------------------------------------------------------]
 	//[ Compute                                               ]
@@ -12161,6 +12656,8 @@ namespace VulkanRhi
 			case Rhi::ResourceType::TESSELLATION_EVALUATION_SHADER:
 			case Rhi::ResourceType::GEOMETRY_SHADER:
 			case Rhi::ResourceType::FRAGMENT_SHADER:
+			case Rhi::ResourceType::TASK_SHADER:
+			case Rhi::ResourceType::MESH_SHADER:
 			case Rhi::ResourceType::COMPUTE_SHADER:
 			default:
 				// Nothing we can map, set known return values
@@ -12298,6 +12795,8 @@ namespace VulkanRhi
 			case Rhi::ResourceType::TESSELLATION_EVALUATION_SHADER:
 			case Rhi::ResourceType::GEOMETRY_SHADER:
 			case Rhi::ResourceType::FRAGMENT_SHADER:
+			case Rhi::ResourceType::TASK_SHADER:
+			case Rhi::ResourceType::MESH_SHADER:
 			case Rhi::ResourceType::COMPUTE_SHADER:
 			default:
 				// Nothing we can unmap
@@ -12533,6 +13032,9 @@ namespace VulkanRhi
 		// Is there support for fragment shaders (FS)?
 		mCapabilities.fragmentShader = true;
 
+		// Is there support for task shaders (TS) and mesh shaders (MS)?
+		mCapabilities.meshShader = (nullptr != vkCmdDrawMeshTasksNV);
+
 		// Is there support for compute shaders (CS)?
 		mCapabilities.computeShader = true;
 	}
@@ -12603,6 +13105,8 @@ namespace VulkanRhi
 			case Rhi::ResourceType::TESSELLATION_EVALUATION_SHADER:
 			case Rhi::ResourceType::GEOMETRY_SHADER:
 			case Rhi::ResourceType::FRAGMENT_SHADER:
+			case Rhi::ResourceType::TASK_SHADER:
+			case Rhi::ResourceType::MESH_SHADER:
 			case Rhi::ResourceType::COMPUTE_SHADER:
 			default:
 				// Not handled in here

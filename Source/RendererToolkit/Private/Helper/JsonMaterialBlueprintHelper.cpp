@@ -191,6 +191,8 @@ namespace
 			ELSE_IF_VALUE(TESSELLATION_EVALUATION_SHADER)
 			ELSE_IF_VALUE(GEOMETRY_SHADER)
 			ELSE_IF_VALUE(FRAGMENT_SHADER)
+			ELSE_IF_VALUE(TASK_SHADER)
+			ELSE_IF_VALUE(MESH_SHADER)
 			ELSE_IF_VALUE(COMPUTE_SHADER)
 			else
 			{
@@ -849,6 +851,8 @@ namespace RendererToolkit
 									CASE(TESSELLATION_EVALUATION_SHADER)
 									CASE(GEOMETRY_SHADER)
 									CASE(FRAGMENT_SHADER)
+									CASE(TASK_SHADER)
+									CASE(MESH_SHADER)
 									CASE(COMPUTE_SHADER)
 										throw std::runtime_error("Invalid resource type \"" + std::string(rapidJsonValue["ResourceType"].GetString()) + "\", must be \"TEXTURE_BUFFER\", \"STRUCTURED_BUFFER\", \"UNIFORM_BUFFER\", \"TEXTURE_1D\", \"TEXTURE_1D_ARRAY\", \"TEXTURE_2D\", \"TEXTURE_2D_ARRAY\", \"TEXTURE_3D\", \"TEXTURE_CUBE\" or \"SAMPLER_STATE\"");
 								}

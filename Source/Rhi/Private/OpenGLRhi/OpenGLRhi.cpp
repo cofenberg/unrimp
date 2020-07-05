@@ -761,6 +761,12 @@ FNDEF_GL(void,	glCreateQueries,	(GLenum, GLsizei, GLuint*));
 #endif
 
 //[-------------------------------------------------------]
+//[ NV                                                    ]
+//[-------------------------------------------------------]
+// GL_NV_mesh_shader
+FNDEF_EX(glDrawMeshTasksNV,	PFNGLDRAWMESHTASKSNVPROC);
+
+//[-------------------------------------------------------]
 //[ EXT                                                   ]
 //[-------------------------------------------------------]
 // GL_EXT_texture3D
@@ -1863,6 +1869,8 @@ namespace OpenGLRhi
 		void drawGraphicsEmulated(const uint8_t* emulationData, uint32_t indirectBufferOffset = 0, uint32_t numberOfDraws = 1);
 		void drawIndexedGraphics(const Rhi::IIndirectBuffer& indirectBuffer, uint32_t indirectBufferOffset = 0, uint32_t numberOfDraws = 1);
 		void drawIndexedGraphicsEmulated(const uint8_t* emulationData, uint32_t indirectBufferOffset = 0, uint32_t numberOfDraws = 1);
+		void drawMeshTasks(const Rhi::IIndirectBuffer& indirectBuffer, uint32_t indirectBufferOffset = 0, uint32_t numberOfDraws = 1);
+		void drawMeshTasksEmulated(const uint8_t* emulationData, uint32_t indirectBufferOffset = 0, uint32_t numberOfDraws = 1);
 		//[-------------------------------------------------------]
 		//[ Compute                                               ]
 		//[-------------------------------------------------------]
@@ -2399,6 +2407,12 @@ namespace OpenGLRhi
 			return mWGL_EXT_swap_control_tear;
 		}
 
+		// NV
+		[[nodiscard]] inline bool isGL_NV_mesh_shader() const
+		{
+			return mGL_NV_mesh_shader;
+		}
+
 		// EXT
 		[[nodiscard]] inline bool isGL_EXT_texture_lod_bias() const
 		{
@@ -2783,6 +2797,8 @@ namespace OpenGLRhi
 			mWGL_EXT_swap_control				 = false;
 			mWGL_EXT_swap_control_tear			 = false;
 			// EXT
+			mGL_NV_mesh_shader					 = false;
+			// EXT
 			mGL_EXT_texture_lod_bias			 = false;
 			mGL_EXT_texture_filter_anisotropic	 = false;
 			mGL_EXT_texture_array				 = false;
@@ -2990,6 +3006,20 @@ namespace OpenGLRhi
 			GLint profile = 0;
 			glGetIntegerv(GL_CONTEXT_PROFILE_MASK, &profile);
 			const bool isCoreProfile = (profile & GL_CONTEXT_CORE_PROFILE_BIT);
+
+
+			//[-------------------------------------------------------]
+			//[ NV                                                    ]
+			//[-------------------------------------------------------]
+			// GL_NV_mesh_shader
+			mGL_NV_mesh_shader = isSupported("GL_NV_mesh_shader");
+			if (mGL_NV_mesh_shader)
+			{
+				// Load the entry points
+				bool result = true;	// Success by default
+				IMPORT_FUNC(glDrawMeshTasksNV)
+				mGL_NV_mesh_shader = result;
+			}
 
 
 			//[-------------------------------------------------------]
@@ -3566,6 +3596,8 @@ namespace OpenGLRhi
 		bool mWGL_ARB_extensions_string;
 		bool mWGL_EXT_swap_control;
 		bool mWGL_EXT_swap_control_tear;
+		// EXT
+		bool mGL_NV_mesh_shader;
 		// EXT
 		bool mGL_EXT_texture_lod_bias;
 		bool mGL_EXT_texture_filter_anisotropic;
@@ -13566,6 +13598,8 @@ namespace OpenGLRhi
 						case Rhi::ResourceType::TESSELLATION_EVALUATION_SHADER:
 						case Rhi::ResourceType::GEOMETRY_SHADER:
 						case Rhi::ResourceType::FRAGMENT_SHADER:
+						case Rhi::ResourceType::TASK_SHADER:
+						case Rhi::ResourceType::MESH_SHADER:
 						case Rhi::ResourceType::COMPUTE_SHADER:
 						default:
 							// Nothing here
@@ -13632,6 +13666,8 @@ namespace OpenGLRhi
 					case Rhi::ResourceType::TESSELLATION_EVALUATION_SHADER:
 					case Rhi::ResourceType::GEOMETRY_SHADER:
 					case Rhi::ResourceType::FRAGMENT_SHADER:
+					case Rhi::ResourceType::TASK_SHADER:
+					case Rhi::ResourceType::MESH_SHADER:
 					case Rhi::ResourceType::COMPUTE_SHADER:
 					default:
 						// Nothing here
@@ -13800,6 +13836,8 @@ namespace OpenGLRhi
 					case Rhi::ResourceType::TESSELLATION_EVALUATION_SHADER:
 					case Rhi::ResourceType::GEOMETRY_SHADER:
 					case Rhi::ResourceType::FRAGMENT_SHADER:
+					case Rhi::ResourceType::TASK_SHADER:
+					case Rhi::ResourceType::MESH_SHADER:
 					case Rhi::ResourceType::COMPUTE_SHADER:
 					default:
 						RHI_LOG(openGLRhi.getContext(), CRITICAL, "The type of the given color texture at index %ld is not supported by the OpenGL RHI implementation", colorFramebufferAttachment - colorFramebufferAttachments)
@@ -13878,6 +13916,8 @@ namespace OpenGLRhi
 					case Rhi::ResourceType::TESSELLATION_EVALUATION_SHADER:
 					case Rhi::ResourceType::GEOMETRY_SHADER:
 					case Rhi::ResourceType::FRAGMENT_SHADER:
+					case Rhi::ResourceType::TASK_SHADER:
+					case Rhi::ResourceType::MESH_SHADER:
 					case Rhi::ResourceType::COMPUTE_SHADER:
 					default:
 						RHI_LOG(openGLRhi.getContext(), CRITICAL, "OpenGL error: The type of the given depth stencil texture is not supported by the OpenGL RHI implementation")
@@ -14105,6 +14145,8 @@ namespace OpenGLRhi
 					case Rhi::ResourceType::TESSELLATION_EVALUATION_SHADER:
 					case Rhi::ResourceType::GEOMETRY_SHADER:
 					case Rhi::ResourceType::FRAGMENT_SHADER:
+					case Rhi::ResourceType::TASK_SHADER:
+					case Rhi::ResourceType::MESH_SHADER:
 					case Rhi::ResourceType::COMPUTE_SHADER:
 					default:
 						RHI_LOG(openGLRhi.getContext(), CRITICAL, "The type of the given color texture at index %ld is not supported by the OpenGL RHI implementation", colorFramebufferAttachment - colorFramebufferAttachments)
@@ -14197,6 +14239,8 @@ namespace OpenGLRhi
 					case Rhi::ResourceType::TESSELLATION_EVALUATION_SHADER:
 					case Rhi::ResourceType::GEOMETRY_SHADER:
 					case Rhi::ResourceType::FRAGMENT_SHADER:
+					case Rhi::ResourceType::TASK_SHADER:
+					case Rhi::ResourceType::MESH_SHADER:
 					case Rhi::ResourceType::COMPUTE_SHADER:
 					default:
 						RHI_LOG(openGLRhi.getContext(), CRITICAL, "The type of the given depth stencil texture is not supported by the OpenGL RHI implementation")
@@ -14844,6 +14888,210 @@ namespace OpenGLRhi
 
 
 	//[-------------------------------------------------------]
+	//[ OpenGLRhi/Shader/Monolithic/TaskShaderMonolithic.h    ]
+	//[-------------------------------------------------------]
+	/**
+	*  @brief
+	*    Monolithic task shader (TS, "amplification shader" in Direct3D terminology) class
+	*/
+	class TaskShaderMonolithic final : public Rhi::ITaskShader
+	{
+
+
+	//[-------------------------------------------------------]
+	//[ Public methods                                        ]
+	//[-------------------------------------------------------]
+	public:
+		/**
+		*  @brief
+		*    Constructor for creating a task shader from shader source code
+		*
+		*  @param[in] openGLRhi
+		*    Owner OpenGL RHI instance
+		*  @param[in] sourceCode
+		*    Shader ASCII source code, must be valid
+		*/
+		inline TaskShaderMonolithic(OpenGLRhi& openGLRhi, const char* sourceCode RHI_RESOURCE_DEBUG_NAME_PARAMETER) :
+			ITaskShader(openGLRhi RHI_RESOURCE_DEBUG_PASS_PARAMETER),
+			mOpenGLShader(::detail::loadShaderFromSourcecode(openGLRhi.getContext(), GL_TASK_SHADER_NV, sourceCode))
+		{
+			// Assign a default name to the resource for debugging purposes
+			#ifdef RHI_DEBUG
+				if (0 != mOpenGLShader && openGLRhi.getExtensions().isGL_KHR_debug())
+				{
+					RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "TS", 5)	// 5 = "TS: " including terminating zero
+					glObjectLabel(GL_SHADER, mOpenGLShader, -1, detailedDebugName);
+				}
+			#endif
+		}
+
+		/**
+		*  @brief
+		*    Destructor
+		*/
+		inline virtual ~TaskShaderMonolithic() override
+		{
+			// Destroy the OpenGL shader
+			// -> Silently ignores 0's and names that do not correspond to existing buffer objects
+			glDeleteShader(mOpenGLShader);
+		}
+
+		/**
+		*  @brief
+		*    Return the OpenGL shader
+		*
+		*  @return
+		*    The OpenGL shader, can be zero if no resource is allocated, do not destroy the returned resource
+		*/
+		[[nodiscard]] inline GLuint getOpenGLShader() const
+		{
+			return mOpenGLShader;
+		}
+
+
+	//[-------------------------------------------------------]
+	//[ Public virtual Rhi::IShader methods                   ]
+	//[-------------------------------------------------------]
+	public:
+		[[nodiscard]] inline virtual const char* getShaderLanguageName() const override
+		{
+			return ::detail::GLSL_NAME;
+		}
+
+
+	//[-------------------------------------------------------]
+	//[ Protected virtual Rhi::RefCount methods               ]
+	//[-------------------------------------------------------]
+	protected:
+		inline virtual void selfDestruct() override
+		{
+			RHI_DELETE(getRhi().getContext(), TaskShaderMonolithic, this);
+		}
+
+
+	//[-------------------------------------------------------]
+	//[ Private methods                                       ]
+	//[-------------------------------------------------------]
+	private:
+		explicit TaskShaderMonolithic(const TaskShaderMonolithic& source) = delete;
+		TaskShaderMonolithic& operator =(const TaskShaderMonolithic& source) = delete;
+
+
+	//[-------------------------------------------------------]
+	//[ Private data                                          ]
+	//[-------------------------------------------------------]
+	private:
+		GLuint mOpenGLShader;	///< OpenGL shader, can be zero if no resource is allocated
+
+
+	};
+
+
+
+
+	//[-------------------------------------------------------]
+	//[ OpenGLRhi/Shader/Monolithic/MeshShaderMonolithic.h    ]
+	//[-------------------------------------------------------]
+	/**
+	*  @brief
+	*    Monolithic mesh shader (MS) class
+	*/
+	class MeshShaderMonolithic final : public Rhi::IMeshShader
+	{
+
+
+	//[-------------------------------------------------------]
+	//[ Public methods                                        ]
+	//[-------------------------------------------------------]
+	public:
+		/**
+		*  @brief
+		*    Constructor for creating a mesh shader from shader source code
+		*
+		*  @param[in] openGLRhi
+		*    Owner OpenGL RHI instance
+		*  @param[in] sourceCode
+		*    Shader ASCII source code, must be valid
+		*/
+		inline MeshShaderMonolithic(OpenGLRhi& openGLRhi, const char* sourceCode RHI_RESOURCE_DEBUG_NAME_PARAMETER) :
+			IMeshShader(openGLRhi RHI_RESOURCE_DEBUG_PASS_PARAMETER),
+			mOpenGLShader(::detail::loadShaderFromSourcecode(openGLRhi.getContext(), GL_MESH_SHADER_NV, sourceCode))
+		{
+			// Assign a default name to the resource for debugging purposes
+			#ifdef RHI_DEBUG
+				if (0 != mOpenGLShader && openGLRhi.getExtensions().isGL_KHR_debug())
+				{
+					RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "MS", 5)	// 5 = "MS: " including terminating zero
+					glObjectLabel(GL_SHADER, mOpenGLShader, -1, detailedDebugName);
+				}
+			#endif
+		}
+
+		/**
+		*  @brief
+		*    Destructor
+		*/
+		inline virtual ~MeshShaderMonolithic() override
+		{
+			// Destroy the OpenGL shader
+			// -> Silently ignores 0's and names that do not correspond to existing buffer objects
+			glDeleteShader(mOpenGLShader);
+		}
+
+		/**
+		*  @brief
+		*    Return the OpenGL shader
+		*
+		*  @return
+		*    The OpenGL shader, can be zero if no resource is allocated, do not destroy the returned resource
+		*/
+		[[nodiscard]] inline GLuint getOpenGLShader() const
+		{
+			return mOpenGLShader;
+		}
+
+
+	//[-------------------------------------------------------]
+	//[ Public virtual Rhi::IShader methods                   ]
+	//[-------------------------------------------------------]
+	public:
+		[[nodiscard]] inline virtual const char* getShaderLanguageName() const override
+		{
+			return ::detail::GLSL_NAME;
+		}
+
+
+	//[-------------------------------------------------------]
+	//[ Protected virtual Rhi::RefCount methods               ]
+	//[-------------------------------------------------------]
+	protected:
+		inline virtual void selfDestruct() override
+		{
+			RHI_DELETE(getRhi().getContext(), MeshShaderMonolithic, this);
+		}
+
+
+	//[-------------------------------------------------------]
+	//[ Private methods                                       ]
+	//[-------------------------------------------------------]
+	private:
+		explicit MeshShaderMonolithic(const MeshShaderMonolithic& source) = delete;
+		MeshShaderMonolithic& operator =(const MeshShaderMonolithic& source) = delete;
+
+
+	//[-------------------------------------------------------]
+	//[ Private data                                          ]
+	//[-------------------------------------------------------]
+	private:
+		GLuint mOpenGLShader;	///< OpenGL shader, can be zero if no resource is allocated
+
+
+	};
+
+
+
+
+	//[-------------------------------------------------------]
 	//[ OpenGLRhi/Shader/Monolithic/ComputeShaderMonolithic.h ]
 	//[-------------------------------------------------------]
 	/**
@@ -14962,7 +15210,7 @@ namespace OpenGLRhi
 	public:
 		/**
 		*  @brief
-		*    Constructor
+		*    Constructor for traditional graphics program
 		*
 		*  @param[in] openGLRhi
 		*    Owner OpenGL RHI instance
@@ -15050,131 +15298,61 @@ namespace OpenGLRhi
 			}
 
 			// Link the program
-			glLinkProgram(mOpenGLProgram);
+			linkProgram(openGLRhi, rootSignature);
 
-			// Check the link status
-			GLint linked = GL_FALSE;
-			glGetProgramiv(mOpenGLProgram, GL_LINK_STATUS, &linked);
-			if (GL_TRUE == linked)
+			// Assign a default name to the resource for debugging purposes
+			#ifdef RHI_DEBUG
+				if (0 != mOpenGLProgram && openGLRhi.getExtensions().isGL_KHR_debug())
+				{
+					RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "Graphics program", 19)	// 19 = "Graphics program: " including terminating zero
+					glObjectLabel(GL_PROGRAM, mOpenGLProgram, -1, detailedDebugName);
+				}
+			#endif
+		}
+
+		/**
+		*  @brief
+		*    Constructor for task and mesh shader based graphics program
+		*
+		*  @param[in] openGLRhi
+		*    Owner OpenGL RHI instance
+		*  @param[in] rootSignature
+		*    Root signature
+		*  @param[in] taskShaderMonolithic
+		*    Task shader the graphics program is using, can be a null pointer
+		*  @param[in] meshShaderMonolithic
+		*    Mesh shader the graphics program is using
+		*  @param[in] fragmentShaderMonolithic
+		*    Fragment shader the graphics program is using, can be a null pointer
+		*
+		*  @note
+		*    - The graphics program keeps a reference to the provided shaders and releases it when no longer required
+		*/
+		GraphicsProgramMonolithic(OpenGLRhi& openGLRhi, const Rhi::IRootSignature& rootSignature, TaskShaderMonolithic* taskShaderMonolithic, MeshShaderMonolithic& meshShaderMonolithic, FragmentShaderMonolithic* fragmentShaderMonolithic RHI_RESOURCE_DEBUG_NAME_PARAMETER) :
+			IGraphicsProgram(openGLRhi RHI_RESOURCE_DEBUG_PASS_PARAMETER),
+			mOpenGLProgram(glCreateProgram()),
+			mDrawIdUniformLocation(-1)
+		{
+			// Attach the shaders to the program
+			// -> We don't need to keep a reference to the shader, to add and release at once to ensure a nice behaviour
+			if (nullptr != taskShaderMonolithic)
 			{
-				// We're not using "glBindFragDataLocation()", else the user would have to provide us with additional OpenGL-only specific information
-				// -> Use modern GLSL:
-				//    "layout(location = 0) out vec4 ColorOutput0;"
-				//    "layout(location = 1) out vec4 ColorOutput1;"
-				// -> Use legacy GLSL if necessary:
-				//    "gl_FragData[0] = vec4(1.0f, 0.0f, 0.0f, 0.0f);"
-				//    "gl_FragData[1] = vec4(0.0f, 0.0f, 1.0f, 0.0f);"
-
-				// Get draw ID uniform location
-				if (!openGLRhi.getExtensions().isGL_ARB_base_instance())
-				{
-					mDrawIdUniformLocation = glGetUniformLocation(mOpenGLProgram, "drawIdUniform");
-				}
-
-				// The actual locations assigned to uniform variables are not known until the program object is linked successfully
-				// -> So we have to build a root signature parameter index -> uniform location mapping here
-				const Rhi::RootSignature& rootSignatureData = static_cast<const RootSignature&>(rootSignature).getRootSignature();
-				const uint32_t numberOfRootParameters = rootSignatureData.numberOfParameters;
-				uint32_t uniformBlockBindingIndex = 0;
-				for (uint32_t rootParameterIndex = 0; rootParameterIndex < numberOfRootParameters; ++rootParameterIndex)
-				{
-					const Rhi::RootParameter& rootParameter = rootSignatureData.parameters[rootParameterIndex];
-					if (Rhi::RootParameterType::DESCRIPTOR_TABLE == rootParameter.parameterType)
-					{
-						RHI_ASSERT(openGLRhi.getContext(), nullptr != reinterpret_cast<const Rhi::DescriptorRange*>(rootParameter.descriptorTable.descriptorRanges), "Invalid OpenGL descriptor ranges")
-						const uint32_t numberOfDescriptorRanges = rootParameter.descriptorTable.numberOfDescriptorRanges;
-						for (uint32_t descriptorRangeIndex = 0; descriptorRangeIndex < numberOfDescriptorRanges; ++descriptorRangeIndex)
-						{
-							const Rhi::DescriptorRange& descriptorRange = reinterpret_cast<const Rhi::DescriptorRange*>(rootParameter.descriptorTable.descriptorRanges)[descriptorRangeIndex];
-
-							// Ignore sampler range types in here (OpenGL handles samplers in a different way then Direct3D 10>=)
-							if (Rhi::DescriptorRangeType::UBV == descriptorRange.rangeType)
-							{
-								// Explicit binding points ("layout(binding = 0)" in GLSL shader) requires OpenGL 4.2 or the "GL_ARB_explicit_uniform_location"-extension,
-								// for backward compatibility, ask for the uniform block index
-								const GLuint uniformBlockIndex = glGetUniformBlockIndex(mOpenGLProgram, descriptorRange.baseShaderRegisterName);
-								if (GL_INVALID_INDEX != uniformBlockIndex)
-								{
-									// Associate the uniform block with the given binding point
-									glUniformBlockBinding(mOpenGLProgram, uniformBlockIndex, uniformBlockBindingIndex);
-									++uniformBlockBindingIndex;
-								}
-							}
-							else if (Rhi::DescriptorRangeType::SAMPLER != descriptorRange.rangeType)
-							{
-								const GLint uniformLocation = glGetUniformLocation(mOpenGLProgram, descriptorRange.baseShaderRegisterName);
-								if (uniformLocation >= 0)
-								{
-									// OpenGL/GLSL is not automatically assigning texture units to samplers, so, we have to take over this job
-									// -> When using OpenGL or OpenGL ES 3 this is required
-									// -> OpenGL 4.2 or the "GL_ARB_explicit_uniform_location"-extension supports explicit binding points ("layout(binding = 0)"
-									//    in GLSL shader) , for backward compatibility we don't use it in here
-									// -> When using Direct3D 9, 10, 11 or 12, the texture unit
-									//    to use is usually defined directly within the shader by using the "register"-keyword
-									// -> Use the "GL_ARB_direct_state_access" or "GL_EXT_direct_state_access" extension if possible to not change OpenGL states
-									if (nullptr != glProgramUniform1i)
-									{
-										glProgramUniform1i(mOpenGLProgram, uniformLocation, static_cast<GLint>(descriptorRange.baseShaderRegister));
-									}
-									else if (nullptr != glProgramUniform1iEXT)
-									{
-										glProgramUniform1iEXT(mOpenGLProgram, uniformLocation, static_cast<GLint>(descriptorRange.baseShaderRegister));
-									}
-									else
-									{
-										// TODO(co) There's room for binding API call related optimization in here (will certainly be no huge overall efficiency gain)
-										#ifdef RHI_OPENGL_STATE_CLEANUP
-											// Backup the currently used OpenGL program
-											GLint openGLProgramBackup = 0;
-											glGetIntegerv(GL_CURRENT_PROGRAM, &openGLProgramBackup);
-											if (static_cast<GLuint>(openGLProgramBackup) == mOpenGLProgram)
-											{
-												// Set uniform, please note that for this our program must be the currently used one
-												glUniform1i(uniformLocation, static_cast<GLint>(descriptorRange.baseShaderRegister));
-											}
-											else
-											{
-												// Set uniform, please note that for this our program must be the currently used one
-												glUseProgram(mOpenGLProgram);
-												glUniform1i(uniformLocation, static_cast<GLint>(descriptorRange.baseShaderRegister));
-
-												// Be polite and restore the previous used OpenGL program
-												glUseProgram(static_cast<GLhandleARB>(openGLProgramBackup));
-											}
-										#else
-											glUseProgram(mOpenGLProgram);
-											glUniform1i(uniformLocation, static_cast<GLint>(descriptorRange.baseShaderRegister));
-										#endif
-									}
-								}
-							}
-						}
-					}
-				}
+				taskShaderMonolithic->addReference();
+				glAttachShader(mOpenGLProgram, taskShaderMonolithic->getOpenGLShader());
+				taskShaderMonolithic->releaseReference();
 			}
-			else
+			meshShaderMonolithic.addReference();
+			glAttachShader(mOpenGLProgram, meshShaderMonolithic.getOpenGLShader());
+			meshShaderMonolithic.releaseReference();
+			if (nullptr != fragmentShaderMonolithic)
 			{
-				// Error, program link failed!
-
-				// Get the length of the information (including a null termination)
-				GLint informationLength = 0;
-				glGetProgramiv(mOpenGLProgram, GL_INFO_LOG_LENGTH, &informationLength);
-				if (informationLength > 1)
-				{
-					// Allocate memory for the information
-					const Rhi::Context& context = openGLRhi.getContext();
-					char* informationLog = RHI_MALLOC_TYPED(context, char, informationLength);
-
-					// Get the information
-					glGetProgramInfoLog(mOpenGLProgram, informationLength, nullptr, informationLog);
-
-					// Output the debug string
-					RHI_LOG(context, CRITICAL, informationLog)
-
-					// Cleanup information memory
-					RHI_FREE(context, informationLog);
-				}
+				fragmentShaderMonolithic->addReference();
+				glAttachShader(mOpenGLProgram, fragmentShaderMonolithic->getOpenGLShader());
+				fragmentShaderMonolithic->releaseReference();
 			}
+
+			// Link the program
+			linkProgram(openGLRhi, rootSignature);
 
 			// Assign a default name to the resource for debugging purposes
 			#ifdef RHI_DEBUG
@@ -15438,6 +15616,136 @@ namespace OpenGLRhi
 		explicit GraphicsProgramMonolithic(const GraphicsProgramMonolithic& source) = delete;
 		GraphicsProgramMonolithic& operator =(const GraphicsProgramMonolithic& source) = delete;
 
+		void linkProgram(OpenGLRhi& openGLRhi, const Rhi::IRootSignature& rootSignature)
+		{
+			// Link the program
+			glLinkProgram(mOpenGLProgram);
+
+			// Check the link status
+			GLint linked = GL_FALSE;
+			glGetProgramiv(mOpenGLProgram, GL_LINK_STATUS, &linked);
+			if (GL_TRUE == linked)
+			{
+				// We're not using "glBindFragDataLocation()", else the user would have to provide us with additional OpenGL-only specific information
+				// -> Use modern GLSL:
+				//    "layout(location = 0) out vec4 ColorOutput0;"
+				//    "layout(location = 1) out vec4 ColorOutput1;"
+				// -> Use legacy GLSL if necessary:
+				//    "gl_FragData[0] = vec4(1.0f, 0.0f, 0.0f, 0.0f);"
+				//    "gl_FragData[1] = vec4(0.0f, 0.0f, 1.0f, 0.0f);"
+
+				// Get draw ID uniform location
+				if (!openGLRhi.getExtensions().isGL_ARB_base_instance())
+				{
+					mDrawIdUniformLocation = glGetUniformLocation(mOpenGLProgram, "drawIdUniform");
+				}
+
+				// The actual locations assigned to uniform variables are not known until the program object is linked successfully
+				// -> So we have to build a root signature parameter index -> uniform location mapping here
+				const Rhi::RootSignature& rootSignatureData = static_cast<const RootSignature&>(rootSignature).getRootSignature();
+				const uint32_t numberOfRootParameters = rootSignatureData.numberOfParameters;
+				uint32_t uniformBlockBindingIndex = 0;
+				for (uint32_t rootParameterIndex = 0; rootParameterIndex < numberOfRootParameters; ++rootParameterIndex)
+				{
+					const Rhi::RootParameter& rootParameter = rootSignatureData.parameters[rootParameterIndex];
+					if (Rhi::RootParameterType::DESCRIPTOR_TABLE == rootParameter.parameterType)
+					{
+						RHI_ASSERT(openGLRhi.getContext(), nullptr != reinterpret_cast<const Rhi::DescriptorRange*>(rootParameter.descriptorTable.descriptorRanges), "Invalid OpenGL descriptor ranges")
+						const uint32_t numberOfDescriptorRanges = rootParameter.descriptorTable.numberOfDescriptorRanges;
+						for (uint32_t descriptorRangeIndex = 0; descriptorRangeIndex < numberOfDescriptorRanges; ++descriptorRangeIndex)
+						{
+							const Rhi::DescriptorRange& descriptorRange = reinterpret_cast<const Rhi::DescriptorRange*>(rootParameter.descriptorTable.descriptorRanges)[descriptorRangeIndex];
+
+							// Ignore sampler range types in here (OpenGL handles samplers in a different way then Direct3D 10>=)
+							if (Rhi::DescriptorRangeType::UBV == descriptorRange.rangeType)
+							{
+								// Explicit binding points ("layout(binding = 0)" in GLSL shader) requires OpenGL 4.2 or the "GL_ARB_explicit_uniform_location"-extension,
+								// for backward compatibility, ask for the uniform block index
+								const GLuint uniformBlockIndex = glGetUniformBlockIndex(mOpenGLProgram, descriptorRange.baseShaderRegisterName);
+								if (GL_INVALID_INDEX != uniformBlockIndex)
+								{
+									// Associate the uniform block with the given binding point
+									glUniformBlockBinding(mOpenGLProgram, uniformBlockIndex, uniformBlockBindingIndex);
+									++uniformBlockBindingIndex;
+								}
+							}
+							else if (Rhi::DescriptorRangeType::SAMPLER != descriptorRange.rangeType)
+							{
+								const GLint uniformLocation = glGetUniformLocation(mOpenGLProgram, descriptorRange.baseShaderRegisterName);
+								if (uniformLocation >= 0)
+								{
+									// OpenGL/GLSL is not automatically assigning texture units to samplers, so, we have to take over this job
+									// -> When using OpenGL or OpenGL ES 3 this is required
+									// -> OpenGL 4.2 or the "GL_ARB_explicit_uniform_location"-extension supports explicit binding points ("layout(binding = 0)"
+									//    in GLSL shader) , for backward compatibility we don't use it in here
+									// -> When using Direct3D 9, 10, 11 or 12, the texture unit
+									//    to use is usually defined directly within the shader by using the "register"-keyword
+									// -> Use the "GL_ARB_direct_state_access" or "GL_EXT_direct_state_access" extension if possible to not change OpenGL states
+									if (nullptr != glProgramUniform1i)
+									{
+										glProgramUniform1i(mOpenGLProgram, uniformLocation, static_cast<GLint>(descriptorRange.baseShaderRegister));
+									}
+									else if (nullptr != glProgramUniform1iEXT)
+									{
+										glProgramUniform1iEXT(mOpenGLProgram, uniformLocation, static_cast<GLint>(descriptorRange.baseShaderRegister));
+									}
+									else
+									{
+										// TODO(co) There's room for binding API call related optimization in here (will certainly be no huge overall efficiency gain)
+										#ifdef RHI_OPENGL_STATE_CLEANUP
+											// Backup the currently used OpenGL program
+											GLint openGLProgramBackup = 0;
+											glGetIntegerv(GL_CURRENT_PROGRAM, &openGLProgramBackup);
+											if (static_cast<GLuint>(openGLProgramBackup) == mOpenGLProgram)
+											{
+												// Set uniform, please note that for this our program must be the currently used one
+												glUniform1i(uniformLocation, static_cast<GLint>(descriptorRange.baseShaderRegister));
+											}
+											else
+											{
+												// Set uniform, please note that for this our program must be the currently used one
+												glUseProgram(mOpenGLProgram);
+												glUniform1i(uniformLocation, static_cast<GLint>(descriptorRange.baseShaderRegister));
+
+												// Be polite and restore the previous used OpenGL program
+												glUseProgram(static_cast<GLhandleARB>(openGLProgramBackup));
+											}
+										#else
+											glUseProgram(mOpenGLProgram);
+											glUniform1i(uniformLocation, static_cast<GLint>(descriptorRange.baseShaderRegister));
+										#endif
+									}
+								}
+							}
+						}
+					}
+				}
+			}
+			else
+			{
+				// Error, program link failed!
+
+				// Get the length of the information (including a null termination)
+				GLint informationLength = 0;
+				glGetProgramiv(mOpenGLProgram, GL_INFO_LOG_LENGTH, &informationLength);
+				if (informationLength > 1)
+				{
+					// Allocate memory for the information
+					const Rhi::Context& context = openGLRhi.getContext();
+					char* informationLog = RHI_MALLOC_TYPED(context, char, informationLength);
+
+					// Get the information
+					glGetProgramInfoLog(mOpenGLProgram, informationLength, nullptr, informationLog);
+
+					// Output the debug string
+					RHI_LOG(context, CRITICAL, informationLog)
+
+					// Cleanup information memory
+					RHI_FREE(context, informationLog);
+				}
+			}
+		}
+
 
 	//[-------------------------------------------------------]
 	//[ Private data                                          ]
@@ -15468,7 +15776,7 @@ namespace OpenGLRhi
 	public:
 		/**
 		*  @brief
-		*    Constructor
+		*    Constructor for traditional graphics program
 		*
 		*  @param[in] openGLRhi
 		*    Owner OpenGL RHI instance
@@ -15492,6 +15800,28 @@ namespace OpenGLRhi
 		*/
 		inline GraphicsProgramMonolithicDsa(OpenGLRhi& openGLRhi, const Rhi::IRootSignature& rootSignature, const Rhi::VertexAttributes& vertexAttributes, VertexShaderMonolithic* vertexShaderMonolithic, TessellationControlShaderMonolithic* tessellationControlShaderMonolithic, TessellationEvaluationShaderMonolithic* tessellationEvaluationShaderMonolithic, GeometryShaderMonolithic* geometryShaderMonolithic, FragmentShaderMonolithic* fragmentShaderMonolithic RHI_RESOURCE_DEBUG_NAME_PARAMETER) :
 			GraphicsProgramMonolithic(openGLRhi, rootSignature, vertexAttributes, vertexShaderMonolithic, tessellationControlShaderMonolithic, tessellationEvaluationShaderMonolithic, geometryShaderMonolithic, fragmentShaderMonolithic RHI_RESOURCE_DEBUG_PASS_PARAMETER)
+		{}
+
+		/**
+		*  @brief
+		*    Constructor for task and mesh shader based graphics program
+		*
+		*  @param[in] openGLRhi
+		*    Owner OpenGL RHI instance
+		*  @param[in] rootSignature
+		*    Root signature
+		*  @param[in] taskShaderMonolithic
+		*    Task shader the graphics program is using, can be a null pointer
+		*  @param[in] meshShaderMonolithic
+		*    Mesh shader the graphics program is using
+		*  @param[in] fragmentShaderMonolithic
+		*    Fragment shader the graphics program is using, can be a null pointer
+		*
+		*  @note
+		*    - The graphics program keeps a reference to the provided shaders and releases it when no longer required
+		*/
+		inline GraphicsProgramMonolithicDsa(OpenGLRhi& openGLRhi, const Rhi::IRootSignature& rootSignature, TaskShaderMonolithic* taskShaderMonolithic, MeshShaderMonolithic& meshShaderMonolithic, FragmentShaderMonolithic* fragmentShaderMonolithic RHI_RESOURCE_DEBUG_NAME_PARAMETER) :
+			GraphicsProgramMonolithic(openGLRhi, rootSignature, taskShaderMonolithic, meshShaderMonolithic, fragmentShaderMonolithic RHI_RESOURCE_DEBUG_PASS_PARAMETER)
 		{}
 
 		/**
@@ -16032,6 +16362,52 @@ namespace OpenGLRhi
 			}
 		}
 
+		[[nodiscard]] inline virtual Rhi::ITaskShader* createTaskShaderFromBytecode(const Rhi::ShaderBytecode& RHI_RESOURCE_DEBUG_NAME_MAYBE_UNUSED_PARAMETER) override
+		{
+			// Error!
+			RHI_ASSERT(getRhi().getContext(), false, "OpenGL monolithic shaders have no shader bytecode, only a monolithic program bytecode")
+			return nullptr;
+		}
+
+		[[nodiscard]] virtual Rhi::ITaskShader* createTaskShaderFromSourceCode(const Rhi::ShaderSourceCode& shaderSourceCode, [[maybe_unused]] Rhi::ShaderBytecode* shaderBytecode = nullptr RHI_RESOURCE_DEBUG_NAME_PARAMETER) override
+		{
+			// Check whether or not there's mesh shader support
+			// -> Monolithic shaders have no shader bytecode, only a monolithic program bytecode
+			OpenGLRhi& openGLRhi = static_cast<OpenGLRhi&>(getRhi());
+			if (openGLRhi.getExtensions().isGL_NV_mesh_shader())
+			{
+				return RHI_NEW(openGLRhi.getContext(), TaskShaderMonolithic)(openGLRhi, shaderSourceCode.sourceCode RHI_RESOURCE_DEBUG_PASS_PARAMETER);
+			}
+			else
+			{
+				// Error! There's no task shader support!
+				return nullptr;
+			}
+		}
+
+		[[nodiscard]] inline virtual Rhi::IMeshShader* createMeshShaderFromBytecode(const Rhi::ShaderBytecode& RHI_RESOURCE_DEBUG_NAME_MAYBE_UNUSED_PARAMETER) override
+		{
+			// Error!
+			RHI_ASSERT(getRhi().getContext(), false, "OpenGL monolithic shaders have no shader bytecode, only a monolithic program bytecode")
+			return nullptr;
+		}
+
+		[[nodiscard]] virtual Rhi::IMeshShader* createMeshShaderFromSourceCode(const Rhi::ShaderSourceCode& shaderSourceCode, [[maybe_unused]] Rhi::ShaderBytecode* shaderBytecode = nullptr RHI_RESOURCE_DEBUG_NAME_PARAMETER) override
+		{
+			// Check whether or not there's mesh shader support
+			// -> Monolithic shaders have no shader bytecode, only a monolithic program bytecode
+			OpenGLRhi& openGLRhi = static_cast<OpenGLRhi&>(getRhi());
+			if (openGLRhi.getExtensions().isGL_NV_mesh_shader())
+			{
+				return RHI_NEW(openGLRhi.getContext(), MeshShaderMonolithic)(openGLRhi, shaderSourceCode.sourceCode RHI_RESOURCE_DEBUG_PASS_PARAMETER);
+			}
+			else
+			{
+				// Error! There's no mesh shader support!
+				return nullptr;
+			}
+		}
+
 		[[nodiscard]] inline virtual Rhi::IComputeShader* createComputeShaderFromBytecode(const Rhi::ShaderBytecode& RHI_RESOURCE_DEBUG_NAME_MAYBE_UNUSED_PARAMETER) override
 		{
 			// Error!
@@ -16080,6 +16456,32 @@ namespace OpenGLRhi
 			{
 				// Traditional bind version
 				return RHI_NEW(openGLRhi.getContext(), GraphicsProgramMonolithic)(openGLRhi, rootSignature, vertexAttributes, static_cast<VertexShaderMonolithic*>(vertexShader), static_cast<TessellationControlShaderMonolithic*>(tessellationControlShader), static_cast<TessellationEvaluationShaderMonolithic*>(tessellationEvaluationShader), static_cast<GeometryShaderMonolithic*>(geometryShader), static_cast<FragmentShaderMonolithic*>(fragmentShader) RHI_RESOURCE_DEBUG_PASS_PARAMETER);
+			}
+		}
+
+		[[nodiscard]] virtual Rhi::IGraphicsProgram* createGraphicsProgram(const Rhi::IRootSignature& rootSignature, Rhi::ITaskShader* taskShader, Rhi::IMeshShader& meshShader, Rhi::IFragmentShader* fragmentShader RHI_RESOURCE_DEBUG_NAME_MAYBE_UNUSED_PARAMETER)
+		{
+			OpenGLRhi& openGLRhi = static_cast<OpenGLRhi&>(getRhi());
+
+			// Sanity checks
+			// -> A shader can be a null pointer, but if it's not the shader and graphics program language must match
+			// -> Optimization: Comparing the shader language name by directly comparing the pointer address of
+			//    the name is safe because we know that we always reference to one and the same name address
+			// TODO(co) Add security check: Is the given resource one of the currently used RHI?
+			RHI_ASSERT(openGLRhi.getContext(), nullptr == taskShader || taskShader->getShaderLanguageName() == ::detail::GLSL_NAME, "OpenGL task shader language mismatch")
+			RHI_ASSERT(openGLRhi.getContext(), meshShader.getShaderLanguageName() == ::detail::GLSL_NAME, "OpenGL mesh shader language mismatch")
+			RHI_ASSERT(openGLRhi.getContext(), nullptr == fragmentShader || fragmentShader->getShaderLanguageName() == ::detail::GLSL_NAME, "OpenGL fragment shader language mismatch")
+
+			// Create the graphics program: Is "GL_EXT_direct_state_access" there?
+			if (openGLRhi.getExtensions().isGL_EXT_direct_state_access() || openGLRhi.getExtensions().isGL_ARB_direct_state_access())
+			{
+				// Effective direct state access (DSA)
+				return RHI_NEW(openGLRhi.getContext(), GraphicsProgramMonolithicDsa)(openGLRhi, rootSignature, static_cast<TaskShaderMonolithic*>(taskShader), static_cast<MeshShaderMonolithic&>(meshShader), static_cast<FragmentShaderMonolithic*>(fragmentShader) RHI_RESOURCE_DEBUG_PASS_PARAMETER);
+			}
+			else
+			{
+				// Traditional bind version
+				return RHI_NEW(openGLRhi.getContext(), GraphicsProgramMonolithic)(openGLRhi, rootSignature, static_cast<TaskShaderMonolithic*>(taskShader), static_cast<MeshShaderMonolithic&>(meshShader), static_cast<FragmentShaderMonolithic*>(fragmentShader) RHI_RESOURCE_DEBUG_PASS_PARAMETER);
 			}
 		}
 
@@ -16802,6 +17204,268 @@ namespace OpenGLRhi
 
 
 	//[-------------------------------------------------------]
+	//[ OpenGLRhi/Shader/Separate/TaskShaderSeparate.h        ]
+	//[-------------------------------------------------------]
+	/**
+	*  @brief
+	*    Separate task shader (TS, "amplification shader" in Direct3D terminology) class
+	*/
+	class TaskShaderSeparate final : public Rhi::ITaskShader
+	{
+
+
+	//[-------------------------------------------------------]
+	//[ Public methods                                        ]
+	//[-------------------------------------------------------]
+	public:
+		/**
+		*  @brief
+		*    Constructor for creating a task shader from shader bytecode
+		*
+		*  @param[in] openGLRhi
+		*    Owner OpenGL RHI instance
+		*  @param[in] shaderBytecode
+		*    Shader bytecode
+		*/
+		inline TaskShaderSeparate(OpenGLRhi& openGLRhi, const Rhi::ShaderBytecode& shaderBytecode RHI_RESOURCE_DEBUG_NAME_PARAMETER) :
+			ITaskShader(openGLRhi RHI_RESOURCE_DEBUG_PASS_PARAMETER),
+			mOpenGLShaderProgram(::detail::loadShaderProgramFromBytecode(openGLRhi.getContext(), GL_TASK_SHADER_NV, shaderBytecode))
+		{
+			// Assign a default name to the resource for debugging purposes
+			#ifdef RHI_DEBUG
+				if (0 != mOpenGLShaderProgram && openGLRhi.getExtensions().isGL_KHR_debug())
+				{
+					RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "TS", 5)	// 5 = "TS: " including terminating zero
+					glObjectLabel(GL_PROGRAM, mOpenGLShaderProgram, -1, detailedDebugName);
+				}
+			#endif
+		}
+
+		/**
+		*  @brief
+		*    Constructor for creating a task shader from shader source code
+		*
+		*  @param[in] openGLRhi
+		*    Owner OpenGL RHI instance
+		*  @param[in] sourceCode
+		*    Shader ASCII source code, must be valid
+		*/
+		inline TaskShaderSeparate(OpenGLRhi& openGLRhi, const char* sourceCode, Rhi::ShaderBytecode* shaderBytecode RHI_RESOURCE_DEBUG_NAME_PARAMETER) :
+			ITaskShader(openGLRhi RHI_RESOURCE_DEBUG_PASS_PARAMETER),
+			mOpenGLShaderProgram(::detail::loadShaderProgramFromSourceCode(openGLRhi.getContext(), GL_TASK_SHADER_NV, sourceCode))
+		{
+			// Return shader bytecode, if requested do to so
+			if (nullptr != shaderBytecode)
+			{
+				::detail::shaderSourceCodeToShaderBytecode(openGLRhi.getContext(), GL_TASK_SHADER_NV, sourceCode, *shaderBytecode);
+			}
+
+			// Assign a default name to the resource for debugging purposes
+			#ifdef RHI_DEBUG
+				if (0 != mOpenGLShaderProgram && openGLRhi.getExtensions().isGL_KHR_debug())
+				{
+					RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "TS", 5)	// 5 = "TS: " including terminating zero
+					glObjectLabel(GL_PROGRAM, mOpenGLShaderProgram, -1, detailedDebugName);
+				}
+			#endif
+		}
+
+		/**
+		*  @brief
+		*    Destructor
+		*/
+		inline virtual ~TaskShaderSeparate() override
+		{
+			// Destroy the OpenGL shader program
+			// -> Silently ignores 0's and names that do not correspond to existing buffer objects
+			glDeleteProgram(mOpenGLShaderProgram);
+		}
+
+		/**
+		*  @brief
+		*    Return the OpenGL shader program
+		*
+		*  @return
+		*    The OpenGL shader program, can be zero if no resource is allocated, do not destroy the returned resource
+		*/
+		[[nodiscard]] inline GLuint getOpenGLShaderProgram() const
+		{
+			return mOpenGLShaderProgram;
+		}
+
+
+	//[-------------------------------------------------------]
+	//[ Public virtual Rhi::IShader methods                   ]
+	//[-------------------------------------------------------]
+	public:
+		[[nodiscard]] inline virtual const char* getShaderLanguageName() const override
+		{
+			return ::detail::GLSL_NAME;
+		}
+
+
+	//[-------------------------------------------------------]
+	//[ Protected virtual Rhi::RefCount methods               ]
+	//[-------------------------------------------------------]
+	protected:
+		inline virtual void selfDestruct() override
+		{
+			RHI_DELETE(getRhi().getContext(), TaskShaderSeparate, this);
+		}
+
+
+	//[-------------------------------------------------------]
+	//[ Private methods                                       ]
+	//[-------------------------------------------------------]
+	private:
+		explicit TaskShaderSeparate(const TaskShaderSeparate& source) = delete;
+		TaskShaderSeparate& operator =(const TaskShaderSeparate& source) = delete;
+
+
+	//[-------------------------------------------------------]
+	//[ Private data                                          ]
+	//[-------------------------------------------------------]
+	private:
+		GLuint mOpenGLShaderProgram;	///< OpenGL shader program, can be zero if no resource is allocated
+
+
+	};
+
+
+
+
+	//[-------------------------------------------------------]
+	//[ OpenGLRhi/Shader/Separate/MeshShaderSeparate.h        ]
+	//[-------------------------------------------------------]
+	/**
+	*  @brief
+	*    Separate mesh shader (MS) class
+	*/
+	class MeshShaderSeparate final : public Rhi::IMeshShader
+	{
+
+
+	//[-------------------------------------------------------]
+	//[ Public methods                                        ]
+	//[-------------------------------------------------------]
+	public:
+		/**
+		*  @brief
+		*    Constructor for creating a mesh shader from shader bytecode
+		*
+		*  @param[in] openGLRhi
+		*    Owner OpenGL RHI instance
+		*  @param[in] shaderBytecode
+		*    Shader bytecode
+		*/
+		inline MeshShaderSeparate(OpenGLRhi& openGLRhi, const Rhi::ShaderBytecode& shaderBytecode RHI_RESOURCE_DEBUG_NAME_PARAMETER) :
+			IMeshShader(openGLRhi RHI_RESOURCE_DEBUG_PASS_PARAMETER),
+			mOpenGLShaderProgram(::detail::loadShaderProgramFromBytecode(openGLRhi.getContext(), GL_MESH_SHADER_NV, shaderBytecode))
+		{
+			// Assign a default name to the resource for debugging purposes
+			#ifdef RHI_DEBUG
+				if (0 != mOpenGLShaderProgram && openGLRhi.getExtensions().isGL_KHR_debug())
+				{
+					RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "MS", 5)	// 5 = "MS: " including terminating zero
+					glObjectLabel(GL_PROGRAM, mOpenGLShaderProgram, -1, detailedDebugName);
+				}
+			#endif
+		}
+
+		/**
+		*  @brief
+		*    Constructor for creating a mesh shader from shader source code
+		*
+		*  @param[in] openGLRhi
+		*    Owner OpenGL RHI instance
+		*  @param[in] sourceCode
+		*    Shader ASCII source code, must be valid
+		*/
+		inline MeshShaderSeparate(OpenGLRhi& openGLRhi, const char* sourceCode, Rhi::ShaderBytecode* shaderBytecode RHI_RESOURCE_DEBUG_NAME_PARAMETER) :
+			IMeshShader(openGLRhi RHI_RESOURCE_DEBUG_PASS_PARAMETER),
+			mOpenGLShaderProgram(::detail::loadShaderProgramFromSourceCode(openGLRhi.getContext(), GL_MESH_SHADER_NV, sourceCode))
+		{
+			// Return shader bytecode, if requested do to so
+			if (nullptr != shaderBytecode)
+			{
+				::detail::shaderSourceCodeToShaderBytecode(openGLRhi.getContext(), GL_MESH_SHADER_NV, sourceCode, *shaderBytecode);
+			}
+
+			// Assign a default name to the resource for debugging purposes
+			#ifdef RHI_DEBUG
+				if (0 != mOpenGLShaderProgram && openGLRhi.getExtensions().isGL_KHR_debug())
+				{
+					RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "MS", 5)	// 5 = "MS: " including terminating zero
+					glObjectLabel(GL_PROGRAM, mOpenGLShaderProgram, -1, detailedDebugName);
+				}
+			#endif
+		}
+
+		/**
+		*  @brief
+		*    Destructor
+		*/
+		inline virtual ~MeshShaderSeparate() override
+		{
+			// Destroy the OpenGL shader program
+			// -> Silently ignores 0's and names that do not correspond to existing buffer objects
+			glDeleteProgram(mOpenGLShaderProgram);
+		}
+
+		/**
+		*  @brief
+		*    Return the OpenGL shader program
+		*
+		*  @return
+		*    The OpenGL shader program, can be zero if no resource is allocated, do not destroy the returned resource
+		*/
+		[[nodiscard]] inline GLuint getOpenGLShaderProgram() const
+		{
+			return mOpenGLShaderProgram;
+		}
+
+
+	//[-------------------------------------------------------]
+	//[ Public virtual Rhi::IShader methods                   ]
+	//[-------------------------------------------------------]
+	public:
+		[[nodiscard]] inline virtual const char* getShaderLanguageName() const override
+		{
+			return ::detail::GLSL_NAME;
+		}
+
+
+	//[-------------------------------------------------------]
+	//[ Protected virtual Rhi::RefCount methods               ]
+	//[-------------------------------------------------------]
+	protected:
+		inline virtual void selfDestruct() override
+		{
+			RHI_DELETE(getRhi().getContext(), MeshShaderSeparate, this);
+		}
+
+
+	//[-------------------------------------------------------]
+	//[ Private methods                                       ]
+	//[-------------------------------------------------------]
+	private:
+		explicit MeshShaderSeparate(const MeshShaderSeparate& source) = delete;
+		MeshShaderSeparate& operator =(const MeshShaderSeparate& source) = delete;
+
+
+	//[-------------------------------------------------------]
+	//[ Private data                                          ]
+	//[-------------------------------------------------------]
+	private:
+		GLuint mOpenGLShaderProgram;	///< OpenGL shader program, can be zero if no resource is allocated
+
+
+	};
+
+
+
+
+	//[-------------------------------------------------------]
 	//[ OpenGLRhi/Shader/Separate/ComputeShaderSeparate.h     ]
 	//[-------------------------------------------------------]
 	/**
@@ -16949,7 +17613,7 @@ namespace OpenGLRhi
 	public:
 		/**
 		*  @brief
-		*    Constructor
+		*    Constructor for traditional graphics program
 		*
 		*  @param[in] openGLRhi
 		*    Owner OpenGL RHI instance
@@ -16972,11 +17636,16 @@ namespace OpenGLRhi
 		GraphicsProgramSeparate(OpenGLRhi& openGLRhi, const Rhi::IRootSignature& rootSignature, VertexShaderSeparate* vertexShaderSeparate, TessellationControlShaderSeparate* tessellationControlShaderSeparate, TessellationEvaluationShaderSeparate* tessellationEvaluationShaderSeparate, GeometryShaderSeparate* geometryShaderSeparate, FragmentShaderSeparate* fragmentShaderSeparate RHI_RESOURCE_DEBUG_NAME_PARAMETER) :
 			IGraphicsProgram(openGLRhi RHI_RESOURCE_DEBUG_PASS_PARAMETER),
 			mOpenGLProgramPipeline(0),
+			// Traditional graphics program
 			mVertexShaderSeparate(vertexShaderSeparate),
 			mTessellationControlShaderSeparate(tessellationControlShaderSeparate),
 			mTessellationEvaluationShaderSeparate(tessellationEvaluationShaderSeparate),
 			mGeometryShaderSeparate(geometryShaderSeparate),
-			mFragmentShaderSeparate(fragmentShaderSeparate)
+			// Both graphics programs
+			mFragmentShaderSeparate(fragmentShaderSeparate),
+			// Task and mesh shader based graphics program
+			mTaskShaderSeparate(nullptr),
+			mMeshShaderSeparate(nullptr)
 		{
 			// Create the OpenGL program pipeline
 			glGenProgramPipelines(1, &mOpenGLProgramPipeline);
@@ -17068,8 +17737,10 @@ namespace OpenGLRhi
 										BIND_UNIFORM_BLOCK(mFragmentShaderSeparate)
 										break;
 
+									case Rhi::ShaderVisibility::TASK:
+									case Rhi::ShaderVisibility::MESH:
 									case Rhi::ShaderVisibility::COMPUTE:
-										RHI_LOG(openGLRhi.getContext(), CRITICAL, "Invalid OpenGL compute shader visibility")
+										RHI_LOG(openGLRhi.getContext(), CRITICAL, "Invalid OpenGL shader visibility")
 										break;
 								}
 								#undef BIND_UNIFORM_BLOCK
@@ -17109,8 +17780,209 @@ namespace OpenGLRhi
 										BIND_UNIFORM_LOCATION(mFragmentShaderSeparate)
 										break;
 
+									case Rhi::ShaderVisibility::TASK:
+									case Rhi::ShaderVisibility::MESH:
 									case Rhi::ShaderVisibility::COMPUTE:
-										RHI_LOG(openGLRhi.getContext(), CRITICAL, "Invalid OpenGL compute shader visibility")
+										RHI_LOG(openGLRhi.getContext(), CRITICAL, "Invalid OpenGL shader visibility")
+										break;
+								}
+								#undef BIND_UNIFORM_LOCATION
+							}
+						}
+					}
+				}
+			}
+			else
+			{
+				// Error, program pipeline validation failed!
+
+				// Get the length of the information (including a null termination)
+				GLint informationLength = 0;
+				glGetProgramPipelineiv(mOpenGLProgramPipeline, GL_INFO_LOG_LENGTH, &informationLength);
+				if (informationLength > 1)
+				{
+					// Allocate memory for the information
+					const Rhi::Context& context = openGLRhi.getContext();
+					char* informationLog = RHI_MALLOC_TYPED(context, char, informationLength);
+
+					// Get the information
+					glGetProgramPipelineInfoLog(mOpenGLProgramPipeline, informationLength, nullptr, informationLog);
+
+					// Output the debug string
+					RHI_LOG(context, CRITICAL, informationLog)
+
+					// Cleanup information memory
+					RHI_FREE(context, informationLog);
+				}
+			}
+
+			#ifdef RHI_OPENGL_STATE_CLEANUP
+				// Be polite and restore the previous used OpenGL program pipeline
+				if (nullptr == glProgramUniform1i && nullptr == glProgramUniform1iEXT)
+				{
+					glBindProgramPipeline(static_cast<GLuint>(openGLProgramPipelineBackup));
+				}
+			#endif
+
+			// Assign a default name to the resource for debugging purposes
+			#ifdef RHI_DEBUG
+				if (0 != mOpenGLProgramPipeline && openGLRhi.getExtensions().isGL_KHR_debug())
+				{
+					RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "Graphics program", 19)	// 19 = "Graphics program: " including terminating zero
+					glObjectLabel(GL_PROGRAM_PIPELINE, mOpenGLProgramPipeline, -1, detailedDebugName);
+				}
+			#endif
+		}
+
+		/**
+		*  @brief
+		*    Constructor for task and mesh shader based graphics program
+		*
+		*  @param[in] openGLRhi
+		*    Owner OpenGL RHI instance
+		*  @param[in] rootSignature
+		*    Root signature
+		*  @param[in] taskShaderSeparate
+		*    Task shader the graphics program is using, can be a null pointer
+		*  @param[in] meshShaderSeparate
+		*    Mesh shader the graphics program is using
+		*  @param[in] fragmentShaderSeparate
+		*    Fragment shader the graphics program is using, can be a null pointer
+		*
+		*  @note
+		*    - The graphics program keeps a reference to the provided shaders and releases it when no longer required
+		*/
+		GraphicsProgramSeparate(OpenGLRhi& openGLRhi, const Rhi::IRootSignature& rootSignature, TaskShaderSeparate* taskShaderSeparate, MeshShaderSeparate& meshShaderSeparate, FragmentShaderSeparate* fragmentShaderSeparate RHI_RESOURCE_DEBUG_NAME_PARAMETER) :
+			IGraphicsProgram(openGLRhi RHI_RESOURCE_DEBUG_PASS_PARAMETER),
+			mOpenGLProgramPipeline(0),
+			// Traditional graphics program
+			mVertexShaderSeparate(nullptr),
+			mTessellationControlShaderSeparate(nullptr),
+			mTessellationEvaluationShaderSeparate(nullptr),
+			mGeometryShaderSeparate(nullptr),
+			// Both graphics programs
+			mFragmentShaderSeparate(fragmentShaderSeparate),
+			// Task and mesh shader based graphics program
+			mTaskShaderSeparate(taskShaderSeparate),
+			mMeshShaderSeparate(&meshShaderSeparate)
+		{
+			// Create the OpenGL program pipeline
+			glGenProgramPipelines(1, &mOpenGLProgramPipeline);
+
+			// If the "GL_ARB_direct_state_access" nor "GL_EXT_direct_state_access" extension is available, we need to change OpenGL states during resource creation (nasty thing)
+			#ifdef RHI_OPENGL_STATE_CLEANUP
+				// Backup the currently used OpenGL program pipeline
+				GLint openGLProgramPipelineBackup = 0;
+			#endif
+			if (nullptr == glProgramUniform1i && nullptr == glProgramUniform1iEXT)
+			{
+				#ifdef RHI_OPENGL_STATE_CLEANUP
+					glGetIntegerv(GL_PROGRAM_PIPELINE_BINDING, &openGLProgramPipelineBackup);
+				#endif
+				glBindProgramPipeline(mOpenGLProgramPipeline);
+			}
+
+			// Add references to the provided shaders
+			#define USE_PROGRAM_STAGES(ShaderBit, ShaderSeparate) if (nullptr != ShaderSeparate) { ShaderSeparate->addReference(); glUseProgramStages(mOpenGLProgramPipeline, ShaderBit, ShaderSeparate->getOpenGLShaderProgram()); }
+			USE_PROGRAM_STAGES(GL_TASK_SHADER_BIT_NV,  mTaskShaderSeparate)
+			USE_PROGRAM_STAGES(GL_MESH_SHADER_BIT_NV,  mMeshShaderSeparate)
+			USE_PROGRAM_STAGES(GL_FRAGMENT_SHADER_BIT, mFragmentShaderSeparate)
+			#undef USE_PROGRAM_STAGES
+
+			// Validate program pipeline
+			glValidateProgramPipeline(mOpenGLProgramPipeline);
+			GLint validateStatus = 0;
+			glGetProgramPipelineiv(mOpenGLProgramPipeline, GL_VALIDATE_STATUS, &validateStatus);
+			if (GL_TRUE == validateStatus)
+			{
+				// We're not using "glBindFragDataLocation()", else the user would have to provide us with additional OpenGL-only specific information
+				// -> Use modern GLSL:
+				//    "layout(location = 0) out vec4 ColorOutput0;"
+				//    "layout(location = 1) out vec4 ColorOutput1;"
+				// -> Use legacy GLSL if necessary:
+				//    "gl_FragData[0] = vec4(1.0f, 0.0f, 0.0f, 0.0f);"
+				//    "gl_FragData[1] = vec4(0.0f, 0.0f, 1.0f, 0.0f);"
+
+				// The actual locations assigned to uniform variables are not known until the program object is linked successfully
+				// -> So we have to build a root signature parameter index -> uniform location mapping here
+				const Rhi::RootSignature& rootSignatureData = static_cast<const RootSignature&>(rootSignature).getRootSignature();
+				const uint32_t numberOfRootParameters = rootSignatureData.numberOfParameters;
+				uint32_t uniformBlockBindingIndex = 0;
+				for (uint32_t rootParameterIndex = 0; rootParameterIndex < numberOfRootParameters; ++rootParameterIndex)
+				{
+					const Rhi::RootParameter& rootParameter = rootSignatureData.parameters[rootParameterIndex];
+					if (Rhi::RootParameterType::DESCRIPTOR_TABLE == rootParameter.parameterType)
+					{
+						RHI_ASSERT(openGLRhi.getContext(), nullptr != reinterpret_cast<const Rhi::DescriptorRange*>(rootParameter.descriptorTable.descriptorRanges), "Invalid OpenGL descriptor ranges")
+						const uint32_t numberOfDescriptorRanges = rootParameter.descriptorTable.numberOfDescriptorRanges;
+						for (uint32_t descriptorRangeIndex = 0; descriptorRangeIndex < numberOfDescriptorRanges; ++descriptorRangeIndex)
+						{
+							const Rhi::DescriptorRange& descriptorRange = reinterpret_cast<const Rhi::DescriptorRange*>(rootParameter.descriptorTable.descriptorRanges)[descriptorRangeIndex];
+
+							// Ignore sampler range types in here (OpenGL handles samplers in a different way then Direct3D 10>=)
+							if (Rhi::DescriptorRangeType::UBV == descriptorRange.rangeType)
+							{
+								#define BIND_UNIFORM_BLOCK(ShaderSeparate) if (nullptr != ShaderSeparate) ::detail::bindUniformBlock(descriptorRange, ShaderSeparate->getOpenGLShaderProgram(), uniformBlockBindingIndex);
+								switch (descriptorRange.shaderVisibility)
+								{
+									case Rhi::ShaderVisibility::ALL:
+									case Rhi::ShaderVisibility::ALL_GRAPHICS:
+										BIND_UNIFORM_BLOCK(mTaskShaderSeparate)
+										BIND_UNIFORM_BLOCK(mMeshShaderSeparate)
+										break;
+
+									case Rhi::ShaderVisibility::FRAGMENT:
+										BIND_UNIFORM_BLOCK(mFragmentShaderSeparate)
+										break;
+
+									case Rhi::ShaderVisibility::TASK:
+										BIND_UNIFORM_BLOCK(mTaskShaderSeparate)
+										break;
+
+									case Rhi::ShaderVisibility::MESH:
+										BIND_UNIFORM_BLOCK(mMeshShaderSeparate)
+										break;
+
+									case Rhi::ShaderVisibility::VERTEX:
+									case Rhi::ShaderVisibility::TESSELLATION_CONTROL:
+									case Rhi::ShaderVisibility::TESSELLATION_EVALUATION:
+									case Rhi::ShaderVisibility::GEOMETRY:
+									case Rhi::ShaderVisibility::COMPUTE:
+										RHI_LOG(openGLRhi.getContext(), CRITICAL, "Invalid OpenGL shader visibility")
+										break;
+								}
+								#undef BIND_UNIFORM_BLOCK
+								++uniformBlockBindingIndex;
+							}
+							else if (Rhi::DescriptorRangeType::SAMPLER != descriptorRange.rangeType)
+							{
+								#define BIND_UNIFORM_LOCATION(ShaderSeparate) if (nullptr != ShaderSeparate) ::detail::bindUniformLocation(descriptorRange, mOpenGLProgramPipeline, ShaderSeparate->getOpenGLShaderProgram());
+								switch (descriptorRange.shaderVisibility)
+								{
+									case Rhi::ShaderVisibility::ALL:
+									case Rhi::ShaderVisibility::ALL_GRAPHICS:
+										BIND_UNIFORM_LOCATION(mTaskShaderSeparate)
+										BIND_UNIFORM_LOCATION(mMeshShaderSeparate)
+										break;
+
+									case Rhi::ShaderVisibility::FRAGMENT:
+										BIND_UNIFORM_LOCATION(mFragmentShaderSeparate)
+										break;
+
+									case Rhi::ShaderVisibility::TASK:
+										BIND_UNIFORM_LOCATION(mTaskShaderSeparate)
+										break;
+
+									case Rhi::ShaderVisibility::MESH:
+										BIND_UNIFORM_LOCATION(mMeshShaderSeparate)
+										break;
+
+									case Rhi::ShaderVisibility::VERTEX:
+									case Rhi::ShaderVisibility::TESSELLATION_CONTROL:
+									case Rhi::ShaderVisibility::TESSELLATION_EVALUATION:
+									case Rhi::ShaderVisibility::GEOMETRY:
+									case Rhi::ShaderVisibility::COMPUTE:
+										RHI_LOG(openGLRhi.getContext(), CRITICAL, "Invalid OpenGL shader visibility")
 										break;
 								}
 								#undef BIND_UNIFORM_LOCATION
@@ -17191,6 +18063,14 @@ namespace OpenGLRhi
 			{
 				mFragmentShaderSeparate->releaseReference();
 			}
+			if (nullptr != mTaskShaderSeparate)
+			{
+				mTaskShaderSeparate->releaseReference();
+			}
+			if (nullptr != mMeshShaderSeparate)
+			{
+				mMeshShaderSeparate->releaseReference();
+			}
 		}
 
 		/**
@@ -17231,6 +18111,8 @@ namespace OpenGLRhi
 			GET_UNIFORM_LOCATION(mTessellationEvaluationShaderSeparate)
 			GET_UNIFORM_LOCATION(mGeometryShaderSeparate)
 			GET_UNIFORM_LOCATION(mFragmentShaderSeparate)
+			GET_UNIFORM_LOCATION(mTaskShaderSeparate)
+			GET_UNIFORM_LOCATION(mMeshShaderSeparate)
 			#undef GET_UNIFORM_LOCATION
 			return static_cast<Rhi::handle>(uniformLocation);
 		}
@@ -17404,12 +18286,17 @@ namespace OpenGLRhi
 	//[ Protected data                                        ]
 	//[-------------------------------------------------------]
 	protected:
-		GLuint								  mOpenGLProgramPipeline;					///< OpenGL program pipeline ("container" object, not shared between OpenGL contexts), can be zero if no resource is allocated
+		GLuint mOpenGLProgramPipeline;	///< OpenGL program pipeline ("container" object, not shared between OpenGL contexts), can be zero if no resource is allocated
+		// Traditional graphics program
 		VertexShaderSeparate*				  mVertexShaderSeparate;					///< Vertex shader the program is using (we keep a reference to it), can be a null pointer
 		TessellationControlShaderSeparate*	  mTessellationControlShaderSeparate;		///< Tessellation control shader the program is using (we keep a reference to it), can be a null pointer
 		TessellationEvaluationShaderSeparate* mTessellationEvaluationShaderSeparate;	///< Tessellation evaluation shader the program is using (we keep a reference to it), can be a null pointer
 		GeometryShaderSeparate*				  mGeometryShaderSeparate;					///< Geometry shader the program is using (we keep a reference to it), can be a null pointer
-		FragmentShaderSeparate*				  mFragmentShaderSeparate;					///< Fragment shader the program is using (we keep a reference to it), can be a null pointer
+		// Both graphics programs
+		FragmentShaderSeparate* mFragmentShaderSeparate;	///< Fragment shader the program is using (we keep a reference to it), can be a null pointer
+		// Task and mesh shader based graphics program
+		TaskShaderSeparate* mTaskShaderSeparate;	///< Task shader the program is using (we keep a reference to it), can be a null pointer
+		MeshShaderSeparate* mMeshShaderSeparate;	///< Mesh shader the program is using (we keep a reference to it), can be a null pointer
 
 
 	//[-------------------------------------------------------]
@@ -17442,7 +18329,7 @@ namespace OpenGLRhi
 	public:
 		/**
 		*  @brief
-		*    Constructor
+		*    Constructor for traditional graphics program
 		*
 		*  @param[in] openGLRhi
 		*    Owner OpenGL RHI instance
@@ -17464,6 +18351,28 @@ namespace OpenGLRhi
 		*/
 		inline GraphicsProgramSeparateDsa(OpenGLRhi& openGLRhi, const Rhi::IRootSignature& rootSignature, VertexShaderSeparate* vertexShaderSeparate, TessellationControlShaderSeparate* tessellationControlShaderSeparate, TessellationEvaluationShaderSeparate* tessellationEvaluationShaderSeparate, GeometryShaderSeparate* geometryShaderSeparate, FragmentShaderSeparate* fragmentShaderSeparate RHI_RESOURCE_DEBUG_NAME_PARAMETER) :
 			GraphicsProgramSeparate(openGLRhi, rootSignature, vertexShaderSeparate, tessellationControlShaderSeparate, tessellationEvaluationShaderSeparate, geometryShaderSeparate, fragmentShaderSeparate RHI_RESOURCE_DEBUG_PASS_PARAMETER)
+		{}
+
+		/**
+		*  @brief
+		*    Constructor for task and mesh shader based graphics program
+		*
+		*  @param[in] openGLRhi
+		*    Owner OpenGL RHI instance
+		*  @param[in] rootSignature
+		*    Root signature
+		*  @param[in] taskShaderSeparate
+		*    Task shader the graphics program is using, can be a null pointer
+		*  @param[in] meshShaderSeparate
+		*    Mesh shader the graphics program is using
+		*  @param[in] fragmentShaderSeparate
+		*    Fragment shader the graphics program is using, can be a null pointer
+		*
+		*  @note
+		*    - The graphics program keeps a reference to the provided shaders and releases it when no longer required
+		*/
+		inline GraphicsProgramSeparateDsa(OpenGLRhi& openGLRhi, const Rhi::IRootSignature& rootSignature, TaskShaderSeparate* taskShaderSeparate, MeshShaderSeparate& meshShaderSeparate, FragmentShaderSeparate* fragmentShaderSeparate RHI_RESOURCE_DEBUG_NAME_PARAMETER) :
+			GraphicsProgramSeparate(openGLRhi, rootSignature, taskShaderSeparate, meshShaderSeparate, fragmentShaderSeparate RHI_RESOURCE_DEBUG_PASS_PARAMETER)
 		{}
 
 		/**
@@ -17657,27 +18566,14 @@ namespace OpenGLRhi
 								switch (descriptorRange.shaderVisibility)
 								{
 									case Rhi::ShaderVisibility::ALL_GRAPHICS:
-										RHI_LOG(openGLRhi.getContext(), CRITICAL, "Invalid OpenGL all graphics shader visibility")
-										break;
-
 									case Rhi::ShaderVisibility::VERTEX:
-										RHI_LOG(openGLRhi.getContext(), CRITICAL, "Invalid OpenGL vertex shader visibility")
-										break;
-
 									case Rhi::ShaderVisibility::TESSELLATION_CONTROL:
-										RHI_LOG(openGLRhi.getContext(), CRITICAL, "Invalid OpenGL tessellation control shader visibility")
-										break;
-
 									case Rhi::ShaderVisibility::TESSELLATION_EVALUATION:
-										RHI_LOG(openGLRhi.getContext(), CRITICAL, "Invalid OpenGL tessellation evaluation shader visibility")
-										break;
-
 									case Rhi::ShaderVisibility::GEOMETRY:
-										RHI_LOG(openGLRhi.getContext(), CRITICAL, "Invalid OpenGL geometry shader visibility")
-										break;
-
 									case Rhi::ShaderVisibility::FRAGMENT:
-										RHI_LOG(openGLRhi.getContext(), CRITICAL, "Invalid OpenGL fragment shader visibility")
+									case Rhi::ShaderVisibility::TASK:
+									case Rhi::ShaderVisibility::MESH:
+										RHI_LOG(openGLRhi.getContext(), CRITICAL, "Invalid OpenGL shader visibility")
 										break;
 
 									case Rhi::ShaderVisibility::ALL:
@@ -17692,27 +18588,14 @@ namespace OpenGLRhi
 								switch (descriptorRange.shaderVisibility)
 								{
 									case Rhi::ShaderVisibility::ALL_GRAPHICS:
-										RHI_LOG(openGLRhi.getContext(), CRITICAL, "Invalid OpenGL all graphics shader visibility")
-										break;
-
 									case Rhi::ShaderVisibility::VERTEX:
-										RHI_LOG(openGLRhi.getContext(), CRITICAL, "Invalid OpenGL vertex shader visibility")
-										break;
-
 									case Rhi::ShaderVisibility::TESSELLATION_CONTROL:
-										RHI_LOG(openGLRhi.getContext(), CRITICAL, "Invalid OpenGL tessellation control shader visibility")
-										break;
-
 									case Rhi::ShaderVisibility::TESSELLATION_EVALUATION:
-										RHI_LOG(openGLRhi.getContext(), CRITICAL, "Invalid OpenGL tessellation evaluation shader visibility")
-										break;
-
 									case Rhi::ShaderVisibility::GEOMETRY:
-										RHI_LOG(openGLRhi.getContext(), CRITICAL, "Invalid OpenGL geometry shader visibility")
-										break;
-
 									case Rhi::ShaderVisibility::FRAGMENT:
-										RHI_LOG(openGLRhi.getContext(), CRITICAL, "Invalid OpenGL fragment shader visibility")
+									case Rhi::ShaderVisibility::TASK:
+									case Rhi::ShaderVisibility::MESH:
+										RHI_LOG(openGLRhi.getContext(), CRITICAL, "Invalid OpenGL shader visibility")
 										break;
 
 									case Rhi::ShaderVisibility::ALL:
@@ -18067,6 +18950,78 @@ namespace OpenGLRhi
 			}
 		}
 
+		[[nodiscard]] virtual Rhi::ITaskShader* createTaskShaderFromBytecode(const Rhi::ShaderBytecode& shaderBytecode RHI_RESOURCE_DEBUG_NAME_PARAMETER) override
+		{
+			OpenGLRhi& openGLRhi = static_cast<OpenGLRhi&>(getRhi());
+
+			// Sanity check
+			RHI_ASSERT(openGLRhi.getContext(), shaderBytecode.getNumberOfBytes() > 0 && nullptr != shaderBytecode.getBytecode(), "OpenGL task shader bytecode is invalid")
+
+			// Check whether or not there's task shader support
+			const Extensions& extensions = openGLRhi.getExtensions();
+			if (extensions.isGL_NV_mesh_shader() && extensions.isGL_ARB_gl_spirv())
+			{
+				return RHI_NEW(openGLRhi.getContext(), TaskShaderSeparate)(openGLRhi, shaderBytecode RHI_RESOURCE_DEBUG_PASS_PARAMETER);
+			}
+			else
+			{
+				// Error! There's no task shader support or no decent shader bytecode support!
+				return nullptr;
+			}
+		}
+
+		[[nodiscard]] virtual Rhi::ITaskShader* createTaskShaderFromSourceCode(const Rhi::ShaderSourceCode& shaderSourceCode, Rhi::ShaderBytecode* shaderBytecode = nullptr RHI_RESOURCE_DEBUG_NAME_PARAMETER) override
+		{
+			// Check whether or not there's task shader support
+			OpenGLRhi& openGLRhi = static_cast<OpenGLRhi&>(getRhi());
+			const Extensions& extensions = openGLRhi.getExtensions();
+			if (extensions.isGL_NV_mesh_shader())
+			{
+				return RHI_NEW(openGLRhi.getContext(), TaskShaderSeparate)(openGLRhi, shaderSourceCode.sourceCode, (extensions.isGL_ARB_gl_spirv() ? shaderBytecode : nullptr) RHI_RESOURCE_DEBUG_PASS_PARAMETER);
+			}
+			else
+			{
+				// Error! There's no task shader support!
+				return nullptr;
+			}
+		}
+
+		[[nodiscard]] virtual Rhi::IMeshShader* createMeshShaderFromBytecode(const Rhi::ShaderBytecode& shaderBytecode RHI_RESOURCE_DEBUG_NAME_PARAMETER) override
+		{
+			OpenGLRhi& openGLRhi = static_cast<OpenGLRhi&>(getRhi());
+
+			// Sanity check
+			RHI_ASSERT(openGLRhi.getContext(), shaderBytecode.getNumberOfBytes() > 0 && nullptr != shaderBytecode.getBytecode(), "OpenGL mesh shader bytecode is invalid")
+
+			// Check whether or not there's mesh shader support
+			const Extensions& extensions = openGLRhi.getExtensions();
+			if (extensions.isGL_NV_mesh_shader() && extensions.isGL_ARB_gl_spirv())
+			{
+				return RHI_NEW(openGLRhi.getContext(), MeshShaderSeparate)(openGLRhi, shaderBytecode RHI_RESOURCE_DEBUG_PASS_PARAMETER);
+			}
+			else
+			{
+				// Error! There's no mesh shader support or no decent shader bytecode support!
+				return nullptr;
+			}
+		}
+
+		[[nodiscard]] virtual Rhi::IMeshShader* createMeshShaderFromSourceCode(const Rhi::ShaderSourceCode& shaderSourceCode, Rhi::ShaderBytecode* shaderBytecode = nullptr RHI_RESOURCE_DEBUG_NAME_PARAMETER) override
+		{
+			// Check whether or not there's mesh shader support
+			OpenGLRhi& openGLRhi = static_cast<OpenGLRhi&>(getRhi());
+			const Extensions& extensions = openGLRhi.getExtensions();
+			if (extensions.isGL_NV_mesh_shader())
+			{
+				return RHI_NEW(openGLRhi.getContext(), MeshShaderSeparate)(openGLRhi, shaderSourceCode.sourceCode, (extensions.isGL_ARB_gl_spirv() ? shaderBytecode : nullptr) RHI_RESOURCE_DEBUG_PASS_PARAMETER);
+			}
+			else
+			{
+				// Error! There's no mesh shader support!
+				return nullptr;
+			}
+		}
+
 		[[nodiscard]] virtual Rhi::IComputeShader* createComputeShaderFromBytecode(const Rhi::ShaderBytecode& shaderBytecode RHI_RESOURCE_DEBUG_NAME_PARAMETER) override
 		{
 			OpenGLRhi& openGLRhi = static_cast<OpenGLRhi&>(getRhi());
@@ -18166,6 +19121,58 @@ namespace OpenGLRhi
 				geometryShader->addReference();
 				geometryShader->releaseReference();
 			}
+			if (nullptr != fragmentShader)
+			{
+				fragmentShader->addReference();
+				fragmentShader->releaseReference();
+			}
+
+			// Error!
+			return nullptr;
+		}
+
+		[[nodiscard]] virtual Rhi::IGraphicsProgram* createGraphicsProgram(const Rhi::IRootSignature& rootSignature, Rhi::ITaskShader* taskShader, Rhi::IMeshShader& meshShader, Rhi::IFragmentShader* fragmentShader RHI_RESOURCE_DEBUG_NAME_PARAMETER) override
+		{
+			OpenGLRhi& openGLRhi = static_cast<OpenGLRhi&>(getRhi());
+
+			// A shader can be a null pointer, but if it's not the shader and graphics program language must match
+			// -> Optimization: Comparing the shader language name by directly comparing the pointer address of
+			//    the name is safe because we know that we always reference to one and the same name address
+			// TODO(co) Add security check: Is the given resource one of the currently used RHI?
+			if (nullptr != taskShader && taskShader->getShaderLanguageName() != ::detail::GLSL_NAME)
+			{
+				// Error! Vertex shader language mismatch!
+			}
+			else if (meshShader.getShaderLanguageName() != ::detail::GLSL_NAME)
+			{
+				// Error! Fragment shader language mismatch!
+			}
+			else if (nullptr != fragmentShader && fragmentShader->getShaderLanguageName() != ::detail::GLSL_NAME)
+			{
+				// Error! Vertex shader language mismatch!
+			}
+
+			// Is "GL_EXT_direct_state_access" there?
+			else if (openGLRhi.getExtensions().isGL_EXT_direct_state_access() || openGLRhi.getExtensions().isGL_ARB_direct_state_access())
+			{
+				// Effective direct state access (DSA)
+				return RHI_NEW(openGLRhi.getContext(), GraphicsProgramSeparateDsa)(openGLRhi, rootSignature, static_cast<TaskShaderSeparate*>(taskShader), static_cast<MeshShaderSeparate&>(meshShader), static_cast<FragmentShaderSeparate*>(fragmentShader) RHI_RESOURCE_DEBUG_PASS_PARAMETER);
+			}
+			else
+			{
+				// Traditional bind version
+				return RHI_NEW(openGLRhi.getContext(), GraphicsProgramSeparate)(openGLRhi, rootSignature, static_cast<TaskShaderSeparate*>(taskShader), static_cast<MeshShaderSeparate&>(meshShader), static_cast<FragmentShaderSeparate*>(fragmentShader) RHI_RESOURCE_DEBUG_PASS_PARAMETER);
+			}
+
+			// Error! Shader language mismatch!
+			// -> Ensure a correct reference counter behaviour, even in the situation of an error
+			if (nullptr != taskShader)
+			{
+				taskShader->addReference();
+				taskShader->releaseReference();
+			}
+			meshShader.addReference();
+			meshShader.releaseReference();
 			if (nullptr != fragmentShader)
 			{
 				fragmentShader->addReference();
@@ -18606,6 +19613,19 @@ namespace
 				}
 			}
 
+			void DrawMeshTasks(const void* data, Rhi::IRhi& rhi)
+			{
+				const Rhi::Command::DrawMeshTasks* realData = static_cast<const Rhi::Command::DrawMeshTasks*>(data);
+				if (nullptr != realData->indirectBuffer)
+				{
+					static_cast<OpenGLRhi::OpenGLRhi&>(rhi).drawMeshTasks(*realData->indirectBuffer, realData->indirectBufferOffset, realData->numberOfDraws);
+				}
+				else
+				{
+					static_cast<OpenGLRhi::OpenGLRhi&>(rhi).drawMeshTasksEmulated(Rhi::CommandPacketHelper::getAuxiliaryMemory(realData), realData->indirectBufferOffset, realData->numberOfDraws);
+				}
+			}
+
 			//[-------------------------------------------------------]
 			//[ Compute                                               ]
 			//[-------------------------------------------------------]
@@ -18753,6 +19773,7 @@ namespace
 			&ImplementationDispatch::ClearGraphics,
 			&ImplementationDispatch::DrawGraphics,
 			&ImplementationDispatch::DrawIndexedGraphics,
+			&ImplementationDispatch::DrawMeshTasks,
 			// Compute
 			&ImplementationDispatch::SetComputeRootSignature,
 			&ImplementationDispatch::SetComputePipelineState,
@@ -19295,6 +20316,8 @@ namespace OpenGLRhi
 					case Rhi::ResourceType::TESSELLATION_EVALUATION_SHADER:
 					case Rhi::ResourceType::GEOMETRY_SHADER:
 					case Rhi::ResourceType::FRAGMENT_SHADER:
+					case Rhi::ResourceType::TASK_SHADER:
+					case Rhi::ResourceType::MESH_SHADER:
 					case Rhi::ResourceType::COMPUTE_SHADER:
 					default:
 						// Not handled in here
@@ -19637,6 +20660,56 @@ namespace OpenGLRhi
 		#endif
 	}
 
+	void OpenGLRhi::drawMeshTasks([[maybe_unused]] const Rhi::IIndirectBuffer& indirectBuffer, [[maybe_unused]] uint32_t indirectBufferOffset, uint32_t numberOfDraws)
+	{
+		// Sanity checks
+		RHI_ASSERT(mContext, numberOfDraws > 0, "The number of null draws must not be zero")
+
+		// TODO(co) Implement me
+		/*
+		void MultiDrawMeshTasksIndirectNV(intptr indirect,
+										sizei drawcount,
+										sizei stride);
+
+		void MultiDrawMeshTasksIndirectCountNV( intptr indirect,
+												intptr drawcount,
+												sizei maxdrawcount,
+												sizei stride);
+	  */
+	}
+
+	void OpenGLRhi::drawMeshTasksEmulated(const uint8_t* emulationData, uint32_t indirectBufferOffset, uint32_t numberOfDraws)
+	{
+		// Sanity checks
+		RHI_ASSERT(mContext, nullptr != emulationData, "The OpenGL emulation data must be valid")
+		RHI_ASSERT(mContext, numberOfDraws > 0, "The number of OpenGL draws must not be zero")
+
+		// TODO(co) Currently no buffer overflow check due to lack of interface provided data
+		emulationData += indirectBufferOffset;
+
+		// Emit the draw calls
+		#ifdef RHI_DEBUG
+			if (numberOfDraws > 1)
+			{
+				beginDebugEvent("Multi-indexed-draw-indirect emulation");
+			}
+		#endif
+		for (uint32_t i = 0; i < numberOfDraws; ++i)
+		{
+			const Rhi::DrawMeshTasksArguments& drawMeshTasksArguments = *reinterpret_cast<const Rhi::DrawMeshTasksArguments*>(emulationData);
+
+			// Draw and advance
+			glDrawMeshTasksNV(drawMeshTasksArguments.firstTask, drawMeshTasksArguments.numberOfTasks);
+			emulationData += sizeof(Rhi::DrawMeshTasksArguments);
+		}
+		#ifdef RHI_DEBUG
+			if (numberOfDraws > 1)
+			{
+				endDebugEvent();
+			}
+		#endif
+	}
+
 
 	//[-------------------------------------------------------]
 	//[ Compute                                               ]
@@ -19813,6 +20886,8 @@ namespace OpenGLRhi
 			case Rhi::ResourceType::TESSELLATION_EVALUATION_SHADER:
 			case Rhi::ResourceType::GEOMETRY_SHADER:
 			case Rhi::ResourceType::FRAGMENT_SHADER:
+			case Rhi::ResourceType::TASK_SHADER:
+			case Rhi::ResourceType::MESH_SHADER:
 			case Rhi::ResourceType::COMPUTE_SHADER:
 			default:
 				// Not handled in here
@@ -19911,6 +20986,8 @@ namespace OpenGLRhi
 			case Rhi::ResourceType::TESSELLATION_EVALUATION_SHADER:
 			case Rhi::ResourceType::GEOMETRY_SHADER:
 			case Rhi::ResourceType::FRAGMENT_SHADER:
+			case Rhi::ResourceType::TASK_SHADER:
+			case Rhi::ResourceType::MESH_SHADER:
 			case Rhi::ResourceType::COMPUTE_SHADER:
 			default:
 				// Not handled in here
@@ -20494,6 +21571,8 @@ namespace OpenGLRhi
 			case Rhi::ResourceType::TESSELLATION_EVALUATION_SHADER:
 			case Rhi::ResourceType::GEOMETRY_SHADER:
 			case Rhi::ResourceType::FRAGMENT_SHADER:
+			case Rhi::ResourceType::TASK_SHADER:
+			case Rhi::ResourceType::MESH_SHADER:
 			case Rhi::ResourceType::COMPUTE_SHADER:
 			default:
 				// Nothing we can map, set known return values
@@ -20674,6 +21753,8 @@ namespace OpenGLRhi
 			case Rhi::ResourceType::TESSELLATION_EVALUATION_SHADER:
 			case Rhi::ResourceType::GEOMETRY_SHADER:
 			case Rhi::ResourceType::FRAGMENT_SHADER:
+			case Rhi::ResourceType::TASK_SHADER:
+			case Rhi::ResourceType::MESH_SHADER:
 			case Rhi::ResourceType::COMPUTE_SHADER:
 			default:
 				// Nothing we can unmap
@@ -21113,6 +22194,9 @@ namespace OpenGLRhi
 		// Is there support for fragment shaders (FS)?
 		mCapabilities.fragmentShader = mExtensions->isGL_ARB_fragment_shader();
 
+		// Is there support for task shaders (TS) and mesh shaders (MS)?
+		mCapabilities.meshShader = mExtensions->isGL_NV_mesh_shader();
+
 		// Is there support for compute shaders (CS)?
 		mCapabilities.computeShader = mExtensions->isGL_ARB_compute_shader();
 	}
@@ -21316,6 +22400,8 @@ namespace OpenGLRhi
 										case Rhi::ResourceType::TESSELLATION_EVALUATION_SHADER:
 										case Rhi::ResourceType::GEOMETRY_SHADER:
 										case Rhi::ResourceType::FRAGMENT_SHADER:
+										case Rhi::ResourceType::TASK_SHADER:
+										case Rhi::ResourceType::MESH_SHADER:
 										case Rhi::ResourceType::COMPUTE_SHADER:
 											RHI_LOG(mContext, CRITICAL, "Invalid OpenGL RHI implementation resource type")
 											break;
@@ -21446,6 +22532,8 @@ namespace OpenGLRhi
 											case Rhi::ResourceType::TESSELLATION_EVALUATION_SHADER:
 											case Rhi::ResourceType::GEOMETRY_SHADER:
 											case Rhi::ResourceType::FRAGMENT_SHADER:
+											case Rhi::ResourceType::TASK_SHADER:
+											case Rhi::ResourceType::MESH_SHADER:
 											case Rhi::ResourceType::COMPUTE_SHADER:
 												RHI_LOG(mContext, CRITICAL, "Invalid OpenGL RHI implementation resource type")
 												break;
@@ -21577,6 +22665,8 @@ namespace OpenGLRhi
 										case Rhi::ResourceType::TESSELLATION_EVALUATION_SHADER:
 										case Rhi::ResourceType::GEOMETRY_SHADER:
 										case Rhi::ResourceType::FRAGMENT_SHADER:
+										case Rhi::ResourceType::TASK_SHADER:
+										case Rhi::ResourceType::MESH_SHADER:
 										case Rhi::ResourceType::COMPUTE_SHADER:
 											RHI_LOG(mContext, CRITICAL, "Invalid OpenGL RHI implementation resource type")
 											break;
@@ -21693,6 +22783,8 @@ namespace OpenGLRhi
 					case Rhi::ResourceType::TESSELLATION_EVALUATION_SHADER:
 					case Rhi::ResourceType::GEOMETRY_SHADER:
 					case Rhi::ResourceType::FRAGMENT_SHADER:
+					case Rhi::ResourceType::TASK_SHADER:
+					case Rhi::ResourceType::MESH_SHADER:
 					case Rhi::ResourceType::COMPUTE_SHADER:
 						RHI_LOG(mContext, CRITICAL, "Invalid OpenGL RHI implementation resource type")
 						break;

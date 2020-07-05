@@ -6110,6 +6110,8 @@ namespace Direct3D9Rhi
 						case Rhi::ResourceType::TESSELLATION_EVALUATION_SHADER:
 						case Rhi::ResourceType::GEOMETRY_SHADER:
 						case Rhi::ResourceType::FRAGMENT_SHADER:
+						case Rhi::ResourceType::TASK_SHADER:
+						case Rhi::ResourceType::MESH_SHADER:
 						case Rhi::ResourceType::COMPUTE_SHADER:
 						default:
 							RHI_LOG(direct3D9Rhi.getContext(), CRITICAL, "The type of the given color texture at index %u is not supported by the Direct3D 9 RHI implementation", colorTexture - mColorTextures)
@@ -6173,6 +6175,8 @@ namespace Direct3D9Rhi
 					case Rhi::ResourceType::TESSELLATION_EVALUATION_SHADER:
 					case Rhi::ResourceType::GEOMETRY_SHADER:
 					case Rhi::ResourceType::FRAGMENT_SHADER:
+					case Rhi::ResourceType::TASK_SHADER:
+					case Rhi::ResourceType::MESH_SHADER:
 					case Rhi::ResourceType::COMPUTE_SHADER:
 					default:
 						RHI_LOG(direct3D9Rhi.getContext(), CRITICAL, "The type of the given depth stencil texture is not supported by the Direct3D 9 RHI implementation")
@@ -7004,6 +7008,30 @@ namespace Direct3D9Rhi
 			return RHI_NEW(direct3D9Rhi.getContext(), FragmentShaderHlsl)(direct3D9Rhi, shaderSourceCode.sourceCode, getOptimizationLevel(), shaderBytecode RHI_RESOURCE_DEBUG_PASS_PARAMETER);
 		}
 
+		[[nodiscard]] inline virtual Rhi::ITaskShader* createTaskShaderFromBytecode(const Rhi::ShaderBytecode& RHI_RESOURCE_DEBUG_NAME_MAYBE_UNUSED_PARAMETER) override
+		{
+			RHI_ASSERT(getRhi().getContext(), false, "Direct3D 9 has no task shader support")
+			return nullptr;
+		}
+
+		[[nodiscard]] inline virtual Rhi::ITaskShader* createTaskShaderFromSourceCode(const Rhi::ShaderSourceCode&, Rhi::ShaderBytecode* = nullptr RHI_RESOURCE_DEBUG_NAME_MAYBE_UNUSED_PARAMETER) override
+		{
+			RHI_ASSERT(getRhi().getContext(), false, "Direct3D 9 has no task shader support")
+			return nullptr;
+		}
+
+		[[nodiscard]] inline virtual Rhi::IMeshShader* createMeshShaderFromBytecode(const Rhi::ShaderBytecode& RHI_RESOURCE_DEBUG_NAME_MAYBE_UNUSED_PARAMETER) override
+		{
+			RHI_ASSERT(getRhi().getContext(), false, "Direct3D 9 has no mesh shader support")
+			return nullptr;
+		}
+
+		[[nodiscard]] inline virtual Rhi::IMeshShader* createMeshShaderFromSourceCode(const Rhi::ShaderSourceCode&, Rhi::ShaderBytecode* = nullptr RHI_RESOURCE_DEBUG_NAME_MAYBE_UNUSED_PARAMETER) override
+		{
+			RHI_ASSERT(getRhi().getContext(), false, "Direct3D 9 has no mesh shader support")
+			return nullptr;
+		}
+
 		[[nodiscard]] inline virtual Rhi::IComputeShader* createComputeShaderFromBytecode(const Rhi::ShaderBytecode& RHI_RESOURCE_DEBUG_NAME_MAYBE_UNUSED_PARAMETER) override
 		{
 			RHI_ASSERT(getRhi().getContext(), false, "Direct3D 9 has no compute shader support")
@@ -7033,6 +7061,12 @@ namespace Direct3D9Rhi
 
 			// Create the graphics program
 			return RHI_NEW(direct3D9Rhi.getContext(), GraphicsProgramHlsl)(direct3D9Rhi, static_cast<VertexShaderHlsl*>(vertexShader), static_cast<FragmentShaderHlsl*>(fragmentShader) RHI_RESOURCE_DEBUG_PASS_PARAMETER);
+		}
+
+		[[nodiscard]] virtual Rhi::IGraphicsProgram* createGraphicsProgram([[maybe_unused]] const Rhi::IRootSignature& rootSignature, [[maybe_unused]] Rhi::ITaskShader* taskShader, [[maybe_unused]] Rhi::IMeshShader& meshShader, [[maybe_unused]] Rhi::IFragmentShader* fragmentShader RHI_RESOURCE_DEBUG_NAME_MAYBE_UNUSED_PARAMETER)
+		{
+			RHI_ASSERT(getRhi().getContext(), false, "Direct3D 9 has no mesh shader support")
+			return nullptr;
 		}
 
 
@@ -7366,6 +7400,11 @@ namespace
 				}
 			}
 
+			void DrawMeshTasks(const void*, Rhi::IRhi& rhi)
+			{
+				RHI_LOG(static_cast<Direct3D9Rhi::Direct3D9Rhi&>(rhi).getContext(), CRITICAL, "Direct3D 9 doesn't support mesh shaders")
+			}
+
 			//[-------------------------------------------------------]
 			//[ Compute                                               ]
 			//[-------------------------------------------------------]
@@ -7503,6 +7542,7 @@ namespace
 			&ImplementationDispatch::ClearGraphics,
 			&ImplementationDispatch::DrawGraphics,
 			&ImplementationDispatch::DrawIndexedGraphics,
+			&ImplementationDispatch::DrawMeshTasks,
 			// Compute
 			&ImplementationDispatch::SetComputeRootSignature,
 			&ImplementationDispatch::SetComputePipelineState,
@@ -7862,6 +7902,8 @@ namespace Direct3D9Rhi
 							case Rhi::ResourceType::TESSELLATION_EVALUATION_SHADER:
 							case Rhi::ResourceType::GEOMETRY_SHADER:
 							case Rhi::ResourceType::FRAGMENT_SHADER:
+							case Rhi::ResourceType::TASK_SHADER:
+							case Rhi::ResourceType::MESH_SHADER:
 							case Rhi::ResourceType::COMPUTE_SHADER:
 								// Nothing here
 								break;
@@ -7966,6 +8008,14 @@ namespace Direct3D9Rhi
 								RHI_END_DEBUG_EVENT(this)
 								break;
 
+							case Rhi::ShaderVisibility::TASK:
+								RHI_LOG(mContext, CRITICAL, "Direct3D 9 has no task shader support")
+								break;
+
+							case Rhi::ShaderVisibility::MESH:
+								RHI_LOG(mContext, CRITICAL, "Direct3D 9 has no mesh shader support")
+								break;
+
 							case Rhi::ShaderVisibility::COMPUTE:
 								RHI_LOG(mContext, CRITICAL, "Direct3D 9 has no compute shader support")
 								break;
@@ -7995,6 +8045,8 @@ namespace Direct3D9Rhi
 					case Rhi::ResourceType::TESSELLATION_EVALUATION_SHADER:
 					case Rhi::ResourceType::GEOMETRY_SHADER:
 					case Rhi::ResourceType::FRAGMENT_SHADER:
+					case Rhi::ResourceType::TASK_SHADER:
+					case Rhi::ResourceType::MESH_SHADER:
 					case Rhi::ResourceType::COMPUTE_SHADER:
 						RHI_LOG(mContext, CRITICAL, "Invalid Direct3D 9 RHI implementation resource type")
 						break;
@@ -8169,6 +8221,8 @@ namespace Direct3D9Rhi
 					case Rhi::ResourceType::TESSELLATION_EVALUATION_SHADER:
 					case Rhi::ResourceType::GEOMETRY_SHADER:
 					case Rhi::ResourceType::FRAGMENT_SHADER:
+					case Rhi::ResourceType::TASK_SHADER:
+					case Rhi::ResourceType::MESH_SHADER:
 					case Rhi::ResourceType::COMPUTE_SHADER:
 					default:
 						// Not handled in here
@@ -8939,6 +8993,8 @@ namespace Direct3D9Rhi
 			case Rhi::ResourceType::TESSELLATION_EVALUATION_SHADER:
 			case Rhi::ResourceType::GEOMETRY_SHADER:
 			case Rhi::ResourceType::FRAGMENT_SHADER:
+			case Rhi::ResourceType::TASK_SHADER:
+			case Rhi::ResourceType::MESH_SHADER:
 			case Rhi::ResourceType::COMPUTE_SHADER:
 			default:
 				// Nothing we can map, set known return values
@@ -9009,6 +9065,8 @@ namespace Direct3D9Rhi
 			case Rhi::ResourceType::TESSELLATION_EVALUATION_SHADER:
 			case Rhi::ResourceType::GEOMETRY_SHADER:
 			case Rhi::ResourceType::FRAGMENT_SHADER:
+			case Rhi::ResourceType::TASK_SHADER:
+			case Rhi::ResourceType::MESH_SHADER:
 			case Rhi::ResourceType::COMPUTE_SHADER:
 			default:
 				// Nothing we can unmap

@@ -42,6 +42,7 @@
 #include "Examples/Private/Basics/GeometryShader/GeometryShader.h"
 #include "Examples/Private/Basics/TessellationShader/TessellationShader.h"
 #include "Examples/Private/Basics/ComputeShader/ComputeShader.h"
+#include "Examples/Private/Basics/MeshShader/MeshShader.h"
 // Advanced
 #include "Examples/Private/Advanced/Gpgpu/Gpgpu.h"
 #include "Examples/Private/Advanced/IcosahedronTessellation/IcosahedronTessellation.h"
@@ -139,6 +140,7 @@ ExampleRunner::ExampleRunner() :
 	const std::array<std::string_view, 8> supportsAllRhi	   = {{"Null", "Vulkan", "OpenGL", "OpenGLES3", "Direct3D9", "Direct3D10", "Direct3D11", "Direct3D12"}};
 	const std::array<std::string_view, 6> onlyShaderModel4Plus = {{"Null", "Vulkan", "OpenGL", "Direct3D10", "Direct3D11", "Direct3D12"}};
 	const std::array<std::string_view, 5> onlyShaderModel5Plus = {{"Null", "Vulkan", "OpenGL", "Direct3D11", "Direct3D12"}};
+	const std::array<std::string_view, 5> meshShaderNeeded	   = {{"Null", "Vulkan", "OpenGL", "Direct3D12"}};
 
 	// Basics
 	addExample("Triangle",					&runRhiExample<Triangle>,						supportsAllRhi);
@@ -156,6 +158,7 @@ ExampleRunner::ExampleRunner() :
 	addExample("GeometryShader",			&runRhiExample<GeometryShader>,					onlyShaderModel4Plus);
 	addExample("TessellationShader",		&runRhiExample<TessellationShader>,				onlyShaderModel5Plus);
 	addExample("ComputeShader",				&runRhiExample<ComputeShader>,					onlyShaderModel5Plus);
+	addExample("MeshShader",				&runRhiExample<MeshShader>,						meshShaderNeeded);
 
 	// Advanced
 	addExample("Gpgpu",							&runBasicExample<Gpgpu>,					supportsAllRhi);

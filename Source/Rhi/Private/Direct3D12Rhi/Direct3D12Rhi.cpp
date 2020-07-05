@@ -3912,7 +3912,7 @@ namespace
 				}
 
 				// Begin new upload command list allocator
-				const uint32_t numberOfUploadBufferBytes = 1024 * 1024 * 1024;	// TODO(co): This must be a decent size with emergency reallocation if really necessary
+				const uint32_t numberOfUploadBufferBytes = 1024 * 1024 * 1024;	// TODO(co) This must be a decent size with emergency reallocation if really necessary
 				mCurrentUploadCommandListAllocator = &mUploadCommandListAllocator[mCurrentFrameIndex];
 				mCurrentD3d12GraphicsCommandList = mCurrentUploadCommandListAllocator->getD3D12GraphicsCommandList();
 				mCurrentUploadCommandListAllocator->begin(numberOfUploadBufferBytes);
@@ -4211,6 +4211,8 @@ namespace Direct3D12Rhi
 		void drawGraphicsEmulated(const uint8_t* emulationData, uint32_t indirectBufferOffset = 0, uint32_t numberOfDraws = 1);
 		void drawIndexedGraphics(const Rhi::IIndirectBuffer& indirectBuffer, uint32_t indirectBufferOffset = 0, uint32_t numberOfDraws = 1);
 		void drawIndexedGraphicsEmulated(const uint8_t* emulationData, uint32_t indirectBufferOffset = 0, uint32_t numberOfDraws = 1);
+		void drawMeshTasks(const Rhi::IIndirectBuffer& indirectBuffer, uint32_t indirectBufferOffset = 0, uint32_t numberOfDraws = 1);
+		void drawMeshTasksEmulated(const uint8_t* emulationData, uint32_t indirectBufferOffset = 0, uint32_t numberOfDraws = 1);
 		//[-------------------------------------------------------]
 		//[ Compute                                               ]
 		//[-------------------------------------------------------]
@@ -9300,6 +9302,8 @@ namespace Direct3D12Rhi
 						case Rhi::ResourceType::TESSELLATION_EVALUATION_SHADER:
 						case Rhi::ResourceType::GEOMETRY_SHADER:
 						case Rhi::ResourceType::FRAGMENT_SHADER:
+						case Rhi::ResourceType::TASK_SHADER:
+						case Rhi::ResourceType::MESH_SHADER:
 						case Rhi::ResourceType::COMPUTE_SHADER:
 						default:
 							RHI_LOG(direct3D12Rhi.getContext(), CRITICAL, "The type of the given color texture at index %u is not supported by the Direct3D 12 RHI implementation", colorTexture - mColorTextures)
@@ -9402,6 +9406,8 @@ namespace Direct3D12Rhi
 					case Rhi::ResourceType::TESSELLATION_EVALUATION_SHADER:
 					case Rhi::ResourceType::GEOMETRY_SHADER:
 					case Rhi::ResourceType::FRAGMENT_SHADER:
+					case Rhi::ResourceType::TASK_SHADER:
+					case Rhi::ResourceType::MESH_SHADER:
 					case Rhi::ResourceType::COMPUTE_SHADER:
 					default:
 						RHI_LOG(direct3D12Rhi.getContext(), CRITICAL, "The type of the given depth stencil texture is not supported by the Direct3D 12 RHI implementation")
@@ -10206,7 +10212,251 @@ namespace Direct3D12Rhi
 	//[ Private data                                          ]
 	//[-------------------------------------------------------]
 	private:
-		ID3DBlob* mD3DBlobFragmentShader;	///< Direct3D 12 fragment shader blob, can be a null pointer
+		ID3DBlob* mD3DBlobFragmentShader;	///< Direct3D 12 mesh shader blob, can be a null pointer
+
+
+	};
+
+
+
+
+	//[-------------------------------------------------------]
+	//[ Direct3D12Rhi/Shader/TaskShaderHlsl.h                 ]
+	//[-------------------------------------------------------]
+	/**
+	*  @brief
+	*    HLSL task shader class (TS, "amplification shader" in Direct3D terminology)
+	*/
+	class TaskShaderHlsl final : public Rhi::ITaskShader
+	{
+
+
+	//[-------------------------------------------------------]
+	//[ Public methods                                        ]
+	//[-------------------------------------------------------]
+	public:
+		/**
+		*  @brief
+		*    Constructor for creating a task shader from shader bytecode
+		*
+		*  @param[in] direct3D12Rhi
+		*    Owner Direct3D 12 RHI instance
+		*  @param[in] shaderBytecode
+		*    Shader bytecode
+		*/
+		TaskShaderHlsl(Direct3D12Rhi& direct3D12Rhi, const Rhi::ShaderBytecode& shaderBytecode RHI_RESOURCE_DEBUG_NAME_PARAMETER_NO_DEFAULT) :
+			ITaskShader(direct3D12Rhi RHI_RESOURCE_DEBUG_PASS_PARAMETER),
+			mD3DBlobTaskShader(nullptr)
+		{
+			// Backup the task shader bytecode
+			FAILED_DEBUG_BREAK(D3DCreateBlob(shaderBytecode.getNumberOfBytes(), &mD3DBlobTaskShader))
+			memcpy(mD3DBlobTaskShader->GetBufferPointer(), shaderBytecode.getBytecode(), shaderBytecode.getNumberOfBytes());
+		}
+
+		/**
+		*  @brief
+		*    Constructor for creating a task shader from shader source code
+		*
+		*  @param[in] direct3D12Rhi
+		*    Owner Direct3D 12 RHI instance
+		*  @param[in] sourceCode
+		*    Shader ASCII source code, must be valid
+		*/
+		TaskShaderHlsl(Direct3D12Rhi& direct3D12Rhi, const char* sourceCode, Rhi::IShaderLanguage::OptimizationLevel optimizationLevel, Rhi::ShaderBytecode* shaderBytecode RHI_RESOURCE_DEBUG_NAME_PARAMETER_NO_DEFAULT) :
+			ITaskShader(direct3D12Rhi RHI_RESOURCE_DEBUG_PASS_PARAMETER),
+			mD3DBlobTaskShader(nullptr)
+		{
+			// Create the Direct3D 12 binary large object for the task shader
+			mD3DBlobTaskShader = loadShaderFromSourcecode(direct3D12Rhi.getContext(), "ps_5_0", sourceCode, nullptr, optimizationLevel);
+
+			// Return shader bytecode, if requested do to so
+			if (nullptr != shaderBytecode)
+			{
+				shaderBytecode->setBytecodeCopy(static_cast<uint32_t>(mD3DBlobTaskShader->GetBufferSize()), static_cast<uint8_t*>(mD3DBlobTaskShader->GetBufferPointer()));
+			}
+		}
+
+		/**
+		*  @brief
+		*    Destructor
+		*/
+		virtual ~TaskShaderHlsl() override
+		{
+			// Release the Direct3D 12 shader binary large object
+			if (nullptr != mD3DBlobTaskShader)
+			{
+				mD3DBlobTaskShader->Release();
+			}
+		}
+
+		/**
+		*  @brief
+		*    Return the Direct3D 12 task shader blob
+		*
+		*  @return
+		*    Direct3D 12 task shader blob, can be a null pointer on error, do not release the returned instance unless you added an own reference to it
+		*/
+		[[nodiscard]] inline ID3DBlob* getD3DBlobTaskShader() const
+		{
+			return mD3DBlobTaskShader;
+		}
+
+
+	//[-------------------------------------------------------]
+	//[ Public virtual Rhi::IShader methods                   ]
+	//[-------------------------------------------------------]
+	public:
+		[[nodiscard]] inline virtual const char* getShaderLanguageName() const override
+		{
+			return ::detail::HLSL_NAME;
+		}
+
+
+	//[-------------------------------------------------------]
+	//[ Protected virtual Rhi::RefCount methods               ]
+	//[-------------------------------------------------------]
+	protected:
+		inline virtual void selfDestruct() override
+		{
+			RHI_DELETE(getRhi().getContext(), TaskShaderHlsl, this);
+		}
+
+
+	//[-------------------------------------------------------]
+	//[ Private methods                                       ]
+	//[-------------------------------------------------------]
+	private:
+		explicit TaskShaderHlsl(const TaskShaderHlsl& source) = delete;
+		TaskShaderHlsl& operator =(const TaskShaderHlsl& source) = delete;
+
+
+	//[-------------------------------------------------------]
+	//[ Private data                                          ]
+	//[-------------------------------------------------------]
+	private:
+		ID3DBlob* mD3DBlobTaskShader;	///< Direct3D 12 task shader blob, can be a null pointer
+
+
+	};
+
+
+
+
+	//[-------------------------------------------------------]
+	//[ Direct3D12Rhi/Shader/MeshShaderHlsl.h                 ]
+	//[-------------------------------------------------------]
+	/**
+	*  @brief
+	*    HLSL mesh shader class (MS)
+	*/
+	class MeshShaderHlsl final : public Rhi::IMeshShader
+	{
+
+
+	//[-------------------------------------------------------]
+	//[ Public methods                                        ]
+	//[-------------------------------------------------------]
+	public:
+		/**
+		*  @brief
+		*    Constructor for creating a mesh shader from shader bytecode
+		*
+		*  @param[in] direct3D12Rhi
+		*    Owner Direct3D 12 RHI instance
+		*  @param[in] shaderBytecode
+		*    Shader bytecode
+		*/
+		MeshShaderHlsl(Direct3D12Rhi& direct3D12Rhi, const Rhi::ShaderBytecode& shaderBytecode RHI_RESOURCE_DEBUG_NAME_PARAMETER_NO_DEFAULT) :
+			IMeshShader(direct3D12Rhi RHI_RESOURCE_DEBUG_PASS_PARAMETER),
+			mD3DBlobMeshShader(nullptr)
+		{
+			// Backup the mesh shader bytecode
+			FAILED_DEBUG_BREAK(D3DCreateBlob(shaderBytecode.getNumberOfBytes(), &mD3DBlobMeshShader))
+			memcpy(mD3DBlobMeshShader->GetBufferPointer(), shaderBytecode.getBytecode(), shaderBytecode.getNumberOfBytes());
+		}
+
+		/**
+		*  @brief
+		*    Constructor for creating a mesh shader from shader source code
+		*
+		*  @param[in] direct3D12Rhi
+		*    Owner Direct3D 12 RHI instance
+		*  @param[in] sourceCode
+		*    Shader ASCII source code, must be valid
+		*/
+		MeshShaderHlsl(Direct3D12Rhi& direct3D12Rhi, const char* sourceCode, Rhi::IShaderLanguage::OptimizationLevel optimizationLevel, Rhi::ShaderBytecode* shaderBytecode RHI_RESOURCE_DEBUG_NAME_PARAMETER_NO_DEFAULT) :
+			IMeshShader(direct3D12Rhi RHI_RESOURCE_DEBUG_PASS_PARAMETER),
+			mD3DBlobMeshShader(nullptr)
+		{
+			// Create the Direct3D 12 binary large object for the mesh shader
+			mD3DBlobMeshShader = loadShaderFromSourcecode(direct3D12Rhi.getContext(), "ps_5_0", sourceCode, nullptr, optimizationLevel);
+
+			// Return shader bytecode, if requested do to so
+			if (nullptr != shaderBytecode)
+			{
+				shaderBytecode->setBytecodeCopy(static_cast<uint32_t>(mD3DBlobMeshShader->GetBufferSize()), static_cast<uint8_t*>(mD3DBlobMeshShader->GetBufferPointer()));
+			}
+		}
+
+		/**
+		*  @brief
+		*    Destructor
+		*/
+		virtual ~MeshShaderHlsl() override
+		{
+			// Release the Direct3D 12 shader binary large object
+			if (nullptr != mD3DBlobMeshShader)
+			{
+				mD3DBlobMeshShader->Release();
+			}
+		}
+
+		/**
+		*  @brief
+		*    Return the Direct3D 12 mesh shader blob
+		*
+		*  @return
+		*    Direct3D 12 mesh shader blob, can be a null pointer on error, do not release the returned instance unless you added an own reference to it
+		*/
+		[[nodiscard]] inline ID3DBlob* getD3DBlobMeshShader() const
+		{
+			return mD3DBlobMeshShader;
+		}
+
+
+	//[-------------------------------------------------------]
+	//[ Public virtual Rhi::IShader methods                   ]
+	//[-------------------------------------------------------]
+	public:
+		[[nodiscard]] inline virtual const char* getShaderLanguageName() const override
+		{
+			return ::detail::HLSL_NAME;
+		}
+
+
+	//[-------------------------------------------------------]
+	//[ Protected virtual Rhi::RefCount methods               ]
+	//[-------------------------------------------------------]
+	protected:
+		inline virtual void selfDestruct() override
+		{
+			RHI_DELETE(getRhi().getContext(), MeshShaderHlsl, this);
+		}
+
+
+	//[-------------------------------------------------------]
+	//[ Private methods                                       ]
+	//[-------------------------------------------------------]
+	private:
+		explicit MeshShaderHlsl(const MeshShaderHlsl& source) = delete;
+		MeshShaderHlsl& operator =(const MeshShaderHlsl& source) = delete;
+
+
+	//[-------------------------------------------------------]
+	//[ Private data                                          ]
+	//[-------------------------------------------------------]
+	private:
+		ID3DBlob* mD3DBlobMeshShader;	///< Direct3D 12 mesh shader blob, can be a null pointer
 
 
 	};
@@ -10353,7 +10603,7 @@ namespace Direct3D12Rhi
 	public:
 		/**
 		*  @brief
-		*    Constructor
+		*    Constructor for traditional graphics program
 		*
 		*  @param[in] direct3D12Rhi
 		*    Owner Direct3D 12 RHI instance
@@ -10404,6 +10654,44 @@ namespace Direct3D12Rhi
 
 		/**
 		*  @brief
+		*    Constructor for task and mesh shader based graphics program
+		*
+		*  @param[in] direct3D12Rhi
+		*    Owner Direct3D 12 RHI instance
+		*  @param[in] taskShaderHlsl
+		*    Task shader the graphics program is using, can be a null pointer
+		*  @param[in] meshShaderHlsl
+		*    Mesh shader the graphics program is using
+		*  @param[in] fragmentShaderHlsl
+		*    Fragment shader the graphics program is using, can be a null pointer
+		*
+		*  @note
+		*    - The graphics program keeps a reference to the provided shaders and releases it when no longer required
+		*/
+		GraphicsProgramHlsl(Direct3D12Rhi& direct3D12Rhi, TaskShaderHlsl* taskShaderHlsl, MeshShaderHlsl& meshShaderHlsl, FragmentShaderHlsl* fragmentShaderHlsl RHI_RESOURCE_DEBUG_NAME_PARAMETER_NO_DEFAULT) :
+			IGraphicsProgram(direct3D12Rhi RHI_RESOURCE_DEBUG_PASS_PARAMETER),
+			mVertexShaderHlsl(nullptr),
+			mTessellationControlShaderHlsl(nullptr),
+			mTessellationEvaluationShaderHlsl(nullptr),
+			mGeometryShaderHlsl(nullptr),
+			mFragmentShaderHlsl(fragmentShaderHlsl),
+			mTaskShaderHlsl(taskShaderHlsl),
+			mMeshShaderHlsl(&meshShaderHlsl)
+		{
+			// Add references to the provided shaders
+			if (nullptr != mFragmentShaderHlsl)
+			{
+				mFragmentShaderHlsl->addReference();
+			}
+			if (nullptr != mTaskShaderHlsl)
+			{
+				mTaskShaderHlsl->addReference();
+			}
+			mMeshShaderHlsl->addReference();
+		}
+
+		/**
+		*  @brief
 		*    Destructor
 		*/
 		virtual ~GraphicsProgramHlsl() override
@@ -10429,8 +10717,20 @@ namespace Direct3D12Rhi
 			{
 				mFragmentShaderHlsl->releaseReference();
 			}
+			if (nullptr != mTaskShaderHlsl)
+			{
+				mTaskShaderHlsl->releaseReference();
+			}
+			if (nullptr != mMeshShaderHlsl)
+			{
+				mMeshShaderHlsl->releaseReference();
+			}
 		}
 
+
+		//[-------------------------------------------------------]
+		//[ Traditional graphics program                          ]
+		//[-------------------------------------------------------]
 		/**
 		*  @brief
 		*    Return the HLSL vertex shader the graphics program is using
@@ -10479,6 +10779,9 @@ namespace Direct3D12Rhi
 			return mGeometryShaderHlsl;
 		}
 
+		//[-------------------------------------------------------]
+		//[ Both graphics programs                                ]
+		//[-------------------------------------------------------]
 		/**
 		*  @brief
 		*    Return the HLSL fragment shader the graphics program is using
@@ -10489,6 +10792,33 @@ namespace Direct3D12Rhi
 		[[nodiscard]] inline FragmentShaderHlsl* getFragmentShaderHlsl() const
 		{
 			return mFragmentShaderHlsl;
+		}
+
+		//[-------------------------------------------------------]
+		//[ Task and mesh shader based graphics program           ]
+		//[-------------------------------------------------------]
+		/**
+		*  @brief
+		*    Return the HLSL task shader the graphics program is using
+		*
+		*  @return
+		*    The HLSL task shader the graphics program is using, can be a null pointer, do not release the returned instance unless you added an own reference to it
+		*/
+		[[nodiscard]] inline TaskShaderHlsl* getTaskShaderHlsl() const
+		{
+			return mTaskShaderHlsl;
+		}
+
+		/**
+		*  @brief
+		*    Return the HLSL mesh shader the graphics program is using
+		*
+		*  @return
+		*    The HLSL mesh shader the graphics program is using, can be a null pointer, do not release the returned instance unless you added an own reference to it
+		*/
+		[[nodiscard]] inline MeshShaderHlsl* getMeshShaderHlsl() const
+		{
+			return mMeshShaderHlsl;
 		}
 
 
@@ -10514,11 +10844,16 @@ namespace Direct3D12Rhi
 	//[ Private data                                          ]
 	//[-------------------------------------------------------]
 	private:
+		// Traditional graphics program
 		VertexShaderHlsl*				  mVertexShaderHlsl;					///< Vertex shader the graphics program is using (we keep a reference to it), can be a null pointer
 		TessellationControlShaderHlsl*	  mTessellationControlShaderHlsl;		///< Tessellation control shader the graphics program is using (we keep a reference to it), can be a null pointer
 		TessellationEvaluationShaderHlsl* mTessellationEvaluationShaderHlsl;	///< Tessellation evaluation shader the graphics program is using (we keep a reference to it), can be a null pointer
 		GeometryShaderHlsl*				  mGeometryShaderHlsl;					///< Geometry shader the graphics program is using (we keep a reference to it), can be a null pointer
-		FragmentShaderHlsl*				  mFragmentShaderHlsl;					///< Fragment shader the graphics program is using (we keep a reference to it), can be a null pointer
+		// Both graphics programs
+		FragmentShaderHlsl* mFragmentShaderHlsl;	///< Fragment shader the graphics program is using (we keep a reference to it), can be a null pointer
+		// Task and mesh shader based graphics program
+		TaskShaderHlsl* mTaskShaderHlsl;	///< Task shader the graphics program is using (we keep a reference to it), can be a null pointer
+		MeshShaderHlsl* mMeshShaderHlsl;	///< Mesh shader the graphics program is using (we keep a reference to it), can be a null pointer
 
 
 	};
@@ -10671,6 +11006,52 @@ namespace Direct3D12Rhi
 			return RHI_NEW(direct3D12Rhi.getContext(), FragmentShaderHlsl)(direct3D12Rhi, shaderSourceCode.sourceCode, getOptimizationLevel(), shaderBytecode RHI_RESOURCE_DEBUG_PASS_PARAMETER);
 		}
 
+		[[nodiscard]] inline virtual Rhi::ITaskShader* createTaskShaderFromBytecode(const Rhi::ShaderBytecode& shaderBytecode RHI_RESOURCE_DEBUG_NAME_PARAMETER) override
+		{
+			Direct3D12Rhi& direct3D12Rhi = static_cast<Direct3D12Rhi&>(getRhi());
+
+			// Sanity checks
+			RHI_ASSERT(direct3D12Rhi.getContext(), direct3D12Rhi.getCapabilities().meshShader, "Direct3D 12 task shader support is unavailable, DirectX 12 Ultimate needed")
+			RHI_ASSERT(direct3D12Rhi.getContext(), shaderBytecode.getNumberOfBytes() > 0 && nullptr != shaderBytecode.getBytecode(), "Direct3D 12 task shader bytecode is invalid")
+
+			// Create the task shader
+			return RHI_NEW(direct3D12Rhi.getContext(), TaskShaderHlsl)(direct3D12Rhi, shaderBytecode RHI_RESOURCE_DEBUG_PASS_PARAMETER);
+		}
+
+		[[nodiscard]] inline virtual Rhi::ITaskShader* createTaskShaderFromSourceCode(const Rhi::ShaderSourceCode& shaderSourceCode, Rhi::ShaderBytecode* shaderBytecode = nullptr RHI_RESOURCE_DEBUG_NAME_PARAMETER) override
+		{
+			Direct3D12Rhi& direct3D12Rhi = static_cast<Direct3D12Rhi&>(getRhi());
+
+			// Sanity check
+			RHI_ASSERT(direct3D12Rhi.getContext(), direct3D12Rhi.getCapabilities().meshShader, "Direct3D 12 task shader support is unavailable, DirectX 12 Ultimate needed")
+
+			// Create the task shader
+			return RHI_NEW(direct3D12Rhi.getContext(), TaskShaderHlsl)(direct3D12Rhi, shaderSourceCode.sourceCode, getOptimizationLevel(), shaderBytecode RHI_RESOURCE_DEBUG_PASS_PARAMETER);
+		}
+
+		[[nodiscard]] inline virtual Rhi::IMeshShader* createMeshShaderFromBytecode(const Rhi::ShaderBytecode& shaderBytecode RHI_RESOURCE_DEBUG_NAME_PARAMETER) override
+		{
+			Direct3D12Rhi& direct3D12Rhi = static_cast<Direct3D12Rhi&>(getRhi());
+
+			// Sanity checks
+			RHI_ASSERT(direct3D12Rhi.getContext(), direct3D12Rhi.getCapabilities().meshShader, "Direct3D 12 mesh shader support is unavailable, DirectX 12 Ultimate needed")
+			RHI_ASSERT(direct3D12Rhi.getContext(), shaderBytecode.getNumberOfBytes() > 0 && nullptr != shaderBytecode.getBytecode(), "Direct3D 12 mesh shader bytecode is invalid")
+
+			// Create the task shader
+			return RHI_NEW(direct3D12Rhi.getContext(), MeshShaderHlsl)(direct3D12Rhi, shaderBytecode RHI_RESOURCE_DEBUG_PASS_PARAMETER);
+		}
+
+		[[nodiscard]] inline virtual Rhi::IMeshShader* createMeshShaderFromSourceCode(const Rhi::ShaderSourceCode& shaderSourceCode, Rhi::ShaderBytecode* shaderBytecode = nullptr RHI_RESOURCE_DEBUG_NAME_PARAMETER) override
+		{
+			Direct3D12Rhi& direct3D12Rhi = static_cast<Direct3D12Rhi&>(getRhi());
+
+			// Sanity checks
+			RHI_ASSERT(direct3D12Rhi.getContext(), direct3D12Rhi.getCapabilities().meshShader, "Direct3D 12 mesh shader support is unavailable, DirectX 12 Ultimate needed")
+
+			// Create the task shader
+			return RHI_NEW(direct3D12Rhi.getContext(), MeshShaderHlsl)(direct3D12Rhi, shaderSourceCode.sourceCode, getOptimizationLevel(), shaderBytecode RHI_RESOURCE_DEBUG_PASS_PARAMETER);
+		}
+
 		[[nodiscard]] inline virtual Rhi::IComputeShader* createComputeShaderFromBytecode(const Rhi::ShaderBytecode& shaderBytecode RHI_RESOURCE_DEBUG_NAME_PARAMETER) override
 		{
 			Direct3D12Rhi& direct3D12Rhi = static_cast<Direct3D12Rhi&>(getRhi());
@@ -10706,6 +11087,23 @@ namespace Direct3D12Rhi
 
 			// Create the graphics program
 			return RHI_NEW(direct3D12Rhi.getContext(), GraphicsProgramHlsl)(direct3D12Rhi, static_cast<VertexShaderHlsl*>(vertexShader), static_cast<TessellationControlShaderHlsl*>(tessellationControlShader), static_cast<TessellationEvaluationShaderHlsl*>(tessellationEvaluationShader), static_cast<GeometryShaderHlsl*>(geometryShader), static_cast<FragmentShaderHlsl*>(fragmentShader) RHI_RESOURCE_DEBUG_PASS_PARAMETER);
+		}
+
+		[[nodiscard]] virtual Rhi::IGraphicsProgram* createGraphicsProgram([[maybe_unused]] const Rhi::IRootSignature& rootSignature, Rhi::ITaskShader* taskShader, Rhi::IMeshShader& meshShader, Rhi::IFragmentShader* fragmentShader RHI_RESOURCE_DEBUG_NAME_PARAMETER)
+		{
+			Direct3D12Rhi& direct3D12Rhi = static_cast<Direct3D12Rhi&>(getRhi());
+
+			// Sanity checks
+			// -> A shader can be a null pointer, but if it's not the shader and graphics program language must match
+			// -> Optimization: Comparing the shader language name by directly comparing the pointer address of
+			//    the name is safe because we know that we always reference to one and the same name address
+			// TODO(co) Add security check: Is the given resource one of the currently used RHI?
+			RHI_ASSERT(direct3D12Rhi.getContext(), nullptr == taskShader || taskShader->getShaderLanguageName() == ::detail::HLSL_NAME, "Direct3D 12 task shader language mismatch")
+			RHI_ASSERT(direct3D12Rhi.getContext(), meshShader.getShaderLanguageName() == ::detail::HLSL_NAME, "Direct3D 12 mesh shader language mismatch")
+			RHI_ASSERT(direct3D12Rhi.getContext(), nullptr == fragmentShader || fragmentShader->getShaderLanguageName() == ::detail::HLSL_NAME, "Direct3D 12 fragment shader language mismatch")
+
+			// Create the graphics program
+			return RHI_NEW(direct3D12Rhi.getContext(), GraphicsProgramHlsl)(direct3D12Rhi, static_cast<TaskShaderHlsl*>(taskShader), static_cast<MeshShaderHlsl&>(meshShader), static_cast<FragmentShaderHlsl*>(fragmentShader) RHI_RESOURCE_DEBUG_PASS_PARAMETER);
 		}
 
 
@@ -10811,44 +11209,77 @@ namespace Direct3D12Rhi
 			d3d12GraphicsPipelineState.pRootSignature = static_cast<RootSignature*>(mRootSignature)->getD3D12RootSignature();
 			{ // Set shaders
 				GraphicsProgramHlsl* graphicsProgramHlsl = static_cast<GraphicsProgramHlsl*>(mGraphicsProgram);
-				{ // Vertex shader
-					const VertexShaderHlsl* vertexShaderHlsl = graphicsProgramHlsl->getVertexShaderHlsl();
-					if (nullptr != vertexShaderHlsl)
-					{
-						ID3DBlob* d3dBlobVertexShader = vertexShaderHlsl->getD3DBlobVertexShader();
-						d3d12GraphicsPipelineState.VS = { reinterpret_cast<UINT8*>(d3dBlobVertexShader->GetBufferPointer()), d3dBlobVertexShader->GetBufferSize() };
+				const MeshShaderHlsl* meshShaderHlsl = graphicsProgramHlsl->getMeshShaderHlsl();
+				if (nullptr != meshShaderHlsl)
+				{
+					// Task and mesh shader based graphics program
+
+					{ // Task shader
+						const TaskShaderHlsl* taskShaderHlsl = graphicsProgramHlsl->getTaskShaderHlsl();
+						if (nullptr != taskShaderHlsl)
+						{
+							// TODO(co) "DirectX 12 Ultimate" needed
+							// ID3DBlob* d3dBlobTaskShader = taskShaderHlsl->getD3DBlobTaskShader();
+							// d3d12GraphicsPipelineState.AS = { reinterpret_cast<UINT8*>(d3dBlobTaskShader->GetBufferPointer()), d3dBlobTaskShader->GetBufferSize() };
+						}
+					}
+					{ // Mesh shader
+						// TODO(co) "DirectX 12 Ultimate" needed
+						// ID3DBlob* d3dBlobMeshShader = meshShaderHlsl->getD3DBlobMeshShader();
+						// d3d12GraphicsPipelineState.MS = { reinterpret_cast<UINT8*>(d3dBlobMeshShader->GetBufferPointer()), d3dBlobMeshShader->GetBufferSize() };
+					}
+					{ // Fragment shader (FS, "pixel shader" in Direct3D terminology)
+						const FragmentShaderHlsl* fragmentShaderHlsl = graphicsProgramHlsl->getFragmentShaderHlsl();
+						if (nullptr != fragmentShaderHlsl)
+						{
+							ID3DBlob* d3dBlobFragmentShader = graphicsProgramHlsl->getFragmentShaderHlsl()->getD3DBlobFragmentShader();
+							d3d12GraphicsPipelineState.PS = { reinterpret_cast<UINT8*>(d3dBlobFragmentShader->GetBufferPointer()), d3dBlobFragmentShader->GetBufferSize() };
+						}
 					}
 				}
-				{ // Tessellation control shader (TCS, "hull shader" in Direct3D terminology)
-					const TessellationControlShaderHlsl* tessellationControlShaderHlsl = graphicsProgramHlsl->getTessellationControlShaderHlsl();
-					if (nullptr != tessellationControlShaderHlsl)
-					{
-						ID3DBlob* d3dBlobHullShader = tessellationControlShaderHlsl->getD3DBlobHullShader();
-						d3d12GraphicsPipelineState.HS = { reinterpret_cast<UINT8*>(d3dBlobHullShader->GetBufferPointer()), d3dBlobHullShader->GetBufferSize() };
+				else
+				{
+					// Traditional graphics program
+
+					{ // Vertex shader
+						const VertexShaderHlsl* vertexShaderHlsl = graphicsProgramHlsl->getVertexShaderHlsl();
+						if (nullptr != vertexShaderHlsl)
+						{
+							ID3DBlob* d3dBlobVertexShader = vertexShaderHlsl->getD3DBlobVertexShader();
+							d3d12GraphicsPipelineState.VS = { reinterpret_cast<UINT8*>(d3dBlobVertexShader->GetBufferPointer()), d3dBlobVertexShader->GetBufferSize() };
+						}
 					}
-				}
-				{ // Tessellation evaluation shader (TES, "domain shader" in Direct3D terminology)
-					const TessellationEvaluationShaderHlsl* tessellationEvaluationShaderHlsl = graphicsProgramHlsl->getTessellationEvaluationShaderHlsl();
-					if (nullptr != tessellationEvaluationShaderHlsl)
-					{
-						ID3DBlob* d3dBlobDomainShader = tessellationEvaluationShaderHlsl->getD3DBlobDomainShader();
-						d3d12GraphicsPipelineState.DS = { reinterpret_cast<UINT8*>(d3dBlobDomainShader->GetBufferPointer()), d3dBlobDomainShader->GetBufferSize() };
+					{ // Tessellation control shader (TCS, "hull shader" in Direct3D terminology)
+						const TessellationControlShaderHlsl* tessellationControlShaderHlsl = graphicsProgramHlsl->getTessellationControlShaderHlsl();
+						if (nullptr != tessellationControlShaderHlsl)
+						{
+							ID3DBlob* d3dBlobHullShader = tessellationControlShaderHlsl->getD3DBlobHullShader();
+							d3d12GraphicsPipelineState.HS = { reinterpret_cast<UINT8*>(d3dBlobHullShader->GetBufferPointer()), d3dBlobHullShader->GetBufferSize() };
+						}
 					}
-				}
-				{ // Geometry shader
-					const GeometryShaderHlsl* geometryShaderHlsl = graphicsProgramHlsl->getGeometryShaderHlsl();
-					if (nullptr != geometryShaderHlsl)
-					{
-						ID3DBlob* d3dBlobGeometryShader = geometryShaderHlsl->getD3DBlobGeometryShader();
-						d3d12GraphicsPipelineState.GS = { reinterpret_cast<UINT8*>(d3dBlobGeometryShader->GetBufferPointer()), d3dBlobGeometryShader->GetBufferSize() };
+					{ // Tessellation evaluation shader (TES, "domain shader" in Direct3D terminology)
+						const TessellationEvaluationShaderHlsl* tessellationEvaluationShaderHlsl = graphicsProgramHlsl->getTessellationEvaluationShaderHlsl();
+						if (nullptr != tessellationEvaluationShaderHlsl)
+						{
+							ID3DBlob* d3dBlobDomainShader = tessellationEvaluationShaderHlsl->getD3DBlobDomainShader();
+							d3d12GraphicsPipelineState.DS = { reinterpret_cast<UINT8*>(d3dBlobDomainShader->GetBufferPointer()), d3dBlobDomainShader->GetBufferSize() };
+						}
 					}
-				}
-				{ // Fragment shader (FS, "pixel shader" in Direct3D terminology)
-					const FragmentShaderHlsl* fragmentShaderHlsl = graphicsProgramHlsl->getFragmentShaderHlsl();
-					if (nullptr != fragmentShaderHlsl)
-					{
-						ID3DBlob* d3dBlobFragmentShader = graphicsProgramHlsl->getFragmentShaderHlsl()->getD3DBlobFragmentShader();
-						d3d12GraphicsPipelineState.PS = { reinterpret_cast<UINT8*>(d3dBlobFragmentShader->GetBufferPointer()), d3dBlobFragmentShader->GetBufferSize() };
+					{ // Geometry shader
+						const GeometryShaderHlsl* geometryShaderHlsl = graphicsProgramHlsl->getGeometryShaderHlsl();
+						if (nullptr != geometryShaderHlsl)
+						{
+							ID3DBlob* d3dBlobGeometryShader = geometryShaderHlsl->getD3DBlobGeometryShader();
+							d3d12GraphicsPipelineState.GS = { reinterpret_cast<UINT8*>(d3dBlobGeometryShader->GetBufferPointer()), d3dBlobGeometryShader->GetBufferSize() };
+						}
+					}
+					{ // Fragment shader (FS, "pixel shader" in Direct3D terminology)
+						const FragmentShaderHlsl* fragmentShaderHlsl = graphicsProgramHlsl->getFragmentShaderHlsl();
+						if (nullptr != fragmentShaderHlsl)
+						{
+							ID3DBlob* d3dBlobFragmentShader = graphicsProgramHlsl->getFragmentShaderHlsl()->getD3DBlobFragmentShader();
+							d3d12GraphicsPipelineState.PS = { reinterpret_cast<UINT8*>(d3dBlobFragmentShader->GetBufferPointer()), d3dBlobFragmentShader->GetBufferSize() };
+						}
 					}
 				}
 			}
@@ -11396,6 +11827,8 @@ namespace Direct3D12Rhi
 								case Rhi::ResourceType::TESSELLATION_EVALUATION_SHADER:
 								case Rhi::ResourceType::GEOMETRY_SHADER:
 								case Rhi::ResourceType::FRAGMENT_SHADER:
+								case Rhi::ResourceType::TASK_SHADER:
+								case Rhi::ResourceType::MESH_SHADER:
 								case Rhi::ResourceType::COMPUTE_SHADER:
 									RHI_LOG(direct3D12Rhi.getContext(), CRITICAL, "Invalid Direct3D 12 RHI implementation resource type")
 									break;
@@ -11421,6 +11854,8 @@ namespace Direct3D12Rhi
 						case Rhi::ResourceType::TESSELLATION_EVALUATION_SHADER:
 						case Rhi::ResourceType::GEOMETRY_SHADER:
 						case Rhi::ResourceType::FRAGMENT_SHADER:
+						case Rhi::ResourceType::TASK_SHADER:
+						case Rhi::ResourceType::MESH_SHADER:
 						case Rhi::ResourceType::COMPUTE_SHADER:
 							RHI_LOG(direct3D12Rhi.getContext(), CRITICAL, "Invalid Direct3D 12 RHI implementation resource type")
 							break;
@@ -11479,6 +11914,8 @@ namespace Direct3D12Rhi
 						case Rhi::ResourceType::TESSELLATION_EVALUATION_SHADER:
 						case Rhi::ResourceType::GEOMETRY_SHADER:
 						case Rhi::ResourceType::FRAGMENT_SHADER:
+						case Rhi::ResourceType::TASK_SHADER:
+						case Rhi::ResourceType::MESH_SHADER:
 						case Rhi::ResourceType::COMPUTE_SHADER:
 							RHI_LOG(direct3D12Rhi.getContext(), CRITICAL, "Invalid Direct3D 12 RHI implementation resource type")
 							break;
@@ -11740,6 +12177,19 @@ namespace
 				}
 			}
 
+			void DrawMeshTasks(const void* data, Rhi::IRhi& rhi)
+			{
+				const Rhi::Command::DrawMeshTasks* realData = static_cast<const Rhi::Command::DrawMeshTasks*>(data);
+				if (nullptr != realData->indirectBuffer)
+				{
+					static_cast<Direct3D12Rhi::Direct3D12Rhi&>(rhi).drawMeshTasks(*realData->indirectBuffer, realData->indirectBufferOffset, realData->numberOfDraws);
+				}
+				else
+				{
+					static_cast<Direct3D12Rhi::Direct3D12Rhi&>(rhi).drawMeshTasksEmulated(Rhi::CommandPacketHelper::getAuxiliaryMemory(realData), realData->indirectBufferOffset, realData->numberOfDraws);
+				}
+			}
+
 			//[-------------------------------------------------------]
 			//[ Compute                                               ]
 			//[-------------------------------------------------------]
@@ -11888,6 +12338,7 @@ namespace
 			&ImplementationDispatch::ClearGraphics,
 			&ImplementationDispatch::DrawGraphics,
 			&ImplementationDispatch::DrawIndexedGraphics,
+			&ImplementationDispatch::DrawMeshTasks,
 			// Compute
 			&ImplementationDispatch::SetComputeRootSignature,
 			&ImplementationDispatch::SetComputePipelineState,
@@ -12385,6 +12836,8 @@ namespace Direct3D12Rhi
 					case Rhi::ResourceType::TESSELLATION_EVALUATION_SHADER:
 					case Rhi::ResourceType::GEOMETRY_SHADER:
 					case Rhi::ResourceType::FRAGMENT_SHADER:
+					case Rhi::ResourceType::TASK_SHADER:
+					case Rhi::ResourceType::MESH_SHADER:
 					case Rhi::ResourceType::COMPUTE_SHADER:
 					default:
 						// Not handled in here
@@ -12497,6 +12950,8 @@ namespace Direct3D12Rhi
 					case Rhi::ResourceType::TESSELLATION_EVALUATION_SHADER:
 					case Rhi::ResourceType::GEOMETRY_SHADER:
 					case Rhi::ResourceType::FRAGMENT_SHADER:
+					case Rhi::ResourceType::TASK_SHADER:
+					case Rhi::ResourceType::MESH_SHADER:
 					case Rhi::ResourceType::COMPUTE_SHADER:
 					default:
 						// Not handled in here
@@ -12625,6 +13080,8 @@ namespace Direct3D12Rhi
 				case Rhi::ResourceType::TESSELLATION_EVALUATION_SHADER:
 				case Rhi::ResourceType::GEOMETRY_SHADER:
 				case Rhi::ResourceType::FRAGMENT_SHADER:
+				case Rhi::ResourceType::TASK_SHADER:
+				case Rhi::ResourceType::MESH_SHADER:
 				case Rhi::ResourceType::COMPUTE_SHADER:
 				default:
 					// Not handled in here
@@ -12742,6 +13199,23 @@ namespace Direct3D12Rhi
 				endDebugEvent();
 			}
 		#endif
+	}
+
+	void Direct3D12Rhi::drawMeshTasks([[maybe_unused]] const Rhi::IIndirectBuffer& indirectBuffer, [[maybe_unused]] uint32_t indirectBufferOffset, uint32_t numberOfDraws)
+	{
+		// Sanity checks
+		RHI_ASSERT(mContext, numberOfDraws > 0, "The number of null draws must not be zero")
+
+		// TODO(co) Implement me
+	}
+
+	void Direct3D12Rhi::drawMeshTasksEmulated([[maybe_unused]] const uint8_t* emulationData, uint32_t, [[maybe_unused]] uint32_t numberOfDraws)
+	{
+		// Sanity checks
+		RHI_ASSERT(mContext, nullptr != emulationData, "The null emulation data must be valid")
+		RHI_ASSERT(mContext, numberOfDraws > 0, "The number of null draws must not be zero")
+
+		// TODO(co) Implement me
 	}
 
 
@@ -13143,7 +13617,7 @@ namespace Direct3D12Rhi
 		// The "Rhi::MappedSubresource" structure directly maps to Direct3D 11, do not change it
 
 		// Define helper macro
-		// TODO(co): Port to Direct3D 12
+		// TODO(co) Port to Direct3D 12
 		#define TEXTURE_RESOURCE(type, typeClass) \
 			case type: \
 			{ \
@@ -13174,7 +13648,7 @@ namespace Direct3D12Rhi
 				mappedSubresource.rowPitch = 0;
 				mappedSubresource.depthPitch = 0;
 				CD3DX12_RANGE readRange(0, 0);	// We do not intend to read from this resource on the CPU
-				// TODO(co): Port to Direct3D 12
+				// TODO(co) Port to Direct3D 12
 				return false;
 				// return SUCCEEDED(static_cast<TextureBuffer&>(resource).getD3D12Resource()->Map(0, &readRange, reinterpret_cast<void**>(&mappedSubresource.data)));
 			}
@@ -13184,7 +13658,7 @@ namespace Direct3D12Rhi
 				mappedSubresource.rowPitch = 0;
 				mappedSubresource.depthPitch = 0;
 				CD3DX12_RANGE readRange(0, 0);	// We do not intend to read from this resource on the CPU
-				// TODO(co): Port to Direct3D 12
+				// TODO(co) Port to Direct3D 12
 				return false;
 				// return SUCCEEDED(static_cast<StructuredBuffer&>(resource).getD3D12Resource()->Map(0, &readRange, reinterpret_cast<void**>(&mappedSubresource.data)));
 			}
@@ -13230,6 +13704,8 @@ namespace Direct3D12Rhi
 			case Rhi::ResourceType::TESSELLATION_EVALUATION_SHADER:
 			case Rhi::ResourceType::GEOMETRY_SHADER:
 			case Rhi::ResourceType::FRAGMENT_SHADER:
+			case Rhi::ResourceType::TASK_SHADER:
+			case Rhi::ResourceType::MESH_SHADER:
 			case Rhi::ResourceType::COMPUTE_SHADER:
 			default:
 				// Nothing we can map, set known return values
@@ -13248,7 +13724,7 @@ namespace Direct3D12Rhi
 	void Direct3D12Rhi::unmap(Rhi::IResource& resource, uint32_t)
 	{
 		// Define helper macro
-		// TODO(co): Port to Direct3D 12
+		// TODO(co) Port to Direct3D 12
 		#define TEXTURE_RESOURCE(type, typeClass) \
 			case type: \
 			{ \
@@ -13267,12 +13743,12 @@ namespace Direct3D12Rhi
 				break;
 
 			case Rhi::ResourceType::TEXTURE_BUFFER:
-				// TODO(co): Port to Direct3D 12
+				// TODO(co) Port to Direct3D 12
 				// static_cast<TextureBuffer&>(resource).getD3D12Resource()->Unmap(0, nullptr);
 				break;
 
 			case Rhi::ResourceType::STRUCTURED_BUFFER:
-				// TODO(co): Port to Direct3D 12
+				// TODO(co) Port to Direct3D 12
 				// static_cast<StructuredBuffer&>(resource).getD3D12Resource()->Unmap(0, nullptr);
 				break;
 
@@ -13309,6 +13785,8 @@ namespace Direct3D12Rhi
 			case Rhi::ResourceType::TESSELLATION_EVALUATION_SHADER:
 			case Rhi::ResourceType::GEOMETRY_SHADER:
 			case Rhi::ResourceType::FRAGMENT_SHADER:
+			case Rhi::ResourceType::TASK_SHADER:
+			case Rhi::ResourceType::MESH_SHADER:
 			case Rhi::ResourceType::COMPUTE_SHADER:
 			default:
 				// Nothing we can unmap
@@ -13822,6 +14300,9 @@ namespace Direct3D12Rhi
 
 		// Is there support for fragment shaders (FS)?
 		mCapabilities.fragmentShader = true;
+
+		// Is there support for task shaders (TS) and mesh shaders (MS)?
+		mCapabilities.meshShader = false;	// TODO(co) "DirectX 12 Ultimate" needed
 
 		// Is there support for compute shaders (CS)?
 		mCapabilities.computeShader = true;

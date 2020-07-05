@@ -250,7 +250,7 @@ void IApplicationRhi::destroyRhi()
 	}
 
 	// Call base implementation after RHI was destroyed, needed at least under Linux see comments in private method "RHIInstance::loadRhiApiSharedLibrary()" for more details
-	// TODO(co): Try to find another solution which doesn't change the application flow which results in deinitialization been called twice
+	// TODO(co) Try to find another solution which doesn't change the application flow which results in deinitialization been called twice
 	#ifdef LINUX
 		IApplication::onDeinitialization();
 	#endif

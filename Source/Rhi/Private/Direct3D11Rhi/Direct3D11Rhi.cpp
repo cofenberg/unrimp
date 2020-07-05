@@ -2529,6 +2529,15 @@ namespace Direct3D11Rhi
 	#define RHI_MATCH_CHECK(rhiReference, resourceReference) \
 		RHI_ASSERT(mContext, &rhiReference == &(resourceReference).getRhi(), "Direct3D 11 error: The given resource is owned by another RHI instance")
 
+	/**
+	*  @brief
+	*    Resource name for debugging purposes, ignored when not using "RHI_DEBUG"
+	*
+	*  @param[in] debugName
+	*    ASCII name for debugging purposes, must be valid (there's no internal null pointer test)
+	*/
+	#define RHI_RESOURCE_DEBUG_NAME_MAYBE_UNUSED_PARAMETER , [[maybe_unused]] const char debugName[] = ""
+
 	/*
 	*  @brief
 	*    Debug break on execution failure, replacement for "ID3D11InfoQueue::SetBreakOnSeverity()" which is creating a confusing callstack
@@ -2540,6 +2549,15 @@ namespace Direct3D11Rhi
 	*    Check whether or not the given resource is owned by the given RHI
 	*/
 	#define RHI_MATCH_CHECK(rhiReference, resourceReference)
+
+	/**
+	*  @brief
+	*    Resource name for debugging purposes, ignored when not using "RHI_DEBUG"
+	*
+	*  @param[in] debugName
+	*    ASCII name for debugging purposes, must be valid (there's no internal null pointer test)
+	*/
+	#define RHI_RESOURCE_DEBUG_NAME_MAYBE_UNUSED_PARAMETER
 
 	/*
 	*  @brief
@@ -9919,6 +9937,8 @@ namespace Direct3D11Rhi
 						case Rhi::ResourceType::TESSELLATION_EVALUATION_SHADER:
 						case Rhi::ResourceType::GEOMETRY_SHADER:
 						case Rhi::ResourceType::FRAGMENT_SHADER:
+						case Rhi::ResourceType::TASK_SHADER:
+						case Rhi::ResourceType::MESH_SHADER:
 						case Rhi::ResourceType::COMPUTE_SHADER:
 						default:
 							RHI_LOG(direct3D11Rhi.getContext(), CRITICAL, "The type of the given color texture at index %u is not supported by the Direct3D 11 RHI implementation", colorTexture - mColorTextures)
@@ -10002,6 +10022,8 @@ namespace Direct3D11Rhi
 					case Rhi::ResourceType::TESSELLATION_EVALUATION_SHADER:
 					case Rhi::ResourceType::GEOMETRY_SHADER:
 					case Rhi::ResourceType::FRAGMENT_SHADER:
+					case Rhi::ResourceType::TASK_SHADER:
+					case Rhi::ResourceType::MESH_SHADER:
 					case Rhi::ResourceType::COMPUTE_SHADER:
 					default:
 						RHI_LOG(direct3D11Rhi.getContext(), CRITICAL, "The type of the given depth stencil texture is not supported by the Direct3D 11 RHI implementation")
@@ -11442,6 +11464,30 @@ namespace Direct3D11Rhi
 			return RHI_NEW(direct3D11Rhi.getContext(), FragmentShaderHlsl)(direct3D11Rhi, shaderSourceCode.sourceCode, getOptimizationLevel(), shaderBytecode RHI_RESOURCE_DEBUG_PASS_PARAMETER);
 		}
 
+		[[nodiscard]] inline virtual Rhi::ITaskShader* createTaskShaderFromBytecode(const Rhi::ShaderBytecode& RHI_RESOURCE_DEBUG_NAME_MAYBE_UNUSED_PARAMETER) override
+		{
+			RHI_ASSERT(getRhi().getContext(), false, "Direct3D 11 has no task shader support")
+			return nullptr;
+		}
+
+		[[nodiscard]] inline virtual Rhi::ITaskShader* createTaskShaderFromSourceCode(const Rhi::ShaderSourceCode&, Rhi::ShaderBytecode* = nullptr RHI_RESOURCE_DEBUG_NAME_MAYBE_UNUSED_PARAMETER) override
+		{
+			RHI_ASSERT(getRhi().getContext(), false, "Direct3D 11 has no task shader support")
+			return nullptr;
+		}
+
+		[[nodiscard]] inline virtual Rhi::IMeshShader* createMeshShaderFromBytecode(const Rhi::ShaderBytecode& RHI_RESOURCE_DEBUG_NAME_MAYBE_UNUSED_PARAMETER) override
+		{
+			RHI_ASSERT(getRhi().getContext(), false, "Direct3D 11 has no mesh shader support")
+			return nullptr;
+		}
+
+		[[nodiscard]] inline virtual Rhi::IMeshShader* createMeshShaderFromSourceCode(const Rhi::ShaderSourceCode&, Rhi::ShaderBytecode* = nullptr RHI_RESOURCE_DEBUG_NAME_MAYBE_UNUSED_PARAMETER) override
+		{
+			RHI_ASSERT(getRhi().getContext(), false, "Direct3D 11 has no mesh shader support")
+			return nullptr;
+		}
+
 		[[nodiscard]] inline virtual Rhi::IComputeShader* createComputeShaderFromBytecode(const Rhi::ShaderBytecode& shaderBytecode RHI_RESOURCE_DEBUG_NAME_PARAMETER) override
 		{
 			Direct3D11Rhi& direct3D11Rhi = static_cast<Direct3D11Rhi&>(getRhi());
@@ -11477,6 +11523,12 @@ namespace Direct3D11Rhi
 
 			// Create the graphics program
 			return RHI_NEW(direct3D11Rhi.getContext(), GraphicsProgramHlsl)(direct3D11Rhi, static_cast<VertexShaderHlsl*>(vertexShader), static_cast<TessellationControlShaderHlsl*>(tessellationControlShader), static_cast<TessellationEvaluationShaderHlsl*>(tessellationEvaluationShader), static_cast<GeometryShaderHlsl*>(geometryShader), static_cast<FragmentShaderHlsl*>(fragmentShader) RHI_RESOURCE_DEBUG_PASS_PARAMETER);
+		}
+
+		[[nodiscard]] virtual Rhi::IGraphicsProgram* createGraphicsProgram([[maybe_unused]] const Rhi::IRootSignature& rootSignature, [[maybe_unused]] Rhi::ITaskShader* taskShader, [[maybe_unused]] Rhi::IMeshShader& meshShader, [[maybe_unused]] Rhi::IFragmentShader* fragmentShader RHI_RESOURCE_DEBUG_NAME_MAYBE_UNUSED_PARAMETER)
+		{
+			RHI_ASSERT(getRhi().getContext(), false, "Direct3D 11 has no mesh shader support")
+			return nullptr;
 		}
 
 
@@ -12079,6 +12131,11 @@ namespace
 				}
 			}
 
+			void DrawMeshTasks(const void*, Rhi::IRhi& rhi)
+			{
+				RHI_LOG(static_cast<Direct3D11Rhi::Direct3D11Rhi&>(rhi).getContext(), CRITICAL, "Direct3D 11 doesn't support mesh shaders")
+			}
+
 			//[-------------------------------------------------------]
 			//[ Compute                                               ]
 			//[-------------------------------------------------------]
@@ -12220,6 +12277,7 @@ namespace
 			&ImplementationDispatch::ClearGraphics,
 			&ImplementationDispatch::DrawGraphics,
 			&ImplementationDispatch::DrawIndexedGraphics,
+			&ImplementationDispatch::DrawMeshTasks,
 			// Compute
 			&ImplementationDispatch::SetComputeRootSignature,
 			&ImplementationDispatch::SetComputePipelineState,
@@ -12621,6 +12679,14 @@ namespace Direct3D11Rhi
 								mD3D11DeviceContext->PSSetConstantBuffers(startSlot, 1, &d3d11Buffers);
 								break;
 
+							case Rhi::ShaderVisibility::TASK:
+								RHI_LOG(mContext, CRITICAL, "Invalid Direct3D 11 task shader visibility")
+								break;
+
+							case Rhi::ShaderVisibility::MESH:
+								RHI_LOG(mContext, CRITICAL, "Invalid Direct3D 11 mesh shader visibility")
+								break;
+
 							case Rhi::ShaderVisibility::COMPUTE:
 								RHI_LOG(mContext, CRITICAL, "Invalid Direct3D 11 compute shader visibility")
 								break;
@@ -12705,6 +12771,8 @@ namespace Direct3D11Rhi
 							case Rhi::ResourceType::TESSELLATION_EVALUATION_SHADER:
 							case Rhi::ResourceType::GEOMETRY_SHADER:
 							case Rhi::ResourceType::FRAGMENT_SHADER:
+							case Rhi::ResourceType::TASK_SHADER:
+							case Rhi::ResourceType::MESH_SHADER:
 							case Rhi::ResourceType::COMPUTE_SHADER:
 								RHI_LOG(mContext, CRITICAL, "Invalid Direct3D 11 RHI implementation resource type")
 								break;
@@ -12741,6 +12809,14 @@ namespace Direct3D11Rhi
 							case Rhi::ShaderVisibility::FRAGMENT:
 								// "pixel shader" in Direct3D terminology
 								mD3D11DeviceContext->PSSetShaderResources(startSlot, 1, &d3d11ShaderResourceView);
+								break;
+
+							case Rhi::ShaderVisibility::TASK:
+								RHI_LOG(mContext, CRITICAL, "Invalid Direct3D 11 task shader visibility")
+								break;
+
+							case Rhi::ShaderVisibility::MESH:
+								RHI_LOG(mContext, CRITICAL, "Invalid Direct3D 11 mesh shader visibility")
 								break;
 
 							case Rhi::ShaderVisibility::COMPUTE:
@@ -12795,6 +12871,14 @@ namespace Direct3D11Rhi
 								mD3D11DeviceContext->PSSetSamplers(startSlot, 1, &d3d11SamplerState);
 								break;
 
+							case Rhi::ShaderVisibility::TASK:
+								RHI_LOG(mContext, CRITICAL, "Invalid Direct3D 11 task shader visibility")
+								break;
+
+							case Rhi::ShaderVisibility::MESH:
+								RHI_LOG(mContext, CRITICAL, "Invalid Direct3D 11 mesh shader visibility")
+								break;
+
 							case Rhi::ShaderVisibility::COMPUTE:
 								RHI_LOG(mContext, CRITICAL, "Invalid Direct3D 11 compute shader visibility")
 								break;
@@ -12828,6 +12912,8 @@ namespace Direct3D11Rhi
 					case Rhi::ResourceType::TESSELLATION_EVALUATION_SHADER:
 					case Rhi::ResourceType::GEOMETRY_SHADER:
 					case Rhi::ResourceType::FRAGMENT_SHADER:
+					case Rhi::ResourceType::TASK_SHADER:
+					case Rhi::ResourceType::MESH_SHADER:
 					case Rhi::ResourceType::COMPUTE_SHADER:
 						RHI_LOG(mContext, CRITICAL, "Invalid Direct3D 11 RHI implementation resource type")
 						break;
@@ -12967,6 +13053,8 @@ namespace Direct3D11Rhi
 					case Rhi::ResourceType::TESSELLATION_EVALUATION_SHADER:
 					case Rhi::ResourceType::GEOMETRY_SHADER:
 					case Rhi::ResourceType::FRAGMENT_SHADER:
+					case Rhi::ResourceType::TASK_SHADER:
+					case Rhi::ResourceType::MESH_SHADER:
 					case Rhi::ResourceType::COMPUTE_SHADER:
 					default:
 						// Not handled in here
@@ -13098,6 +13186,8 @@ namespace Direct3D11Rhi
 				case Rhi::ResourceType::TESSELLATION_EVALUATION_SHADER:
 				case Rhi::ResourceType::GEOMETRY_SHADER:
 				case Rhi::ResourceType::FRAGMENT_SHADER:
+				case Rhi::ResourceType::TASK_SHADER:
+				case Rhi::ResourceType::MESH_SHADER:
 				case Rhi::ResourceType::COMPUTE_SHADER:
 				default:
 					// Not handled in here
@@ -13473,6 +13563,14 @@ namespace Direct3D11Rhi
 								RHI_LOG(mContext, CRITICAL, "Invalid Direct3D 11 fragment shader visibility")
 								break;
 
+							case Rhi::ShaderVisibility::TASK:
+								RHI_LOG(mContext, CRITICAL, "Invalid Direct3D 11 task shader visibility")
+								break;
+
+							case Rhi::ShaderVisibility::MESH:
+								RHI_LOG(mContext, CRITICAL, "Invalid Direct3D 11 mesh shader visibility")
+								break;
+
 							case Rhi::ShaderVisibility::ALL:
 							case Rhi::ShaderVisibility::COMPUTE:
 								mD3D11DeviceContext->CSSetConstantBuffers(startSlot, 1, &d3d11Buffers);
@@ -13558,6 +13656,8 @@ namespace Direct3D11Rhi
 									case Rhi::ResourceType::TESSELLATION_EVALUATION_SHADER:
 									case Rhi::ResourceType::GEOMETRY_SHADER:
 									case Rhi::ResourceType::FRAGMENT_SHADER:
+									case Rhi::ResourceType::TASK_SHADER:
+									case Rhi::ResourceType::MESH_SHADER:
 									case Rhi::ResourceType::COMPUTE_SHADER:
 										RHI_LOG(mContext, CRITICAL, "Invalid Direct3D 11 RHI implementation resource type")
 										break;
@@ -13583,6 +13683,14 @@ namespace Direct3D11Rhi
 
 									case Rhi::ShaderVisibility::FRAGMENT:
 										RHI_LOG(mContext, CRITICAL, "Invalid Direct3D 11 fragment shader visibility")
+										break;
+
+									case Rhi::ShaderVisibility::TASK:
+										RHI_LOG(mContext, CRITICAL, "Invalid Direct3D 11 task shader visibility")
+										break;
+
+									case Rhi::ShaderVisibility::MESH:
+										RHI_LOG(mContext, CRITICAL, "Invalid Direct3D 11 mesh shader visibility")
 										break;
 
 									case Rhi::ShaderVisibility::ALL:
@@ -13658,6 +13766,8 @@ namespace Direct3D11Rhi
 									case Rhi::ResourceType::TESSELLATION_EVALUATION_SHADER:
 									case Rhi::ResourceType::GEOMETRY_SHADER:
 									case Rhi::ResourceType::FRAGMENT_SHADER:
+									case Rhi::ResourceType::TASK_SHADER:
+									case Rhi::ResourceType::MESH_SHADER:
 									case Rhi::ResourceType::COMPUTE_SHADER:
 										RHI_LOG(mContext, CRITICAL, "Invalid Direct3D 11 RHI implementation resource type")
 										break;
@@ -13683,6 +13793,14 @@ namespace Direct3D11Rhi
 
 									case Rhi::ShaderVisibility::FRAGMENT:
 										RHI_LOG(mContext, CRITICAL, "Invalid Direct3D 11 fragment shader visibility")
+										break;
+
+									case Rhi::ShaderVisibility::TASK:
+										RHI_LOG(mContext, CRITICAL, "Invalid Direct3D 11 task shader visibility")
+										break;
+
+									case Rhi::ShaderVisibility::MESH:
+										RHI_LOG(mContext, CRITICAL, "Invalid Direct3D 11 mesh shader visibility")
 										break;
 
 									case Rhi::ShaderVisibility::ALL:
@@ -13784,6 +13902,14 @@ namespace Direct3D11Rhi
 								RHI_LOG(mContext, CRITICAL, "Invalid Direct3D 11 fragment shader visibility")
 								break;
 
+							case Rhi::ShaderVisibility::TASK:
+								RHI_LOG(mContext, CRITICAL, "Invalid Direct3D 11 task shader visibility")
+								break;
+
+							case Rhi::ShaderVisibility::MESH:
+								RHI_LOG(mContext, CRITICAL, "Invalid Direct3D 11 mesh shader visibility")
+								break;
+
 							case Rhi::ShaderVisibility::ALL:
 							case Rhi::ShaderVisibility::COMPUTE:
 								mD3D11DeviceContext->CSSetSamplers(startSlot, 1, &d3d11SamplerState);
@@ -13811,6 +13937,8 @@ namespace Direct3D11Rhi
 					case Rhi::ResourceType::TESSELLATION_EVALUATION_SHADER:
 					case Rhi::ResourceType::GEOMETRY_SHADER:
 					case Rhi::ResourceType::FRAGMENT_SHADER:
+					case Rhi::ResourceType::TASK_SHADER:
+					case Rhi::ResourceType::MESH_SHADER:
 					case Rhi::ResourceType::COMPUTE_SHADER:
 						RHI_LOG(mContext, CRITICAL, "Invalid Direct3D 11 RHI implementation resource type")
 						break;
@@ -13918,6 +14046,8 @@ namespace Direct3D11Rhi
 			case Rhi::ResourceType::TESSELLATION_EVALUATION_SHADER:
 			case Rhi::ResourceType::GEOMETRY_SHADER:
 			case Rhi::ResourceType::FRAGMENT_SHADER:
+			case Rhi::ResourceType::TASK_SHADER:
+			case Rhi::ResourceType::MESH_SHADER:
 			case Rhi::ResourceType::COMPUTE_SHADER:
 			default:
 				// Not handled in here
@@ -13979,6 +14109,8 @@ namespace Direct3D11Rhi
 			case Rhi::ResourceType::TESSELLATION_EVALUATION_SHADER:
 			case Rhi::ResourceType::GEOMETRY_SHADER:
 			case Rhi::ResourceType::FRAGMENT_SHADER:
+			case Rhi::ResourceType::TASK_SHADER:
+			case Rhi::ResourceType::MESH_SHADER:
 			case Rhi::ResourceType::COMPUTE_SHADER:
 			default:
 				// Not handled in here
@@ -14359,6 +14491,8 @@ namespace Direct3D11Rhi
 			case Rhi::ResourceType::TESSELLATION_EVALUATION_SHADER:
 			case Rhi::ResourceType::GEOMETRY_SHADER:
 			case Rhi::ResourceType::FRAGMENT_SHADER:
+			case Rhi::ResourceType::TASK_SHADER:
+			case Rhi::ResourceType::MESH_SHADER:
 			case Rhi::ResourceType::COMPUTE_SHADER:
 			default:
 				// Nothing we can map, set known return values
@@ -14446,6 +14580,8 @@ namespace Direct3D11Rhi
 			case Rhi::ResourceType::TESSELLATION_EVALUATION_SHADER:
 			case Rhi::ResourceType::GEOMETRY_SHADER:
 			case Rhi::ResourceType::FRAGMENT_SHADER:
+			case Rhi::ResourceType::TASK_SHADER:
+			case Rhi::ResourceType::MESH_SHADER:
 			case Rhi::ResourceType::COMPUTE_SHADER:
 			default:
 				// Nothing we can unmap
@@ -14616,6 +14752,8 @@ namespace Direct3D11Rhi
 						case Rhi::ResourceType::TESSELLATION_EVALUATION_SHADER:
 						case Rhi::ResourceType::GEOMETRY_SHADER:
 						case Rhi::ResourceType::FRAGMENT_SHADER:
+						case Rhi::ResourceType::TASK_SHADER:
+						case Rhi::ResourceType::MESH_SHADER:
 						case Rhi::ResourceType::COMPUTE_SHADER:
 						default:
 							RHI_ASSERT(mContext, false, "Direct3D 11: Invalid resource type")

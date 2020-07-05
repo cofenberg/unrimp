@@ -76,6 +76,8 @@ Rendering hardware interface (RHI) and implementations
 		- Tessellation evaluation shader (TES, "domain shader" in Direct3D terminology)
 		- Geometry shader (GS)
 		- Fragment shader (FS, "pixel shader" in Direct3D terminology)
+		- Task shader (TS, "amplification shader" in Direct3D terminology)
+		- Mesh shader (MS)
 		- Compute shader (CS)
 	- Shader data sources
 		- Shader bytecode (aka shader microcode, binary large object (BLOB))
@@ -163,7 +165,7 @@ Renderer (e.g. "The Game")
 	- [Height map based texture layer blending](https://www.gamedev.net/articles/programming/graphics/advanced-terrain-texture-splatting-r3287/)
 	- [Triplanar texture mapping](https://medium.com/@bgolus/normal-mapping-for-a-triplanar-shader-10bf39dca05a)
 - Sky
-	- Classic environment cube map skybox
+	- Traditional environment cube map skybox
 	- Procedural sky
 		- Hosek-Wilkie sky which is also used to derive a sun color
 		- Distance clouds

@@ -481,6 +481,8 @@ namespace Renderer
 						ImGui::Text("Tessellation evaluation shaders: %s", ::detail::stringFormatCommas(statistics.currentNumberOfTessellationEvaluationShaders.load(), temporary));
 						ImGui::Text("Geometry shaders: %s", ::detail::stringFormatCommas(statistics.currentNumberOfGeometryShaders.load(), temporary));
 						ImGui::Text("Fragment shaders: %s", ::detail::stringFormatCommas(statistics.currentNumberOfFragmentShaders.load(), temporary));
+						ImGui::Text("Task shaders: %s", ::detail::stringFormatCommas(statistics.currentNumberOfTaskShaders.load(), temporary));
+						ImGui::Text("Mesh shaders: %s", ::detail::stringFormatCommas(statistics.currentNumberOfMeshShaders.load(), temporary));
 						ImGui::Text("Compute shaders: %s", ::detail::stringFormatCommas(statistics.currentNumberOfComputeShaders.load(), temporary));
 						ImGui::TreePop();
 					}

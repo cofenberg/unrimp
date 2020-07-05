@@ -365,6 +365,8 @@ namespace Rhi
 			class ITessellationEvaluationShader;
 			class IGeometryShader;
 			class IFragmentShader;
+			class ITaskShader;
+			class IMeshShader;
 			class IComputeShader;
 }
 
@@ -1213,7 +1215,9 @@ namespace Rhi
 		TESSELLATION_EVALUATION_SHADER = 26,	///< Tessellation evaluation shader (TES, "domain shader" in Direct3D terminology)
 		GEOMETRY_SHADER				   = 27,	///< Geometry shader (GS)
 		FRAGMENT_SHADER				   = 28,	///< Fragment shader (FS, "pixel shader" in Direct3D terminology)
-		COMPUTE_SHADER				   = 29		///< Compute shader (CS)
+		TASK_SHADER					   = 29,	///< Task shader (TS, "amplification shader" in Direct3D terminology)
+		MESH_SHADER					   = 30,	///< Mesh shader (MS)
+		COMPUTE_SHADER				   = 31		///< Compute shader (CS)
 	};
 
 
@@ -1353,9 +1357,11 @@ namespace Rhi
 		TESSELLATION_EVALUATION = 3,
 		GEOMETRY                = 4,
 		FRAGMENT                = 5,
+		TASK                    = 6,
+		MESH                    = 7,
 		// The rest is not part of "D3D12_SHADER_VISIBILITY"
-		COMPUTE                 = 6,
-		ALL_GRAPHICS            = 7
+		COMPUTE                 = 8,
+		ALL_GRAPHICS            = 9
 	};
 
 	/**
@@ -1442,6 +1448,8 @@ namespace Rhi
 					case ResourceType::TESSELLATION_EVALUATION_SHADER:
 					case ResourceType::GEOMETRY_SHADER:
 					case ResourceType::FRAGMENT_SHADER:
+					case ResourceType::TASK_SHADER:
+					case ResourceType::MESH_SHADER:
 					case ResourceType::COMPUTE_SHADER:
 						ASSERT(false, "Invalid resource type")
 						break;
@@ -2782,7 +2790,28 @@ namespace Rhi
 		{}
 	};
 
-
+	/**
+	*  @brief
+	*    Draw mesh tasks arguments
+	*
+	*  @note
+	*    - This structure directly maps to Vulkan and OpenGL, do not change it
+	*    - Vulkan: "VkDrawMeshTasksIndirectCommandNV"
+	*    - OpenGL:"DrawMeshTasksIndirectCommandNV"
+	*    - Direct3D 12 isn't compatible since it's using "D3D12_DISPATCH_ARGUMENTS" ("ThreadGroupCountX", "ThreadGroupCountY", "ThreadGroupCountZ")
+	*
+	*  @see
+	*    - "VkDrawMeshTasksIndirectCommandNV"-documentation for details
+	*/
+	struct DrawMeshTasksArguments final
+	{
+		uint32_t numberOfTasks;
+		uint32_t firstTask;
+		inline DrawMeshTasksArguments(uint32_t _numberOfTasks, uint32_t _firstTask = 0) :
+			numberOfTasks(_numberOfTasks),
+			firstTask(_firstTask)
+		{}
+	};
 
 
 	//[-------------------------------------------------------]
@@ -3128,7 +3157,7 @@ namespace Rhi
 	{
 		IRootSignature*   rootSignature;	///< Root signature (graphics pipeline state instances keep a reference to the root signature), must be valid
 		IGraphicsProgram* graphicsProgram;	///< Graphics program used by the graphics pipeline state (graphics pipeline state instances keep a reference to the graphics program), must be valid
-		VertexAttributes  vertexAttributes;	///< Vertex attributes
+		VertexAttributes  vertexAttributes;	///< Vertex attributes, can be empty e.g. in case a task and mesh shader is used
 		IRenderPass*	  renderPass;		///< Render pass, the graphics pipeline state keeps a reference, must be valid
 	};
 	struct GraphicsPipelineStateBuilder final : public GraphicsPipelineState
@@ -3143,30 +3172,55 @@ namespace Rhi
 			renderPass							= nullptr;
 
 			// "SerializedGraphicsPipelineState"-part
-			primitiveTopology					= PrimitiveTopology::TRIANGLE_LIST;
-			primitiveTopologyType				= PrimitiveTopologyType::TRIANGLE;
-			rasterizerState						= RasterizerStateBuilder::getDefaultRasterizerState();
-			depthStencilState					= DepthStencilStateBuilder::getDefaultDepthStencilState();
-			blendState							= BlendStateBuilder::getDefaultBlendState();
-			numberOfRenderTargets				= 1;
-			renderTargetViewFormats[0]			= TextureFormat::R8G8B8A8;
-			renderTargetViewFormats[1]			= TextureFormat::R8G8B8A8;
-			renderTargetViewFormats[2]			= TextureFormat::R8G8B8A8;
-			renderTargetViewFormats[3]			= TextureFormat::R8G8B8A8;
-			renderTargetViewFormats[4]			= TextureFormat::R8G8B8A8;
-			renderTargetViewFormats[5]			= TextureFormat::R8G8B8A8;
-			renderTargetViewFormats[6]			= TextureFormat::R8G8B8A8;
-			renderTargetViewFormats[7]			= TextureFormat::R8G8B8A8;
-			depthStencilViewFormat				= TextureFormat::D32_FLOAT;
+			primitiveTopology		   = PrimitiveTopology::TRIANGLE_LIST;
+			primitiveTopologyType	   = PrimitiveTopologyType::TRIANGLE;
+			rasterizerState			   = RasterizerStateBuilder::getDefaultRasterizerState();
+			depthStencilState		   = DepthStencilStateBuilder::getDefaultDepthStencilState();
+			blendState				   = BlendStateBuilder::getDefaultBlendState();
+			numberOfRenderTargets	   = 1;
+			renderTargetViewFormats[0] = TextureFormat::R8G8B8A8;
+			renderTargetViewFormats[1] = TextureFormat::R8G8B8A8;
+			renderTargetViewFormats[2] = TextureFormat::R8G8B8A8;
+			renderTargetViewFormats[3] = TextureFormat::R8G8B8A8;
+			renderTargetViewFormats[4] = TextureFormat::R8G8B8A8;
+			renderTargetViewFormats[5] = TextureFormat::R8G8B8A8;
+			renderTargetViewFormats[6] = TextureFormat::R8G8B8A8;
+			renderTargetViewFormats[7] = TextureFormat::R8G8B8A8;
+			depthStencilViewFormat	   = TextureFormat::D32_FLOAT;
+		}
+
+		inline GraphicsPipelineStateBuilder(IRootSignature* _rootSignature, IGraphicsProgram* _graphicsProgram, IRenderPass& _renderPass)
+		{
+			// "GraphicsPipelineState"-part which has no vertex attributes, e.g. because the graphics program is using a task and mesh shader
+			rootSignature	= _rootSignature;
+			graphicsProgram = _graphicsProgram;
+			renderPass		= &_renderPass;
+
+			// "SerializedGraphicsPipelineState"-part
+			primitiveTopology			= PrimitiveTopology::TRIANGLE_LIST;
+			primitiveTopologyType		= PrimitiveTopologyType::TRIANGLE;
+			rasterizerState				= RasterizerStateBuilder::getDefaultRasterizerState();
+			depthStencilState			= DepthStencilStateBuilder::getDefaultDepthStencilState();
+			blendState					= BlendStateBuilder::getDefaultBlendState();
+			numberOfRenderTargets		= 1;
+			renderTargetViewFormats[0]	= TextureFormat::R8G8B8A8;
+			renderTargetViewFormats[1]	= TextureFormat::R8G8B8A8;
+			renderTargetViewFormats[2]	= TextureFormat::R8G8B8A8;
+			renderTargetViewFormats[3]	= TextureFormat::R8G8B8A8;
+			renderTargetViewFormats[4]	= TextureFormat::R8G8B8A8;
+			renderTargetViewFormats[5]	= TextureFormat::R8G8B8A8;
+			renderTargetViewFormats[6]	= TextureFormat::R8G8B8A8;
+			renderTargetViewFormats[7]	= TextureFormat::R8G8B8A8;
+			depthStencilViewFormat		= TextureFormat::D32_FLOAT;
 		}
 
 		inline GraphicsPipelineStateBuilder(IRootSignature* _rootSignature, IGraphicsProgram* _graphicsProgram, const VertexAttributes& _vertexAttributes, IRenderPass& _renderPass)
 		{
 			// "GraphicsPipelineState"-part
-			rootSignature				= _rootSignature;
-			graphicsProgram				= _graphicsProgram;
-			vertexAttributes			= _vertexAttributes;
-			renderPass					= &_renderPass;
+			rootSignature	 = _rootSignature;
+			graphicsProgram	 = _graphicsProgram;
+			vertexAttributes = _vertexAttributes;
+			renderPass		 = &_renderPass;
 
 			// "SerializedGraphicsPipelineState"-part
 			primitiveTopology			= PrimitiveTopology::TRIANGLE_LIST;
@@ -3774,15 +3828,13 @@ namespace Rhi
 		bool				baseVertex;										///< Base vertex supported for draw calls?
 		bool				nativeMultithreading;							///< Does the RHI support native multithreading? For example Direct3D 11 does meaning we can also create RHI resources asynchronous while for OpenGL we have to create an separate OpenGL context (less efficient, more complex to implement).
 		bool				shaderBytecode;									///< Shader bytecode supported?
-		// Vertex-shader (VS) stage
+		// Graphics
 		bool				vertexShader;									///< Is there support for vertex shaders (VS)?
-		// Tessellation-control-shader (TCS) stage and tessellation-evaluation-shader (TES) stage
-		uint32_t			maximumNumberOfPatchVertices;					///< Maximum number of vertices per patch (usually 0 for no tessellation support or 32 which is the maximum number of supported vertices per patch)
-		// Geometry-shader (GS) stage
-		uint32_t			maximumNumberOfGsOutputVertices;				///< Maximum number of vertices a geometry shader (GS) can emit (usually 0 for no geometry shader support or 1024)
-		// Fragment-shader (FS) stage
+		uint32_t			maximumNumberOfPatchVertices;					///< Tessellation-control-shader (TCS) stage and tessellation-evaluation-shader (TES) stage: Maximum number of vertices per patch (usually 0 for no tessellation support or 32 which is the maximum number of supported vertices per patch)
+		uint32_t			maximumNumberOfGsOutputVertices;				///< Geometry-shader (GS) stage: Maximum number of vertices a geometry shader (GS) can emit (usually 0 for no geometry shader support or 1024)
 		bool				fragmentShader;									///< Is there support for fragment shaders (FS)?
-		// Compute-shader (CS)
+		bool				meshShader;										///< Is there support for task shaders (TS) and mesh shaders (MS)?
+		// Compute
 		bool				computeShader;									///< Is there support for compute shaders (CS)?
 
 	// Public methods
@@ -3819,6 +3871,7 @@ namespace Rhi
 			maximumNumberOfPatchVertices(0),
 			maximumNumberOfGsOutputVertices(0),
 			fragmentShader(false),
+			meshShader(false),
 			computeShader(false)
 		{}
 
@@ -3920,6 +3973,10 @@ namespace Rhi
 			std::atomic<uint32_t> numberOfCreatedGeometryShaders;				///< Number of created geometry shader (GS) instances
 			std::atomic<uint32_t> currentNumberOfFragmentShaders;				///< Current number of fragment shader (FS, "pixel shader" in Direct3D terminology) instances
 			std::atomic<uint32_t> numberOfCreatedFragmentShaders;				///< Number of created fragment shader (FS, "pixel shader" in Direct3D terminology) instances
+			std::atomic<uint32_t> currentNumberOfTaskShaders;					///< Current number of task shader (TS) instances
+			std::atomic<uint32_t> numberOfCreatedTaskShaders;					///< Number of created task shader (TS) instances
+			std::atomic<uint32_t> currentNumberOfMeshShaders;					///< Current number of mesh shader (MS) instances
+			std::atomic<uint32_t> numberOfCreatedMeshShaders;					///< Number of created mesh shader (MS) instances
 			std::atomic<uint32_t> currentNumberOfComputeShaders;				///< Current number of compute shader (CS) instances
 			std::atomic<uint32_t> numberOfCreatedComputeShaders;				///< Number of created compute shader (CS) instances
 
@@ -3993,6 +4050,10 @@ namespace Rhi
 				numberOfCreatedGeometryShaders(0),
 				currentNumberOfFragmentShaders(0),
 				numberOfCreatedFragmentShaders(0),
+				currentNumberOfTaskShaders(0),
+				numberOfCreatedTaskShaders(0),
+				currentNumberOfMeshShaders(0),
+				numberOfCreatedMeshShaders(0),
 				currentNumberOfComputeShaders(0),
 				numberOfCreatedComputeShaders(0)
 			{}
@@ -4052,6 +4113,8 @@ namespace Rhi
 						currentNumberOfTessellationEvaluationShaders +
 						currentNumberOfGeometryShaders +
 						currentNumberOfFragmentShaders +
+						currentNumberOfTaskShaders +
+						currentNumberOfMeshShaders +
 						currentNumberOfComputeShaders;
 			}
 
@@ -4110,6 +4173,8 @@ namespace Rhi
 				RHI_LOG(context, INFORMATION, "Tessellation evaluation shaders: %u", currentNumberOfTessellationEvaluationShaders.load())
 				RHI_LOG(context, INFORMATION, "Geometry shaders: %u", currentNumberOfGeometryShaders.load())
 				RHI_LOG(context, INFORMATION, "Fragment shaders: %u", currentNumberOfFragmentShaders.load())
+				RHI_LOG(context, INFORMATION, "Task shaders: %u", currentNumberOfTaskShaders.load())
+				RHI_LOG(context, INFORMATION, "Mesh shaders: %u", currentNumberOfMeshShaders.load())
 				RHI_LOG(context, INFORMATION, "Compute shaders: %u", currentNumberOfComputeShaders.load())
 
 				// End
@@ -4201,6 +4266,8 @@ namespace Rhi
 		friend class ITessellationEvaluationShader;
 		friend class IGeometryShader;
 		friend class IFragmentShader;
+		friend class ITaskShader;
+		friend class IMeshShader;
 		friend class IComputeShader;
 
 	// Public methods
@@ -5127,6 +5194,80 @@ namespace Rhi
 
 		/**
 		*  @brief
+		*    Create a task shader from shader bytecode
+		*
+		*  @param[in] shaderBytecode
+		*    Shader bytecode
+		*
+		*  @return
+		*    The created task shader, a null pointer on error. Release the returned instance if you no longer need it.
+		*
+		*  @note
+		*    - Only supported if "Rhi::Capabilities::meshShader" is "true"
+		*    - The data the given pointers are pointing to is internally copied and you have to free your memory if you no longer need it
+		*/
+		[[nodiscard]] virtual ITaskShader* createTaskShaderFromBytecode(const ShaderBytecode& shaderBytecode RHI_RESOURCE_DEBUG_NAME_PARAMETER) = 0;
+
+		/**
+		*  @brief
+		*    Create a task shader from shader source code
+		*
+		*  @param[in] shaderSourceCode
+		*    Shader source code
+		*  @param[out] shaderBytecode
+		*    If not a null pointer, receives the shader bytecode in case the used RHI implementation supports this feature
+		*
+		*  @return
+		*    The created task shader, a null pointer on error. Release the returned instance if you no longer need it.
+		*
+		*  @note
+		*    - Only supported if "Rhi::Capabilities::meshShader" is "true"
+		*    - The data the given pointers are pointing to is internally copied and you have to free your memory if you no longer need it
+		*
+		*  @see
+		*    - "Rhi::IShaderLanguage::createVertexShader()" for more information
+		*/
+		[[nodiscard]] virtual ITaskShader* createTaskShaderFromSourceCode(const ShaderSourceCode& shaderSourceCode, ShaderBytecode* shaderBytecode = nullptr RHI_RESOURCE_DEBUG_NAME_PARAMETER) = 0;
+
+		/**
+		*  @brief
+		*    Create a mesh shader from shader bytecode
+		*
+		*  @param[in] shaderBytecode
+		*    Shader bytecode
+		*
+		*  @return
+		*    The created mesh shader, a null pointer on error. Release the returned instance if you no longer need it.
+		*
+		*  @note
+		*    - Only supported if "Rhi::Capabilities::meshShader" is "true"
+		*    - The data the given pointers are pointing to is internally copied and you have to free your memory if you no longer need it
+		*/
+		[[nodiscard]] virtual IMeshShader* createMeshShaderFromBytecode(const ShaderBytecode& shaderBytecode RHI_RESOURCE_DEBUG_NAME_PARAMETER) = 0;
+
+		/**
+		*  @brief
+		*    Create a mesh shader from shader source code
+		*
+		*  @param[in] shaderSourceCode
+		*    Shader source code
+		*  @param[out] shaderBytecode
+		*    If not a null pointer, receives the shader bytecode in case the used RHI implementation supports this feature
+		*
+		*  @return
+		*    The created mesh shader, a null pointer on error. Release the returned instance if you no longer need it.
+		*
+		*  @note
+		*    - Only supported if "Rhi::Capabilities::meshShader" is "true"
+		*    - The data the given pointers are pointing to is internally copied and you have to free your memory if you no longer need it
+		*
+		*  @see
+		*    - "Rhi::IShaderLanguage::createVertexShader()" for more information
+		*/
+		[[nodiscard]] virtual IMeshShader* createMeshShaderFromSourceCode(const ShaderSourceCode& shaderSourceCode, ShaderBytecode* shaderBytecode = nullptr RHI_RESOURCE_DEBUG_NAME_PARAMETER) = 0;
+
+		/**
+		*  @brief
 		*    Create a compute shader from shader bytecode
 		*
 		*  @param[in] shaderBytecode
@@ -5191,6 +5332,29 @@ namespace Rhi
 		*      (this means that in the case of not having any more references, a shader might get destroyed when calling this method)
 		*/
 		[[nodiscard]] virtual IGraphicsProgram* createGraphicsProgram(const IRootSignature& rootSignature, const VertexAttributes& vertexAttributes, IVertexShader* vertexShader, ITessellationControlShader* tessellationControlShader, ITessellationEvaluationShader* tessellationEvaluationShader, IGeometryShader* geometryShader, IFragmentShader* fragmentShader RHI_RESOURCE_DEBUG_NAME_PARAMETER) = 0;
+
+		/**
+		*  @brief
+		*    Create a graphics program and assigns a task and mesh shader to it
+		*
+		*  @param[in] rootSignature
+		*    Root signature
+		*  @param[in] taskShader
+		*    Task shader the graphics program is using, can be a null pointer, task shader and graphics program language must match
+		*  @param[in] meshShader
+		*    Mesh shader the graphics program is using, mesh shader and graphics program language must match
+		*  @param[in] fragmentShader
+		*    Fragment shader the graphics program is using, can be a null pointer, fragment shader and graphics program language must match
+		*
+		*  @return
+		*    The created graphics program, a null pointer on error. Release the returned instance if you no longer need it.
+		*
+		*  @note
+		*    - The graphics program keeps a reference to the provided shaders and releases it when no longer required
+		*    - It's valid that a graphics program implementation is adding a reference and releasing it again at once
+		*      (this means that in the case of not having any more references, a shader might get destroyed when calling this method)
+		*/
+		[[nodiscard]] virtual IGraphicsProgram* createGraphicsProgram(const IRootSignature& rootSignature, ITaskShader* taskShader, IMeshShader& meshShader, IFragmentShader* fragmentShader RHI_RESOURCE_DEBUG_NAME_PARAMETER) = 0;
 
 	// Protected methods
 	protected:
@@ -8548,6 +8712,112 @@ namespace Rhi
 
 
 	//[-------------------------------------------------------]
+	//[ Rhi/Shader/ITaskShader.h                              ]
+	//[-------------------------------------------------------]
+	/**
+	*  @brief
+	*    Abstract task shader (TS) interface
+	*/
+	class ITaskShader : public IShader
+	{
+
+	// Public methods
+	public:
+		/**
+		*  @brief
+		*    Destructor
+		*/
+		inline virtual ~ITaskShader() override
+		{
+			#ifdef RHI_STATISTICS
+				// Update the statistics
+				--getRhi().getStatistics().currentNumberOfTaskShaders;
+			#endif
+		}
+
+	// Protected methods
+	protected:
+		/**
+		*  @brief
+		*    Constructor
+		*
+		*  @param[in] rhi
+		*    Owner RHI instance
+		*/
+		inline explicit ITaskShader(IRhi& rhi RHI_RESOURCE_DEBUG_NAME_PARAMETER_NO_DEFAULT) :
+			IShader(ResourceType::TASK_SHADER, rhi RHI_RESOURCE_DEBUG_PASS_PARAMETER)
+		{
+			#ifdef RHI_STATISTICS
+				// Update the statistics
+				++rhi.getStatistics().numberOfCreatedTaskShaders;
+				++rhi.getStatistics().currentNumberOfTaskShaders;
+			#endif
+		}
+
+		explicit ITaskShader(const ITaskShader& source) = delete;
+		ITaskShader& operator =(const ITaskShader& source) = delete;
+
+	};
+
+	typedef SmartRefCount<ITaskShader> ITaskShaderPtr;
+
+
+
+
+	//[-------------------------------------------------------]
+	//[ Rhi/Shader/IMeshShader.h                              ]
+	//[-------------------------------------------------------]
+	/**
+	*  @brief
+	*    Abstract mesh shader (MS) interface
+	*/
+	class IMeshShader : public IShader
+	{
+
+	// Public methods
+	public:
+		/**
+		*  @brief
+		*    Destructor
+		*/
+		inline virtual ~IMeshShader() override
+		{
+			#ifdef RHI_STATISTICS
+				// Update the statistics
+				--getRhi().getStatistics().currentNumberOfMeshShaders;
+			#endif
+		}
+
+	// Protected methods
+	protected:
+		/**
+		*  @brief
+		*    Constructor
+		*
+		*  @param[in] rhi
+		*    Owner RHI instance
+		*/
+		inline explicit IMeshShader(IRhi& rhi RHI_RESOURCE_DEBUG_NAME_PARAMETER_NO_DEFAULT) :
+			IShader(ResourceType::MESH_SHADER, rhi RHI_RESOURCE_DEBUG_PASS_PARAMETER)
+		{
+			#ifdef RHI_STATISTICS
+				// Update the statistics
+				++rhi.getStatistics().numberOfCreatedMeshShaders;
+				++rhi.getStatistics().currentNumberOfMeshShaders;
+			#endif
+		}
+
+		explicit IMeshShader(const IMeshShader& source) = delete;
+		IMeshShader& operator =(const IMeshShader& source) = delete;
+
+	};
+
+	typedef SmartRefCount<IMeshShader> IMeshShaderPtr;
+
+
+
+
+	//[-------------------------------------------------------]
 	//[ Rhi/Shader/IComputeShader.h                           ]
 	//[-------------------------------------------------------]
 	/**
@@ -8618,6 +8888,7 @@ namespace Rhi
 		CLEAR_GRAPHICS,
 		DRAW_GRAPHICS,
 		DRAW_INDEXED_GRAPHICS,
+		DRAW_MESH_TASKS,
 		// Compute
 		SET_COMPUTE_ROOT_SIGNATURE,
 		SET_COMPUTE_PIPELINE_STATE,
@@ -9456,6 +9727,54 @@ namespace Rhi
 			uint32_t			   numberOfDraws;
 			// Static data
 			static constexpr CommandDispatchFunctionIndex COMMAND_DISPATCH_FUNCTION_INDEX = CommandDispatchFunctionIndex::DRAW_INDEXED_GRAPHICS;
+		};
+
+		/**
+		*  @brief
+		*    Render the specified geometric primitive, based on a task and mesh shader and indirect draw
+		*
+		*  @param[in] indirectBuffer
+		*    Indirect buffer to use, the indirect buffer must contain at least "numberOfDraws" instances of "Rhi::DrawMeshTasksArguments" starting at "indirectBufferOffset"
+		*  @param[in] indirectBufferOffset
+		*    Indirect buffer offset
+		*  @param[in] numberOfDraws
+		*    Number of draws, can be 0
+		*
+		*  @note
+		*    - Only supported if "Rhi::Capabilities::meshShader" is "true"
+		*/
+		struct DrawMeshTasks final
+		{
+			// Static methods
+			static inline void create(CommandBuffer& commandBuffer, const IIndirectBuffer& indirectBuffer, uint32_t indirectBufferOffset = 0, uint32_t numberOfDraws = 1)
+			{
+				*commandBuffer.addCommand<DrawMeshTasks>() = DrawMeshTasks(indirectBuffer, indirectBufferOffset, numberOfDraws);
+			}
+			static inline void create(CommandBuffer& commandBuffer, uint32_t numberOfTasks, uint32_t firstTask = 0)
+			{
+				DrawMeshTasks* drawCommand = commandBuffer.addCommand<DrawMeshTasks>(sizeof(DrawMeshTasksArguments));
+
+				// Set command data: The command packet auxiliary memory contains an "Rhi::DrawMeshTasksArguments"-instance
+				const DrawMeshTasksArguments drawArguments(numberOfTasks, firstTask);
+				memcpy(CommandPacketHelper::getAuxiliaryMemory(drawCommand), &drawArguments, sizeof(DrawMeshTasksArguments));
+
+				// Finalize command
+				drawCommand->indirectBuffer		  = nullptr;
+				drawCommand->indirectBufferOffset = 0;
+				drawCommand->numberOfDraws		  = 1;
+			}
+			// Constructor
+			inline DrawMeshTasks(const IIndirectBuffer& _indirectBuffer, uint32_t _indirectBufferOffset, uint32_t _numberOfDraws) :
+				indirectBuffer(&_indirectBuffer),
+				indirectBufferOffset(_indirectBufferOffset),
+				numberOfDraws(_numberOfDraws)
+			{}
+			// Data
+			const IIndirectBuffer* indirectBuffer;	///< If null pointer, command auxiliary memory is used instead
+			uint32_t			   indirectBufferOffset;
+			uint32_t			   numberOfDraws;
+			// Static data
+			static constexpr CommandDispatchFunctionIndex COMMAND_DISPATCH_FUNCTION_INDEX = CommandDispatchFunctionIndex::DRAW_MESH_TASKS;
 		};
 
 		//[-------------------------------------------------------]

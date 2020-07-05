@@ -38,6 +38,7 @@
 	#include "Private/Basics/GeometryShader/GeometryShader.cpp"
 	#include "Private/Basics/TessellationShader/TessellationShader.cpp"
 	#include "Private/Basics/ComputeShader/ComputeShader.cpp"
+	#include "Private/Basics/MeshShader/MeshShader.cpp"
 
 // Advanced
 	#include "Private/Advanced/Gpgpu/Gpgpu.cpp"

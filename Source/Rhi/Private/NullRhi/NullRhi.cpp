@@ -596,6 +596,7 @@ namespace NullRhi
 		void clearGraphics(uint32_t clearFlags, const float color[4], float z, uint32_t stencil);
 		void drawGraphicsEmulated(const uint8_t* emulationData, uint32_t indirectBufferOffset = 0, uint32_t numberOfDraws = 1);
 		void drawIndexedGraphicsEmulated(const uint8_t* emulationData, uint32_t indirectBufferOffset = 0, uint32_t numberOfDraws = 1);
+		void drawMeshTasksEmulated(const uint8_t* emulationData, uint32_t indirectBufferOffset = 0, uint32_t numberOfDraws = 1);
 		//[-------------------------------------------------------]
 		//[ Compute                                               ]
 		//[-------------------------------------------------------]
@@ -2873,6 +2874,140 @@ namespace NullRhi
 
 
 	//[-------------------------------------------------------]
+	//[ NullRhi/Shader/TaskShader.h                           ]
+	//[-------------------------------------------------------]
+	/**
+	*  @brief
+	*    Null task shader class (TS, "amplification shader" in Direct3D terminology)
+	*/
+	class TaskShader final : public Rhi::ITaskShader
+	{
+
+
+	//[-------------------------------------------------------]
+	//[ Public methods                                        ]
+	//[-------------------------------------------------------]
+	public:
+		/**
+		*  @brief
+		*    Constructor
+		*
+		*  @param[in] nullRhi
+		*    Owner null RHI instance
+		*/
+		inline explicit TaskShader(NullRhi& nullRhi RHI_RESOURCE_DEBUG_NAME_PARAMETER_NO_DEFAULT) :
+			ITaskShader(nullRhi RHI_RESOURCE_DEBUG_PASS_PARAMETER)
+		{}
+
+		/**
+		*  @brief
+		*    Destructor
+		*/
+		inline virtual ~TaskShader() override
+		{}
+
+
+	//[-------------------------------------------------------]
+	//[ Public virtual Rhi::IShader methods                   ]
+	//[-------------------------------------------------------]
+	public:
+		[[nodiscard]] inline virtual const char* getShaderLanguageName() const override
+		{
+			return ::detail::NULL_NAME;
+		}
+
+
+	//[-------------------------------------------------------]
+	//[ Protected virtual Rhi::RefCount methods               ]
+	//[-------------------------------------------------------]
+	protected:
+		inline virtual void selfDestruct() override
+		{
+			RHI_DELETE(getRhi().getContext(), TaskShader, this);
+		}
+
+
+	//[-------------------------------------------------------]
+	//[ Private methods                                       ]
+	//[-------------------------------------------------------]
+	private:
+		explicit TaskShader(const TaskShader& source) = delete;
+		TaskShader& operator =(const TaskShader& source) = delete;
+
+
+	};
+
+
+
+
+	//[-------------------------------------------------------]
+	//[ NullRhi/Shader/MeshShader.h                           ]
+	//[-------------------------------------------------------]
+	/**
+	*  @brief
+	*    Null mesh shader class (MS)
+	*/
+	class MeshShader final : public Rhi::IMeshShader
+	{
+
+
+	//[-------------------------------------------------------]
+	//[ Public methods                                        ]
+	//[-------------------------------------------------------]
+	public:
+		/**
+		*  @brief
+		*    Constructor
+		*
+		*  @param[in] nullRhi
+		*    Owner null RHI instance
+		*/
+		inline explicit MeshShader(NullRhi& nullRhi RHI_RESOURCE_DEBUG_NAME_PARAMETER_NO_DEFAULT) :
+			IMeshShader(nullRhi RHI_RESOURCE_DEBUG_PASS_PARAMETER)
+		{}
+
+		/**
+		*  @brief
+		*    Destructor
+		*/
+		inline virtual ~MeshShader() override
+		{}
+
+
+	//[-------------------------------------------------------]
+	//[ Public virtual Rhi::IShader methods                   ]
+	//[-------------------------------------------------------]
+	public:
+		[[nodiscard]] inline virtual const char* getShaderLanguageName() const override
+		{
+			return ::detail::NULL_NAME;
+		}
+
+
+	//[-------------------------------------------------------]
+	//[ Protected virtual Rhi::RefCount methods               ]
+	//[-------------------------------------------------------]
+	protected:
+		inline virtual void selfDestruct() override
+		{
+			RHI_DELETE(getRhi().getContext(), MeshShader, this);
+		}
+
+
+	//[-------------------------------------------------------]
+	//[ Private methods                                       ]
+	//[-------------------------------------------------------]
+	private:
+		explicit MeshShader(const MeshShader& source) = delete;
+		MeshShader& operator =(const MeshShader& source) = delete;
+
+
+	};
+
+
+
+
+	//[-------------------------------------------------------]
 	//[ NullRhi/Shader/ComputeShader.h                        ]
 	//[-------------------------------------------------------]
 	/**
@@ -2956,7 +3091,7 @@ namespace NullRhi
 	public:
 		/**
 		*  @brief
-		*    Constructor
+		*    Constructor for traditional graphics program
 		*
 		*  @param[in] nullRhi
 		*    Owner null RHI instance
@@ -2999,6 +3134,41 @@ namespace NullRhi
 				geometryShader->addReference();
 				geometryShader->releaseReference();
 			}
+			if (nullptr != fragmentShader)
+			{
+				fragmentShader->addReference();
+				fragmentShader->releaseReference();
+			}
+		}
+
+		/**
+		*  @brief
+		*    Constructor for task and mesh shader based graphics program
+		*
+		*  @param[in] nullRhi
+		*    Owner null RHI instance
+		*  @param[in] taskShader
+		*    Task shader the graphics program is using, can be a null pointer
+		*  @param[in] meshShader
+		*    Mesh shader the graphics program is using
+		*  @param[in] fragmentShader
+		*    Fragment shader the graphics program is using, can be a null pointer
+		*
+		*  @note
+		*    - The graphics program keeps a reference to the provided shaders and releases it when no longer required
+		*/
+		GraphicsProgram(NullRhi& nullRhi, TaskShader* taskShader, MeshShader& meshShader, FragmentShader* fragmentShader RHI_RESOURCE_DEBUG_NAME_PARAMETER_NO_DEFAULT) :
+			IGraphicsProgram(nullRhi RHI_RESOURCE_DEBUG_PASS_PARAMETER)
+		{
+			// We don't keep a reference to the shaders in here
+			// -> Ensure a correct reference counter behaviour
+			if (nullptr != taskShader)
+			{
+				taskShader->addReference();
+				taskShader->releaseReference();
+			}
+			meshShader.addReference();
+			meshShader.releaseReference();
 			if (nullptr != fragmentShader)
 			{
 				fragmentShader->addReference();
@@ -3150,6 +3320,34 @@ namespace NullRhi
 			return RHI_NEW(nullRhi.getContext(), FragmentShader)(nullRhi RHI_RESOURCE_DEBUG_PASS_PARAMETER);
 		}
 
+		[[nodiscard]] inline virtual Rhi::ITaskShader* createTaskShaderFromBytecode([[maybe_unused]] const Rhi::ShaderBytecode& shaderBytecode RHI_RESOURCE_DEBUG_NAME_PARAMETER) override
+		{
+			// There's no need to check for "Rhi::Capabilities::meshShader", we know there's mesh shader support
+			NullRhi& nullRhi = static_cast<NullRhi&>(getRhi());
+			return RHI_NEW(nullRhi.getContext(), TaskShader)(nullRhi RHI_RESOURCE_DEBUG_PASS_PARAMETER);
+		}
+
+		[[nodiscard]] inline virtual Rhi::ITaskShader* createTaskShaderFromSourceCode([[maybe_unused]] const Rhi::ShaderSourceCode& shaderSourceCode, [[maybe_unused]] Rhi::ShaderBytecode* shaderBytecode = nullptr RHI_RESOURCE_DEBUG_NAME_PARAMETER) override
+		{
+			// There's no need to check for "Rhi::Capabilities::meshShader", we know there's mesh shader support
+			NullRhi& nullRhi = static_cast<NullRhi&>(getRhi());
+			return RHI_NEW(nullRhi.getContext(), TaskShader)(nullRhi RHI_RESOURCE_DEBUG_PASS_PARAMETER);
+		}
+
+		[[nodiscard]] inline virtual Rhi::IMeshShader* createMeshShaderFromBytecode([[maybe_unused]] const Rhi::ShaderBytecode& shaderBytecode RHI_RESOURCE_DEBUG_NAME_PARAMETER) override
+		{
+			// There's no need to check for "Rhi::Capabilities::meshShader", we know there's mesh shader support
+			NullRhi& nullRhi = static_cast<NullRhi&>(getRhi());
+			return RHI_NEW(nullRhi.getContext(), MeshShader)(nullRhi RHI_RESOURCE_DEBUG_PASS_PARAMETER);
+		}
+
+		[[nodiscard]] inline virtual Rhi::IMeshShader* createMeshShaderFromSourceCode([[maybe_unused]] const Rhi::ShaderSourceCode& shaderSourceCode, [[maybe_unused]] Rhi::ShaderBytecode* shaderBytecode = nullptr RHI_RESOURCE_DEBUG_NAME_PARAMETER) override
+		{
+			// There's no need to check for "Rhi::Capabilities::meshShader", we know there's mesh shader support
+			NullRhi& nullRhi = static_cast<NullRhi&>(getRhi());
+			return RHI_NEW(nullRhi.getContext(), MeshShader)(nullRhi RHI_RESOURCE_DEBUG_PASS_PARAMETER);
+		}
+
 		[[nodiscard]] inline virtual Rhi::IComputeShader* createComputeShaderFromBytecode([[maybe_unused]] const Rhi::ShaderBytecode& shaderBytecode RHI_RESOURCE_DEBUG_NAME_PARAMETER) override
 		{
 			// There's no need to check for "Rhi::Capabilities::computeShader", we know there's compute shader support
@@ -3181,6 +3379,23 @@ namespace NullRhi
 
 			// Create the graphics program
 			return RHI_NEW(nullRhi.getContext(), GraphicsProgram)(nullRhi, static_cast<VertexShader*>(vertexShader), static_cast<TessellationControlShader*>(tessellationControlShader), static_cast<TessellationEvaluationShader*>(tessellationEvaluationShader), static_cast<GeometryShader*>(geometryShader), static_cast<FragmentShader*>(fragmentShader) RHI_RESOURCE_DEBUG_PASS_PARAMETER);
+		}
+
+		[[nodiscard]] virtual Rhi::IGraphicsProgram* createGraphicsProgram([[maybe_unused]] const Rhi::IRootSignature& rootSignature, Rhi::ITaskShader* taskShader, Rhi::IMeshShader& meshShader, Rhi::IFragmentShader* fragmentShader RHI_RESOURCE_DEBUG_NAME_PARAMETER)
+		{
+			NullRhi& nullRhi = static_cast<NullRhi&>(getRhi());
+
+			// Sanity checks
+			// -> A shader can be a null pointer, but if it's not the shader and graphics program language must match
+			// -> Optimization: Comparing the shader language name by directly comparing the pointer address of
+			//    the name is safe because we know that we always reference to one and the same name address
+			// TODO(co) Add security check: Is the given resource one of the currently used RHI?
+			RHI_ASSERT(nullRhi.getContext(), nullptr == taskShader || taskShader->getShaderLanguageName() == ::detail::NULL_NAME, "Null task shader language mismatch")
+			RHI_ASSERT(nullRhi.getContext(), meshShader.getShaderLanguageName() == ::detail::NULL_NAME, "Null mesh shader language mismatch")
+			RHI_ASSERT(nullRhi.getContext(), nullptr == fragmentShader || fragmentShader->getShaderLanguageName() == ::detail::NULL_NAME, "Null fragment shader language mismatch")
+
+			// Create the graphics program
+			return RHI_NEW(nullRhi.getContext(), GraphicsProgram)(nullRhi, static_cast<TaskShader*>(taskShader), static_cast<MeshShader&>(meshShader), static_cast<FragmentShader*>(fragmentShader) RHI_RESOURCE_DEBUG_PASS_PARAMETER);
 		}
 
 
@@ -3494,6 +3709,20 @@ namespace
 				}
 			}
 
+			void DrawMeshTasks(const void* data, Rhi::IRhi& rhi)
+			{
+				const Rhi::Command::DrawMeshTasks* realData = static_cast<const Rhi::Command::DrawMeshTasks*>(data);
+				if (nullptr != realData->indirectBuffer)
+				{
+					// No resource owner security check in here, we only support emulated indirect buffer
+					static_cast<NullRhi::NullRhi&>(rhi).drawMeshTasksEmulated(realData->indirectBuffer->getEmulationData(), realData->indirectBufferOffset, realData->numberOfDraws);
+				}
+				else
+				{
+					static_cast<NullRhi::NullRhi&>(rhi).drawMeshTasksEmulated(Rhi::CommandPacketHelper::getAuxiliaryMemory(realData), realData->indirectBufferOffset, realData->numberOfDraws);
+				}
+			}
+
 			//[-------------------------------------------------------]
 			//[ Compute                                               ]
 			//[-------------------------------------------------------]
@@ -3625,6 +3854,7 @@ namespace
 			&ImplementationDispatch::ClearGraphics,
 			&ImplementationDispatch::DrawGraphics,
 			&ImplementationDispatch::DrawIndexedGraphics,
+			&ImplementationDispatch::DrawMeshTasks,
 			// Compute
 			&ImplementationDispatch::SetComputeRootSignature,
 			&ImplementationDispatch::SetComputePipelineState,
@@ -3888,6 +4118,13 @@ namespace NullRhi
 	}
 
 	void NullRhi::drawIndexedGraphicsEmulated([[maybe_unused]] const uint8_t* emulationData, uint32_t, [[maybe_unused]] uint32_t numberOfDraws)
+	{
+		// Sanity checks
+		RHI_ASSERT(mContext, nullptr != emulationData, "The null emulation data must be valid")
+		RHI_ASSERT(mContext, numberOfDraws > 0, "The number of null draws must not be zero")
+	}
+
+	void NullRhi::drawMeshTasksEmulated([[maybe_unused]] const uint8_t* emulationData, uint32_t, [[maybe_unused]] uint32_t numberOfDraws)
 	{
 		// Sanity checks
 		RHI_ASSERT(mContext, nullptr != emulationData, "The null emulation data must be valid")
@@ -4378,6 +4615,9 @@ namespace NullRhi
 
 		// Is there support for fragment shaders (FS)?
 		mCapabilities.fragmentShader = true;
+
+		// Is there support for task shaders (TS) and mesh shaders (MS)?
+		mCapabilities.meshShader = true;
 
 		// Is there support for compute shaders (CS)?
 		mCapabilities.computeShader = true;

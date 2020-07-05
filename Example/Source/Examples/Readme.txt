@@ -124,6 +124,10 @@ Standalone renderer examples.
 		- Root signature
 		- Graphics pipeline state object (PSO)
 		- Framebuffer object (FBO) used for render to texture
+	- "MeshShader" demonstrates:
+		- Task shader (TS) and mesh shader (MS)
+		- Root signature
+		- Graphics pipeline state object (PSO)
 - Advanced
 	- "Gpgpu" demonstrates:
 		- Vertex buffer object (VBO)

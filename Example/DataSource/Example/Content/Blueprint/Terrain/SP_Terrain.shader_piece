@@ -103,7 +103,7 @@
 		float4 colb = SAMPLE_2D_ARRAY_GRAD(textureMap, SamplerLinear, float3(uv + offb, layerIndex), duvdx, duvdy);
 
 		float4 colorDifference = cola - colb;
-		return lerp(cola, colb, smoothstep(0.2f, 0.8f, f - 0.1f * (colorDifference.x + colorDifference.y + colorDifference.z)));
+		return LERP(cola, colb, smoothstep(0.2f, 0.8f, f - 0.1f * (colorDifference.x + colorDifference.y + colorDifference.z)));
 	}
 @end
 @piece(DefineTextureNoTileDisabled)
