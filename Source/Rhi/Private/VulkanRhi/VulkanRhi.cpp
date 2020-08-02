@@ -101,6 +101,7 @@
 	// Disable warnings in external headers, we can't fix them
 	PRAGMA_WARNING_PUSH
 		PRAGMA_WARNING_DISABLE_MSVC(4061)	// warning C4061: enumerator '<x>' in switch of enum '<y>' is not explicitly handled by a case label
+		PRAGMA_WARNING_DISABLE_MSVC(4100)	// warning C4100: 's': unreferenced formal parameter
 		PRAGMA_WARNING_DISABLE_MSVC(4365)	// warning C4365: 'argument': conversion from '<x>' to '<y>', signed/unsigned mismatch
 		PRAGMA_WARNING_DISABLE_MSVC(4530)	// warning C4530: C++ exception handler used, but unwind semantics are not enabled. Specify /EHsc
 		PRAGMA_WARNING_DISABLE_MSVC(4571)	// warning C4571: Informational: catch(...) semantics changed since Visual C++ 7.1; structured exceptions (SEH) are no longer caught
@@ -12141,7 +12142,7 @@ namespace VulkanRhi
 		#endif
 	}
 
-	void VulkanRhi::drawMeshTasks([[maybe_unused]] const Rhi::IIndirectBuffer& indirectBuffer, [[maybe_unused]] uint32_t indirectBufferOffset, uint32_t numberOfDraws)
+	void VulkanRhi::drawMeshTasks([[maybe_unused]] const Rhi::IIndirectBuffer& indirectBuffer, [[maybe_unused]] uint32_t indirectBufferOffset, [[maybe_unused]] uint32_t numberOfDraws)
 	{
 		// Sanity checks
 		RHI_ASSERT(mContext, numberOfDraws > 0, "The number of null draws must not be zero")

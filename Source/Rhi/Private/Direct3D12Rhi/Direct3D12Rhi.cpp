@@ -13201,7 +13201,7 @@ namespace Direct3D12Rhi
 		#endif
 	}
 
-	void Direct3D12Rhi::drawMeshTasks([[maybe_unused]] const Rhi::IIndirectBuffer& indirectBuffer, [[maybe_unused]] uint32_t indirectBufferOffset, uint32_t numberOfDraws)
+	void Direct3D12Rhi::drawMeshTasks([[maybe_unused]] const Rhi::IIndirectBuffer& indirectBuffer, [[maybe_unused]] uint32_t indirectBufferOffset, [[maybe_unused]] uint32_t numberOfDraws)
 	{
 		// Sanity checks
 		RHI_ASSERT(mContext, numberOfDraws > 0, "The number of null draws must not be zero")
