@@ -1,3 +1,3 @@
-RapidJSON 1.1.0 (latest commit dfbe1db9da455552f7a9ad5d2aea17dd9d832ac1 - December 3, 2019)
+RapidJSON 1.1.0 (latest commit f56928de85d56add3ca6ae7cf7f119a42ee1585b - July 13, 2020)
 - License: MIT
 - Online: http://rapidjson.org/

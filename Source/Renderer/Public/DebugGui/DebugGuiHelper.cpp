@@ -33,9 +33,9 @@
 #include "Renderer/Public/Resource/CompositorWorkspace/CompositorWorkspaceInstance.h"
 #include "Renderer/Public/IRenderer.h"
 
-#include <ImGuizmo/ImGuizmo.h>
-
 #include <ImGui/imgui.h>
+
+#include <ImGuizmo/ImGuizmo.h>
 
 // Disable warnings in external headers, we can't fix them
 PRAGMA_WARNING_PUSH

@@ -154,6 +154,7 @@ enum ParseFlag {
     kParseNumbersAsStringsFlag = 64,    //!< Parse all numbers (ints/doubles) as strings.
     kParseTrailingCommasFlag = 128, //!< Allow trailing commas at the end of objects and arrays.
     kParseNanAndInfFlag = 256,      //!< Allow parsing NaN, Inf, Infinity, -Inf and -Infinity as doubles.
+    kParseEscapedApostropheFlag = 512,  //!< Allow escaped apostrophe in strings.
     kParseDefaultFlags = RAPIDJSON_PARSE_DEFAULT_FLAGS  //!< Default parse flags. Can be customized by defining RAPIDJSON_PARSE_DEFAULT_FLAGS
 };
 
@@ -449,11 +450,11 @@ inline const char *SkipWhitespace_SIMD(const char* p) {
 
         if (low == 0) {
             if (high != 0) {
-                uint32_t lz = RAPIDJSON_CLZLL(high);
+                uint32_t lz = internal::clzll(high);
                 return p + 8 + (lz >> 3);
             }
         } else {
-            uint32_t lz = RAPIDJSON_CLZLL(low);
+            uint32_t lz = internal::clzll(low);
             return p + (lz >> 3);
         }
     }
@@ -485,11 +486,11 @@ inline const char *SkipWhitespace_SIMD(const char* p, const char* end) {
 
         if (low == 0) {
             if (high != 0) {
-                uint32_t lz = RAPIDJSON_CLZLL(high);
+                uint32_t lz = internal::clzll(high);
                 return p + 8 + (lz >> 3);
             }
         } else {
-            uint32_t lz = RAPIDJSON_CLZLL(low);
+            uint32_t lz = internal::clzll(low);
             return p + (lz >> 3);
         }
     }
@@ -991,7 +992,7 @@ private:
 //!@cond RAPIDJSON_HIDDEN_FROM_DOXYGEN
 #define Z16 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
         static const char escape[256] = {
-            Z16, Z16, 0, 0,'\"', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,'/',
+            Z16, Z16, 0, 0,'\"', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, '/',
             Z16, Z16, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,'\\', 0, 0, 0,
             0, 0,'\b', 0, 0, 0,'\f', 0, 0, 0, 0, 0, 0, 0,'\n', 0,
             0, 0,'\r', 0,'\t', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -1014,19 +1015,31 @@ private:
                     is.Take();
                     os.Put(static_cast<typename TEncoding::Ch>(escape[static_cast<unsigned char>(e)]));
                 }
+                else if ((parseFlags & kParseEscapedApostropheFlag) && RAPIDJSON_LIKELY(e == '\'')) { // Allow escaped apostrophe
+                    is.Take();
+                    os.Put('\'');
+                }
                 else if (RAPIDJSON_LIKELY(e == 'u')) {    // Unicode
                     is.Take();
                     unsigned codepoint = ParseHex4(is, escapeOffset);
                     RAPIDJSON_PARSE_ERROR_EARLY_RETURN_VOID;
-                    if (RAPIDJSON_UNLIKELY(codepoint >= 0xD800 && codepoint <= 0xDBFF)) {
-                        // Handle UTF-16 surrogate pair
-                        if (RAPIDJSON_UNLIKELY(!Consume(is, '\\') || !Consume(is, 'u')))
+                    if (RAPIDJSON_UNLIKELY(codepoint >= 0xD800 && codepoint <= 0xDFFF)) {
+                        // high surrogate, check if followed by valid low surrogate
+                        if (RAPIDJSON_LIKELY(codepoint <= 0xDBFF)) {
+                            // Handle UTF-16 surrogate pair
+                            if (RAPIDJSON_UNLIKELY(!Consume(is, '\\') || !Consume(is, 'u')))
+                                RAPIDJSON_PARSE_ERROR(kParseErrorStringUnicodeSurrogateInvalid, escapeOffset);
+                            unsigned codepoint2 = ParseHex4(is, escapeOffset);
+                            RAPIDJSON_PARSE_ERROR_EARLY_RETURN_VOID;
+                            if (RAPIDJSON_UNLIKELY(codepoint2 < 0xDC00 || codepoint2 > 0xDFFF))
+                                RAPIDJSON_PARSE_ERROR(kParseErrorStringUnicodeSurrogateInvalid, escapeOffset);
+                            codepoint = (((codepoint - 0xD800) << 10) | (codepoint2 - 0xDC00)) + 0x10000;
+                        }
+                        // single low surrogate
+                        else
+                        {
                             RAPIDJSON_PARSE_ERROR(kParseErrorStringUnicodeSurrogateInvalid, escapeOffset);
-                        unsigned codepoint2 = ParseHex4(is, escapeOffset);
-                        RAPIDJSON_PARSE_ERROR_EARLY_RETURN_VOID;
-                        if (RAPIDJSON_UNLIKELY(codepoint2 < 0xDC00 || codepoint2 > 0xDFFF))
-                            RAPIDJSON_PARSE_ERROR(kParseErrorStringUnicodeSurrogateInvalid, escapeOffset);
-                        codepoint = (((codepoint - 0xD800) << 10) | (codepoint2 - 0xDC00)) + 0x10000;
+                        }
                     }
                     TEncoding::Encode(os, codepoint);
                 }
@@ -1252,12 +1265,12 @@ private:
             bool escaped = false;
             if (low == 0) {
                 if (high != 0) {
-                    uint32_t lz = RAPIDJSON_CLZLL(high);
+                    uint32_t lz = internal::clzll(high);
                     length = 8 + (lz >> 3);
                     escaped = true;
                 }
             } else {
-                uint32_t lz = RAPIDJSON_CLZLL(low);
+                uint32_t lz = internal::clzll(low);
                 length = lz >> 3;
                 escaped = true;
             }
@@ -1322,12 +1335,12 @@ private:
             bool escaped = false;
             if (low == 0) {
                 if (high != 0) {
-                    uint32_t lz = RAPIDJSON_CLZLL(high);
+                    uint32_t lz = internal::clzll(high);
                     length = 8 + (lz >> 3);
                     escaped = true;
                 }
             } else {
-                uint32_t lz = RAPIDJSON_CLZLL(low);
+                uint32_t lz = internal::clzll(low);
                 length = lz >> 3;
                 escaped = true;
             }
@@ -1376,12 +1389,12 @@ private:
 
             if (low == 0) {
                 if (high != 0) {
-                    uint32_t lz = RAPIDJSON_CLZLL(high);
+                    uint32_t lz = internal::clzll(high);
                     p += 8 + (lz >> 3);
                     break;
                 }
             } else {
-                uint32_t lz = RAPIDJSON_CLZLL(low);
+                uint32_t lz = internal::clzll(low);
                 p += lz >> 3;
                 break;
             }

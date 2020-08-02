@@ -3,14 +3,14 @@
 #include <cassert>
 #include <cstddef>
 
-#define GLM_VERSION_MAJOR			0
-#define GLM_VERSION_MINOR			9
-#define GLM_VERSION_PATCH			9
-#define GLM_VERSION_REVISION		7
-#define GLM_VERSION					997
-#define GLM_VERSION_MESSAGE			"GLM: version 0.9.9.7"
+#define GLM_VERSION_MAJOR 0
+#define GLM_VERSION_MINOR 9
+#define GLM_VERSION_PATCH 9
+#define GLM_VERSION_REVISION 9
+#define GLM_VERSION 999
+#define GLM_VERSION_MESSAGE "GLM: version 0.9.9.9"
 
-#define GLM_SETUP_INCLUDED			GLM_VERSION
+#define GLM_SETUP_INCLUDED GLM_VERSION
 
 ///////////////////////////////////////////////////////////////////////////////////
 // Active states
@@ -119,7 +119,7 @@
 #		define GLM_LANG (GLM_LANG_CXX2A | GLM_LANG_EXT)
 #	elif __cplusplus == 201703L || GLM_LANG_PLATFORM == 201703L
 #		define GLM_LANG (GLM_LANG_CXX17 | GLM_LANG_EXT)
-#	elif __cplusplus == 201402L || __cplusplus == 201500L || GLM_LANG_PLATFORM == 201402L
+#	elif __cplusplus == 201402L || __cplusplus == 201406L || __cplusplus == 201500L || GLM_LANG_PLATFORM == 201402L
 #		define GLM_LANG (GLM_LANG_CXX14 | GLM_LANG_EXT)
 #	elif __cplusplus == 201103L || GLM_LANG_PLATFORM == 201103L
 #		define GLM_LANG (GLM_LANG_CXX11 | GLM_LANG_EXT)

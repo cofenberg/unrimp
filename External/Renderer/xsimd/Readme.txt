@@ -1,4 +1,4 @@
-xsimd 7.4.5 (latest commit 90613ca516fa89e4db01fbc76b95b1d8e0abb416 -  December 18, 2019)
+xsimd 7.4.8 (latest commit 518e10ee161caf7fac72141e3ff9fd68c87533c0 -  June 23, 2020)
 	"C++ wrappers for SIMD intrinsics"
 - License: BSD-3-Clause
 - Online: https://github.com/QuantStack/xsimd

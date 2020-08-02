@@ -31,5 +31,6 @@
 #include "vcacheanalyzer.cpp"
 #include "vcacheoptimizer.cpp"
 #include "vertexcodec.cpp"
+#include "vertexfilter.cpp"
 #include "vfetchanalyzer.cpp"
 #include "vfetchoptimizer.cpp"

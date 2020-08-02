@@ -29,10 +29,10 @@
 #include "Renderer/Public/IRenderer.h"
 #include "Renderer/Public/Context.h"
 
-#include <ImGuizmo/ImGuizmo.h>
-
 #include <imgui/imgui.h>
 #include <imgui/imgui_internal.h>
+
+#include <ImGuizmo/ImGuizmo.h>
 
 // Disable warnings in external headers, we can't fix them
 PRAGMA_WARNING_PUSH

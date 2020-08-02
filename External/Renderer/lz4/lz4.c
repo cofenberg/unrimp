@@ -609,7 +609,7 @@ typedef enum { noDictIssue = 0, dictSmall } dictIssue_directive;
 int LZ4_versionNumber (void) { return LZ4_VERSION_NUMBER; }
 const char* LZ4_versionString(void) { return LZ4_VERSION_STRING; }
 int LZ4_compressBound(int isize)  { return LZ4_COMPRESSBOUND(isize); }
-int LZ4_sizeofState() { return LZ4_STREAMSIZE; }
+int LZ4_sizeofState(void) { return LZ4_STREAMSIZE; }
 
 
 /*-************************************
@@ -632,7 +632,7 @@ int LZ4_decompress_safe_forceExtDict(const char* source, char* dest,
 /*-******************************
 *  Compression functions
 ********************************/
-static U32 LZ4_hash4(U32 sequence, tableType_t const tableType)
+LZ4_FORCE_INLINE U32 LZ4_hash4(U32 sequence, tableType_t const tableType)
 {
     if (tableType == byU16)
         return ((sequence * 2654435761U) >> ((MINMATCH*8)-(LZ4_HASHLOG+1)));
@@ -640,7 +640,7 @@ static U32 LZ4_hash4(U32 sequence, tableType_t const tableType)
         return ((sequence * 2654435761U) >> ((MINMATCH*8)-LZ4_HASHLOG));
 }
 
-static U32 LZ4_hash5(U64 sequence, tableType_t const tableType)
+LZ4_FORCE_INLINE U32 LZ4_hash5(U64 sequence, tableType_t const tableType)
 {
     const U32 hashLog = (tableType == byU16) ? LZ4_HASHLOG+1 : LZ4_HASHLOG;
     if (LZ4_isLittleEndian()) {
@@ -658,7 +658,7 @@ LZ4_FORCE_INLINE U32 LZ4_hashPosition(const void* const p, tableType_t const tab
     return LZ4_hash4(LZ4_read32(p), tableType);
 }
 
-static void LZ4_clearHash(U32 h, void* tableBase, tableType_t const tableType)
+LZ4_FORCE_INLINE void LZ4_clearHash(U32 h, void* tableBase, tableType_t const tableType)
 {
     switch (tableType)
     {
@@ -670,7 +670,7 @@ static void LZ4_clearHash(U32 h, void* tableBase, tableType_t const tableType)
     }
 }
 
-static void LZ4_putIndexOnHash(U32 idx, U32 h, void* tableBase, tableType_t const tableType)
+LZ4_FORCE_INLINE void LZ4_putIndexOnHash(U32 idx, U32 h, void* tableBase, tableType_t const tableType)
 {
     switch (tableType)
     {
@@ -682,7 +682,7 @@ static void LZ4_putIndexOnHash(U32 idx, U32 h, void* tableBase, tableType_t cons
     }
 }
 
-static void LZ4_putPositionOnHash(const BYTE* p, U32 h,
+LZ4_FORCE_INLINE void LZ4_putPositionOnHash(const BYTE* p, U32 h,
                                   void* tableBase, tableType_t const tableType,
                             const BYTE* srcBase)
 {
@@ -707,7 +707,7 @@ LZ4_FORCE_INLINE void LZ4_putPosition(const BYTE* p, void* tableBase, tableType_
  * Assumption 1 : only valid if tableType == byU32 or byU16.
  * Assumption 2 : h is presumed valid (within limits of hash table)
  */
-static U32 LZ4_getIndexOnHash(U32 h, const void* tableBase, tableType_t tableType)
+LZ4_FORCE_INLINE U32 LZ4_getIndexOnHash(U32 h, const void* tableBase, tableType_t tableType)
 {
     LZ4_STATIC_ASSERT(LZ4_MEMORY_USAGE > 2);
     if (tableType == byU32) {
@@ -819,7 +819,7 @@ LZ4_FORCE_INLINE int LZ4_compress_generic(
 
     int const maybe_extMem = (dictDirective == usingExtDict) || (dictDirective == usingDictCtx);
     U32 const prefixIdxLimit = startIndex - dictSize;   /* used when dictDirective == dictSmall */
-    const BYTE* const dictEnd = dictionary + dictSize;
+    const BYTE* const dictEnd = dictionary ? dictionary + dictSize : dictionary;
     const BYTE* anchor = (const BYTE*) source;
     const BYTE* const iend = ip + inputSize;
     const BYTE* const mflimitPlusOne = iend - MFLIMIT + 1;
@@ -827,7 +827,7 @@ LZ4_FORCE_INLINE int LZ4_compress_generic(
 
     /* the dictCtx currentOffset is indexed on the start of the dictionary,
      * while a dictionary in the current context precedes the currentOffset */
-    const BYTE* dictBase = (dictDirective == usingDictCtx) ?
+    const BYTE* dictBase = !dictionary ? NULL : (dictDirective == usingDictCtx) ?
                             dictionary + dictSize - dictCtx->currentOffset :
                             dictionary + dictSize - startIndex;
 
@@ -1349,8 +1349,8 @@ LZ4_stream_t* LZ4_createStream(void)
                      while actually aligning LZ4_stream_t on 4 bytes. */
 static size_t LZ4_stream_t_alignment(void)
 {
-    struct { char c; LZ4_stream_t t; } t_a;
-    return sizeof(t_a) - sizeof(t_a.t);
+    typedef struct { char c; LZ4_stream_t t; } t_a;
+    return sizeof(t_a) - sizeof(LZ4_stream_t);
 }
 #endif
 
@@ -2378,7 +2378,7 @@ int LZ4_uncompress_unknownOutputSize (const char* source, char* dest, int isize,
 
 /* Obsolete Streaming functions */
 
-int LZ4_sizeofStreamState() { return LZ4_STREAMSIZE; }
+int LZ4_sizeofStreamState(void) { return LZ4_STREAMSIZE; }
 
 int LZ4_resetStreamState(void* state, char* inputBuffer)
 {
