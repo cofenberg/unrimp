@@ -437,21 +437,23 @@ namespace RendererToolkit
 		}
 		RHI_LOG(mContext, INFORMATION, "Found %u changed assets", changedAssetIds.size())
 
-		// Compile all changed assets
-		if (!changedAssetIds.empty())
+		// Do we need to mount a directory now? (e.g. "DataPc", "DataMobile" etc.)
+		const std::string virtualAssetPackageFilename = getRenderTargetDataRootDirectory(rhiTarget) + '/' + mProjectName + '/' + mAssetPackageDirectoryName + '/' + mAssetPackageDirectoryName + ".assets";
+		Renderer::IFileManager& fileManager = mContext.getFileManager();
 		{
-			const std::string virtualAssetPackageFilename = getRenderTargetDataRootDirectory(rhiTarget) + '/' + mProjectName + '/' + mAssetPackageDirectoryName + '/' + mAssetPackageDirectoryName + ".assets";
-			Renderer::IFileManager& fileManager = mContext.getFileManager();
+			const std::string renderTargetDataRootDirectory = getRenderTargetDataRootDirectory(rhiTarget);
+			if (fileManager.getMountPoint(renderTargetDataRootDirectory.c_str()) == nullptr)
+			{
+				fileManager.mountDirectory((fileManager.getAbsoluteRootDirectory() + '/' + renderTargetDataRootDirectory).c_str(), renderTargetDataRootDirectory.c_str());
+			}
+		}
+
+		// Compile all changed assets, do also take the case into account that the output asset package file is missing
+		if (!changedAssetIds.empty() || !fileManager.doesFileExist(virtualAssetPackageFilename.c_str()))
+		{
+			// Try to load an already compiled asset package to speed up the asset compilation
 			Renderer::AssetPackage outputAssetPackage;
-
-			{ // Try to load an already compiled asset package to speed up the asset compilation
-				// Do we need to mount a directory now? (e.g. "DataPc", "DataMobile" etc.)
-				const std::string renderTargetDataRootDirectory = getRenderTargetDataRootDirectory(rhiTarget);
-				if (fileManager.getMountPoint(renderTargetDataRootDirectory.c_str()) == nullptr)
-				{
-					fileManager.mountDirectory((fileManager.getAbsoluteRootDirectory() + '/' + renderTargetDataRootDirectory).c_str(), renderTargetDataRootDirectory.c_str());
-				}
-
+			{
 				// Tell the memory mapped file about the LZ4 compressed data and decompress it at once
 				Renderer::MemoryFile memoryFile;
 				if (memoryFile.loadLz4CompressedDataByVirtualFilename(Renderer::v1AssetPackage::FORMAT_TYPE, Renderer::v1AssetPackage::FORMAT_VERSION, fileManager, virtualAssetPackageFilename.c_str()))
@@ -548,6 +550,29 @@ namespace RendererToolkit
 
 				// Ensure the asset package is sorted
 				std::sort(sortedOutputAssetVector.begin(), sortedOutputAssetVector.end(), ::detail::orderByAssetId);
+
+				// Sanity check: The output asset package must contain all of our source assets
+				std::vector<Renderer::AssetId> missingSourceAssetIds;
+				for (const auto& pair : mSourceAssetIdToCompiledAssetId)
+				{
+					if (nullptr == outputAssetPackage.tryGetAssetByAssetId(pair.second))	// Second = compiled asset ID
+					{
+						missingSourceAssetIds.push_back(pair.first);	// First = source asset ID
+					}
+				}
+				if (!missingSourceAssetIds.empty())
+				{
+					std::string assetString;
+					for (const Renderer::AssetId assetId : missingSourceAssetIds)
+					{
+						SourceAssetIdToVirtualFilename::const_iterator iterator = mSourceAssetIdToVirtualFilename.find(assetId);
+						if (mSourceAssetIdToVirtualFilename.cend() != iterator)
+						{
+							assetString += iterator->second + '\n';
+						}
+					}
+					throw std::runtime_error("The output asset package is missing assets: " + assetString);
+				}
 
 				{ // Write down the asset package header
 					Renderer::v1AssetPackage::AssetPackageHeader assetPackageHeader;
