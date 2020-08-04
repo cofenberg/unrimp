@@ -8,9 +8,16 @@ This is a spare time project. There's no support. API changes are done in an tim
 
 Unrimp Description
 ======
-Unified renderer implementation ("Un r imp"). Extensive examples from basic to advanced are provided as well. Originally started as modern renderer replacement for the [PixelLight](https://github.com/PixelLightFoundation/pixellight) engine which was in active development between 2002-2012.
+Unified renderer implementation ("Un r imp") with separation into rendering hardware interface (RHI), renderer and toolkit for asset cooking
+- RHI abstracts way the underlying API like Vulkan/OpenGL/Direct3D
+- Renderer designed with end-user and middleware-user in mind
+	- Efficiency and responsiveness over flexibility (were it isn't useful in practice)
+	- Intended to be controlled by a high-level entity-component system, no unused implementation feature overkill in the basic renderer
+- Toolkit designed with developer fast iterations in mind: Asset source flexibility, asset background compilation, hot-reloading
 
-The first public Unrimp source code release after starting the project on Friday, 1 June 2012 was on January 03, 2013.
+Examples from basic to advanced are provided.
+
+Originally started as modern renderer replacement for the [PixelLight](https://github.com/PixelLightFoundation/pixellight) engine which was in active development between 2002-2012. The first public Unrimp source code release after starting the project on Friday, 1 June 2012 was on January 03, 2013.
 
 
 Screenshots
@@ -23,7 +30,7 @@ Screenshots
 General
 ======
 - C++ 17 and above, no legacy compiler support, compiled with wall warning level
-- Compact user-header for the rendering hardware interface (RHI)
+- Compact user-header for the RHI
 	- A single all in one header for ease-of-use and best possible compile times
 	- No need to links against the RHI library itself, load RHI implementations dynamically during runtime
 - Usage of [Amalgamated](https://blog.forrestthewoods.com/improving-open-source-with-amalgamation-cf293592c5f4)/[Unity](http://buffered.io/posts/the-magic-of-unity-builds/) builds for best possible compile times
@@ -35,12 +42,6 @@ General
 	- Implementations load the entry points of Vulkan, Direct3D, OpenGL and so on during runtime, meaning it's possible to react on system failures by e.g. dynamically switching to another RHI implementation
 - Support for static and shared build
 - RTTI and C++ exceptions are not used by RHI and renderer
-- Separation into RHI, renderer and toolkit for asset cooking
-	- RHI abstracts way the underlying API like Vulkan/OpenGL/DirectX
-	- Renderer designed with end-user and middleware-user in mind
-		- Efficiency and responsiveness over flexibility (were it isn't useful in practice)
-		- Intended to be controlled by a high-level entity-component system, no unused implementation feature overkill in the basic renderer
-	- Toolkit designed with developer fast iterations in mind: Asset source flexibility, asset background compilation, hot-reloading
 - Interfaces for log, assert, memory allocator, graphics debugger, profiler and file so the user has the control over those things
 	- Standard implementations are provided
 	- Standard graphics debugger implementation using [RenderDoc](https://renderdoc.org/) is provided
@@ -51,8 +52,7 @@ General
 	- Currently unmaintained
 		- Linux
 		- Android
-	- May come
-		- Mac OS X in mind (nothing more at the moment, but in mind is important because Mac OS X 10.11 only supports OpenGL 4.1 and has some other nasty issues)
+	- Mac is currently no target platform due no dropped OpenGL support and no official Vulkan support, implementing Metal is too much effort for a spare time pet project
 
 
 Rendering hardware interface (RHI) and implementations
@@ -254,6 +254,8 @@ Terminology and Acronyms
 	- Tessellation evaluation shader (TES), "domain shader" in Direct3D terminology
 	- Geometry shader (GS)
 	- Fragment shader (FS), "pixel shader" in Direct3D terminology
+	- Task shader (TS, "amplification shader" in Direct3D terminology)
+	- Mesh shader (MS)
 	- Compute shader (CS)
 	- Uniform buffer view (UBV)
 	- Shader resource view (SRV)
