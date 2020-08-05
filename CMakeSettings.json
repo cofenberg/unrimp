@@ -22,7 +22,7 @@
       "cmakeCommandArgs": "-DARCHITECTURE_X86=1",
       "buildCommandArgs": "-v",
       "ctestCommandArgs": "",
-      "enableClangTidyCodeAnalysis": true,
+      "enableMicrosoftCodeAnalysis": true,
 
       // "Additional Environment Variables"-tip from https://www.3dgep.com/cmake-visual-studio-2017/
       "environments": [
@@ -53,7 +53,7 @@
       "cmakeCommandArgs": "-DARCHITECTURE_X86=1",
       "buildCommandArgs": "-v",
       "ctestCommandArgs": "",
-      "enableClangTidyCodeAnalysis": true,
+      "enableMicrosoftCodeAnalysis": true,
 
       // "Additional Environment Variables"-tip from https://www.3dgep.com/cmake-visual-studio-2017/
       "environments": [
@@ -84,7 +84,7 @@
       "cmakeCommandArgs": "-DARCHITECTURE_X64=1",
       "buildCommandArgs": "-v",
       "ctestCommandArgs": "",
-      "enableClangTidyCodeAnalysis": true,
+      "enableMicrosoftCodeAnalysis": true,
 
       // "Additional Environment Variables"-tip from https://www.3dgep.com/cmake-visual-studio-2017/
       "environments": [
@@ -115,7 +115,7 @@
       "cmakeCommandArgs": "-DARCHITECTURE_X64=1",
       "buildCommandArgs": "-v",
       "ctestCommandArgs": "",
-      "enableClangTidyCodeAnalysis": true,
+      "enableMicrosoftCodeAnalysis": true,
 
       // "Additional Environment Variables"-tip from https://www.3dgep.com/cmake-visual-studio-2017/
       "environments": [
@@ -146,7 +146,7 @@
       "cmakeCommandArgs": "-DARCHITECTURE_X86=1 -DSHARED_LIBRARY=0",
       "buildCommandArgs": "-v",
       "ctestCommandArgs": "",
-      "enableClangTidyCodeAnalysis": true,
+      "enableMicrosoftCodeAnalysis": true,
 
       // "Additional Environment Variables"-tip from https://www.3dgep.com/cmake-visual-studio-2017/
       "environments": [
@@ -177,7 +177,7 @@
       "cmakeCommandArgs": "-DARCHITECTURE_X86=1 -DSHARED_LIBRARY=0",
       "buildCommandArgs": "-v",
       "ctestCommandArgs": "",
-      "enableClangTidyCodeAnalysis": true,
+      "enableMicrosoftCodeAnalysis": true,
 
       // "Additional Environment Variables"-tip from https://www.3dgep.com/cmake-visual-studio-2017/
       "environments": [
@@ -208,7 +208,7 @@
       "cmakeCommandArgs": "-DARCHITECTURE_X64=1 -DSHARED_LIBRARY=0",
       "buildCommandArgs": "-v",
       "ctestCommandArgs": "",
-      "enableClangTidyCodeAnalysis": true,
+      "enableMicrosoftCodeAnalysis": true,
 
       // "Additional Environment Variables"-tip from https://www.3dgep.com/cmake-visual-studio-2017/
       "environments": [
@@ -239,7 +239,7 @@
       "cmakeCommandArgs": "-DARCHITECTURE_X64=1 -DSHARED_LIBRARY=0",
       "buildCommandArgs": "-v",
       "ctestCommandArgs": "",
-      "enableClangTidyCodeAnalysis": true,
+      "enableMicrosoftCodeAnalysis": true,
 
       // "Additional Environment Variables"-tip from https://www.3dgep.com/cmake-visual-studio-2017/
       "environments": [
@@ -272,7 +272,7 @@
       "cmakeCommandArgs": "-DCMAKE_TOOLCHAIN_FILE:FILEPATH=\"${workspaceRoot}\\Build\\AndroidToolchain.cmake\" -DARCHITECTURE_X64=1 -DSHARED_LIBRARY=0",
       "buildCommandArgs": "-v",
       "ctestCommandArgs": "",
-      "enableClangTidyCodeAnalysis": true,
+      "enableMicrosoftCodeAnalysis": true,
 
       // "Additional Environment Variables"-tip from https://www.3dgep.com/cmake-visual-studio-2017/
       "environments": [
@@ -291,7 +291,7 @@
       "cmakeCommandArgs": "-DCMAKE_TOOLCHAIN_FILE:FILEPATH=\"${workspaceRoot}\\Build\\AndroidToolchain.cmake\" -DARCHITECTURE_X64=1 -DSHARED_LIBRARY=0",
       "buildCommandArgs": "-v",
       "ctestCommandArgs": "",
-      "enableClangTidyCodeAnalysis": true,
+      "enableMicrosoftCodeAnalysis": true,
 
       // "Additional Environment Variables"-tip from https://www.3dgep.com/cmake-visual-studio-2017/
       "environments": [
@@ -321,7 +321,7 @@
       "cmakeCommandArgs": "",
       "buildCommandArgs": "",
       "ctestCommandArgs": "",
-      "enableClangTidyCodeAnalysis": true,
+      "enableMicrosoftCodeAnalysis": true,
       "inheritEnvironments": [ "linux_x64" ]
     },
     {
@@ -343,7 +343,7 @@
       "cmakeCommandArgs": "",
       "buildCommandArgs": "",
       "ctestCommandArgs": "",
-      "enableClangTidyCodeAnalysis": true,
+      "enableMicrosoftCodeAnalysis": true,
       "inheritEnvironments": [ "linux_x64" ]
     }
   ]
