@@ -87,6 +87,11 @@ set(SOURCE_CODES
 	RendererUnityBuild.cpp
 )
 
+# Add a natvis file for better debug support in Visual Studio ( https://docs.microsoft.com/en-us/visualstudio/debugger/create-custom-views-of-native-objects?view=vs-2019 )
+if(MSVC)
+	set(SOURCE_CODES ${SOURCE_CODES} ../Rhi/Rhi.natvis Renderer.natvis)
+endif(MSVC)
+
 # Disable warnings in external libraries, we can't fix them
 if(WIN32)
 	# Used options:

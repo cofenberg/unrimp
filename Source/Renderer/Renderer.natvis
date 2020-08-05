@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<AutoVisualizer xmlns="http://schemas.microsoft.com/vstudio/debugger/natvis/2010">
+
+  <!-- Unrimp renderer natvis file for better debug support in Visual Studio ( https://docs.microsoft.com/en-us/visualstudio/debugger/create-custom-views-of-native-objects?view=vs-2019 ) -->
+
+  <Type Name="Renderer::IRenderer">
+    <DisplayString>{mRhi->mNameId}</DisplayString>
+  </Type>
+  <Type Name="Renderer::IResource">
+    <DisplayString>{mDebugName}</DisplayString>
+  </Type>
+  <Type Name="Renderer::Renderable">
+    <DisplayString>{mDebugName}</DisplayString>
+  </Type>
+  <Type Name="Renderer::RenderableManager">
+    <DisplayString>{mDebugName}</DisplayString>
+  </Type>
+</AutoVisualizer>

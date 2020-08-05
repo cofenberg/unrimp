@@ -47,6 +47,11 @@ include_directories(${CMAKE_SOURCE_DIR}/Source)
 ##################################################
 set(SOURCE_CODES NullRhi.cpp)
 
+# Add a natvis file for better debug support in Visual Studio ( https://docs.microsoft.com/en-us/visualstudio/debugger/create-custom-views-of-native-objects?view=vs-2019 )
+if(MSVC)
+	set(SOURCE_CODES ${SOURCE_CODES} ../../Rhi.natvis)
+endif(MSVC)
+
 
 ##################################################
 ## Libraries

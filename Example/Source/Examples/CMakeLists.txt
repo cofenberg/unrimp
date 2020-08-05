@@ -166,6 +166,11 @@ if(RENDERER)
 	)
 endif()
 
+# Add a natvis file for better debug support in Visual Studio ( https://docs.microsoft.com/en-us/visualstudio/debugger/create-custom-views-of-native-objects?view=vs-2019 )
+if(MSVC)
+	set(SOURCE_CODES ${SOURCE_CODES} ${CMAKE_SOURCE_DIR}/Source/Rhi/Rhi.natvis ${CMAKE_SOURCE_DIR}/Source/Renderer/Renderer.natvis)
+endif(MSVC)
+
 # Disable warnings in external libraries, we can't fix them
 if(WIN32)
 	# Used options:
