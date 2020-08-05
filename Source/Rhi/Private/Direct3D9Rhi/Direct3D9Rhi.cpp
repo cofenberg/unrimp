@@ -3424,36 +3424,31 @@ namespace Direct3D9Rhi
 			IIndexBuffer(direct3D9Rhi RHI_RESOURCE_DEBUG_PASS_PARAMETER),
 			mDirect3DIndexBuffer9(nullptr)
 		{
-			// "Rhi::IndexBufferFormat::UNSIGNED_CHAR" is not supported by Direct3D 9
-			if (Rhi::IndexBufferFormat::UNSIGNED_CHAR == indexBufferFormat)
-			{
-				RHI_LOG(direct3D9Rhi.getContext(), CRITICAL, "\"Rhi::IndexBufferFormat::UNSIGNED_CHAR\" is not supported by Direct3D 9")
-			}
-			else
-			{
-				// Create the Direct3D 9 index buffer
-				FAILED_DEBUG_BREAK(direct3D9Rhi.getDirect3DDevice9()->CreateIndexBuffer(numberOfBytes, Mapping::getDirect3D9Usage(bufferUsage), static_cast<D3DFORMAT>(Mapping::getDirect3D9Format(indexBufferFormat)), D3DPOOL_DEFAULT, &mDirect3DIndexBuffer9, nullptr))
+			// Sanity check
+			RHI_ASSERT(direct3D9Rhi.getContext(), Rhi::IndexBufferFormat::UNSIGNED_CHAR != indexBufferFormat, "\"Rhi::IndexBufferFormat::UNSIGNED_CHAR\" is not supported by Direct3D 9")
 
-				// Copy the data, if required
-				if (nullptr != data)
+			// Create the Direct3D 9 index buffer
+			FAILED_DEBUG_BREAK(direct3D9Rhi.getDirect3DDevice9()->CreateIndexBuffer(numberOfBytes, Mapping::getDirect3D9Usage(bufferUsage), static_cast<D3DFORMAT>(Mapping::getDirect3D9Format(indexBufferFormat)), D3DPOOL_DEFAULT, &mDirect3DIndexBuffer9, nullptr))
+
+			// Copy the data, if required
+			if (nullptr != data)
+			{
+				void* indices = nullptr;
+				if (SUCCEEDED(mDirect3DIndexBuffer9->Lock(0, numberOfBytes, static_cast<void**>(&indices), 0)))
 				{
-					void* indices = nullptr;
-					if (SUCCEEDED(mDirect3DIndexBuffer9->Lock(0, numberOfBytes, static_cast<void**>(&indices), 0)))
-					{
-						memcpy(indices, data, numberOfBytes);
-						mDirect3DIndexBuffer9->Unlock();
-					}
+					memcpy(indices, data, numberOfBytes);
+					mDirect3DIndexBuffer9->Unlock();
 				}
-
-				// Assign a default name to the resource for debugging purposes
-				#ifdef RHI_DEBUG
-					if (nullptr != mDirect3DIndexBuffer9)
-					{
-						RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "IBO", 6)	// 6 = "IBO: " including terminating zero
-						FAILED_DEBUG_BREAK(mDirect3DIndexBuffer9->SetPrivateData(WKPDID_D3DDebugObjectName, detailedDebugName, static_cast<UINT>(strlen(detailedDebugName)), 0))
-					}
-				#endif
 			}
+
+			// Assign a default name to the resource for debugging purposes
+			#ifdef RHI_DEBUG
+				if (nullptr != mDirect3DIndexBuffer9)
+				{
+					RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "IBO", 6)	// 6 = "IBO: " including terminating zero
+					FAILED_DEBUG_BREAK(mDirect3DIndexBuffer9->SetPrivateData(WKPDID_D3DDebugObjectName, detailedDebugName, static_cast<UINT>(strlen(detailedDebugName)), 0))
+				}
+			#endif
 		}
 
 		/**
@@ -5010,22 +5005,19 @@ namespace Direct3D9Rhi
 			{ // Rhi::SamplerState::borderColor[4]
 				// For Direct3D 9, the clear color must be between [0..1]
 				float normalizedColor[4] = { samplerState.borderColor[0], samplerState.borderColor[1], samplerState.borderColor[2], samplerState.borderColor[3] } ;
-				for (int i = 0; i < 4; ++i)
-				{
-					if (normalizedColor[i] < 0.0f)
-					{
-						normalizedColor[i] = 0.0f;
-					}
-					if (normalizedColor[i] > 1.0f)
-					{
-						normalizedColor[i] = 1.0f;
-					}
-				}
 				#ifdef RHI_DEBUG
-					if (normalizedColor[0] != samplerState.borderColor[0] || normalizedColor[1] != samplerState.borderColor[1] || normalizedColor[2] != samplerState.borderColor[2] || normalizedColor[3] != samplerState.borderColor[3])
+					for (int i = 0; i < 4; ++i)
 					{
-						RHI_LOG(direct3D9Rhi.getContext(), CRITICAL, "The given border color was clamped to [0, 1] because Direct3D 9 does not support values outside this range")
+						if (normalizedColor[i] < 0.0f)
+						{
+							normalizedColor[i] = 0.0f;
+						}
+						if (normalizedColor[i] > 1.0f)
+						{
+							normalizedColor[i] = 1.0f;
+						}
 					}
+					RHI_ASSERT(direct3D9Rhi.getContext(), normalizedColor[0] == samplerState.borderColor[0] && normalizedColor[1] == samplerState.borderColor[1] && normalizedColor[2] == samplerState.borderColor[2] && normalizedColor[3] == samplerState.borderColor[3], "The given border color was clamped to [0, 1] because Direct3D 9 does not support values outside this range")
 				#endif
 				mDirect3DBorderColor = D3DCOLOR_COLORVALUE(normalizedColor[0], normalizedColor[1], normalizedColor[2], normalizedColor[3]);
 			}
@@ -6114,7 +6106,7 @@ namespace Direct3D9Rhi
 						case Rhi::ResourceType::MESH_SHADER:
 						case Rhi::ResourceType::COMPUTE_SHADER:
 						default:
-							RHI_LOG(direct3D9Rhi.getContext(), CRITICAL, "The type of the given color texture at index %u is not supported by the Direct3D 9 RHI implementation", colorTexture - mColorTextures)
+							RHI_ASSERT(direct3D9Rhi.getContext(), false, "The type of the given color texture at index %u is not supported by the Direct3D 9 RHI implementation", colorTexture - mColorTextures)
 							*direct3D9ColorSurface = nullptr;
 							break;
 					}
@@ -6179,7 +6171,7 @@ namespace Direct3D9Rhi
 					case Rhi::ResourceType::MESH_SHADER:
 					case Rhi::ResourceType::COMPUTE_SHADER:
 					default:
-						RHI_LOG(direct3D9Rhi.getContext(), CRITICAL, "The type of the given depth stencil texture is not supported by the Direct3D 9 RHI implementation")
+						RHI_ASSERT(direct3D9Rhi.getContext(), false, "The type of the given depth stencil texture is not supported by the Direct3D 9 RHI implementation")
 						break;
 				}
 			}
@@ -7400,48 +7392,42 @@ namespace
 				}
 			}
 
-			void DrawMeshTasks(const void*, Rhi::IRhi& rhi)
+			void DrawMeshTasks(const void*, [[maybe_unused]] Rhi::IRhi& rhi)
 			{
-				RHI_LOG(static_cast<Direct3D9Rhi::Direct3D9Rhi&>(rhi).getContext(), CRITICAL, "Direct3D 9 doesn't support mesh shaders")
+				RHI_ASSERT(static_cast<Direct3D9Rhi::Direct3D9Rhi&>(rhi).getContext(), false, "Direct3D 9 doesn't support mesh shaders")
 			}
 
 			//[-------------------------------------------------------]
 			//[ Compute                                               ]
 			//[-------------------------------------------------------]
-			void SetComputeRootSignature(const void*, Rhi::IRhi& rhi)
+			void SetComputeRootSignature(const void*, [[maybe_unused]] Rhi::IRhi& rhi)
 			{
-				RHI_LOG(static_cast<Direct3D9Rhi::Direct3D9Rhi&>(rhi).getContext(), CRITICAL, "Direct3D 9 doesn't support compute root signature")
+				RHI_ASSERT(static_cast<Direct3D9Rhi::Direct3D9Rhi&>(rhi).getContext(), false, "Direct3D 9 doesn't support compute root signature")
 			}
 
-			void SetComputePipelineState(const void*, Rhi::IRhi& rhi)
+			void SetComputePipelineState(const void*, [[maybe_unused]] Rhi::IRhi& rhi)
 			{
-				RHI_LOG(static_cast<Direct3D9Rhi::Direct3D9Rhi&>(rhi).getContext(), CRITICAL, "Direct3D 9 doesn't support compute pipeline state")
+				RHI_ASSERT(static_cast<Direct3D9Rhi::Direct3D9Rhi&>(rhi).getContext(), false, "Direct3D 9 doesn't support compute pipeline state")
 			}
 
-			void SetComputeResourceGroup(const void*, Rhi::IRhi& rhi)
+			void SetComputeResourceGroup(const void*, [[maybe_unused]] Rhi::IRhi& rhi)
 			{
-				RHI_LOG(static_cast<Direct3D9Rhi::Direct3D9Rhi&>(rhi).getContext(), CRITICAL, "Direct3D 9 doesn't support compute resource group")
+				RHI_ASSERT(static_cast<Direct3D9Rhi::Direct3D9Rhi&>(rhi).getContext(), false, "Direct3D 9 doesn't support compute resource group")
 			}
 
-			void DispatchCompute(const void*, Rhi::IRhi& rhi)
+			void DispatchCompute(const void*, [[maybe_unused]] Rhi::IRhi& rhi)
 			{
-				RHI_LOG(static_cast<Direct3D9Rhi::Direct3D9Rhi&>(rhi).getContext(), CRITICAL, "Direct3D 9 doesn't support compute dispatch")
+				RHI_ASSERT(static_cast<Direct3D9Rhi::Direct3D9Rhi&>(rhi).getContext(), false, "Direct3D 9 doesn't support compute dispatch")
 			}
 
 			//[-------------------------------------------------------]
 			//[ Resource                                              ]
 			//[-------------------------------------------------------]
-			void SetTextureMinimumMaximumMipmapIndex(const void* data, Rhi::IRhi& rhi)
+			void SetTextureMinimumMaximumMipmapIndex(const void* data, [[maybe_unused]] Rhi::IRhi& rhi)
 			{
 				const Rhi::Command::SetTextureMinimumMaximumMipmapIndex* realData = static_cast<const Rhi::Command::SetTextureMinimumMaximumMipmapIndex*>(data);
-				if (realData->texture->getResourceType() == Rhi::ResourceType::TEXTURE_2D)
-				{
-					static_cast<Direct3D9Rhi::Texture2D*>(realData->texture)->setMinimumMaximumMipmapIndex(realData->minimumMipmapIndex, realData->maximumMipmapIndex);
-				}
-				else
-				{
-					RHI_LOG(static_cast<Direct3D9Rhi::Direct3D9Rhi&>(rhi).getContext(), CRITICAL, "Unsupported Direct3D 9 texture resource type")
-				}
+				RHI_ASSERT(static_cast<Direct3D9Rhi::Direct3D9Rhi&>(rhi).getContext(), realData->texture->getResourceType() == Rhi::ResourceType::TEXTURE_2D, "Unsupported Direct3D 9 texture resource type")
+				static_cast<Direct3D9Rhi::Texture2D*>(realData->texture)->setMinimumMaximumMipmapIndex(realData->minimumMipmapIndex, realData->maximumMipmapIndex);
 			}
 
 			void ResolveMultisampleFramebuffer(const void* data, Rhi::IRhi& rhi)
@@ -7691,11 +7677,11 @@ namespace Direct3D9Rhi
 				// Error!
 				if (numberOfCurrentResources > 1)
 				{
-					RHI_LOG(mContext, CRITICAL, "The Direct3D 9 RHI implementation is going to be destroyed, but there are still %u resource instances left (memory leak)", numberOfCurrentResources)
+					RHI_ASSERT(mContext, false, "The Direct3D 9 RHI implementation is going to be destroyed, but there are still %u resource instances left (memory leak)", numberOfCurrentResources)
 				}
 				else
 				{
-					RHI_LOG(mContext, CRITICAL, "The Direct3D 9 RHI implementation is going to be destroyed, but there is still one resource instance left (memory leak)")
+					RHI_ASSERT(mContext, false, "The Direct3D 9 RHI implementation is going to be destroyed, but there is still one resource instance left (memory leak)")
 				}
 
 				// Use debug output to show the current number of resource instances
@@ -7775,28 +7761,12 @@ namespace Direct3D9Rhi
 		// Security checks
 		#ifdef RHI_DEBUG
 		{
-			if (nullptr == mGraphicsRootSignature)
-			{
-				RHI_LOG(mContext, CRITICAL, "No Direct3D 9 RHI implementation graphics root signature set")
-				return;
-			}
+			RHI_ASSERT(mContext, nullptr != mGraphicsRootSignature, "No Direct3D 9 RHI implementation graphics root signature set")
 			const Rhi::RootSignature& rootSignature = mGraphicsRootSignature->getRootSignature();
-			if (rootParameterIndex >= rootSignature.numberOfParameters)
-			{
-				RHI_LOG(mContext, CRITICAL, "The Direct3D 9 RHI implementation root parameter index is out of bounds")
-				return;
-			}
+			RHI_ASSERT(mContext, rootParameterIndex < rootSignature.numberOfParameters, "The Direct3D 9 RHI implementation root parameter index is out of bounds")
 			const Rhi::RootParameter& rootParameter = rootSignature.parameters[rootParameterIndex];
-			if (Rhi::RootParameterType::DESCRIPTOR_TABLE != rootParameter.parameterType)
-			{
-				RHI_LOG(mContext, CRITICAL, "The Direct3D 9 RHI implementation root parameter index doesn't reference a descriptor table")
-				return;
-			}
-			if (nullptr == reinterpret_cast<const Rhi::DescriptorRange*>(rootParameter.descriptorTable.descriptorRanges))
-			{
-				RHI_LOG(mContext, CRITICAL, "The Direct3D 9 RHI implementation descriptor ranges is a null pointer")
-				return;
-			}
+			RHI_ASSERT(mContext, Rhi::RootParameterType::DESCRIPTOR_TABLE == rootParameter.parameterType, "The Direct3D 9 RHI implementation root parameter index doesn't reference a descriptor table")
+			RHI_ASSERT(mContext, nullptr != reinterpret_cast<const Rhi::DescriptorRange*>(rootParameter.descriptorTable.descriptorRanges), "The Direct3D 9 RHI implementation descriptor ranges is a null pointer")
 		}
 		#endif
 
@@ -7827,15 +7797,15 @@ namespace Direct3D9Rhi
 				switch (resourceType)
 				{
 					case Rhi::ResourceType::TEXTURE_BUFFER:
-						RHI_LOG(mContext, CRITICAL, "Direct3D 9 has no texture buffer support")
+						RHI_ASSERT(mContext, false, "Direct3D 9 has no texture buffer support")
 						break;
 
 					case Rhi::ResourceType::STRUCTURED_BUFFER:
-						RHI_LOG(mContext, CRITICAL, "Direct3D 9 has no structured buffer support")
+						RHI_ASSERT(mContext, false, "Direct3D 9 has no structured buffer support")
 						break;
 
 					case Rhi::ResourceType::UNIFORM_BUFFER:
-						RHI_LOG(mContext, CRITICAL, "Direct3D 9 has no uniform buffer support")
+						RHI_ASSERT(mContext, false, "Direct3D 9 has no uniform buffer support")
 						break;
 
 					case Rhi::ResourceType::TEXTURE_1D:
@@ -7857,7 +7827,7 @@ namespace Direct3D9Rhi
 								break;
 
 							case Rhi::ResourceType::TEXTURE_1D_ARRAY:
-								RHI_LOG(mContext, CRITICAL, "Direct3D 9 has no 1D array textures support")
+								RHI_ASSERT(mContext, false, "Direct3D 9 has no 1D array textures support")
 								break;
 
 							case Rhi::ResourceType::TEXTURE_2D:
@@ -7865,7 +7835,7 @@ namespace Direct3D9Rhi
 								break;
 
 							case Rhi::ResourceType::TEXTURE_2D_ARRAY:
-								RHI_LOG(mContext, CRITICAL, "Direct3D 9 has no 2D array textures support")
+								RHI_ASSERT(mContext, false, "Direct3D 9 has no 2D array textures support")
 								break;
 
 							case Rhi::ResourceType::TEXTURE_3D:
@@ -7877,7 +7847,7 @@ namespace Direct3D9Rhi
 								break;
 
 							case Rhi::ResourceType::TEXTURE_CUBE_ARRAY:
-								RHI_LOG(mContext, CRITICAL, "Direct3D 9 has no cube array texture support")
+								RHI_ASSERT(mContext, false, "Direct3D 9 has no cube array texture support")
 								break;
 
 							case Rhi::ResourceType::TEXTURE_BUFFER:
@@ -7975,15 +7945,15 @@ namespace Direct3D9Rhi
 								break;
 
 							case Rhi::ShaderVisibility::TESSELLATION_CONTROL:
-								RHI_LOG(mContext, CRITICAL, "Direct3D 9 has no tessellation control shader support (hull shader in Direct3D terminology)")
+								RHI_ASSERT(mContext, false, "Direct3D 9 has no tessellation control shader support (hull shader in Direct3D terminology)")
 								break;
 
 							case Rhi::ShaderVisibility::TESSELLATION_EVALUATION:
-								RHI_LOG(mContext, CRITICAL, "Direct3D 9 has no tessellation evaluation shader support (domain shader in Direct3D terminology)")
+								RHI_ASSERT(mContext, false, "Direct3D 9 has no tessellation evaluation shader support (domain shader in Direct3D terminology)")
 								break;
 
 							case Rhi::ShaderVisibility::GEOMETRY:
-								RHI_LOG(mContext, CRITICAL, "Direct3D 9 has no geometry shader support")
+								RHI_ASSERT(mContext, false, "Direct3D 9 has no geometry shader support")
 								break;
 
 							case Rhi::ShaderVisibility::FRAGMENT:
@@ -8009,15 +7979,15 @@ namespace Direct3D9Rhi
 								break;
 
 							case Rhi::ShaderVisibility::TASK:
-								RHI_LOG(mContext, CRITICAL, "Direct3D 9 has no task shader support")
+								RHI_ASSERT(mContext, false, "Direct3D 9 has no task shader support")
 								break;
 
 							case Rhi::ShaderVisibility::MESH:
-								RHI_LOG(mContext, CRITICAL, "Direct3D 9 has no mesh shader support")
+								RHI_ASSERT(mContext, false, "Direct3D 9 has no mesh shader support")
 								break;
 
 							case Rhi::ShaderVisibility::COMPUTE:
-								RHI_LOG(mContext, CRITICAL, "Direct3D 9 has no compute shader support")
+								RHI_ASSERT(mContext, false, "Direct3D 9 has no compute shader support")
 								break;
 						}
 						break;
@@ -8048,7 +8018,7 @@ namespace Direct3D9Rhi
 					case Rhi::ResourceType::TASK_SHADER:
 					case Rhi::ResourceType::MESH_SHADER:
 					case Rhi::ResourceType::COMPUTE_SHADER:
-						RHI_LOG(mContext, CRITICAL, "Invalid Direct3D 9 RHI implementation resource type")
+						RHI_ASSERT(mContext, false, "Invalid Direct3D 9 RHI implementation resource type")
 						break;
 				}
 			}
@@ -8273,22 +8243,19 @@ namespace Direct3D9Rhi
 
 		// For Direct3D 9, the clear color must be between [0..1]
 		float normalizedColor[4] = { color[0], color[1], color[2], color[3] };
-		for (int i = 0; i < 4; ++i)
-		{
-			if (normalizedColor[i] < 0.0f)
-			{
-				normalizedColor[i] = 0.0f;
-			}
-			if (normalizedColor[i] > 1.0f)
-			{
-				normalizedColor[i] = 1.0f;
-			}
-		}
 		#ifdef RHI_DEBUG
-			if (normalizedColor[0] != color[0] || normalizedColor[1] != color[1] || normalizedColor[2] != color[2] || normalizedColor[3] != color[3])
+			for (int i = 0; i < 4; ++i)
 			{
-				RHI_LOG(mContext, CRITICAL, "The given clear color was clamped to [0, 1] because Direct3D 9 does not support values outside this range")
+				if (normalizedColor[i] < 0.0f)
+				{
+					normalizedColor[i] = 0.0f;
+				}
+				if (normalizedColor[i] > 1.0f)
+				{
+					normalizedColor[i] = 1.0f;
+				}
 			}
+			RHI_ASSERT(mContext, normalizedColor[0] == color[0] && normalizedColor[1] == color[1] && normalizedColor[2] == color[2] && normalizedColor[3] == color[3], "The given clear color was clamped to [0, 1] because Direct3D 9 does not support values outside this range")
 		#endif
 
 		// Unlike Direct3D 9, when using Direct3D 10, Direct3D 11, OpenGL or OpenGL ES 3, the viewport(s) and scissor rectangle(s) do not affect the clear operation
@@ -8871,7 +8838,7 @@ namespace Direct3D9Rhi
 
 			case Rhi::ResourceType::TEXTURE_1D:
 				// TODO(co) Implement Direct3D 9 1D texture
-				RHI_LOG(mContext, CRITICAL, "The 1D texture support is not yet implemented inside the Direct3D 9 RHI implementation")
+				RHI_ASSERT(mContext, false, "The 1D texture support is not yet implemented inside the Direct3D 9 RHI implementation")
 				return false;
 
 			case Rhi::ResourceType::TEXTURE_2D:
@@ -8963,12 +8930,12 @@ namespace Direct3D9Rhi
 
 			case Rhi::ResourceType::TEXTURE_3D:
 				// TODO(co) Implement Direct3D 9 3D texture
-				RHI_LOG(mContext, CRITICAL, "The 3D texture support is not yet implemented inside the Direct3D 9 RHI implementation")
+				RHI_ASSERT(mContext, false, "The 3D texture support is not yet implemented inside the Direct3D 9 RHI implementation")
 				return false;
 
 			case Rhi::ResourceType::TEXTURE_CUBE:
 				// TODO(co) Implement Direct3D 9 cube texture
-				RHI_LOG(mContext, CRITICAL, "The cube texture support is not yet implemented inside the Direct3D 9 RHI implementation")
+				RHI_ASSERT(mContext, false, "The cube texture support is not yet implemented inside the Direct3D 9 RHI implementation")
 				return false;
 
 			case Rhi::ResourceType::ROOT_SIGNATURE:
@@ -9026,7 +8993,7 @@ namespace Direct3D9Rhi
 
 			case Rhi::ResourceType::TEXTURE_1D:
 				// TODO(co) Implement Direct3D 9 1D texture
-				RHI_LOG(mContext, CRITICAL, "The 1D texture support is not yet implemented inside the Direct3D 9 RHI implementation")
+				RHI_ASSERT(mContext, false, "The 1D texture support is not yet implemented inside the Direct3D 9 RHI implementation")
 				break;
 
 			case Rhi::ResourceType::TEXTURE_2D:
@@ -9035,12 +9002,12 @@ namespace Direct3D9Rhi
 
 			case Rhi::ResourceType::TEXTURE_3D:
 				// TODO(co) Implement Direct3D 9 3D texture
-				RHI_LOG(mContext, CRITICAL, "The 3D texture support is not yet implemented inside the Direct3D 9 RHI implementation")
+				RHI_ASSERT(mContext, false, "The 3D texture support is not yet implemented inside the Direct3D 9 RHI implementation")
 				break;
 
 			case Rhi::ResourceType::TEXTURE_CUBE:
 				// TODO(co) Implement Direct3D 9 cube texture
-				RHI_LOG(mContext, CRITICAL, "The cube texture support is not yet implemented inside the Direct3D 9 RHI implementation")
+				RHI_ASSERT(mContext, false, "The cube texture support is not yet implemented inside the Direct3D 9 RHI implementation")
 				break;
 
 			case Rhi::ResourceType::ROOT_SIGNATURE:

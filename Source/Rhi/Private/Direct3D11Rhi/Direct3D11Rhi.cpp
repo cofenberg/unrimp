@@ -4592,97 +4592,92 @@ namespace Direct3D11Rhi
 		{
 			// "Rhi::IndexBufferFormat::UnsignedChar" is not supported by Direct3D 11
 			// -> See "Input assembler index buffer resources" ("D3D11_FORMAT_SUPPORT_IA_INDEX_BUFFER"): https://msdn.microsoft.com/en-us/library/windows/desktop/ff471325%28v=vs.85%29.aspx
-			if (Rhi::IndexBufferFormat::UNSIGNED_CHAR == indexBufferFormat)
+			RHI_ASSERT(direct3D11Rhi.getContext(), Rhi::IndexBufferFormat::UNSIGNED_CHAR != indexBufferFormat, "\"Rhi::IndexBufferFormat::UNSIGNED_CHAR\" is not supported by Direct3D 11")
+
+			// Set the DXGI format
+			mDXGIFormat = Mapping::getDirect3D11Format(indexBufferFormat);
+
+			// Direct3D 11 buffer description
+			D3D11_BUFFER_DESC d3d11BufferDesc;
+			d3d11BufferDesc.ByteWidth           = numberOfBytes;
+			d3d11BufferDesc.Usage               = Mapping::getDirect3D11UsageAndCPUAccessFlags(bufferUsage, d3d11BufferDesc.CPUAccessFlags);
+			d3d11BufferDesc.BindFlags           = D3D11_BIND_INDEX_BUFFER;
+			//d3d11BufferDesc.CPUAccessFlags    = <filled above>;
+			d3d11BufferDesc.MiscFlags           = 0;
+			d3d11BufferDesc.StructureByteStride = 0;
+
+			// Set bind flags
+			if (bufferFlags & Rhi::IndirectBufferFlag::SHADER_RESOURCE)
 			{
-				RHI_LOG(direct3D11Rhi.getContext(), CRITICAL, "\"Rhi::IndexBufferFormat::UNSIGNED_CHAR\" is not supported by Direct3D 11")
+				d3d11BufferDesc.BindFlags |= D3D11_BIND_SHADER_RESOURCE;
+			}
+			if (bufferFlags & Rhi::IndirectBufferFlag::UNORDERED_ACCESS)
+			{
+				d3d11BufferDesc.Usage			= D3D11_USAGE_DEFAULT;
+				d3d11BufferDesc.BindFlags	   |= D3D11_BIND_UNORDERED_ACCESS;
+				d3d11BufferDesc.CPUAccessFlags  = 0;
+			}
+
+			// Data given?
+			if (nullptr != data)
+			{
+				// Direct3D 11 subresource data
+				D3D11_SUBRESOURCE_DATA d3d11SubresourceData;
+				d3d11SubresourceData.pSysMem          = data;
+				d3d11SubresourceData.SysMemPitch      = 0;
+				d3d11SubresourceData.SysMemSlicePitch = 0;
+
+				// Create the Direct3D 11 index buffer
+				FAILED_DEBUG_BREAK(direct3D11Rhi.getD3D11Device()->CreateBuffer(&d3d11BufferDesc, &d3d11SubresourceData, &mD3D11Buffer))
 			}
 			else
 			{
-				// Set the DXGI format
-				mDXGIFormat = Mapping::getDirect3D11Format(indexBufferFormat);
+				// Create the Direct3D 11 index buffer
+				FAILED_DEBUG_BREAK(direct3D11Rhi.getD3D11Device()->CreateBuffer(&d3d11BufferDesc, nullptr, &mD3D11Buffer))
+			}
 
-				// Direct3D 11 buffer description
-				D3D11_BUFFER_DESC d3d11BufferDesc;
-				d3d11BufferDesc.ByteWidth           = numberOfBytes;
-				d3d11BufferDesc.Usage               = Mapping::getDirect3D11UsageAndCPUAccessFlags(bufferUsage, d3d11BufferDesc.CPUAccessFlags);
-				d3d11BufferDesc.BindFlags           = D3D11_BIND_INDEX_BUFFER;
-				//d3d11BufferDesc.CPUAccessFlags    = <filled above>;
-				d3d11BufferDesc.MiscFlags           = 0;
-				d3d11BufferDesc.StructureByteStride = 0;
-
-				// Set bind flags
-				if (bufferFlags & Rhi::IndirectBufferFlag::SHADER_RESOURCE)
-				{
-					d3d11BufferDesc.BindFlags |= D3D11_BIND_SHADER_RESOURCE;
-				}
-				if (bufferFlags & Rhi::IndirectBufferFlag::UNORDERED_ACCESS)
-				{
-					d3d11BufferDesc.Usage			= D3D11_USAGE_DEFAULT;
-					d3d11BufferDesc.BindFlags	   |= D3D11_BIND_UNORDERED_ACCESS;
-					d3d11BufferDesc.CPUAccessFlags  = 0;
-				}
-
-				// Data given?
-				if (nullptr != data)
-				{
-					// Direct3D 11 subresource data
-					D3D11_SUBRESOURCE_DATA d3d11SubresourceData;
-					d3d11SubresourceData.pSysMem          = data;
-					d3d11SubresourceData.SysMemPitch      = 0;
-					d3d11SubresourceData.SysMemSlicePitch = 0;
-
-					// Create the Direct3D 11 index buffer
-					FAILED_DEBUG_BREAK(direct3D11Rhi.getD3D11Device()->CreateBuffer(&d3d11BufferDesc, &d3d11SubresourceData, &mD3D11Buffer))
-				}
-				else
-				{
-					// Create the Direct3D 11 index buffer
-					FAILED_DEBUG_BREAK(direct3D11Rhi.getD3D11Device()->CreateBuffer(&d3d11BufferDesc, nullptr, &mD3D11Buffer))
-				}
+			// Create the Direct3D 11 shader resource view instance
+			if (bufferFlags & Rhi::IndirectBufferFlag::SHADER_RESOURCE)
+			{
+				// Direct3D 11 shader resource view description
+				D3D11_SHADER_RESOURCE_VIEW_DESC d3d11ShaderResourceViewDesc = {};
+				d3d11ShaderResourceViewDesc.Format				 = mDXGIFormat;
+				d3d11ShaderResourceViewDesc.ViewDimension		 = D3D11_SRV_DIMENSION_BUFFER;
+				d3d11ShaderResourceViewDesc.Buffer.ElementWidth	 = numberOfBytes / Rhi::IndexBufferFormat::getNumberOfBytesPerElement(indexBufferFormat);
 
 				// Create the Direct3D 11 shader resource view instance
-				if (bufferFlags & Rhi::IndirectBufferFlag::SHADER_RESOURCE)
-				{
-					// Direct3D 11 shader resource view description
-					D3D11_SHADER_RESOURCE_VIEW_DESC d3d11ShaderResourceViewDesc = {};
-					d3d11ShaderResourceViewDesc.Format				 = mDXGIFormat;
-					d3d11ShaderResourceViewDesc.ViewDimension		 = D3D11_SRV_DIMENSION_BUFFER;
-					d3d11ShaderResourceViewDesc.Buffer.ElementWidth	 = numberOfBytes / Rhi::IndexBufferFormat::getNumberOfBytesPerElement(indexBufferFormat);
+				FAILED_DEBUG_BREAK(direct3D11Rhi.getD3D11Device()->CreateShaderResourceView(mD3D11Buffer, &d3d11ShaderResourceViewDesc, &mD3D11ShaderResourceView))
+			}
 
-					// Create the Direct3D 11 shader resource view instance
-					FAILED_DEBUG_BREAK(direct3D11Rhi.getD3D11Device()->CreateShaderResourceView(mD3D11Buffer, &d3d11ShaderResourceViewDesc, &mD3D11ShaderResourceView))
-				}
+			// Create the Direct3D 11 unordered access view instance
+			if (bufferFlags & Rhi::IndirectBufferFlag::UNORDERED_ACCESS)
+			{
+				// Direct3D 11 unordered access view description
+				D3D11_UNORDERED_ACCESS_VIEW_DESC d3d11UnorderedAccessViewDesc = {};
+				d3d11UnorderedAccessViewDesc.Format				= mDXGIFormat;
+				d3d11UnorderedAccessViewDesc.ViewDimension		= D3D11_UAV_DIMENSION_BUFFER;
+				d3d11UnorderedAccessViewDesc.Buffer.NumElements = numberOfBytes / Rhi::IndexBufferFormat::getNumberOfBytesPerElement(indexBufferFormat);
 
 				// Create the Direct3D 11 unordered access view instance
-				if (bufferFlags & Rhi::IndirectBufferFlag::UNORDERED_ACCESS)
-				{
-					// Direct3D 11 unordered access view description
-					D3D11_UNORDERED_ACCESS_VIEW_DESC d3d11UnorderedAccessViewDesc = {};
-					d3d11UnorderedAccessViewDesc.Format				= mDXGIFormat;
-					d3d11UnorderedAccessViewDesc.ViewDimension		= D3D11_UAV_DIMENSION_BUFFER;
-					d3d11UnorderedAccessViewDesc.Buffer.NumElements = numberOfBytes / Rhi::IndexBufferFormat::getNumberOfBytesPerElement(indexBufferFormat);
-
-					// Create the Direct3D 11 unordered access view instance
-					FAILED_DEBUG_BREAK(direct3D11Rhi.getD3D11Device()->CreateUnorderedAccessView(mD3D11Buffer, &d3d11UnorderedAccessViewDesc, &mD3D11UnorderedAccessView))
-				}
-
-				// Assign a default name to the resource for debugging purposes
-				#ifdef RHI_DEBUG
-					RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "IBO", 6)	// 6 = "IBO: " including terminating zero
-					if (nullptr != mD3D11Buffer)
-					{
-						FAILED_DEBUG_BREAK(mD3D11Buffer->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(detailedDebugName)), detailedDebugName))
-					}
-					if (nullptr != mD3D11ShaderResourceView)
-					{
-						FAILED_DEBUG_BREAK(mD3D11ShaderResourceView->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(detailedDebugName)), detailedDebugName))
-					}
-					if (nullptr != mD3D11UnorderedAccessView)
-					{
-						FAILED_DEBUG_BREAK(mD3D11UnorderedAccessView->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(detailedDebugName)), detailedDebugName))
-					}
-				#endif
+				FAILED_DEBUG_BREAK(direct3D11Rhi.getD3D11Device()->CreateUnorderedAccessView(mD3D11Buffer, &d3d11UnorderedAccessViewDesc, &mD3D11UnorderedAccessView))
 			}
+
+			// Assign a default name to the resource for debugging purposes
+			#ifdef RHI_DEBUG
+				RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "IBO", 6)	// 6 = "IBO: " including terminating zero
+				if (nullptr != mD3D11Buffer)
+				{
+					FAILED_DEBUG_BREAK(mD3D11Buffer->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(detailedDebugName)), detailedDebugName))
+				}
+				if (nullptr != mD3D11ShaderResourceView)
+				{
+					FAILED_DEBUG_BREAK(mD3D11ShaderResourceView->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(detailedDebugName)), detailedDebugName))
+				}
+				if (nullptr != mD3D11UnorderedAccessView)
+				{
+					FAILED_DEBUG_BREAK(mD3D11UnorderedAccessView->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(detailedDebugName)), detailedDebugName))
+				}
+			#endif
 		}
 
 		/**
@@ -9941,7 +9936,7 @@ namespace Direct3D11Rhi
 						case Rhi::ResourceType::MESH_SHADER:
 						case Rhi::ResourceType::COMPUTE_SHADER:
 						default:
-							RHI_LOG(direct3D11Rhi.getContext(), CRITICAL, "The type of the given color texture at index %u is not supported by the Direct3D 11 RHI implementation", colorTexture - mColorTextures)
+							RHI_ASSERT(direct3D11Rhi.getContext(), false, "The type of the given color texture at index %u is not supported by the Direct3D 11 RHI implementation", colorTexture - mColorTextures)
 							*d3d11RenderTargetView = nullptr;
 							break;
 					}
@@ -10026,7 +10021,7 @@ namespace Direct3D11Rhi
 					case Rhi::ResourceType::MESH_SHADER:
 					case Rhi::ResourceType::COMPUTE_SHADER:
 					default:
-						RHI_LOG(direct3D11Rhi.getContext(), CRITICAL, "The type of the given depth stencil texture is not supported by the Direct3D 11 RHI implementation")
+						RHI_ASSERT(direct3D11Rhi.getContext(), false, "The type of the given depth stencil texture is not supported by the Direct3D 11 RHI implementation")
 						break;
 				}
 			}
@@ -11607,56 +11602,50 @@ namespace Direct3D11Rhi
 				if (nullptr != vertexShaderHlsl)
 				{
 					ID3DBlob* d3dBlobVertexShader = vertexShaderHlsl->getD3DBlobVertexShader();
-					if (nullptr != d3dBlobVertexShader)
+					RHI_ASSERT(direct3D11Rhi.getContext(), nullptr != d3dBlobVertexShader, "Failed to create the Direct3D 11 graphics pipeline stage input layout because there's no vertex shader")
+					const Rhi::VertexAttribute* attributes = graphicsPipelineState.vertexAttributes.attributes;
+
+					// TODO(co) We could manage in here without new/delete when using a fixed maximum supported number of elements
+					const Rhi::Context& context = direct3D11Rhi.getContext();
+					D3D11_INPUT_ELEMENT_DESC* d3d11InputElementDescs   = numberOfAttributes ? RHI_MALLOC_TYPED(context, D3D11_INPUT_ELEMENT_DESC, numberOfAttributes) : RHI_MALLOC_TYPED(context, D3D11_INPUT_ELEMENT_DESC, 1);
+					D3D11_INPUT_ELEMENT_DESC* d3d11InputElementDesc    = d3d11InputElementDescs;
+					D3D11_INPUT_ELEMENT_DESC* d3d11InputElementDescEnd = d3d11InputElementDescs + numberOfAttributes;
+					for (; d3d11InputElementDesc < d3d11InputElementDescEnd; ++d3d11InputElementDesc, ++attributes)
 					{
-						const Rhi::VertexAttribute* attributes = graphicsPipelineState.vertexAttributes.attributes;
+						// Fill the "D3D11_INPUT_ELEMENT_DESC"-content
+						d3d11InputElementDesc->SemanticName      = attributes->semanticName;										// Semantic name (LPCSTR)
+						d3d11InputElementDesc->SemanticIndex     = attributes->semanticIndex;										// Semantic index (UINT)
+						d3d11InputElementDesc->Format            = Mapping::getDirect3D11Format(attributes->vertexAttributeFormat);	// Format (DXGI_FORMAT)
+						d3d11InputElementDesc->InputSlot         = static_cast<UINT>(attributes->inputSlot);						// Input slot (UINT)
+						d3d11InputElementDesc->AlignedByteOffset = attributes->alignedByteOffset;									// Aligned byte offset (UINT)
 
-						// TODO(co) We could manage in here without new/delete when using a fixed maximum supported number of elements
-						const Rhi::Context& context = direct3D11Rhi.getContext();
-						D3D11_INPUT_ELEMENT_DESC* d3d11InputElementDescs   = numberOfAttributes ? RHI_MALLOC_TYPED(context, D3D11_INPUT_ELEMENT_DESC, numberOfAttributes) : RHI_MALLOC_TYPED(context, D3D11_INPUT_ELEMENT_DESC, 1);
-						D3D11_INPUT_ELEMENT_DESC* d3d11InputElementDesc    = d3d11InputElementDescs;
-						D3D11_INPUT_ELEMENT_DESC* d3d11InputElementDescEnd = d3d11InputElementDescs + numberOfAttributes;
-						for (; d3d11InputElementDesc < d3d11InputElementDescEnd; ++d3d11InputElementDesc, ++attributes)
+						// Per-instance instead of per-vertex?
+						if (attributes->instancesPerElement > 0)
 						{
-							// Fill the "D3D11_INPUT_ELEMENT_DESC"-content
-							d3d11InputElementDesc->SemanticName      = attributes->semanticName;										// Semantic name (LPCSTR)
-							d3d11InputElementDesc->SemanticIndex     = attributes->semanticIndex;										// Semantic index (UINT)
-							d3d11InputElementDesc->Format            = Mapping::getDirect3D11Format(attributes->vertexAttributeFormat);	// Format (DXGI_FORMAT)
-							d3d11InputElementDesc->InputSlot         = static_cast<UINT>(attributes->inputSlot);						// Input slot (UINT)
-							d3d11InputElementDesc->AlignedByteOffset = attributes->alignedByteOffset;									// Aligned byte offset (UINT)
-
-							// Per-instance instead of per-vertex?
-							if (attributes->instancesPerElement > 0)
-							{
-								d3d11InputElementDesc->InputSlotClass       = D3D11_INPUT_PER_INSTANCE_DATA;	// Input classification (D3D11_INPUT_CLASSIFICATION)
-								d3d11InputElementDesc->InstanceDataStepRate = attributes->instancesPerElement;	// Instance data step rate (UINT)
-							}
-							else
-							{
-								d3d11InputElementDesc->InputSlotClass       = D3D11_INPUT_PER_VERTEX_DATA;	// Input classification (D3D11_INPUT_CLASSIFICATION)
-								d3d11InputElementDesc->InstanceDataStepRate = 0;							// Instance data step rate (UINT)
-							}
+							d3d11InputElementDesc->InputSlotClass       = D3D11_INPUT_PER_INSTANCE_DATA;	// Input classification (D3D11_INPUT_CLASSIFICATION)
+							d3d11InputElementDesc->InstanceDataStepRate = attributes->instancesPerElement;	// Instance data step rate (UINT)
 						}
-
-						// Create the Direct3D 11 input layout
-						FAILED_DEBUG_BREAK(direct3D11Rhi.getD3D11Device()->CreateInputLayout(d3d11InputElementDescs, numberOfAttributes, d3dBlobVertexShader->GetBufferPointer(), d3dBlobVertexShader->GetBufferSize(), &mD3D11InputLayout))
-
-						// Destroy Direct3D 11 input element descriptions
-						RHI_FREE(context, d3d11InputElementDescs);
-
-						// Assign a default name to the resource for debugging purposes
-						#ifdef RHI_DEBUG
-							if (nullptr != mD3D11InputLayout)
-							{
-								RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "Graphics PSO", 15)	// 15 = "Graphics PSO: " including terminating zero
-								FAILED_DEBUG_BREAK(mD3D11InputLayout->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(detailedDebugName)), detailedDebugName))
-							}
-						#endif
+						else
+						{
+							d3d11InputElementDesc->InputSlotClass       = D3D11_INPUT_PER_VERTEX_DATA;	// Input classification (D3D11_INPUT_CLASSIFICATION)
+							d3d11InputElementDesc->InstanceDataStepRate = 0;							// Instance data step rate (UINT)
+						}
 					}
-				}
-				else
-				{
-					RHI_LOG(direct3D11Rhi.getContext(), CRITICAL, "Failed to create the Direct3D 11 graphics pipeline stage input layout because there's no vertex shader")
+
+					// Create the Direct3D 11 input layout
+					FAILED_DEBUG_BREAK(direct3D11Rhi.getD3D11Device()->CreateInputLayout(d3d11InputElementDescs, numberOfAttributes, d3dBlobVertexShader->GetBufferPointer(), d3dBlobVertexShader->GetBufferSize(), &mD3D11InputLayout))
+
+					// Destroy Direct3D 11 input element descriptions
+					RHI_FREE(context, d3d11InputElementDescs);
+
+					// Assign a default name to the resource for debugging purposes
+					#ifdef RHI_DEBUG
+						if (nullptr != mD3D11InputLayout)
+						{
+							RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "Graphics PSO", 15)	// 15 = "Graphics PSO: " including terminating zero
+							FAILED_DEBUG_BREAK(mD3D11InputLayout->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(detailedDebugName)), detailedDebugName))
+						}
+					#endif
 				}
 			}
 		}
@@ -12131,9 +12120,9 @@ namespace
 				}
 			}
 
-			void DrawMeshTasks(const void*, Rhi::IRhi& rhi)
+			void DrawMeshTasks(const void*, [[maybe_unused]] Rhi::IRhi& rhi)
 			{
-				RHI_LOG(static_cast<Direct3D11Rhi::Direct3D11Rhi&>(rhi).getContext(), CRITICAL, "Direct3D 11 doesn't support mesh shaders")
+				RHI_ASSERT(static_cast<Direct3D11Rhi::Direct3D11Rhi&>(rhi).getContext(), false, "Direct3D 11 doesn't support mesh shaders")
 			}
 
 			//[-------------------------------------------------------]
@@ -12166,17 +12155,11 @@ namespace
 			//[-------------------------------------------------------]
 			//[ Resource                                              ]
 			//[-------------------------------------------------------]
-			void SetTextureMinimumMaximumMipmapIndex(const void* data, Rhi::IRhi& rhi)
+			void SetTextureMinimumMaximumMipmapIndex(const void* data, [[maybe_unused]] Rhi::IRhi& rhi)
 			{
 				const Rhi::Command::SetTextureMinimumMaximumMipmapIndex* realData = static_cast<const Rhi::Command::SetTextureMinimumMaximumMipmapIndex*>(data);
-				if (realData->texture->getResourceType() == Rhi::ResourceType::TEXTURE_2D)
-				{
-					static_cast<Direct3D11Rhi::Texture2D*>(realData->texture)->setMinimumMaximumMipmapIndex(realData->minimumMipmapIndex, realData->maximumMipmapIndex);
-				}
-				else
-				{
-					RHI_LOG(static_cast<Direct3D11Rhi::Direct3D11Rhi&>(rhi).getContext(), CRITICAL, "Unsupported Direct3D 11 texture resource type")
-				}
+				RHI_ASSERT(static_cast<Direct3D11Rhi::Direct3D11Rhi&>(rhi).getContext(), realData->texture->getResourceType() == Rhi::ResourceType::TEXTURE_2D, "Unsupported Direct3D 11 texture resource type")
+				static_cast<Direct3D11Rhi::Texture2D*>(realData->texture)->setMinimumMaximumMipmapIndex(realData->minimumMipmapIndex, realData->maximumMipmapIndex);
 			}
 
 			void ResolveMultisampleFramebuffer(const void* data, Rhi::IRhi& rhi)
@@ -12480,11 +12463,11 @@ namespace Direct3D11Rhi
 				// Error!
 				if (numberOfCurrentResources > 1)
 				{
-					RHI_LOG(mContext, CRITICAL, "The Direct3D 11 RHI implementation is going to be destroyed, but there are still %u resource instances left (memory leak)", numberOfCurrentResources)
+					RHI_ASSERT(mContext, false, "The Direct3D 11 RHI implementation is going to be destroyed, but there are still %u resource instances left (memory leak)", numberOfCurrentResources)
 				}
 				else
 				{
-					RHI_LOG(mContext, CRITICAL, "The Direct3D 11 RHI implementation is going to be destroyed, but there is still one resource instance left (memory leak)")
+					RHI_ASSERT(mContext, false, "The Direct3D 11 RHI implementation is going to be destroyed, but there is still one resource instance left (memory leak)")
 				}
 
 				// Use debug output to show the current number of resource instances
@@ -12596,28 +12579,12 @@ namespace Direct3D11Rhi
 		// Security checks
 		#ifdef RHI_DEBUG
 		{
-			if (nullptr == mGraphicsRootSignature)
-			{
-				RHI_LOG(mContext, CRITICAL, "No Direct3D 11 RHI implementation graphics root signature set")
-				return;
-			}
+			RHI_ASSERT(mContext, nullptr != mGraphicsRootSignature, "No Direct3D 11 RHI implementation graphics root signature set")
 			const Rhi::RootSignature& rootSignature = mGraphicsRootSignature->getRootSignature();
-			if (rootParameterIndex >= rootSignature.numberOfParameters)
-			{
-				RHI_LOG(mContext, CRITICAL, "The Direct3D 11 RHI implementation root parameter index is out of bounds")
-				return;
-			}
+			RHI_ASSERT(mContext, rootParameterIndex < rootSignature.numberOfParameters, "The Direct3D 11 RHI implementation root parameter index is out of bounds")
 			const Rhi::RootParameter& rootParameter = rootSignature.parameters[rootParameterIndex];
-			if (Rhi::RootParameterType::DESCRIPTOR_TABLE != rootParameter.parameterType)
-			{
-				RHI_LOG(mContext, CRITICAL, "The Direct3D 11 RHI implementation root parameter index doesn't reference a descriptor table")
-				return;
-			}
-			if (nullptr == reinterpret_cast<const Rhi::DescriptorRange*>(rootParameter.descriptorTable.descriptorRanges))
-			{
-				RHI_LOG(mContext, CRITICAL, "The Direct3D 11 RHI implementation descriptor ranges is a null pointer")
-				return;
-			}
+			RHI_ASSERT(mContext, Rhi::RootParameterType::DESCRIPTOR_TABLE == rootParameter.parameterType, "The Direct3D 11 RHI implementation root parameter index doesn't reference a descriptor table")
+			RHI_ASSERT(mContext, nullptr != reinterpret_cast<const Rhi::DescriptorRange*>(rootParameter.descriptorTable.descriptorRanges), "The Direct3D 11 RHI implementation descriptor ranges is a null pointer")
 		}
 		#endif
 
@@ -12680,15 +12647,15 @@ namespace Direct3D11Rhi
 								break;
 
 							case Rhi::ShaderVisibility::TASK:
-								RHI_LOG(mContext, CRITICAL, "Invalid Direct3D 11 task shader visibility")
+								RHI_ASSERT(mContext, false, "Invalid Direct3D 11 task shader visibility")
 								break;
 
 							case Rhi::ShaderVisibility::MESH:
-								RHI_LOG(mContext, CRITICAL, "Invalid Direct3D 11 mesh shader visibility")
+								RHI_ASSERT(mContext, false, "Invalid Direct3D 11 mesh shader visibility")
 								break;
 
 							case Rhi::ShaderVisibility::COMPUTE:
-								RHI_LOG(mContext, CRITICAL, "Invalid Direct3D 11 compute shader visibility")
+								RHI_ASSERT(mContext, false, "Invalid Direct3D 11 compute shader visibility")
 								break;
 
 							case Rhi::ShaderVisibility::ALL_GRAPHICS:
@@ -12774,7 +12741,7 @@ namespace Direct3D11Rhi
 							case Rhi::ResourceType::TASK_SHADER:
 							case Rhi::ResourceType::MESH_SHADER:
 							case Rhi::ResourceType::COMPUTE_SHADER:
-								RHI_LOG(mContext, CRITICAL, "Invalid Direct3D 11 RHI implementation resource type")
+								RHI_ASSERT(mContext, false, "Invalid Direct3D 11 RHI implementation resource type")
 								break;
 						}
 						const UINT startSlot = descriptorRange.baseShaderRegister;
@@ -12812,15 +12779,15 @@ namespace Direct3D11Rhi
 								break;
 
 							case Rhi::ShaderVisibility::TASK:
-								RHI_LOG(mContext, CRITICAL, "Invalid Direct3D 11 task shader visibility")
+								RHI_ASSERT(mContext, false, "Invalid Direct3D 11 task shader visibility")
 								break;
 
 							case Rhi::ShaderVisibility::MESH:
-								RHI_LOG(mContext, CRITICAL, "Invalid Direct3D 11 mesh shader visibility")
+								RHI_ASSERT(mContext, false, "Invalid Direct3D 11 mesh shader visibility")
 								break;
 
 							case Rhi::ShaderVisibility::COMPUTE:
-								RHI_LOG(mContext, CRITICAL, "Invalid Direct3D 11 compute shader visibility")
+								RHI_ASSERT(mContext, false, "Invalid Direct3D 11 compute shader visibility")
 								break;
 
 							case Rhi::ShaderVisibility::ALL_GRAPHICS:
@@ -12872,15 +12839,15 @@ namespace Direct3D11Rhi
 								break;
 
 							case Rhi::ShaderVisibility::TASK:
-								RHI_LOG(mContext, CRITICAL, "Invalid Direct3D 11 task shader visibility")
+								RHI_ASSERT(mContext, false, "Invalid Direct3D 11 task shader visibility")
 								break;
 
 							case Rhi::ShaderVisibility::MESH:
-								RHI_LOG(mContext, CRITICAL, "Invalid Direct3D 11 mesh shader visibility")
+								RHI_ASSERT(mContext, false, "Invalid Direct3D 11 mesh shader visibility")
 								break;
 
 							case Rhi::ShaderVisibility::COMPUTE:
-								RHI_LOG(mContext, CRITICAL, "Invalid Direct3D 11 compute shader visibility")
+								RHI_ASSERT(mContext, false, "Invalid Direct3D 11 compute shader visibility")
 								break;
 
 							case Rhi::ShaderVisibility::ALL_GRAPHICS:
@@ -12915,7 +12882,7 @@ namespace Direct3D11Rhi
 					case Rhi::ResourceType::TASK_SHADER:
 					case Rhi::ResourceType::MESH_SHADER:
 					case Rhi::ResourceType::COMPUTE_SHADER:
-						RHI_LOG(mContext, CRITICAL, "Invalid Direct3D 11 RHI implementation resource type")
+						RHI_ASSERT(mContext, false, "Invalid Direct3D 11 RHI implementation resource type")
 						break;
 				}
 			}
@@ -13491,28 +13458,12 @@ namespace Direct3D11Rhi
 		// Security checks
 		#ifdef RHI_DEBUG
 		{
-			if (nullptr == mComputeRootSignature)
-			{
-				RHI_LOG(mContext, CRITICAL, "No Direct3D 11 RHI implementation compute root signature set")
-				return;
-			}
+			RHI_ASSERT(mContext, nullptr != mComputeRootSignature, "No Direct3D 11 RHI implementation compute root signature set")
 			const Rhi::RootSignature& rootSignature = mComputeRootSignature->getRootSignature();
-			if (rootParameterIndex >= rootSignature.numberOfParameters)
-			{
-				RHI_LOG(mContext, CRITICAL, "The Direct3D 11 RHI implementation root parameter index is out of bounds")
-				return;
-			}
+			RHI_ASSERT(mContext, rootParameterIndex < rootSignature.numberOfParameters, "The Direct3D 11 RHI implementation root parameter index is out of bounds")
 			const Rhi::RootParameter& rootParameter = rootSignature.parameters[rootParameterIndex];
-			if (Rhi::RootParameterType::DESCRIPTOR_TABLE != rootParameter.parameterType)
-			{
-				RHI_LOG(mContext, CRITICAL, "The Direct3D 11 RHI implementation root parameter index doesn't reference a descriptor table")
-				return;
-			}
-			if (nullptr == reinterpret_cast<const Rhi::DescriptorRange*>(rootParameter.descriptorTable.descriptorRanges))
-			{
-				RHI_LOG(mContext, CRITICAL, "The Direct3D 11 RHI implementation descriptor ranges is a null pointer")
-				return;
-			}
+			RHI_ASSERT(mContext, Rhi::RootParameterType::DESCRIPTOR_TABLE == rootParameter.parameterType, "The Direct3D 11 RHI implementation root parameter index doesn't reference a descriptor table")
+			RHI_ASSERT(mContext, nullptr != reinterpret_cast<const Rhi::DescriptorRange*>(rootParameter.descriptorTable.descriptorRanges), "The Direct3D 11 RHI implementation descriptor ranges is a null pointer")
 		}
 		#endif
 
@@ -13544,31 +13495,31 @@ namespace Direct3D11Rhi
 						switch (descriptorRange.shaderVisibility)
 						{
 							case Rhi::ShaderVisibility::VERTEX:
-								RHI_LOG(mContext, CRITICAL, "Invalid Direct3D 11 vertex shader visibility")
+								RHI_ASSERT(mContext, false, "Invalid Direct3D 11 vertex shader visibility")
 								break;
 
 							case Rhi::ShaderVisibility::TESSELLATION_CONTROL:
-								RHI_LOG(mContext, CRITICAL, "Invalid Direct3D 11 tessellation control shader visibility")
+								RHI_ASSERT(mContext, false, "Invalid Direct3D 11 tessellation control shader visibility")
 								break;
 
 							case Rhi::ShaderVisibility::TESSELLATION_EVALUATION:
-								RHI_LOG(mContext, CRITICAL, "Invalid Direct3D 11 tessellation evaluation shader visibility")
+								RHI_ASSERT(mContext, false, "Invalid Direct3D 11 tessellation evaluation shader visibility")
 								break;
 
 							case Rhi::ShaderVisibility::GEOMETRY:
-								RHI_LOG(mContext, CRITICAL, "Invalid Direct3D 11 geometry shader visibility")
+								RHI_ASSERT(mContext, false, "Invalid Direct3D 11 geometry shader visibility")
 								break;
 
 							case Rhi::ShaderVisibility::FRAGMENT:
-								RHI_LOG(mContext, CRITICAL, "Invalid Direct3D 11 fragment shader visibility")
+								RHI_ASSERT(mContext, false, "Invalid Direct3D 11 fragment shader visibility")
 								break;
 
 							case Rhi::ShaderVisibility::TASK:
-								RHI_LOG(mContext, CRITICAL, "Invalid Direct3D 11 task shader visibility")
+								RHI_ASSERT(mContext, false, "Invalid Direct3D 11 task shader visibility")
 								break;
 
 							case Rhi::ShaderVisibility::MESH:
-								RHI_LOG(mContext, CRITICAL, "Invalid Direct3D 11 mesh shader visibility")
+								RHI_ASSERT(mContext, false, "Invalid Direct3D 11 mesh shader visibility")
 								break;
 
 							case Rhi::ShaderVisibility::ALL:
@@ -13577,7 +13528,7 @@ namespace Direct3D11Rhi
 								break;
 
 							case Rhi::ShaderVisibility::ALL_GRAPHICS:
-								RHI_LOG(mContext, CRITICAL, "Invalid Direct3D 11 all graphics shader visibility")
+								RHI_ASSERT(mContext, false, "Invalid Direct3D 11 all graphics shader visibility")
 								break;
 						}
 						break;
@@ -13659,38 +13610,38 @@ namespace Direct3D11Rhi
 									case Rhi::ResourceType::TASK_SHADER:
 									case Rhi::ResourceType::MESH_SHADER:
 									case Rhi::ResourceType::COMPUTE_SHADER:
-										RHI_LOG(mContext, CRITICAL, "Invalid Direct3D 11 RHI implementation resource type")
+										RHI_ASSERT(mContext, false, "Invalid Direct3D 11 RHI implementation resource type")
 										break;
 								}
 								const UINT startSlot = descriptorRange.baseShaderRegister;
 								switch (descriptorRange.shaderVisibility)
 								{
 									case Rhi::ShaderVisibility::VERTEX:
-										RHI_LOG(mContext, CRITICAL, "Invalid Direct3D 11 vertex shader visibility")
+										RHI_ASSERT(mContext, false, "Invalid Direct3D 11 vertex shader visibility")
 										break;
 
 									case Rhi::ShaderVisibility::TESSELLATION_CONTROL:
-										RHI_LOG(mContext, CRITICAL, "Invalid Direct3D 11 tessellation control shader visibility")
+										RHI_ASSERT(mContext, false, "Invalid Direct3D 11 tessellation control shader visibility")
 										break;
 
 									case Rhi::ShaderVisibility::TESSELLATION_EVALUATION:
-										RHI_LOG(mContext, CRITICAL, "Invalid Direct3D 11 tessellation evaluation shader visibility")
+										RHI_ASSERT(mContext, false, "Invalid Direct3D 11 tessellation evaluation shader visibility")
 										break;
 
 									case Rhi::ShaderVisibility::GEOMETRY:
-										RHI_LOG(mContext, CRITICAL, "Invalid Direct3D 11 geometry shader visibility")
+										RHI_ASSERT(mContext, false, "Invalid Direct3D 11 geometry shader visibility")
 										break;
 
 									case Rhi::ShaderVisibility::FRAGMENT:
-										RHI_LOG(mContext, CRITICAL, "Invalid Direct3D 11 fragment shader visibility")
+										RHI_ASSERT(mContext, false, "Invalid Direct3D 11 fragment shader visibility")
 										break;
 
 									case Rhi::ShaderVisibility::TASK:
-										RHI_LOG(mContext, CRITICAL, "Invalid Direct3D 11 task shader visibility")
+										RHI_ASSERT(mContext, false, "Invalid Direct3D 11 task shader visibility")
 										break;
 
 									case Rhi::ShaderVisibility::MESH:
-										RHI_LOG(mContext, CRITICAL, "Invalid Direct3D 11 mesh shader visibility")
+										RHI_ASSERT(mContext, false, "Invalid Direct3D 11 mesh shader visibility")
 										break;
 
 									case Rhi::ShaderVisibility::ALL:
@@ -13699,7 +13650,7 @@ namespace Direct3D11Rhi
 										break;
 
 									case Rhi::ShaderVisibility::ALL_GRAPHICS:
-										RHI_LOG(mContext, CRITICAL, "Invalid Direct3D 11 all graphics shader visibility")
+										RHI_ASSERT(mContext, false, "Invalid Direct3D 11 all graphics shader visibility")
 										break;
 								}
 								break;
@@ -13769,38 +13720,38 @@ namespace Direct3D11Rhi
 									case Rhi::ResourceType::TASK_SHADER:
 									case Rhi::ResourceType::MESH_SHADER:
 									case Rhi::ResourceType::COMPUTE_SHADER:
-										RHI_LOG(mContext, CRITICAL, "Invalid Direct3D 11 RHI implementation resource type")
+										RHI_ASSERT(mContext, false, "Invalid Direct3D 11 RHI implementation resource type")
 										break;
 								}
 								const UINT startSlot = descriptorRange.baseShaderRegister;
 								switch (descriptorRange.shaderVisibility)
 								{
 									case Rhi::ShaderVisibility::VERTEX:
-										RHI_LOG(mContext, CRITICAL, "Invalid Direct3D 11 vertex shader visibility")
+										RHI_ASSERT(mContext, false, "Invalid Direct3D 11 vertex shader visibility")
 										break;
 
 									case Rhi::ShaderVisibility::TESSELLATION_CONTROL:
-										RHI_LOG(mContext, CRITICAL, "Invalid Direct3D 11 tessellation control shader visibility")
+										RHI_ASSERT(mContext, false, "Invalid Direct3D 11 tessellation control shader visibility")
 										break;
 
 									case Rhi::ShaderVisibility::TESSELLATION_EVALUATION:
-										RHI_LOG(mContext, CRITICAL, "Invalid Direct3D 11 tessellation evaluation shader visibility")
+										RHI_ASSERT(mContext, false, "Invalid Direct3D 11 tessellation evaluation shader visibility")
 										break;
 
 									case Rhi::ShaderVisibility::GEOMETRY:
-										RHI_LOG(mContext, CRITICAL, "Invalid Direct3D 11 geometry shader visibility")
+										RHI_ASSERT(mContext, false, "Invalid Direct3D 11 geometry shader visibility")
 										break;
 
 									case Rhi::ShaderVisibility::FRAGMENT:
-										RHI_LOG(mContext, CRITICAL, "Invalid Direct3D 11 fragment shader visibility")
+										RHI_ASSERT(mContext, false, "Invalid Direct3D 11 fragment shader visibility")
 										break;
 
 									case Rhi::ShaderVisibility::TASK:
-										RHI_LOG(mContext, CRITICAL, "Invalid Direct3D 11 task shader visibility")
+										RHI_ASSERT(mContext, false, "Invalid Direct3D 11 task shader visibility")
 										break;
 
 									case Rhi::ShaderVisibility::MESH:
-										RHI_LOG(mContext, CRITICAL, "Invalid Direct3D 11 mesh shader visibility")
+										RHI_ASSERT(mContext, false, "Invalid Direct3D 11 mesh shader visibility")
 										break;
 
 									case Rhi::ShaderVisibility::ALL:
@@ -13809,7 +13760,7 @@ namespace Direct3D11Rhi
 										break;
 
 									case Rhi::ShaderVisibility::ALL_GRAPHICS:
-										RHI_LOG(mContext, CRITICAL, "Invalid Direct3D 11 all graphics shader visibility")
+										RHI_ASSERT(mContext, false, "Invalid Direct3D 11 all graphics shader visibility")
 										break;
 								}
 								break;
@@ -13818,7 +13769,7 @@ namespace Direct3D11Rhi
 							case Rhi::DescriptorRangeType::UBV:
 							case Rhi::DescriptorRangeType::SAMPLER:
 							case Rhi::DescriptorRangeType::NUMBER_OF_RANGE_TYPES:
-								RHI_LOG(mContext, CRITICAL, "Invalid Direct3D 11 descriptor range type")
+								RHI_ASSERT(mContext, false, "Invalid Direct3D 11 descriptor range type")
 								break;
 						}
 						break;
@@ -13883,31 +13834,31 @@ namespace Direct3D11Rhi
 						switch (descriptorRange.shaderVisibility)
 						{
 							case Rhi::ShaderVisibility::VERTEX:
-								RHI_LOG(mContext, CRITICAL, "Invalid Direct3D 11 vertex shader visibility")
+								RHI_ASSERT(mContext, false, "Invalid Direct3D 11 vertex shader visibility")
 								break;
 
 							case Rhi::ShaderVisibility::TESSELLATION_CONTROL:
-								RHI_LOG(mContext, CRITICAL, "Invalid Direct3D 11 tessellation control shader visibility")
+								RHI_ASSERT(mContext, false, "Invalid Direct3D 11 tessellation control shader visibility")
 								break;
 
 							case Rhi::ShaderVisibility::TESSELLATION_EVALUATION:
-								RHI_LOG(mContext, CRITICAL, "Invalid Direct3D 11 tessellation evaluation shader visibility")
+								RHI_ASSERT(mContext, false, "Invalid Direct3D 11 tessellation evaluation shader visibility")
 								break;
 
 							case Rhi::ShaderVisibility::GEOMETRY:
-								RHI_LOG(mContext, CRITICAL, "Invalid Direct3D 11 geometry shader visibility")
+								RHI_ASSERT(mContext, false, "Invalid Direct3D 11 geometry shader visibility")
 								break;
 
 							case Rhi::ShaderVisibility::FRAGMENT:
-								RHI_LOG(mContext, CRITICAL, "Invalid Direct3D 11 fragment shader visibility")
+								RHI_ASSERT(mContext, false, "Invalid Direct3D 11 fragment shader visibility")
 								break;
 
 							case Rhi::ShaderVisibility::TASK:
-								RHI_LOG(mContext, CRITICAL, "Invalid Direct3D 11 task shader visibility")
+								RHI_ASSERT(mContext, false, "Invalid Direct3D 11 task shader visibility")
 								break;
 
 							case Rhi::ShaderVisibility::MESH:
-								RHI_LOG(mContext, CRITICAL, "Invalid Direct3D 11 mesh shader visibility")
+								RHI_ASSERT(mContext, false, "Invalid Direct3D 11 mesh shader visibility")
 								break;
 
 							case Rhi::ShaderVisibility::ALL:
@@ -13916,7 +13867,7 @@ namespace Direct3D11Rhi
 								break;
 
 							case Rhi::ShaderVisibility::ALL_GRAPHICS:
-								RHI_LOG(mContext, CRITICAL, "Invalid Direct3D 11 all graphics shader visibility")
+								RHI_ASSERT(mContext, false, "Invalid Direct3D 11 all graphics shader visibility")
 								break;
 						}
 						break;
@@ -13940,7 +13891,7 @@ namespace Direct3D11Rhi
 					case Rhi::ResourceType::TASK_SHADER:
 					case Rhi::ResourceType::MESH_SHADER:
 					case Rhi::ResourceType::COMPUTE_SHADER:
-						RHI_LOG(mContext, CRITICAL, "Invalid Direct3D 11 RHI implementation resource type")
+						RHI_ASSERT(mContext, false, "Invalid Direct3D 11 RHI implementation resource type")
 						break;
 				}
 			}

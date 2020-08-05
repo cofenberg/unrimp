@@ -3720,51 +3720,46 @@ namespace Direct3D10Rhi
 			mD3D10Buffer(nullptr),
 			mDXGIFormat(DXGI_FORMAT_UNKNOWN)
 		{
-			// "Rhi::IndexBufferFormat::UNSIGNED_CHAR" is not supported by Direct3D 10
-			if (Rhi::IndexBufferFormat::UNSIGNED_CHAR == indexBufferFormat)
+			// Sanity check
+			RHI_ASSERT(direct3D10Rhi.getContext(), Rhi::IndexBufferFormat::UNSIGNED_CHAR != indexBufferFormat, "\"Rhi::IndexBufferFormat::UNSIGNED_CHAR\" is not supported by Direct3D 10")
+
+			// Set the DXGI format
+			mDXGIFormat = Mapping::getDirect3D10Format(indexBufferFormat);
+
+			// Direct3D 10 buffer description
+			D3D10_BUFFER_DESC d3d10BufferDesc;
+			d3d10BufferDesc.ByteWidth        = numberOfBytes;
+			d3d10BufferDesc.Usage            = Mapping::getDirect3D10UsageAndCPUAccessFlags(bufferUsage, d3d10BufferDesc.CPUAccessFlags);
+			d3d10BufferDesc.BindFlags        = D3D10_BIND_INDEX_BUFFER;
+			//d3d10BufferDesc.CPUAccessFlags = <filled above>;
+			d3d10BufferDesc.MiscFlags        = 0;
+
+			// Data given?
+			if (nullptr != data)
 			{
-				RHI_LOG(direct3D10Rhi.getContext(), CRITICAL, "\"Rhi::IndexBufferFormat::UNSIGNED_CHAR\" is not supported by Direct3D 10")
+				// Direct3D 10 subresource data
+				D3D10_SUBRESOURCE_DATA d3d10SubresourceData;
+				d3d10SubresourceData.pSysMem          = data;
+				d3d10SubresourceData.SysMemPitch      = 0;
+				d3d10SubresourceData.SysMemSlicePitch = 0;
+
+				// Create the Direct3D 10 index buffer
+				FAILED_DEBUG_BREAK(direct3D10Rhi.getD3D10Device()->CreateBuffer(&d3d10BufferDesc, &d3d10SubresourceData, &mD3D10Buffer))
 			}
 			else
 			{
-				// Set the DXGI format
-				mDXGIFormat = Mapping::getDirect3D10Format(indexBufferFormat);
-
-				// Direct3D 10 buffer description
-				D3D10_BUFFER_DESC d3d10BufferDesc;
-				d3d10BufferDesc.ByteWidth        = numberOfBytes;
-				d3d10BufferDesc.Usage            = Mapping::getDirect3D10UsageAndCPUAccessFlags(bufferUsage, d3d10BufferDesc.CPUAccessFlags);
-				d3d10BufferDesc.BindFlags        = D3D10_BIND_INDEX_BUFFER;
-				//d3d10BufferDesc.CPUAccessFlags = <filled above>;
-				d3d10BufferDesc.MiscFlags        = 0;
-
-				// Data given?
-				if (nullptr != data)
-				{
-					// Direct3D 10 subresource data
-					D3D10_SUBRESOURCE_DATA d3d10SubresourceData;
-					d3d10SubresourceData.pSysMem          = data;
-					d3d10SubresourceData.SysMemPitch      = 0;
-					d3d10SubresourceData.SysMemSlicePitch = 0;
-
-					// Create the Direct3D 10 index buffer
-					FAILED_DEBUG_BREAK(direct3D10Rhi.getD3D10Device()->CreateBuffer(&d3d10BufferDesc, &d3d10SubresourceData, &mD3D10Buffer))
-				}
-				else
-				{
-					// Create the Direct3D 10 index buffer
-					FAILED_DEBUG_BREAK(direct3D10Rhi.getD3D10Device()->CreateBuffer(&d3d10BufferDesc, nullptr, &mD3D10Buffer))
-				}
-
-				// Assign a default name to the resource for debugging purposes
-				#ifdef RHI_DEBUG
-					if (nullptr != mD3D10Buffer)
-					{
-						RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "IBO", 6)	// 6 = "IBO: " including terminating zero
-						FAILED_DEBUG_BREAK(mD3D10Buffer->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(detailedDebugName)), detailedDebugName))
-					}
-				#endif
+				// Create the Direct3D 10 index buffer
+				FAILED_DEBUG_BREAK(direct3D10Rhi.getD3D10Device()->CreateBuffer(&d3d10BufferDesc, nullptr, &mD3D10Buffer))
 			}
+
+			// Assign a default name to the resource for debugging purposes
+			#ifdef RHI_DEBUG
+				if (nullptr != mD3D10Buffer)
+				{
+					RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "IBO", 6)	// 6 = "IBO: " including terminating zero
+					FAILED_DEBUG_BREAK(mD3D10Buffer->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(detailedDebugName)), detailedDebugName))
+				}
+			#endif
 		}
 
 		/**
@@ -7974,7 +7969,7 @@ namespace Direct3D10Rhi
 						case Rhi::ResourceType::MESH_SHADER:
 						case Rhi::ResourceType::COMPUTE_SHADER:
 						default:
-							RHI_LOG(direct3D10Rhi.getContext(), CRITICAL, "The type of the given color texture at index %u is not supported by the Direct3D 10 RHI implementation", colorTexture - mColorTextures)
+							RHI_ASSERT(direct3D10Rhi.getContext(), false, "The type of the given color texture at index %u is not supported by the Direct3D 10 RHI implementation", colorTexture - mColorTextures)
 							*d3d10RenderTargetView = nullptr;
 							break;
 					}
@@ -8059,7 +8054,7 @@ namespace Direct3D10Rhi
 					case Rhi::ResourceType::MESH_SHADER:
 					case Rhi::ResourceType::COMPUTE_SHADER:
 					default:
-						RHI_LOG(direct3D10Rhi.getContext(), CRITICAL, "The type of the given depth stencil texture is not supported by the Direct3D 10 RHI implementation")
+						RHI_ASSERT(direct3D10Rhi.getContext(), false, "The type of the given depth stencil texture is not supported by the Direct3D 10 RHI implementation")
 						break;
 				}
 			}
@@ -9128,50 +9123,44 @@ namespace Direct3D10Rhi
 			if (numberOfAttributes > 0)
 			{
 				const VertexShaderHlsl* vertexShaderHlsl = static_cast<GraphicsProgramHlsl*>(mGraphicsProgram)->getVertexShaderHlsl();
-				if (nullptr != vertexShaderHlsl)
-				{
-					const Rhi::VertexAttribute* attributes = graphicsPipelineState.vertexAttributes.attributes;
+				RHI_ASSERT(direct3D10Rhi.getContext(), nullptr != vertexShaderHlsl, "Failed to create the Direct3D 10 graphics pipeline stage input layout because there's no vertex shader")
+				const Rhi::VertexAttribute* attributes = graphicsPipelineState.vertexAttributes.attributes;
 
-					// Create Direct3D 10 input element descriptions
-					// TODO(co) We could manage in here without new/delete when using a fixed maximum supported number of elements
-					const Rhi::Context& context = getRhi().getContext();
-					D3D10_INPUT_ELEMENT_DESC* d3d10InputElementDescs   = numberOfAttributes ? RHI_MALLOC_TYPED(context, D3D10_INPUT_ELEMENT_DESC, numberOfAttributes) : RHI_MALLOC_TYPED(context, D3D10_INPUT_ELEMENT_DESC, 1);
-					D3D10_INPUT_ELEMENT_DESC* d3d10InputElementDesc    = d3d10InputElementDescs;
-					D3D10_INPUT_ELEMENT_DESC* d3d10InputElementDescEnd = d3d10InputElementDescs + numberOfAttributes;
-					for (; d3d10InputElementDesc < d3d10InputElementDescEnd; ++d3d10InputElementDesc, ++attributes)
+				// Create Direct3D 10 input element descriptions
+				// TODO(co) We could manage in here without new/delete when using a fixed maximum supported number of elements
+				const Rhi::Context& context = getRhi().getContext();
+				D3D10_INPUT_ELEMENT_DESC* d3d10InputElementDescs   = numberOfAttributes ? RHI_MALLOC_TYPED(context, D3D10_INPUT_ELEMENT_DESC, numberOfAttributes) : RHI_MALLOC_TYPED(context, D3D10_INPUT_ELEMENT_DESC, 1);
+				D3D10_INPUT_ELEMENT_DESC* d3d10InputElementDesc    = d3d10InputElementDescs;
+				D3D10_INPUT_ELEMENT_DESC* d3d10InputElementDescEnd = d3d10InputElementDescs + numberOfAttributes;
+				for (; d3d10InputElementDesc < d3d10InputElementDescEnd; ++d3d10InputElementDesc, ++attributes)
+				{
+					// Fill the "D3D10_INPUT_ELEMENT_DESC"-content
+					d3d10InputElementDesc->SemanticName      = attributes->semanticName;										// Semantic name (LPCSTR)
+					d3d10InputElementDesc->SemanticIndex     = attributes->semanticIndex;										// Semantic index (UINT)
+					d3d10InputElementDesc->Format            = Mapping::getDirect3D10Format(attributes->vertexAttributeFormat);	// Format (DXGI_FORMAT)
+					d3d10InputElementDesc->InputSlot         = static_cast<UINT>(attributes->inputSlot);						// Input slot (UINT)
+					d3d10InputElementDesc->AlignedByteOffset = attributes->alignedByteOffset;									// Aligned byte offset (UINT)
+
+					// Per-instance instead of per-vertex?
+					if (attributes->instancesPerElement > 0)
 					{
-						// Fill the "D3D10_INPUT_ELEMENT_DESC"-content
-						d3d10InputElementDesc->SemanticName      = attributes->semanticName;										// Semantic name (LPCSTR)
-						d3d10InputElementDesc->SemanticIndex     = attributes->semanticIndex;										// Semantic index (UINT)
-						d3d10InputElementDesc->Format            = Mapping::getDirect3D10Format(attributes->vertexAttributeFormat);	// Format (DXGI_FORMAT)
-						d3d10InputElementDesc->InputSlot         = static_cast<UINT>(attributes->inputSlot);						// Input slot (UINT)
-						d3d10InputElementDesc->AlignedByteOffset = attributes->alignedByteOffset;									// Aligned byte offset (UINT)
-
-						// Per-instance instead of per-vertex?
-						if (attributes->instancesPerElement > 0)
-						{
-							d3d10InputElementDesc->InputSlotClass       = D3D10_INPUT_PER_INSTANCE_DATA;	// Input classification (D3D10_INPUT_CLASSIFICATION)
-							d3d10InputElementDesc->InstanceDataStepRate = attributes->instancesPerElement;	// Instance data step rate (UINT)
-						}
-						else
-						{
-							d3d10InputElementDesc->InputSlotClass       = D3D10_INPUT_PER_VERTEX_DATA;	// Input classification (D3D10_INPUT_CLASSIFICATION)
-							d3d10InputElementDesc->InstanceDataStepRate = 0;							// Instance data step rate (UINT)
-						}
+						d3d10InputElementDesc->InputSlotClass       = D3D10_INPUT_PER_INSTANCE_DATA;	// Input classification (D3D10_INPUT_CLASSIFICATION)
+						d3d10InputElementDesc->InstanceDataStepRate = attributes->instancesPerElement;	// Instance data step rate (UINT)
 					}
-
-					{ // Create the Direct3D 10 input layout
-						ID3DBlob* d3dBlobVertexShader = vertexShaderHlsl->getD3DBlobVertexShader();
-						FAILED_DEBUG_BREAK(direct3D10Rhi.getD3D10Device()->CreateInputLayout(d3d10InputElementDescs, numberOfAttributes, d3dBlobVertexShader->GetBufferPointer(), d3dBlobVertexShader->GetBufferSize(), &mD3D10InputLayout))
+					else
+					{
+						d3d10InputElementDesc->InputSlotClass       = D3D10_INPUT_PER_VERTEX_DATA;	// Input classification (D3D10_INPUT_CLASSIFICATION)
+						d3d10InputElementDesc->InstanceDataStepRate = 0;							// Instance data step rate (UINT)
 					}
+				}
 
-					// Destroy Direct3D 10 input element descriptions
-					RHI_FREE(context, d3d10InputElementDescs);
+				{ // Create the Direct3D 10 input layout
+					ID3DBlob* d3dBlobVertexShader = vertexShaderHlsl->getD3DBlobVertexShader();
+					FAILED_DEBUG_BREAK(direct3D10Rhi.getD3D10Device()->CreateInputLayout(d3d10InputElementDescs, numberOfAttributes, d3dBlobVertexShader->GetBufferPointer(), d3dBlobVertexShader->GetBufferSize(), &mD3D10InputLayout))
 				}
-				else
-				{
-					RHI_LOG(direct3D10Rhi.getContext(), CRITICAL, "Failed to create the Direct3D 10 graphics pipeline stage input layout because there's no vertex shader")
-				}
+
+				// Destroy Direct3D 10 input element descriptions
+				RHI_FREE(context, d3d10InputElementDescs);
 			}
 
 			// Assign a default name to the resource for debugging purposes
@@ -9454,48 +9443,42 @@ namespace
 				}
 			}
 
-			void DrawMeshTasks(const void*, Rhi::IRhi& rhi)
+			void DrawMeshTasks(const void*, [[maybe_unused]] Rhi::IRhi& rhi)
 			{
-				RHI_LOG(static_cast<Direct3D10Rhi::Direct3D10Rhi&>(rhi).getContext(), CRITICAL, "Direct3D 10 doesn't support mesh shaders")
+				RHI_ASSERT(static_cast<Direct3D10Rhi::Direct3D10Rhi&>(rhi).getContext(), false, "Direct3D 10 doesn't support mesh shaders")
 			}
 
 			//[-------------------------------------------------------]
 			//[ Compute                                               ]
 			//[-------------------------------------------------------]
-			void SetComputeRootSignature(const void*, Rhi::IRhi& rhi)
+			void SetComputeRootSignature(const void*, [[maybe_unused]] Rhi::IRhi& rhi)
 			{
-				RHI_LOG(static_cast<Direct3D10Rhi::Direct3D10Rhi&>(rhi).getContext(), CRITICAL, "Direct3D 10 doesn't support compute root signature")
+				RHI_ASSERT(static_cast<Direct3D10Rhi::Direct3D10Rhi&>(rhi).getContext(), false, "Direct3D 10 doesn't support compute root signature")
 			}
 
-			void SetComputePipelineState(const void*, Rhi::IRhi& rhi)
+			void SetComputePipelineState(const void*, [[maybe_unused]] Rhi::IRhi& rhi)
 			{
-				RHI_LOG(static_cast<Direct3D10Rhi::Direct3D10Rhi&>(rhi).getContext(), CRITICAL, "Direct3D 10 doesn't support compute pipeline state")
+				RHI_ASSERT(static_cast<Direct3D10Rhi::Direct3D10Rhi&>(rhi).getContext(), false, "Direct3D 10 doesn't support compute pipeline state")
 			}
 
-			void SetComputeResourceGroup(const void*, Rhi::IRhi& rhi)
+			void SetComputeResourceGroup(const void*, [[maybe_unused]] Rhi::IRhi& rhi)
 			{
-				RHI_LOG(static_cast<Direct3D10Rhi::Direct3D10Rhi&>(rhi).getContext(), CRITICAL, "Direct3D 10 doesn't support compute resource group")
+				RHI_ASSERT(static_cast<Direct3D10Rhi::Direct3D10Rhi&>(rhi).getContext(), false, "Direct3D 10 doesn't support compute resource group")
 			}
 
-			void DispatchCompute(const void*, Rhi::IRhi& rhi)
+			void DispatchCompute(const void*, [[maybe_unused]] Rhi::IRhi& rhi)
 			{
-				RHI_LOG(static_cast<Direct3D10Rhi::Direct3D10Rhi&>(rhi).getContext(), CRITICAL, "Direct3D 10 doesn't support compute dispatch")
+				RHI_ASSERT(static_cast<Direct3D10Rhi::Direct3D10Rhi&>(rhi).getContext(), false, "Direct3D 10 doesn't support compute dispatch")
 			}
 
 			//[-------------------------------------------------------]
 			//[ Resource                                              ]
 			//[-------------------------------------------------------]
-			void SetTextureMinimumMaximumMipmapIndex(const void* data, Rhi::IRhi& rhi)
+			void SetTextureMinimumMaximumMipmapIndex(const void* data, [[maybe_unused]] Rhi::IRhi& rhi)
 			{
 				const Rhi::Command::SetTextureMinimumMaximumMipmapIndex* realData = static_cast<const Rhi::Command::SetTextureMinimumMaximumMipmapIndex*>(data);
-				if (realData->texture->getResourceType() == Rhi::ResourceType::TEXTURE_2D)
-				{
-					static_cast<Direct3D10Rhi::Texture2D*>(realData->texture)->setMinimumMaximumMipmapIndex(realData->minimumMipmapIndex, realData->maximumMipmapIndex);
-				}
-				else
-				{
-					RHI_LOG(static_cast<Direct3D10Rhi::Direct3D10Rhi&>(rhi).getContext(), CRITICAL, "Unsupported Direct3D 10 texture resource type")
-				}
+				RHI_ASSERT(static_cast<Direct3D10Rhi::Direct3D10Rhi&>(rhi).getContext(), realData->texture->getResourceType() == Rhi::ResourceType::TEXTURE_2D, "Unsupported Direct3D 10 texture resource type")
+				static_cast<Direct3D10Rhi::Texture2D*>(realData->texture)->setMinimumMaximumMipmapIndex(realData->minimumMipmapIndex, realData->maximumMipmapIndex);
 			}
 
 			void ResolveMultisampleFramebuffer(const void* data, Rhi::IRhi& rhi)
@@ -9767,11 +9750,11 @@ namespace Direct3D10Rhi
 				// Error!
 				if (numberOfCurrentResources > 1)
 				{
-					RHI_LOG(mContext, CRITICAL, "The Direct3D 10 RHI implementation is going to be destroyed, but there are still %u resource instances left (memory leak)", numberOfCurrentResources)
+					RHI_ASSERT(mContext, false, "The Direct3D 10 RHI implementation is going to be destroyed, but there are still %u resource instances left (memory leak)", numberOfCurrentResources)
 				}
 				else
 				{
-					RHI_LOG(mContext, CRITICAL, "The Direct3D 10 RHI implementation is going to be destroyed, but there is still one resource instance left (memory leak)")
+					RHI_ASSERT(mContext, false, "The Direct3D 10 RHI implementation is going to be destroyed, but there is still one resource instance left (memory leak)")
 				}
 
 				// Use debug output to show the current number of resource instances
@@ -9858,28 +9841,12 @@ namespace Direct3D10Rhi
 		// Security checks
 		#ifdef RHI_DEBUG
 		{
-			if (nullptr == mGraphicsRootSignature)
-			{
-				RHI_LOG(mContext, CRITICAL, "No Direct3D 10 RHI implementation graphics root signature set")
-				return;
-			}
+			RHI_ASSERT(mContext, nullptr != mGraphicsRootSignature, "No Direct3D 10 RHI implementation graphics root signature set")
 			const Rhi::RootSignature& rootSignature = mGraphicsRootSignature->getRootSignature();
-			if (rootParameterIndex >= rootSignature.numberOfParameters)
-			{
-				RHI_LOG(mContext, CRITICAL, "The Direct3D 10 RHI implementation root parameter index is out of bounds")
-				return;
-			}
+			RHI_ASSERT(mContext, rootParameterIndex < rootSignature.numberOfParameters, "The Direct3D 10 RHI implementation root parameter index is out of bounds")
 			const Rhi::RootParameter& rootParameter = rootSignature.parameters[rootParameterIndex];
-			if (Rhi::RootParameterType::DESCRIPTOR_TABLE != rootParameter.parameterType)
-			{
-				RHI_LOG(mContext, CRITICAL, "The Direct3D 10 RHI implementation root parameter index doesn't reference a descriptor table")
-				return;
-			}
-			if (nullptr == reinterpret_cast<const Rhi::DescriptorRange*>(rootParameter.descriptorTable.descriptorRanges))
-			{
-				RHI_LOG(mContext, CRITICAL, "The Direct3D 10 RHI implementation descriptor ranges is a null pointer")
-				return;
-			}
+			RHI_ASSERT(mContext, Rhi::RootParameterType::DESCRIPTOR_TABLE == rootParameter.parameterType, "The Direct3D 10 RHI implementation root parameter index doesn't reference a descriptor table")
+			RHI_ASSERT(mContext, nullptr != reinterpret_cast<const Rhi::DescriptorRange*>(rootParameter.descriptorTable.descriptorRanges), "The Direct3D 10 RHI implementation descriptor ranges is a null pointer")
 		}
 		#endif
 
@@ -10188,17 +10155,9 @@ namespace Direct3D10Rhi
 	{
 		// Rasterizer (RS) stage
 
-		// Sanity check
+		// Sanity checks
 		RHI_ASSERT(mContext, numberOfViewports > 0 && nullptr != viewports, "Invalid Direct3D 10 rasterizer state viewports")
-
-		#ifdef RHI_DEBUG
-			// Is the given number of viewports valid?
-			if (numberOfViewports > (D3D10_VIEWPORT_AND_SCISSORRECT_MAX_INDEX + 1))
-			{
-				RHI_LOG(mContext, CRITICAL, "Direct3D 10 supports only %u viewports", D3D10_VIEWPORT_AND_SCISSORRECT_MAX_INDEX)
-				numberOfViewports = D3D10_VIEWPORT_AND_SCISSORRECT_MAX_INDEX + 1;
-			}
-		#endif
+		RHI_ASSERT(mContext, numberOfViewports <= D3D10_VIEWPORT_AND_SCISSORRECT_MAX_INDEX + 1, "Direct3D 10 supports only %u viewports", D3D10_VIEWPORT_AND_SCISSORRECT_MAX_INDEX + 1)
 
 		// Set the Direct3D 10 viewports
 		D3D10_VIEWPORT d3dViewports[D3D10_VIEWPORT_AND_SCISSORRECT_MAX_INDEX];

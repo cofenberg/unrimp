@@ -11144,7 +11144,7 @@ namespace VulkanRhi
 							case Rhi::ResourceType::TASK_SHADER:
 							case Rhi::ResourceType::MESH_SHADER:
 							case Rhi::ResourceType::COMPUTE_SHADER:
-								RHI_LOG(vulkanRhi.getContext(), CRITICAL, "Invalid Vulkan RHI implementation resource type")
+								RHI_ASSERT(vulkanRhi.getContext(), false, "Invalid Vulkan RHI implementation resource type")
 								break;
 						}
 
@@ -11197,7 +11197,7 @@ namespace VulkanRhi
 					case Rhi::ResourceType::TASK_SHADER:
 					case Rhi::ResourceType::MESH_SHADER:
 					case Rhi::ResourceType::COMPUTE_SHADER:
-						RHI_LOG(vulkanRhi.getContext(), CRITICAL, "Invalid Vulkan RHI implementation resource type")
+						RHI_ASSERT(vulkanRhi.getContext(), false, "Invalid Vulkan RHI implementation resource type")
 						break;
 				}
 			}
@@ -11507,17 +11507,11 @@ namespace
 			//[-------------------------------------------------------]
 			//[ Resource                                              ]
 			//[-------------------------------------------------------]
-			void SetTextureMinimumMaximumMipmapIndex(const void* data, Rhi::IRhi& rhi)
+			void SetTextureMinimumMaximumMipmapIndex(const void* data, [[maybe_unused]] Rhi::IRhi& rhi)
 			{
 				const Rhi::Command::SetTextureMinimumMaximumMipmapIndex* realData = static_cast<const Rhi::Command::SetTextureMinimumMaximumMipmapIndex*>(data);
-				if (realData->texture->getResourceType() == Rhi::ResourceType::TEXTURE_2D)
-				{
-					static_cast<VulkanRhi::Texture2D*>(realData->texture)->setMinimumMaximumMipmapIndex(realData->minimumMipmapIndex, realData->maximumMipmapIndex);
-				}
-				else
-				{
-					RHI_LOG(static_cast<VulkanRhi::VulkanRhi&>(rhi).getContext(), CRITICAL, "Unsupported Vulkan texture resource type")
-				}
+				RHI_ASSERT(static_cast<VulkanRhi::VulkanRhi&>(rhi).getContext(), realData->texture->getResourceType() == Rhi::ResourceType::TEXTURE_2D, "Unsupported Vulkan texture resource type")
+				static_cast<VulkanRhi::Texture2D*>(realData->texture)->setMinimumMaximumMipmapIndex(realData->minimumMipmapIndex, realData->maximumMipmapIndex);
 			}
 
 			void ResolveMultisampleFramebuffer(const void* data, Rhi::IRhi& rhi)
@@ -11777,11 +11771,11 @@ namespace VulkanRhi
 				// Error!
 				if (numberOfCurrentResources > 1)
 				{
-					RHI_LOG(mContext, CRITICAL, "The Vulkan RHI implementation is going to be destroyed, but there are still %u resource instances left (memory leak)", numberOfCurrentResources)
+					RHI_ASSERT(mContext, false, "The Vulkan RHI implementation is going to be destroyed, but there are still %u resource instances left (memory leak)", numberOfCurrentResources)
 				}
 				else
 				{
-					RHI_LOG(mContext, CRITICAL, "The Vulkan RHI implementation is going to be destroyed, but there is still one resource instance left (memory leak)")
+					RHI_ASSERT(mContext, false, "The Vulkan RHI implementation is going to be destroyed, but there is still one resource instance left (memory leak)")
 				}
 
 				// Use debug output to show the current number of resource instances
@@ -11844,28 +11838,12 @@ namespace VulkanRhi
 		// Security checks
 		#ifdef RHI_DEBUG
 		{
-			if (nullptr == mGraphicsRootSignature)
-			{
-				RHI_LOG(mContext, CRITICAL, "No Vulkan RHI implementation graphics root signature set")
-				return;
-			}
+			RHI_ASSERT(mContext, nullptr != mGraphicsRootSignature, "No Vulkan RHI implementation graphics root signature set")
 			const Rhi::RootSignature& rootSignature = mGraphicsRootSignature->getRootSignature();
-			if (rootParameterIndex >= rootSignature.numberOfParameters)
-			{
-				RHI_LOG(mContext, CRITICAL, "The Vulkan RHI implementation root parameter index is out of bounds")
-				return;
-			}
+			RHI_ASSERT(mContext, rootParameterIndex < rootSignature.numberOfParameters, "The Vulkan RHI implementation root parameter index is out of bounds")
 			const Rhi::RootParameter& rootParameter = rootSignature.parameters[rootParameterIndex];
-			if (Rhi::RootParameterType::DESCRIPTOR_TABLE != rootParameter.parameterType)
-			{
-				RHI_LOG(mContext, CRITICAL, "The Vulkan RHI implementation root parameter index doesn't reference a descriptor table")
-				return;
-			}
-			if (nullptr == reinterpret_cast<const Rhi::DescriptorRange*>(rootParameter.descriptorTable.descriptorRanges))
-			{
-				RHI_LOG(mContext, CRITICAL, "The Vulkan RHI implementation descriptor ranges is a null pointer")
-				return;
-			}
+			RHI_ASSERT(mContext, Rhi::RootParameterType::DESCRIPTOR_TABLE == rootParameter.parameterType, "The Vulkan RHI implementation root parameter index doesn't reference a descriptor table")
+			RHI_ASSERT(mContext, nullptr != reinterpret_cast<const Rhi::DescriptorRange*>(rootParameter.descriptorTable.descriptorRanges), "The Vulkan RHI implementation descriptor ranges is a null pointer")
 		}
 		#endif
 
@@ -12226,28 +12204,12 @@ namespace VulkanRhi
 		// Security checks
 		#ifdef RHI_DEBUG
 		{
-			if (nullptr == mComputeRootSignature)
-			{
-				RHI_LOG(mContext, CRITICAL, "No Vulkan RHI implementation compute root signature set")
-				return;
-			}
+			RHI_ASSERT(mContext, nullptr != mComputeRootSignature, "No Vulkan RHI implementation compute root signature set")
 			const Rhi::RootSignature& rootSignature = mComputeRootSignature->getRootSignature();
-			if (rootParameterIndex >= rootSignature.numberOfParameters)
-			{
-				RHI_LOG(mContext, CRITICAL, "The Vulkan RHI implementation root parameter index is out of bounds")
-				return;
-			}
+			RHI_ASSERT(mContext, rootParameterIndex < rootSignature.numberOfParameters, "The Vulkan RHI implementation root parameter index is out of bounds")
 			const Rhi::RootParameter& rootParameter = rootSignature.parameters[rootParameterIndex];
-			if (Rhi::RootParameterType::DESCRIPTOR_TABLE != rootParameter.parameterType)
-			{
-				RHI_LOG(mContext, CRITICAL, "The Vulkan RHI implementation root parameter index doesn't reference a descriptor table")
-				return;
-			}
-			if (nullptr == reinterpret_cast<const Rhi::DescriptorRange*>(rootParameter.descriptorTable.descriptorRanges))
-			{
-				RHI_LOG(mContext, CRITICAL, "The Vulkan RHI implementation descriptor ranges is a null pointer")
-				return;
-			}
+			RHI_ASSERT(mContext, Rhi::RootParameterType::DESCRIPTOR_TABLE == rootParameter.parameterType, "The Vulkan RHI implementation root parameter index doesn't reference a descriptor table")
+			RHI_ASSERT(mContext, nullptr != reinterpret_cast<const Rhi::DescriptorRange*>(rootParameter.descriptorTable.descriptorRanges), "The Vulkan RHI implementation descriptor ranges is a null pointer")
 		}
 		#endif
 

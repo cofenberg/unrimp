@@ -5329,13 +5329,13 @@ namespace Direct3D12Rhi
 					}
 					else
 					{
-						RHI_LOG(direct3D12Rhi.getContext(), CRITICAL, "Failed to create the Direct3D 12 root signature instance")
+						RHI_ASSERT(direct3D12Rhi.getContext(), false, "Failed to create the Direct3D 12 root signature instance")
 					}
 					d3dBlobSignature->Release();
 				}
 				else
 				{
-					RHI_LOG(direct3D12Rhi.getContext(), CRITICAL, "Failed to create the Direct3D 12 root signature instance: %s", (nullptr != d3dBlobError) ? reinterpret_cast<char*>(d3dBlobError->GetBufferPointer()) : "Unknown error")
+					RHI_ASSERT(direct3D12Rhi.getContext(), false, "Failed to create the Direct3D 12 root signature instance: %s", (nullptr != d3dBlobError) ? reinterpret_cast<char*>(d3dBlobError->GetBufferPointer()) : "Unknown error")
 					if (nullptr != d3dBlobError)
 					{
 						d3dBlobError->Release();
@@ -5515,7 +5515,7 @@ namespace Direct3D12Rhi
 					}
 					else
 					{
-						RHI_LOG(direct3D12Rhi.getContext(), CRITICAL, "Failed to map Direct3D 12 vertex buffer")
+						RHI_ASSERT(direct3D12Rhi.getContext(), false, "Failed to map Direct3D 12 vertex buffer")
 					}
 				}
 
@@ -5527,7 +5527,7 @@ namespace Direct3D12Rhi
 			}
 			else
 			{
-				RHI_LOG(direct3D12Rhi.getContext(), CRITICAL, "Failed to create Direct3D 12 vertex buffer resource")
+				RHI_ASSERT(direct3D12Rhi.getContext(), false, "Failed to create Direct3D 12 vertex buffer resource")
 			}
 		}
 
@@ -5633,70 +5633,62 @@ namespace Direct3D12Rhi
 			IIndexBuffer(direct3D12Rhi RHI_RESOURCE_DEBUG_PASS_PARAMETER),
 			mD3D12Resource(nullptr)
 		{
-			// "Rhi::IndexBufferFormat::UnsignedChar" is not supported by Direct3D 12
+			// Sanity check
 			// TODO(co) Check this, there's "DXGI_FORMAT_R8_UINT" which might work in Direct3D 12
-			if (Rhi::IndexBufferFormat::UNSIGNED_CHAR == indexBufferFormat)
+			RHI_ASSERT(direct3D12Rhi.getContext(), Rhi::IndexBufferFormat::UNSIGNED_CHAR != indexBufferFormat, "\"Rhi::IndexBufferFormat::UNSIGNED_CHAR\" is not supported by Direct3D 12")
+
+			// TODO(co) This is only meant for the Direct3D 12 RHI implementation kickoff.
+			// Note: using upload heaps to transfer static data like vert buffers is not 
+			// recommended. Every time the GPU needs it, the upload heap will be marshalled 
+			// over. Please read up on Default Heap usage. An upload heap is used here for 
+			// code simplicity and because there are very few verts to actually transfer.
+
+			// TODO(co) Add buffer usage setting support
+
+			const CD3DX12_HEAP_PROPERTIES d3d12XHeapProperties(D3D12_HEAP_TYPE_UPLOAD);
+			const CD3DX12_RESOURCE_DESC d3d12XResourceDesc = CD3DX12_RESOURCE_DESC::Buffer(numberOfBytes);
+			if (SUCCEEDED(direct3D12Rhi.getD3D12Device().CreateCommittedResource(
+				&d3d12XHeapProperties,
+				D3D12_HEAP_FLAG_NONE,
+				&d3d12XResourceDesc,
+				D3D12_RESOURCE_STATE_GENERIC_READ,
+				nullptr,
+				IID_PPV_ARGS(&mD3D12Resource))))
 			{
-				RHI_LOG(direct3D12Rhi.getContext(), CRITICAL, "\"Rhi::IndexBufferFormat::UNSIGNED_CHAR\" is not supported by Direct3D 12")
-				mD3D12IndexBufferView.BufferLocation = 0;
-				mD3D12IndexBufferView.SizeInBytes	 = 0;
-				mD3D12IndexBufferView.Format		 = DXGI_FORMAT_UNKNOWN;
+				// Data given?
+				if (nullptr != data)
+				{
+					// Copy the data to the index buffer
+					UINT8* pIndexDataBegin;
+					CD3DX12_RANGE readRange(0, 0);	// We do not intend to read from this resource on the CPU
+					if (SUCCEEDED(mD3D12Resource->Map(0, &readRange, reinterpret_cast<void**>(&pIndexDataBegin))))
+					{
+						memcpy(pIndexDataBegin, data, numberOfBytes);
+						mD3D12Resource->Unmap(0, nullptr);
+					}
+					else
+					{
+						RHI_ASSERT(direct3D12Rhi.getContext(), false, "Failed to map Direct3D 12 index buffer")
+					}
+				}
+
+				// Fill the Direct3D 12 index buffer view
+				mD3D12IndexBufferView.BufferLocation = mD3D12Resource->GetGPUVirtualAddress();
+				mD3D12IndexBufferView.SizeInBytes	 = numberOfBytes;
+				mD3D12IndexBufferView.Format		 = Mapping::getDirect3D12Format(indexBufferFormat);
+
+				// Assign a default name to the resource for debugging purposes
+				#ifdef RHI_DEBUG
+					RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "IBO", 6)	// 6 = "IBO: " including terminating zero
+					FAILED_DEBUG_BREAK(mD3D12Resource->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(detailedDebugName)), detailedDebugName))
+				#endif
 			}
 			else
 			{
-				// TODO(co) This is only meant for the Direct3D 12 RHI implementation kickoff.
-				// Note: using upload heaps to transfer static data like vert buffers is not 
-				// recommended. Every time the GPU needs it, the upload heap will be marshalled 
-				// over. Please read up on Default Heap usage. An upload heap is used here for 
-				// code simplicity and because there are very few verts to actually transfer.
-
-				// TODO(co) Add buffer usage setting support
-
-				const CD3DX12_HEAP_PROPERTIES d3d12XHeapProperties(D3D12_HEAP_TYPE_UPLOAD);
-				const CD3DX12_RESOURCE_DESC d3d12XResourceDesc = CD3DX12_RESOURCE_DESC::Buffer(numberOfBytes);
-				if (SUCCEEDED(direct3D12Rhi.getD3D12Device().CreateCommittedResource(
-					&d3d12XHeapProperties,
-					D3D12_HEAP_FLAG_NONE,
-					&d3d12XResourceDesc,
-					D3D12_RESOURCE_STATE_GENERIC_READ,
-					nullptr,
-					IID_PPV_ARGS(&mD3D12Resource))))
-				{
-					// Data given?
-					if (nullptr != data)
-					{
-						// Copy the data to the index buffer
-						UINT8* pIndexDataBegin;
-						CD3DX12_RANGE readRange(0, 0);	// We do not intend to read from this resource on the CPU
-						if (SUCCEEDED(mD3D12Resource->Map(0, &readRange, reinterpret_cast<void**>(&pIndexDataBegin))))
-						{
-							memcpy(pIndexDataBegin, data, numberOfBytes);
-							mD3D12Resource->Unmap(0, nullptr);
-						}
-						else
-						{
-							RHI_LOG(direct3D12Rhi.getContext(), CRITICAL, "Failed to map Direct3D 12 index buffer")
-						}
-					}
-
-					// Fill the Direct3D 12 index buffer view
-					mD3D12IndexBufferView.BufferLocation = mD3D12Resource->GetGPUVirtualAddress();
-					mD3D12IndexBufferView.SizeInBytes	 = numberOfBytes;
-					mD3D12IndexBufferView.Format		 = Mapping::getDirect3D12Format(indexBufferFormat);
-
-					// Assign a default name to the resource for debugging purposes
-					#ifdef RHI_DEBUG
-						RHI_DECORATED_DEBUG_NAME(debugName, detailedDebugName, "IBO", 6)	// 6 = "IBO: " including terminating zero
-						FAILED_DEBUG_BREAK(mD3D12Resource->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(detailedDebugName)), detailedDebugName))
-					#endif
-				}
-				else
-				{
-					RHI_LOG(direct3D12Rhi.getContext(), CRITICAL, "Failed to create Direct3D 12 index buffer resource")
-					mD3D12IndexBufferView.BufferLocation = 0;
-					mD3D12IndexBufferView.SizeInBytes	 = 0;
-					mD3D12IndexBufferView.Format		 = DXGI_FORMAT_UNKNOWN;
-				}
+				RHI_ASSERT(direct3D12Rhi.getContext(), false, "Failed to create Direct3D 12 index buffer resource")
+				mD3D12IndexBufferView.BufferLocation = 0;
+				mD3D12IndexBufferView.SizeInBytes	 = 0;
+				mD3D12IndexBufferView.Format		 = DXGI_FORMAT_UNKNOWN;
 			}
 		}
 
@@ -6016,7 +6008,7 @@ namespace Direct3D12Rhi
 					}
 					else
 					{
-						RHI_LOG(direct3D12Rhi.getContext(), CRITICAL, "Failed to map Direct3D 12 texture buffer")
+						RHI_ASSERT(direct3D12Rhi.getContext(), false, "Failed to map Direct3D 12 texture buffer")
 					}
 				}
 
@@ -6028,7 +6020,7 @@ namespace Direct3D12Rhi
 			}
 			else
 			{
-				RHI_LOG(direct3D12Rhi.getContext(), CRITICAL, "Failed to create Direct3D 12 texture buffer resource")
+				RHI_ASSERT(direct3D12Rhi.getContext(), false, "Failed to create Direct3D 12 texture buffer resource")
 			}
 		}
 
@@ -6337,7 +6329,7 @@ namespace Direct3D12Rhi
 					}
 					else
 					{
-						RHI_LOG(direct3D12Rhi.getContext(), CRITICAL, "Failed to map Direct3D 12 indirect buffer")
+						RHI_ASSERT(direct3D12Rhi.getContext(), false, "Failed to map Direct3D 12 indirect buffer")
 					}
 				}
 
@@ -6352,7 +6344,7 @@ namespace Direct3D12Rhi
 
 				if (FAILED(d3d12Device.CreateCommandSignature(&d3d12CommandSignatureDescription, nullptr, IID_PPV_ARGS(&mD3D12CommandSignature))))
 				{
-					RHI_LOG(direct3D12Rhi.getContext(), CRITICAL, "Failed to create Direct3D 12 command signature")
+					RHI_ASSERT(direct3D12Rhi.getContext(), false, "Failed to create Direct3D 12 command signature")
 				}
 
 				// Assign a default name to the resource for debugging purposes
@@ -6367,7 +6359,7 @@ namespace Direct3D12Rhi
 			}
 			else
 			{
-				RHI_LOG(direct3D12Rhi.getContext(), CRITICAL, "Failed to create Direct3D 12 indirect buffer resource")
+				RHI_ASSERT(direct3D12Rhi.getContext(), false, "Failed to create Direct3D 12 indirect buffer resource")
 			}
 		}
 
@@ -6510,7 +6502,7 @@ namespace Direct3D12Rhi
 					}
 					else
 					{
-						RHI_LOG(direct3D12Rhi.getContext(), CRITICAL, "Failed to map Direct3D 12 uniform buffer")
+						RHI_ASSERT(direct3D12Rhi.getContext(), false, "Failed to map Direct3D 12 uniform buffer")
 					}
 				}
 
@@ -6522,7 +6514,7 @@ namespace Direct3D12Rhi
 			}
 			else
 			{
-				RHI_LOG(direct3D12Rhi.getContext(), CRITICAL, "Failed to create Direct3D 12 uniform buffer resource")
+				RHI_ASSERT(direct3D12Rhi.getContext(), false, "Failed to create Direct3D 12 uniform buffer resource")
 			}
 		}
 
@@ -8526,7 +8518,7 @@ namespace Direct3D12Rhi
 			FAILED_DEBUG_BREAK(dxgiFactory4.CreateSwapChain(direct3D12Rhi.getD3D12CommandQueue(), &dxgiSwapChainDesc, &dxgiSwapChain))
 			if (FAILED(dxgiSwapChain->QueryInterface(IID_PPV_ARGS(&mDxgiSwapChain3))))
 			{
-				RHI_LOG(direct3D12Rhi.getContext(), CRITICAL, "Failed to retrieve the Direct3D 12 DXGI swap chain 3")
+				RHI_ASSERT(direct3D12Rhi.getContext(), false, "Failed to retrieve the Direct3D 12 DXGI swap chain 3")
 			}
 			dxgiSwapChain->Release();
 
@@ -8547,14 +8539,11 @@ namespace Direct3D12Rhi
 
 				// Create an event handle to use for frame synchronization
 				mFenceEvent = ::CreateEvent(nullptr, FALSE, FALSE, nullptr);
-				if (nullptr == mFenceEvent)
-				{
-					RHI_LOG(direct3D12Rhi.getContext(), CRITICAL, "Failed to create an Direct3D 12 event handle to use for frame synchronization. Error code %u", ::GetLastError())
-				}
+				RHI_ASSERT(direct3D12Rhi.getContext(), nullptr != mFenceEvent, "Failed to create an Direct3D 12 event handle to use for frame synchronization. Error code %u", ::GetLastError())
 			}
 			else
 			{
-				RHI_LOG(direct3D12Rhi.getContext(), CRITICAL, "Failed to create Direct3D 12 fence instance")
+				RHI_ASSERT(direct3D12Rhi.getContext(), false, "Failed to create Direct3D 12 fence instance")
 			}
 
 			// Assign a default name to the resource for debugging purposes
@@ -8876,7 +8865,7 @@ namespace Direct3D12Rhi
 				if (FAILED(result))
 				{
 					// TODO(co) Better error handling
-					RHI_LOG(static_cast<Direct3D12Rhi&>(getRhi()).getContext(), CRITICAL, "Failed to set Direct3D 12 fullscreen state")
+					RHI_ASSERT(static_cast<Direct3D12Rhi&>(getRhi()).getContext(), false, "Failed to set Direct3D 12 fullscreen state")
 				}
 			}
 		}
@@ -8991,7 +8980,7 @@ namespace Direct3D12Rhi
 							}
 							else
 							{
-								RHI_LOG(direct3D12Rhi.getContext(), CRITICAL, "Failed to retrieve frame buffer from Direct3D 12 DXGI swap chain")
+								RHI_ASSERT(direct3D12Rhi.getContext(), false, "Failed to retrieve frame buffer from Direct3D 12 DXGI swap chain")
 							}
 						}
 					}
@@ -9000,7 +8989,7 @@ namespace Direct3D12Rhi
 				}
 				else
 				{
-					RHI_LOG(direct3D12Rhi.getContext(), CRITICAL, "Failed to describe and create a Direct3D 12 render target view (RTV) descriptor heap")
+					RHI_ASSERT(direct3D12Rhi.getContext(), false, "Failed to describe and create a Direct3D 12 render target view (RTV) descriptor heap")
 				}
 			}
 
@@ -9044,12 +9033,12 @@ namespace Direct3D12Rhi
 					}
 					else
 					{
-						RHI_LOG(direct3D12Rhi.getContext(), CRITICAL, "Failed to create the Direct3D 12 depth stencil view (DSV) resource")
+						RHI_ASSERT(direct3D12Rhi.getContext(), false, "Failed to create the Direct3D 12 depth stencil view (DSV) resource")
 					}
 				}
 				else
 				{
-					RHI_LOG(direct3D12Rhi.getContext(), CRITICAL, "Failed to describe and create a Direct3D 12 depth stencil view (DSV) descriptor heap")
+					RHI_ASSERT(direct3D12Rhi.getContext(), false, "Failed to describe and create a Direct3D 12 depth stencil view (DSV) descriptor heap")
 				}
 			}
 		}
@@ -9117,7 +9106,7 @@ namespace Direct3D12Rhi
 					}
 					else
 					{
-						RHI_LOG(direct3D12Rhi.getContext(), CRITICAL, "Failed to set Direct3D 12 event on completion")
+						RHI_ASSERT(direct3D12Rhi.getContext(), false, "Failed to set Direct3D 12 event on completion")
 					}
 				}
 
@@ -9306,7 +9295,7 @@ namespace Direct3D12Rhi
 						case Rhi::ResourceType::MESH_SHADER:
 						case Rhi::ResourceType::COMPUTE_SHADER:
 						default:
-							RHI_LOG(direct3D12Rhi.getContext(), CRITICAL, "The type of the given color texture at index %u is not supported by the Direct3D 12 RHI implementation", colorTexture - mColorTextures)
+							RHI_ASSERT(direct3D12Rhi.getContext(), false, "The type of the given color texture at index %u is not supported by the Direct3D 12 RHI implementation", colorTexture - mColorTextures)
 							*d3d12DescriptorHeapRenderTargetView = nullptr;
 							break;
 					}
@@ -9410,7 +9399,7 @@ namespace Direct3D12Rhi
 					case Rhi::ResourceType::MESH_SHADER:
 					case Rhi::ResourceType::COMPUTE_SHADER:
 					default:
-						RHI_LOG(direct3D12Rhi.getContext(), CRITICAL, "The type of the given depth stencil texture is not supported by the Direct3D 12 RHI implementation")
+						RHI_ASSERT(direct3D12Rhi.getContext(), false, "The type of the given depth stencil texture is not supported by the Direct3D 12 RHI implementation")
 						break;
 				}
 			}
@@ -11172,12 +11161,8 @@ namespace Direct3D12Rhi
 			// Define the vertex input layout
 			// -> No dynamic allocations/deallocations in here, a fixed maximum number of supported attributes must be sufficient
 			static constexpr uint32_t MAXIMUM_NUMBER_OF_ATTRIBUTES = 16;	// 16 elements per vertex are already pretty many
-			uint32_t numberOfVertexAttributes = graphicsPipelineState.vertexAttributes.numberOfAttributes;
-			if (numberOfVertexAttributes > MAXIMUM_NUMBER_OF_ATTRIBUTES)
-			{
-				RHI_LOG(direct3D12Rhi.getContext(), CRITICAL, "Too many vertex attributes (%u) provided. The limit of the Direct3D 12 RHI implementation is %u.", numberOfVertexAttributes, MAXIMUM_NUMBER_OF_ATTRIBUTES)
-				numberOfVertexAttributes = MAXIMUM_NUMBER_OF_ATTRIBUTES;
-			}
+			const uint32_t numberOfVertexAttributes = graphicsPipelineState.vertexAttributes.numberOfAttributes;
+			RHI_ASSERT(direct3D12Rhi.getContext(), numberOfVertexAttributes < MAXIMUM_NUMBER_OF_ATTRIBUTES, "Too many vertex attributes (%u) provided. The limit of the Direct3D 12 RHI implementation is %u.", numberOfVertexAttributes, MAXIMUM_NUMBER_OF_ATTRIBUTES)
 			D3D12_INPUT_ELEMENT_DESC d3d12InputElementDescs[MAXIMUM_NUMBER_OF_ATTRIBUTES];
 			for (uint32_t vertexAttribute = 0; vertexAttribute < numberOfVertexAttributes; ++vertexAttribute)
 			{
@@ -11353,7 +11338,7 @@ namespace Direct3D12Rhi
 			}
 			else
 			{
-				RHI_LOG(direct3D12Rhi.getContext(), CRITICAL, "Failed to create the Direct3D 12 graphics pipeline state object")
+				RHI_ASSERT(direct3D12Rhi.getContext(), false, "Failed to create the Direct3D 12 graphics pipeline state object")
 			}
 		}
 
@@ -11492,7 +11477,7 @@ namespace Direct3D12Rhi
 			}
 			else
 			{
-				RHI_LOG(direct3D12Rhi.getContext(), CRITICAL, "Failed to create the Direct3D 12 compute pipeline state object")
+				RHI_ASSERT(direct3D12Rhi.getContext(), false, "Failed to create the Direct3D 12 compute pipeline state object")
 			}
 		}
 
@@ -11830,7 +11815,7 @@ namespace Direct3D12Rhi
 								case Rhi::ResourceType::TASK_SHADER:
 								case Rhi::ResourceType::MESH_SHADER:
 								case Rhi::ResourceType::COMPUTE_SHADER:
-									RHI_LOG(direct3D12Rhi.getContext(), CRITICAL, "Invalid Direct3D 12 RHI implementation resource type")
+									RHI_ASSERT(direct3D12Rhi.getContext(), false, "Invalid Direct3D 12 RHI implementation resource type")
 									break;
 							}
 							RHI_ASSERT(direct3D12Rhi.getContext(), nullptr != d3d12Resource, "Invalid Direct3D 12 resource")
@@ -11857,7 +11842,7 @@ namespace Direct3D12Rhi
 						case Rhi::ResourceType::TASK_SHADER:
 						case Rhi::ResourceType::MESH_SHADER:
 						case Rhi::ResourceType::COMPUTE_SHADER:
-							RHI_LOG(direct3D12Rhi.getContext(), CRITICAL, "Invalid Direct3D 12 RHI implementation resource type")
+							RHI_ASSERT(direct3D12Rhi.getContext(), false, "Invalid Direct3D 12 RHI implementation resource type")
 							break;
 					}
 					d3d12CpuDescriptorHandle.ptr += descriptorSize;
@@ -11917,7 +11902,7 @@ namespace Direct3D12Rhi
 						case Rhi::ResourceType::TASK_SHADER:
 						case Rhi::ResourceType::MESH_SHADER:
 						case Rhi::ResourceType::COMPUTE_SHADER:
-							RHI_LOG(direct3D12Rhi.getContext(), CRITICAL, "Invalid Direct3D 12 RHI implementation resource type")
+							RHI_ASSERT(direct3D12Rhi.getContext(), false, "Invalid Direct3D 12 RHI implementation resource type")
 							break;
 					}
 					d3d12CpuDescriptorHandle.ptr += descriptorSize;
@@ -12220,17 +12205,11 @@ namespace
 			//[-------------------------------------------------------]
 			//[ Resource                                              ]
 			//[-------------------------------------------------------]
-			void SetTextureMinimumMaximumMipmapIndex(const void* data, Rhi::IRhi& rhi)
+			void SetTextureMinimumMaximumMipmapIndex(const void* data, [[maybe_unused]] Rhi::IRhi& rhi)
 			{
 				const Rhi::Command::SetTextureMinimumMaximumMipmapIndex* realData = static_cast<const Rhi::Command::SetTextureMinimumMaximumMipmapIndex*>(data);
-				if (realData->texture->getResourceType() == Rhi::ResourceType::TEXTURE_2D)
-				{
-					static_cast<Direct3D12Rhi::Texture2D*>(realData->texture)->setMinimumMaximumMipmapIndex(realData->minimumMipmapIndex, realData->maximumMipmapIndex);
-				}
-				else
-				{
-					RHI_LOG(static_cast<Direct3D12Rhi::Direct3D12Rhi&>(rhi).getContext(), CRITICAL, "Unsupported Direct3D 12 texture resource type")
-				}
+				RHI_ASSERT(static_cast<Direct3D12Rhi::Direct3D12Rhi&>(rhi).getContext(), realData->texture->getResourceType() == Rhi::ResourceType::TEXTURE_2D, "Unsupported Direct3D 12 texture resource type")
+				static_cast<Direct3D12Rhi::Texture2D*>(realData->texture)->setMinimumMaximumMipmapIndex(realData->minimumMipmapIndex, realData->maximumMipmapIndex);
 			}
 
 			void ResolveMultisampleFramebuffer(const void* data, Rhi::IRhi& rhi)
@@ -12656,28 +12635,12 @@ namespace Direct3D12Rhi
 		// Security checks
 		#ifdef RHI_DEBUG
 		{
-			if (nullptr == mGraphicsRootSignature)
-			{
-				RHI_LOG(mContext, CRITICAL, "No Direct3D 12 RHI implementation graphics root signature set")
-				return;
-			}
+			RHI_ASSERT(mContext, nullptr != mGraphicsRootSignature, "No Direct3D 12 RHI implementation graphics root signature set")
 			const Rhi::RootSignature& rootSignature = mGraphicsRootSignature->getRootSignature();
-			if (rootParameterIndex >= rootSignature.numberOfParameters)
-			{
-				RHI_LOG(mContext, CRITICAL, "The Direct3D 12 RHI implementation root parameter index is out of bounds")
-				return;
-			}
+			RHI_ASSERT(mContext, rootParameterIndex < rootSignature.numberOfParameters, "The Direct3D 12 RHI implementation root parameter index is out of bounds")
 			const Rhi::RootParameter& rootParameter = rootSignature.parameters[rootParameterIndex];
-			if (Rhi::RootParameterType::DESCRIPTOR_TABLE != rootParameter.parameterType)
-			{
-				RHI_LOG(mContext, CRITICAL, "The Direct3D 12 RHI implementation root parameter index doesn't reference a descriptor table")
-				return;
-			}
-			if (nullptr == reinterpret_cast<const Rhi::DescriptorRange*>(rootParameter.descriptorTable.descriptorRanges))
-			{
-				RHI_LOG(mContext, CRITICAL, "The Direct3D 12 RHI implementation descriptor ranges is a null pointer")
-				return;
-			}
+			RHI_ASSERT(mContext, Rhi::RootParameterType::DESCRIPTOR_TABLE == rootParameter.parameterType, "The Direct3D 12 RHI implementation root parameter index doesn't reference a descriptor table")
+			RHI_ASSERT(mContext, nullptr != reinterpret_cast<const Rhi::DescriptorRange*>(rootParameter.descriptorTable.descriptorRanges), "The Direct3D 12 RHI implementation descriptor ranges is a null pointer")
 		}
 		#endif
 
@@ -13262,28 +13225,12 @@ namespace Direct3D12Rhi
 		// Security checks
 		#ifdef RHI_DEBUG
 		{
-			if (nullptr == mComputeRootSignature)
-			{
-				RHI_LOG(mContext, CRITICAL, "No Direct3D 12 RHI implementation compute root signature set")
-				return;
-			}
+			RHI_ASSERT(mContext, nullptr != mComputeRootSignature, "No Direct3D 12 RHI implementation compute root signature set")
 			const Rhi::RootSignature& rootSignature = mComputeRootSignature->getRootSignature();
-			if (rootParameterIndex >= rootSignature.numberOfParameters)
-			{
-				RHI_LOG(mContext, CRITICAL, "The Direct3D 12 RHI implementation root parameter index is out of bounds")
-				return;
-			}
+			RHI_ASSERT(mContext, rootParameterIndex < rootSignature.numberOfParameters, "The Direct3D 12 RHI implementation root parameter index is out of bounds")
 			const Rhi::RootParameter& rootParameter = rootSignature.parameters[rootParameterIndex];
-			if (Rhi::RootParameterType::DESCRIPTOR_TABLE != rootParameter.parameterType)
-			{
-				RHI_LOG(mContext, CRITICAL, "The Direct3D 12 RHI implementation root parameter index doesn't reference a descriptor table")
-				return;
-			}
-			if (nullptr == reinterpret_cast<const Rhi::DescriptorRange*>(rootParameter.descriptorTable.descriptorRanges))
-			{
-				RHI_LOG(mContext, CRITICAL, "The Direct3D 12 RHI implementation descriptor ranges is a null pointer")
-				return;
-			}
+			RHI_ASSERT(mContext, Rhi::RootParameterType::DESCRIPTOR_TABLE == rootParameter.parameterType, "The Direct3D 12 RHI implementation root parameter index doesn't reference a descriptor table")
+			RHI_ASSERT(mContext, nullptr != reinterpret_cast<const Rhi::DescriptorRange*>(rootParameter.descriptorTable.descriptorRanges), "The Direct3D 12 RHI implementation descriptor ranges is a null pointer")
 		}
 		#endif
 

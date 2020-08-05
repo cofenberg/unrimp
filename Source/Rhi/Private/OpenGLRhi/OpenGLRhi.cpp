@@ -13750,7 +13750,6 @@ namespace OpenGLRhi
 			Framebuffer(renderPass, colorFramebufferAttachments, depthStencilFramebufferAttachment RHI_RESOURCE_DEBUG_PASS_PARAMETER)
 		{
 			// Texture reference handling is done within the base class "Framebuffer"
-			OpenGLRhi& openGLRhi = static_cast<OpenGLRhi&>(renderPass.getRhi());
 
 			#ifdef RHI_OPENGL_STATE_CLEANUP
 				// Backup the currently bound OpenGL framebuffer
@@ -13765,23 +13764,17 @@ namespace OpenGLRhi
 			glBindFramebuffer(GL_FRAMEBUFFER, mOpenGLFramebuffer);
 
 			// Loop through all framebuffer color attachments
+			#ifdef RHI_DEBUG
+				OpenGLRhi& openGLRhi = static_cast<OpenGLRhi&>(renderPass.getRhi());
+			#endif
 			const Rhi::FramebufferAttachment* colorFramebufferAttachment    = colorFramebufferAttachments;
 			const Rhi::FramebufferAttachment* colorFramebufferAttachmentEnd = colorFramebufferAttachments + mNumberOfColorTextures;
 			for (GLenum openGLAttachment = GL_COLOR_ATTACHMENT0; colorFramebufferAttachment < colorFramebufferAttachmentEnd; ++colorFramebufferAttachment, ++openGLAttachment)
 			{
 				Rhi::ITexture* texture = colorFramebufferAttachment->texture;
 
-				// Security check: Is the given resource owned by this RHI?
-				#ifdef RHI_DEBUG
-					if (&openGLRhi != &texture->getRhi())
-					{
-						// Output an error message and keep on going in order to keep a reasonable behaviour even in case on an error
-						RHI_LOG(openGLRhi.getContext(), CRITICAL, "OpenGL error: The given color texture at index %u is owned by another RHI instance", colorFramebufferAttachment - colorFramebufferAttachments)
-
-						// Continue, there's no point in trying to do any error handling in here
-						continue;
-					}
-				#endif
+				// Sanity check: Is the given resource owned by this RHI?
+				RHI_ASSERT(openGLRhi.getContext(), &openGLRhi == &texture->getRhi(), "OpenGL error: The given color texture at index %u is owned by another RHI instance", colorFramebufferAttachment - colorFramebufferAttachments)
 
 				// Evaluate the color texture type
 				switch (texture->getResourceType())
@@ -13841,7 +13834,7 @@ namespace OpenGLRhi
 					case Rhi::ResourceType::MESH_SHADER:
 					case Rhi::ResourceType::COMPUTE_SHADER:
 					default:
-						RHI_LOG(openGLRhi.getContext(), CRITICAL, "The type of the given color texture at index %ld is not supported by the OpenGL RHI implementation", colorFramebufferAttachment - colorFramebufferAttachments)
+						RHI_ASSERT(openGLRhi.getContext(), false, "The type of the given color texture at index %ld is not supported by the OpenGL RHI implementation", colorFramebufferAttachment - colorFramebufferAttachments)
 						break;
 				}
 			}
@@ -13849,14 +13842,8 @@ namespace OpenGLRhi
 			// Depth stencil texture
 			if (nullptr != mDepthStencilTexture)
 			{
-				// Security check: Is the given resource owned by this RHI?
-				#ifdef RHI_DEBUG
-					if (&openGLRhi != &mDepthStencilTexture->getRhi())
-					{
-						// Output an error message and keep on going in order to keep a reasonable behaviour even in case on an error
-						RHI_LOG(openGLRhi.getContext(), CRITICAL, "OpenGL error: The given depth stencil texture is owned by another RHI instance")
-					}
-				#endif
+				// Sanity check: Is the given resource owned by this RHI?
+				RHI_ASSERT(openGLRhi.getContext(), &openGLRhi == &mDepthStencilTexture->getRhi(), "OpenGL error: The given depth stencil texture is owned by another RHI instance")
 
 				// Evaluate the depth stencil texture type
 				switch (mDepthStencilTexture->getResourceType())
@@ -13865,7 +13852,7 @@ namespace OpenGLRhi
 					{
 						const Texture2D* texture2D = static_cast<const Texture2D*>(mDepthStencilTexture);
 
-						// Sanity check
+						// Sanity checks
 						RHI_ASSERT(openGLRhi.getContext(), depthStencilFramebufferAttachment->mipmapIndex < Texture2D::getNumberOfMipmaps(texture2D->getWidth(), texture2D->getHeight()), "Invalid OpenGL depth stencil framebuffer attachment mipmap index")
 						RHI_ASSERT(openGLRhi.getContext(), 0 == depthStencilFramebufferAttachment->layerIndex, "Invalid OpenGL depth stencil framebuffer attachment layer index")
 
@@ -13921,7 +13908,7 @@ namespace OpenGLRhi
 					case Rhi::ResourceType::MESH_SHADER:
 					case Rhi::ResourceType::COMPUTE_SHADER:
 					default:
-						RHI_LOG(openGLRhi.getContext(), CRITICAL, "OpenGL error: The type of the given depth stencil texture is not supported by the OpenGL RHI implementation")
+						RHI_ASSERT(openGLRhi.getContext(), false, "OpenGL error: The type of the given depth stencil texture is not supported by the OpenGL RHI implementation")
 						break;
 				}
 			}
@@ -13931,41 +13918,41 @@ namespace OpenGLRhi
 			switch (openGLStatus)
 			{
 				case GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT:
-					RHI_LOG(openGLRhi.getContext(), CRITICAL, "OpenGL error: Not all framebuffer attachment points are framebuffer attachment complete (\"GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT\")")
+					RHI_ASSERT(openGLRhi.getContext(), false, "OpenGL error: Not all framebuffer attachment points are framebuffer attachment complete (\"GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT\")")
 					break;
 
 				case GL_FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT:
-					RHI_LOG(openGLRhi.getContext(), CRITICAL, "OpenGL error: No images are attached to the framebuffer (\"GL_FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT\")")
+					RHI_ASSERT(openGLRhi.getContext(), false, "OpenGL error: No images are attached to the framebuffer (\"GL_FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT\")")
 					break;
 
 				case GL_FRAMEBUFFER_INCOMPLETE_DRAW_BUFFER:
-					RHI_LOG(openGLRhi.getContext(), CRITICAL, "OpenGL error: Incomplete draw buffer framebuffer (\"GL_FRAMEBUFFER_INCOMPLETE_DRAW_BUFFER\")")
+					RHI_ASSERT(openGLRhi.getContext(), false, "OpenGL error: Incomplete draw buffer framebuffer (\"GL_FRAMEBUFFER_INCOMPLETE_DRAW_BUFFER\")")
 					break;
 
 				case GL_FRAMEBUFFER_INCOMPLETE_READ_BUFFER:
-					RHI_LOG(openGLRhi.getContext(), CRITICAL, "OpenGL error: Incomplete read buffer framebuffer (\"GL_FRAMEBUFFER_INCOMPLETE_READ_BUFFER\")")
+					RHI_ASSERT(openGLRhi.getContext(), false, "OpenGL error: Incomplete read buffer framebuffer (\"GL_FRAMEBUFFER_INCOMPLETE_READ_BUFFER\")")
 					break;
 
 				case GL_FRAMEBUFFER_INCOMPLETE_MULTISAMPLE:
-					RHI_LOG(openGLRhi.getContext(), CRITICAL, "OpenGL error: Incomplete multisample framebuffer (\"GL_FRAMEBUFFER_INCOMPLETE_MULTISAMPLE\")")
+					RHI_ASSERT(openGLRhi.getContext(), false, "OpenGL error: Incomplete multisample framebuffer (\"GL_FRAMEBUFFER_INCOMPLETE_MULTISAMPLE\")")
 					break;
 
 				case GL_FRAMEBUFFER_UNDEFINED:
-					RHI_LOG(openGLRhi.getContext(), CRITICAL, "OpenGL error: Undefined framebuffer (\"GL_FRAMEBUFFER_UNDEFINED\")")
+					RHI_ASSERT(openGLRhi.getContext(), false, "OpenGL error: Undefined framebuffer (\"GL_FRAMEBUFFER_UNDEFINED\")")
 					break;
 
 				case GL_FRAMEBUFFER_UNSUPPORTED:
-					RHI_LOG(openGLRhi.getContext(), CRITICAL, "OpenGL error: The combination of internal formats of the attached images violates an implementation-dependent set of restrictions (\"GL_FRAMEBUFFER_UNSUPPORTED\")")
+					RHI_ASSERT(openGLRhi.getContext(), false, "OpenGL error: The combination of internal formats of the attached images violates an implementation-dependent set of restrictions (\"GL_FRAMEBUFFER_UNSUPPORTED\")")
 					break;
 
 				// From "GL_EXT_framebuffer_object" (should no longer matter, should)
 				case GL_FRAMEBUFFER_INCOMPLETE_DIMENSIONS_EXT:
-					RHI_LOG(openGLRhi.getContext(), CRITICAL, "OpenGL error: Not all attached images have the same width and height (\"GL_FRAMEBUFFER_INCOMPLETE_DIMENSIONS_EXT\")")
+					RHI_ASSERT(openGLRhi.getContext(), false, "OpenGL error: Not all attached images have the same width and height (\"GL_FRAMEBUFFER_INCOMPLETE_DIMENSIONS_EXT\")")
 					break;
 
 				// From "GL_EXT_framebuffer_object" (should no longer matter, should)
 				case GL_FRAMEBUFFER_INCOMPLETE_FORMATS_EXT:
-					RHI_LOG(openGLRhi.getContext(), CRITICAL, "OpenGL error: Incomplete formats framebuffer object (\"GL_FRAMEBUFFER_INCOMPLETE_FORMATS_EXT\")")
+					RHI_ASSERT(openGLRhi.getContext(), false, "OpenGL error: Incomplete formats framebuffer object (\"GL_FRAMEBUFFER_INCOMPLETE_FORMATS_EXT\")")
 					break;
 
 				default:
@@ -14066,17 +14053,8 @@ namespace OpenGLRhi
 			{
 				Rhi::ITexture* texture = colorFramebufferAttachment->texture;
 
-				// Security check: Is the given resource owned by this RHI?
-				#ifdef RHI_DEBUG
-					if (&openGLRhi != &texture->getRhi())
-					{
-						// Output an error message and keep on going in order to keep a reasonable behaviour even in case on an error
-						RHI_LOG(openGLRhi.getContext(), CRITICAL, "OpenGL error: The given color texture at index %u is owned by another RHI instance", colorFramebufferAttachment - colorFramebufferAttachments)
-
-						// Continue, there's no point in trying to do any error handling in here
-						continue;
-					}
-				#endif
+				// Sanity check: Is the given resource owned by this RHI?
+				RHI_ASSERT(openGLRhi.getContext(), &openGLRhi == &texture->getRhi(), "OpenGL error: The given color texture at index %u is owned by another RHI instance", colorFramebufferAttachment - colorFramebufferAttachments)
 
 				// Evaluate the color texture type
 				switch (texture->getResourceType())
@@ -14150,7 +14128,7 @@ namespace OpenGLRhi
 					case Rhi::ResourceType::MESH_SHADER:
 					case Rhi::ResourceType::COMPUTE_SHADER:
 					default:
-						RHI_LOG(openGLRhi.getContext(), CRITICAL, "The type of the given color texture at index %ld is not supported by the OpenGL RHI implementation", colorFramebufferAttachment - colorFramebufferAttachments)
+						RHI_ASSERT(openGLRhi.getContext(), false, "The type of the given color texture at index %ld is not supported by the OpenGL RHI implementation", colorFramebufferAttachment - colorFramebufferAttachments)
 						break;
 				}
 			}
@@ -14158,14 +14136,8 @@ namespace OpenGLRhi
 			// Depth stencil texture
 			if (nullptr != mDepthStencilTexture)
 			{
-				// Security check: Is the given resource owned by this RHI?
-				#ifdef RHI_DEBUG
-					if (&openGLRhi != &mDepthStencilTexture->getRhi())
-					{
-						// Output an error message and keep on going in order to keep a reasonable behaviour even in case on an error
-						RHI_LOG(openGLRhi.getContext(), CRITICAL, "OpenGL error: The given depth stencil texture is owned by another RHI instance")
-					}
-				#endif
+				// Sanity check: Is the given resource owned by this RHI?
+				RHI_ASSERT(openGLRhi.getContext(), &openGLRhi == &mDepthStencilTexture->getRhi(), "OpenGL error: The given depth stencil texture is owned by another RHI instance")
 
 				// Evaluate the depth stencil texture type
 				switch (mDepthStencilTexture->getResourceType())
@@ -14244,7 +14216,7 @@ namespace OpenGLRhi
 					case Rhi::ResourceType::MESH_SHADER:
 					case Rhi::ResourceType::COMPUTE_SHADER:
 					default:
-						RHI_LOG(openGLRhi.getContext(), CRITICAL, "The type of the given depth stencil texture is not supported by the OpenGL RHI implementation")
+						RHI_ASSERT(openGLRhi.getContext(), false, "The type of the given depth stencil texture is not supported by the OpenGL RHI implementation")
 						break;
 				}
 			}
@@ -14254,41 +14226,41 @@ namespace OpenGLRhi
 			switch (openGLStatus)
 			{
 				case GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT:
-					RHI_LOG(openGLRhi.getContext(), CRITICAL, "OpenGL error: Not all framebuffer attachment points are framebuffer attachment complete (\"GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT\")")
+					RHI_ASSERT(openGLRhi.getContext(), false, "OpenGL error: Not all framebuffer attachment points are framebuffer attachment complete (\"GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT\")")
 					break;
 
 				case GL_FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT:
-					RHI_LOG(openGLRhi.getContext(), CRITICAL, "OpenGL error: No images are attached to the framebuffer (\"GL_FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT\")")
+					RHI_ASSERT(openGLRhi.getContext(), false, "OpenGL error: No images are attached to the framebuffer (\"GL_FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT\")")
 					break;
 
 				case GL_FRAMEBUFFER_INCOMPLETE_DRAW_BUFFER:
-					RHI_LOG(openGLRhi.getContext(), CRITICAL, "OpenGL error: Incomplete draw buffer framebuffer (\"GL_FRAMEBUFFER_INCOMPLETE_DRAW_BUFFER\")")
+					RHI_ASSERT(openGLRhi.getContext(), false, "OpenGL error: Incomplete draw buffer framebuffer (\"GL_FRAMEBUFFER_INCOMPLETE_DRAW_BUFFER\")")
 					break;
 
 				case GL_FRAMEBUFFER_INCOMPLETE_READ_BUFFER:
-					RHI_LOG(openGLRhi.getContext(), CRITICAL, "OpenGL error: Incomplete read buffer framebuffer (\"GL_FRAMEBUFFER_INCOMPLETE_READ_BUFFER\")")
+					RHI_ASSERT(openGLRhi.getContext(), false, "OpenGL error: Incomplete read buffer framebuffer (\"GL_FRAMEBUFFER_INCOMPLETE_READ_BUFFER\")")
 					break;
 
 				case GL_FRAMEBUFFER_INCOMPLETE_MULTISAMPLE:
-					RHI_LOG(openGLRhi.getContext(), CRITICAL, "OpenGL error: Incomplete multisample framebuffer (\"GL_FRAMEBUFFER_INCOMPLETE_MULTISAMPLE\")")
+					RHI_ASSERT(openGLRhi.getContext(), false, "OpenGL error: Incomplete multisample framebuffer (\"GL_FRAMEBUFFER_INCOMPLETE_MULTISAMPLE\")")
 					break;
 
 				case GL_FRAMEBUFFER_UNDEFINED:
-					RHI_LOG(openGLRhi.getContext(), CRITICAL, "OpenGL error: Undefined framebuffer (\"GL_FRAMEBUFFER_UNDEFINED\")")
+					RHI_ASSERT(openGLRhi.getContext(), false, "OpenGL error: Undefined framebuffer (\"GL_FRAMEBUFFER_UNDEFINED\")")
 					break;
 
 				case GL_FRAMEBUFFER_UNSUPPORTED:
-					RHI_LOG(openGLRhi.getContext(), CRITICAL, "OpenGL error: The combination of internal formats of the attached images violates an implementation-dependent set of restrictions (\"GL_FRAMEBUFFER_UNSUPPORTED\")")
+					RHI_ASSERT(openGLRhi.getContext(), false, "OpenGL error: The combination of internal formats of the attached images violates an implementation-dependent set of restrictions (\"GL_FRAMEBUFFER_UNSUPPORTED\")")
 					break;
 
 				// From "GL_EXT_framebuffer_object" (should no longer matter, should)
 				case GL_FRAMEBUFFER_INCOMPLETE_DIMENSIONS_EXT:
-					RHI_LOG(openGLRhi.getContext(), CRITICAL, "OpenGL error: Not all attached images have the same width and height (\"GL_FRAMEBUFFER_INCOMPLETE_DIMENSIONS_EXT\")")
+					RHI_ASSERT(openGLRhi.getContext(), false, "OpenGL error: Not all attached images have the same width and height (\"GL_FRAMEBUFFER_INCOMPLETE_DIMENSIONS_EXT\")")
 					break;
 
 				// From "GL_EXT_framebuffer_object" (should no longer matter, should)
 				case GL_FRAMEBUFFER_INCOMPLETE_FORMATS_EXT:
-					RHI_LOG(openGLRhi.getContext(), CRITICAL, "OpenGL error: Incomplete formats framebuffer object (\"GL_FRAMEBUFFER_INCOMPLETE_FORMATS_EXT\")")
+					RHI_ASSERT(openGLRhi.getContext(), false, "OpenGL error: Incomplete formats framebuffer object (\"GL_FRAMEBUFFER_INCOMPLETE_FORMATS_EXT\")")
 					break;
 
 				default:
@@ -17741,7 +17713,7 @@ namespace OpenGLRhi
 									case Rhi::ShaderVisibility::TASK:
 									case Rhi::ShaderVisibility::MESH:
 									case Rhi::ShaderVisibility::COMPUTE:
-										RHI_LOG(openGLRhi.getContext(), CRITICAL, "Invalid OpenGL shader visibility")
+										RHI_ASSERT(openGLRhi.getContext(), false, "Invalid OpenGL shader visibility")
 										break;
 								}
 								#undef BIND_UNIFORM_BLOCK
@@ -17784,7 +17756,7 @@ namespace OpenGLRhi
 									case Rhi::ShaderVisibility::TASK:
 									case Rhi::ShaderVisibility::MESH:
 									case Rhi::ShaderVisibility::COMPUTE:
-										RHI_LOG(openGLRhi.getContext(), CRITICAL, "Invalid OpenGL shader visibility")
+										RHI_ASSERT(openGLRhi.getContext(), false, "Invalid OpenGL shader visibility")
 										break;
 								}
 								#undef BIND_UNIFORM_LOCATION
@@ -17949,7 +17921,7 @@ namespace OpenGLRhi
 									case Rhi::ShaderVisibility::TESSELLATION_EVALUATION:
 									case Rhi::ShaderVisibility::GEOMETRY:
 									case Rhi::ShaderVisibility::COMPUTE:
-										RHI_LOG(openGLRhi.getContext(), CRITICAL, "Invalid OpenGL shader visibility")
+										RHI_ASSERT(openGLRhi.getContext(), false, "Invalid OpenGL shader visibility")
 										break;
 								}
 								#undef BIND_UNIFORM_BLOCK
@@ -17983,7 +17955,7 @@ namespace OpenGLRhi
 									case Rhi::ShaderVisibility::TESSELLATION_EVALUATION:
 									case Rhi::ShaderVisibility::GEOMETRY:
 									case Rhi::ShaderVisibility::COMPUTE:
-										RHI_LOG(openGLRhi.getContext(), CRITICAL, "Invalid OpenGL shader visibility")
+										RHI_ASSERT(openGLRhi.getContext(), false, "Invalid OpenGL shader visibility")
 										break;
 								}
 								#undef BIND_UNIFORM_LOCATION
@@ -18574,7 +18546,7 @@ namespace OpenGLRhi
 									case Rhi::ShaderVisibility::FRAGMENT:
 									case Rhi::ShaderVisibility::TASK:
 									case Rhi::ShaderVisibility::MESH:
-										RHI_LOG(openGLRhi.getContext(), CRITICAL, "Invalid OpenGL shader visibility")
+										RHI_ASSERT(openGLRhi.getContext(), false, "Invalid OpenGL shader visibility")
 										break;
 
 									case Rhi::ShaderVisibility::ALL:
@@ -18596,7 +18568,7 @@ namespace OpenGLRhi
 									case Rhi::ShaderVisibility::FRAGMENT:
 									case Rhi::ShaderVisibility::TASK:
 									case Rhi::ShaderVisibility::MESH:
-										RHI_LOG(openGLRhi.getContext(), CRITICAL, "Invalid OpenGL shader visibility")
+										RHI_ASSERT(openGLRhi.getContext(), false, "Invalid OpenGL shader visibility")
 										break;
 
 									case Rhi::ShaderVisibility::ALL:
@@ -19657,17 +19629,11 @@ namespace
 			//[-------------------------------------------------------]
 			//[ Resource                                              ]
 			//[-------------------------------------------------------]
-			void SetTextureMinimumMaximumMipmapIndex(const void* data, Rhi::IRhi& rhi)
+			void SetTextureMinimumMaximumMipmapIndex(const void* data, [[maybe_unused]] Rhi::IRhi& rhi)
 			{
 				const Rhi::Command::SetTextureMinimumMaximumMipmapIndex* realData = static_cast<const Rhi::Command::SetTextureMinimumMaximumMipmapIndex*>(data);
-				if (realData->texture->getResourceType() == Rhi::ResourceType::TEXTURE_2D)
-				{
-					static_cast<OpenGLRhi::Texture2D*>(realData->texture)->setMinimumMaximumMipmapIndex(realData->minimumMipmapIndex, realData->maximumMipmapIndex);
-				}
-				else
-				{
-					RHI_LOG(static_cast<OpenGLRhi::OpenGLRhi&>(rhi).getContext(), CRITICAL, "Unsupported OpenGL texture resource type")
-				}
+				RHI_ASSERT(static_cast<OpenGLRhi::OpenGLRhi&>(rhi).getContext(), realData->texture->getResourceType() == Rhi::ResourceType::TEXTURE_2D, "Unsupported OpenGL texture resource type")
+				static_cast<OpenGLRhi::Texture2D*>(realData->texture)->setMinimumMaximumMipmapIndex(realData->minimumMipmapIndex, realData->maximumMipmapIndex);
 			}
 
 			void ResolveMultisampleFramebuffer(const void* data, Rhi::IRhi& rhi)
@@ -19981,11 +19947,11 @@ namespace OpenGLRhi
 				// Error!
 				if (numberOfCurrentResources > 1)
 				{
-					RHI_LOG(mContext, CRITICAL, "The OpenGL RHI implementation is going to be destroyed, but there are still %lu resource instances left (memory leak)", numberOfCurrentResources)
+					RHI_ASSERT(mContext, false, "The OpenGL RHI implementation is going to be destroyed, but there are still %lu resource instances left (memory leak)", numberOfCurrentResources)
 				}
 				else
 				{
-					RHI_LOG(mContext, CRITICAL, "The OpenGL RHI implementation is going to be destroyed, but there is still one resource instance left (memory leak)")
+					RHI_ASSERT(mContext, false, "The OpenGL RHI implementation is going to be destroyed, but there is still one resource instance left (memory leak)")
 				}
 
 				// Use debug output to show the current number of resource instances
@@ -20081,28 +20047,12 @@ namespace OpenGLRhi
 		// Security checks
 		#ifdef RHI_DEBUG
 		{
-			if (nullptr == mGraphicsRootSignature)
-			{
-				RHI_LOG(mContext, CRITICAL, "No OpenGL RHI implementation graphics root signature set")
-				return;
-			}
+			RHI_ASSERT(mContext, nullptr != mGraphicsRootSignature, "No OpenGL RHI implementation graphics root signature set")
 			const Rhi::RootSignature& rootSignature = mGraphicsRootSignature->getRootSignature();
-			if (rootParameterIndex >= rootSignature.numberOfParameters)
-			{
-				RHI_LOG(mContext, CRITICAL, "The OpenGL RHI implementation root parameter index is out of bounds")
-				return;
-			}
+			RHI_ASSERT(mContext, rootParameterIndex < rootSignature.numberOfParameters, "The OpenGL RHI implementation root parameter index is out of bounds")
 			const Rhi::RootParameter& rootParameter = rootSignature.parameters[rootParameterIndex];
-			if (Rhi::RootParameterType::DESCRIPTOR_TABLE != rootParameter.parameterType)
-			{
-				RHI_LOG(mContext, CRITICAL, "The OpenGL RHI implementation root parameter index doesn't reference a descriptor table")
-				return;
-			}
-			if (nullptr == reinterpret_cast<const Rhi::DescriptorRange*>(rootParameter.descriptorTable.descriptorRanges))
-			{
-				RHI_LOG(mContext, CRITICAL, "The OpenGL RHI implementation descriptor ranges is a null pointer")
-				return;
-			}
+			RHI_ASSERT(mContext, Rhi::RootParameterType::DESCRIPTOR_TABLE == rootParameter.parameterType, "The OpenGL RHI implementation root parameter index doesn't reference a descriptor table")
+			RHI_ASSERT(mContext, nullptr != reinterpret_cast<const Rhi::DescriptorRange*>(rootParameter.descriptorTable.descriptorRanges), "The OpenGL RHI implementation descriptor ranges is a null pointer")
 		}
 		#endif
 
@@ -20773,28 +20723,12 @@ namespace OpenGLRhi
 		// Security checks
 		#ifdef RHI_DEBUG
 		{
-			if (nullptr == mComputeRootSignature)
-			{
-				RHI_LOG(mContext, CRITICAL, "No OpenGL RHI implementation compute root signature set")
-				return;
-			}
+			RHI_ASSERT(mContext, nullptr != mComputeRootSignature, "No OpenGL RHI implementation compute root signature set")
 			const Rhi::RootSignature& rootSignature = mComputeRootSignature->getRootSignature();
-			if (rootParameterIndex >= rootSignature.numberOfParameters)
-			{
-				RHI_LOG(mContext, CRITICAL, "The OpenGL RHI implementation root parameter index is out of bounds")
-				return;
-			}
+			RHI_ASSERT(mContext, rootParameterIndex < rootSignature.numberOfParameters, "The OpenGL RHI implementation root parameter index is out of bounds")
 			const Rhi::RootParameter& rootParameter = rootSignature.parameters[rootParameterIndex];
-			if (Rhi::RootParameterType::DESCRIPTOR_TABLE != rootParameter.parameterType)
-			{
-				RHI_LOG(mContext, CRITICAL, "The OpenGL RHI implementation root parameter index doesn't reference a descriptor table")
-				return;
-			}
-			if (nullptr == reinterpret_cast<const Rhi::DescriptorRange*>(rootParameter.descriptorTable.descriptorRanges))
-			{
-				RHI_LOG(mContext, CRITICAL, "The OpenGL RHI implementation descriptor ranges is a null pointer")
-				return;
-			}
+			RHI_ASSERT(mContext, Rhi::RootParameterType::DESCRIPTOR_TABLE == rootParameter.parameterType, "The OpenGL RHI implementation root parameter index doesn't reference a descriptor table")
+			RHI_ASSERT(mContext, nullptr != reinterpret_cast<const Rhi::DescriptorRange*>(rootParameter.descriptorTable.descriptorRanges), "The OpenGL RHI implementation descriptor ranges is a null pointer")
 		}
 		#endif
 
@@ -22404,7 +22338,7 @@ namespace OpenGLRhi
 										case Rhi::ResourceType::TASK_SHADER:
 										case Rhi::ResourceType::MESH_SHADER:
 										case Rhi::ResourceType::COMPUTE_SHADER:
-											RHI_LOG(mContext, CRITICAL, "Invalid OpenGL RHI implementation resource type")
+											RHI_ASSERT(mContext, false, "Invalid OpenGL RHI implementation resource type")
 											break;
 									}
 
@@ -22536,7 +22470,7 @@ namespace OpenGLRhi
 											case Rhi::ResourceType::TASK_SHADER:
 											case Rhi::ResourceType::MESH_SHADER:
 											case Rhi::ResourceType::COMPUTE_SHADER:
-												RHI_LOG(mContext, CRITICAL, "Invalid OpenGL RHI implementation resource type")
+												RHI_ASSERT(mContext, false, "Invalid OpenGL RHI implementation resource type")
 												break;
 										}
 
@@ -22669,7 +22603,7 @@ namespace OpenGLRhi
 										case Rhi::ResourceType::TASK_SHADER:
 										case Rhi::ResourceType::MESH_SHADER:
 										case Rhi::ResourceType::COMPUTE_SHADER:
-											RHI_LOG(mContext, CRITICAL, "Invalid OpenGL RHI implementation resource type")
+											RHI_ASSERT(mContext, false, "Invalid OpenGL RHI implementation resource type")
 											break;
 									}
 								}
@@ -22679,7 +22613,7 @@ namespace OpenGLRhi
 							case Rhi::DescriptorRangeType::UBV:
 							case Rhi::DescriptorRangeType::SAMPLER:
 							case Rhi::DescriptorRangeType::NUMBER_OF_RANGE_TYPES:
-								RHI_LOG(mContext, CRITICAL, "Invalid OpenGL descriptor range type")
+								RHI_ASSERT(mContext, false, "Invalid OpenGL descriptor range type")
 								break;
 						}
 						break;
@@ -22787,7 +22721,7 @@ namespace OpenGLRhi
 					case Rhi::ResourceType::TASK_SHADER:
 					case Rhi::ResourceType::MESH_SHADER:
 					case Rhi::ResourceType::COMPUTE_SHADER:
-						RHI_LOG(mContext, CRITICAL, "Invalid OpenGL RHI implementation resource type")
+						RHI_ASSERT(mContext, false, "Invalid OpenGL RHI implementation resource type")
 						break;
 				}
 			}

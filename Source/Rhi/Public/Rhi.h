@@ -842,7 +842,7 @@ namespace Rhi
 	// Macros & definitions
 	/**
 	*  @brief
-	*    Ease-of-use assert macro
+	*    Ease-of-use assert macro, potential issues checked by asserts shouldn't happen in shipped builds and hence are optimized out there
 	*
 	*  @param[in] context
 	*    RHI context to ask for the assert interface
@@ -5803,7 +5803,7 @@ namespace Rhi
 		*    Constructor
 		*
 		*  @param[in] rhi
-		*    Owner rhi instance
+		*    Owner RHI instance
 		*/
 		inline explicit IRenderPass(IRhi& rhi RHI_RESOURCE_DEBUG_NAME_PARAMETER_NO_DEFAULT) :
 			IResource(ResourceType::RENDER_PASS, rhi RHI_RESOURCE_DEBUG_PASS_PARAMETER)
@@ -5856,7 +5856,7 @@ namespace Rhi
 		*    Constructor
 		*
 		*  @param[in] rhi
-		*    Owner rhi instance
+		*    Owner RHI instance
 		*/
 		inline explicit IQueryPool(IRhi& rhi RHI_RESOURCE_DEBUG_NAME_PARAMETER_NO_DEFAULT) :
 			IResource(ResourceType::QUERY_POOL, rhi RHI_RESOURCE_DEBUG_PASS_PARAMETER)
@@ -6406,7 +6406,7 @@ namespace Rhi
 		*    Constructor
 		*
 		*  @param[in] rhi
-		*    Owner rhi instance
+		*    Owner RHI instance
 		*/
 		inline explicit IBufferManager(IRhi& rhi) :
 			mRhi(rhi)
