@@ -21,120 +21,131 @@
 // Amalgamated/unity build
 #ifdef _WIN32
 	// Disable warnings in external headers, we can't fix them
-	__pragma(warning(disable: 4061))	// warning C4061: enumerator 'FORCE_32BIT' in switch of enum 'aiMetadataType' is not explicitly handled by a case label
-	__pragma(warning(disable: 4065))	// warning C4065: switch statement contains 'default' but no 'case' labels
-	__pragma(warning(disable: 4100))	// warning C4100: 'r': unreferenced formal parameter
-	__pragma(warning(disable: 4127))	// warning C4127: conditional expression is constant
-	__pragma(warning(disable: 4189))	// warning C4189: 'maxIndexRequested': local variable is initialized but not referenced
-	__pragma(warning(disable: 4242))	// warning C4242: '=': conversion from 'int' to 'char', possible loss of data
-	__pragma(warning(disable: 4244))	// warning C4244: '=': conversion from 'int' to 'char', possible loss of data
-	__pragma(warning(disable: 4245))	// warning C4245: 'argument': conversion from 'const long' to '::size_t', signed/unsigned mismatch
-	__pragma(warning(disable: 4310))	// warning C4310: cast truncates constant value
 	__pragma(warning(disable: 4355))	// warning C4355: 'this': used in base member initializer list
-	__pragma(warning(disable: 4365))	// warning C4365: '=': conversion from 'int' to '::size_t', signed/unsigned mismatch
-	__pragma(warning(disable: 4389))	// warning C4389: '==': signed/unsigned mismatch
-	__pragma(warning(disable: 4456))	// warning C4456: declaration of 'pv2' hides previous local declaration
-	__pragma(warning(disable: 4457))	// warning C4457: declaration of 'it' hides function parameter
-	__pragma(warning(disable: 4458))	// warning C4458: declaration of 'sep' hides class member
-	__pragma(warning(disable: 4459))	// warning C4459: declaration of 'BufferSize' hides global declaration
-	__pragma(warning(disable: 4464))	// warning C4464: relative include path contains '..'
-	__pragma(warning(disable: 4505))	// warning C4505: 'Assimp::FBX::validateAnimCurveNodes': unreferenced local function has been removed
-	__pragma(warning(disable: 4541))	// warning C4541: 'dynamic_cast' used on polymorphic type 'Assimp::FBX::Object' with /GR-; unpredictable behavior may result
-	__pragma(warning(disable: 4571))	// warning C4571: Informational: catch(...) semantics changed since Visual C++ 7.1; structured exceptions (SEH) are no longer caught
-	__pragma(warning(disable: 4574))	// warning C4574: '_HAS_ITERATOR_DEBUGGING' is defined to be '0': did you mean to use '#if _HAS_ITERATOR_DEBUGGING'?
 	__pragma(warning(disable: 4619))	// warning C4619: #pragma warning: there is no warning number '4351'
-	__pragma(warning(disable: 4623))	// warning C4623: 'std::_List_node<_Ty,std::_Default_allocator_traits<_Alloc>::void_pointer>': default constructor was implicitly defined as deleted
-	__pragma(warning(disable: 4625))	// warning C4625: 'std::codecvt_base': copy constructor was implicitly defined as deleted
-	__pragma(warning(disable: 4626))	// warning C4626: 'std::codecvt_base': assignment operator was implicitly defined as deleted
-	__pragma(warning(disable: 4668))	// warning C4668: '__ANDROID__' is not defined as a preprocessor macro, replacing with '0' for '#if/#elif'
-	__pragma(warning(disable: 4701))	// warning C4701: potentially uninitialized local variable 'posEpsilon' used
-	__pragma(warning(disable: 4702))	// warning C4702: unreachable code
-	__pragma(warning(disable: 4706))	// warning C4706: assignment within conditional expression
-	__pragma(warning(disable: 4714))	// warning C4714: function 'bool __cdecl Assimp::Ogre::EndsWith(class std::basic_string<char,struct std::char_traits<char>,class std::allocator<char> > const & __ptr64,class std::basic_string<char,struct std::char_traits<char>,class std::allocator<char> > const & __ptr64,bool)' marked as __forceinline not inlined
-	__pragma(warning(disable: 4774))	// warning C4774: 'sprintf_s' : format string expected in argument 3 is not a string literal
-	__pragma(warning(disable: 4826))	// warning C4826: Conversion from 'aiBone **' to 'uint64_t' is sign-extended. This may cause unexpected runtime behavior. (compiling source file ..\..\External\Assimp\AssimpUnityBuild1.cpp)
-	__pragma(warning(disable: 5026))	// warning C5026: 'std::_Generic_error_category': move constructor was implicitly defined as deleted
-	__pragma(warning(disable: 5027))	// warning C5027: 'std::_Generic_error_category': move assignment operator was implicitly defined as deleted
-	__pragma(warning(disable: 5039))	// warning C5039: 'TpSetCallbackCleanupGroup': pointer or reference to potentially throwing function passed to extern C function under -EHc. Undefined behavior may occur if this function throws an exception.
+	__pragma(warning(disable: 4777))	// warning C4777: 'snprintf' : format string '%Iu' requires an argument of type 'unsigned int', but variadic argument 1 has type 'const size_t'
+	__pragma(warning(disable: 4826))	// warning C4826: Conversion from 'aiBone **' to 'uint64_t' is sign-extended. This may cause unexpected runtime behavior.
 #endif
-// Common - Moved into "AssimpUnityBuild8.cpp" since "AssimpUnityBuild1.cpp" gets to huge in some configurations
 #include "Configuration.h"
+// code
+	// AssetLib
+		// Blender
+		#include "code/AssetLib/Blender/BlenderBMesh.cpp"
+		#include "code/AssetLib/Blender/BlenderCustomData.cpp"
+		#include "code/AssetLib/Blender/BlenderDNA.cpp"
+		#include "code/AssetLib/Blender/BlenderLoader.cpp"
+		#include "code/AssetLib/Blender/BlenderModifier.cpp"
+		//#include "code/AssetLib/Blender/BlenderScene.cpp"		# Due to conflict moved into "AssimpUnityBuild2.cpp"
+		#include "code/AssetLib/Blender/BlenderTessellator.cpp"
+		// Collada
+		#include "code/AssetLib/Collada/ColladaHelper.cpp"
+		//#include "code/AssetLib/Collada/ColladaLoader.cpp"	# Due to conflict moved into "AssimpUnityBuild2.cpp"
+		//#include "code/AssetLib/Collada/ColladaParser.cpp"	# Due to conflict moved into "AssimpUnityBuild3.cpp"
+		// FBX
+		#include "code/AssetLib/FBX/FBXAnimation.cpp"
+		#include "code/AssetLib/FBX/FBXBinaryTokenizer.cpp"
+		#include "code/AssetLib/FBX/FBXConverter.cpp"
+		#include "code/AssetLib/FBX/FBXDeformer.cpp"
+		#include "code/AssetLib/FBX/FBXDocument.cpp"
+		#include "code/AssetLib/FBX/FBXDocumentUtil.cpp"
+		//#include "code/AssetLib/FBX/FBXImporter.cpp"		# Due to conflict moved into "AssimpUnityBuild5.cpp"
+		#include "code/AssetLib/FBX/FBXMaterial.cpp"
+		#include "code/AssetLib/FBX/FBXMeshGeometry.cpp"
+		#include "code/AssetLib/FBX/FBXModel.cpp"
+		#include "code/AssetLib/FBX/FBXNodeAttribute.cpp"
+		//#include "code/AssetLib/FBX/FBXParser.cpp"	# Due to conflict moved into "AssimpUnityBuild5.cpp"
+		#include "code/AssetLib/FBX/FBXProperties.cpp"
+		#include "code/AssetLib/FBX/FBXTokenizer.cpp"
+		#include "code/AssetLib/FBX/FBXUtil.cpp"
+		// glTF
+		#include "../RapidJSON/configuration/rapidjson/rapidjson.h"
+		#include "code/AssetLib/glTF/glTFCommon.cpp"
+		// glTF2
+		//#include "code/AssetLib/glTF2/glTF2Importer.cpp"	# Due to conflict moved into "AssimpUnityBuild4.cpp"
+		// MD5
+		//#include "code/AssetLib/MD5/MD5Loader.cpp"	# Due to conflict moved into "AssimpUnityBuild2.cpp"
+		#include "code/AssetLib/MD5/MD5Parser.cpp"
+		// Obj
+		//#include "code/AssetLib/Obj/ObjFileImporter.cpp"	# Due to conflict moved into "AssimpUnityBuild3.cpp"
+		#include "code/AssetLib/Obj/ObjFileMtlImporter.cpp"
+		#include "code/AssetLib/Obj/ObjFileParser.cpp"
+	// CApi
+	#include "code/CApi/AssimpCExport.cpp"
+	#include "code/CApi/CInterfaceIOWrapper.cpp"
+	// Common
+	#include "code/Common/AssertHandler.cpp"
+	#include "code/Common/Assimp.cpp"
+	#include "code/Common/BaseImporter.cpp"
+	#include "code/Common/BaseProcess.cpp"
+	#include "code/Common/Bitmap.cpp"
+	#include "code/Common/CreateAnimMesh.cpp"
+	#include "code/Common/DefaultIOStream.cpp"
+	#include "code/Common/DefaultIOSystem.cpp"
+	#include "code/Common/DefaultLogger.cpp"
+	#undef max	// Get rid of some nasty OS macros
+	#include "code/Common/Exporter.cpp"
+	#undef min				// Get rid of some nasty OS macros
+	#undef CreateDirectory	// Get rid of some nasty OS macros
+	#undef DeleteFile		// Get rid of some nasty OS macros
+	#include "code/Common/Importer.cpp"
+	#include "code/Common/ImporterRegistry.cpp"
+	#include "code/Common/material.cpp"
+	#include "code/Common/PostStepRegistry.cpp"
+	#include "code/Common/RemoveComments.cpp"
+	#include "code/Common/scene.cpp"
+	#include "code/Common/SceneCombiner.cpp"
+	#include "code/Common/ScenePreprocessor.cpp"
+	#include "code/Common/SGSpatialSort.cpp"
+	#include "code/Common/simd.cpp"
+	#include "code/Common/SkeletonMeshBuilder.cpp"
+	#include "code/Common/SpatialSort.cpp"
+	#include "code/Common/StandardShapes.cpp"
+	#include "code/Common/Subdivision.cpp"
+	#include "code/Common/TargetAnimation.cpp"
+	#include "code/Common/Version.cpp"
+	#include "code/Common/VertexTriangleAdjacency.cpp"
+	#include "code/Common/ZipArchiveIOSystem.cpp"
+	// Material
+	#include "code/Material/MaterialSystem.cpp"
+	// PostProcessing
+	#include "code/PostProcessing/ArmaturePopulate.cpp"
+	#include "code/PostProcessing/CalcTangentsProcess.cpp"
+	#undef small	// Get rid of some nasty macros
+	#include "code/PostProcessing/ComputeUVMappingProcess.cpp"
+	#include "code/PostProcessing/ConvertToLHProcess.cpp"
+	#include "code/PostProcessing/DeboneProcess.cpp"
+	#include "code/PostProcessing/DropFaceNormalsProcess.cpp"
+	#include "code/PostProcessing/EmbedTexturesProcess.cpp"
+	#include "code/PostProcessing/FindDegenerates.cpp"
+	#include "code/PostProcessing/FindInstancesProcess.cpp"
+	#include "code/PostProcessing/FindInvalidDataProcess.cpp"
+	#include "code/PostProcessing/FixNormalsStep.cpp"
+	#include "code/PostProcessing/GenBoundingBoxesProcess.cpp"
+	#include "code/PostProcessing/GenFaceNormalsProcess.cpp"
+	#include "code/PostProcessing/GenVertexNormalsProcess.cpp"
+	#include "code/PostProcessing/ImproveCacheLocality.cpp"
+	#include "code/PostProcessing/JoinVerticesProcess.cpp"
+	#include "code/PostProcessing/LimitBoneWeightsProcess.cpp"
+	#include "code/PostProcessing/MakeVerboseFormat.cpp"
+	#include "code/PostProcessing/OptimizeGraph.cpp"
+	#include "code/PostProcessing/OptimizeMeshes.cpp"
+	#include "code/PostProcessing/PretransformVertices.cpp"
+	#include "code/PostProcessing/ProcessHelper.cpp"
+	#include "code/PostProcessing/RemoveRedundantMaterials.cpp"
+	#include "code/PostProcessing/RemoveVCProcess.cpp"
+	#include "code/PostProcessing/ScaleProcess.cpp"
+	#include "code/PostProcessing/SortByPTypeProcess.cpp"
+	#include "code/PostProcessing/SplitByBoneCountProcess.cpp"
+	#include "code/PostProcessing/SplitLargeMeshes.cpp"
+	#include "code/PostProcessing/TextureTransform.cpp"
+	#include "code/PostProcessing/TriangulateProcess.cpp"
+	#include "code/PostProcessing/ValidateDataStructure.cpp"
 // contrib
-	// irrXML (at least OGRE importer is using it)
+	// irrXML
 	#include "contrib/irrXML/irrXML.cpp"
-	// poly2tri (at least BLEND importer is using it)
+	// poly2tri
 	#include "contrib/poly2tri/poly2tri/common/shapes.cc"
+	#include "contrib/poly2tri/poly2tri/sweep/advancing_front.cc"
 	#include "contrib/poly2tri/poly2tri/sweep/cdt.cc"
 	#include "contrib/poly2tri/poly2tri/sweep/sweep.cc"
 	#include "contrib/poly2tri/poly2tri/sweep/sweep_context.cc"
-	#include "contrib/poly2tri/poly2tri/sweep/advancing_front.cc"
-	// zlib (at least FBX importer is using it) - not included in unity build since C and several issues when using unity build here
-	// #include "contrib/zlib/adler32.c"
-	// #include "contrib/zlib/compress.c"
-	// #include "contrib/zlib/crc32.c"
-	// #include "contrib/zlib/deflate.c"
-	// #include "contrib/zlib/gzclose.c"
-	// #include "contrib/zlib/gzlib.c"
-	// #include "contrib/zlib/gzread.c"
-	// #include "contrib/zlib/gzwrite.c"
-	// #include "contrib/zlib/infback.c"
-	// #include "contrib/zlib/inffast.c"
-	// #include "contrib/zlib/inflate.c"
-	// #include "contrib/zlib/inftrees.c"
-	// #include "contrib/zlib/trees.c"
-	// #include "contrib/zlib/uncompr.c"
-	// #include "contrib/zlib/zutil.c"
-// Logging
-	#include "code/DefaultLogger.cpp"
-// MaterialSystem
-	#undef min	// Get rid of some nasty OS macros
-	#undef max	// Get rid of some nasty OS macros
-	#include "code/MaterialSystem.cpp"
-// MD5
-	#include "code/MD5Loader.cpp"
-	#include "code/MD5Parser.cpp"
-// GLTF
-	#include "code/glTFExporter.cpp"
-	// #include "code/glTFImporter.cpp"		// Moved into "AssimpUnityBuild7.cpp" since it doesn't play well together with the other source codes
-	// #include "code/glTF2Exporter.cpp"	// Moved into "AssimpUnityBuild8.cpp" since it doesn't play well together with the other source codes
-	// #include "code/glTF2Importer.cpp"	// Moved into "AssimpUnityBuild8.cpp" since it doesn't play well together with the other source codes
-// FBX
-	// #include "code/FBXAnimation.cpp"			// Moved into "AssimpUnityBuild7.cpp" since "AssimpUnityBuild1.cpp" gets to huge in some configurations
-	// #include "code/FBXBinaryTokenizer.cpp"	// Moved into "AssimpUnityBuild7.cpp" since "AssimpUnityBuild1.cpp" gets to huge in some configurations
-	// #include "code/FBXConverter.cpp"			// Moved into "AssimpUnityBuild7.cpp" since "AssimpUnityBuild1.cpp" gets to huge in some configurations
-	// #include "code/FBXDeformer.cpp"			// Moved into "AssimpUnityBuild7.cpp" since "AssimpUnityBuild1.cpp" gets to huge in some configurations
-	// #include "code/FBXDocument.cpp"			// Moved into "AssimpUnityBuild7.cpp" since "AssimpUnityBuild1.cpp" gets to huge in some configurations
-	// #include "code/FBXDocumentUtil.cpp"		// Moved into "AssimpUnityBuild7.cpp" since "AssimpUnityBuild1.cpp" gets to huge in some configurations
-	// #include "code/FBXImporter.cpp"			// Moved into "AssimpUnityBuild3.cpp" since it doesn't play well together with the other source codes
-	#include "code/FBXMaterial.cpp"
-	#include "code/FBXMeshGeometry.cpp"
-	#include "code/FBXModel.cpp"
-	#include "code/FBXNodeAttribute.cpp"
-	// #include "code/FBXParser.cpp"	// Moved into "AssimpUnityBuild3.cpp" since it doesn't play well together with the other source codes
-	#include "code/FBXProperties.cpp"
-	#include "code/FBXTokenizer.cpp"
-	#include "code/FBXUtil.cpp"
-// BLEND
-	// #include "code/BlenderBMesh.cpp"			// Moved into "AssimpUnityBuild4.cpp" since it doesn't play well together with the other source codes
-	// #include "code/BlenderDNA.cpp"			// Moved into "AssimpUnityBuild4.cpp" since it doesn't play well together with the other source codes
-	// #include "code/BlenderCustomData.cpp"	// Moved into "AssimpUnityBuild4.cpp" since it doesn't play well together with the other source codes
-	// #include "code/BlenderLoader.cpp"		// Moved into "AssimpUnityBuild4.cpp" since it doesn't play well together with the other source codes
-	// #include "code/BlenderModifier.cpp"		// Moved into "AssimpUnityBuild4.cpp" since it doesn't play well together with the other source codes
-	// #include "code/BlenderScene.cpp"			// Moved into "AssimpUnityBuild5.cpp" since it doesn't play well together with the other source codes
-	// #include "code/BlenderTessellator.cpp"	// Moved into "AssimpUnityBuild4.cpp" since it doesn't play well together with the other source codes
-// COLLADA
-	#include "code/ColladaExporter.cpp"
-	// #include "code/ColladaLoader.cpp"	// Moved into "AssimpUnityBuild2.cpp" since it doesn't play well together with the other source codes
-	// #include "code/ColladaParser.cpp"	// Moved into "AssimpUnityBuild6.cpp" since it doesn't play well together with the other source codes
-// OBJ
-	#include "code/ObjExporter.cpp"
-	// #include "code/ObjFileImporter.cpp"	// Moved into "AssimpUnityBuild4.cpp" since it doesn't play well together with the other source codes
-	#include "code/ObjFileMtlImporter.cpp"
-	#include "code/ObjFileParser.cpp"
-// OGRE
-	#include "code/OgreBinarySerializer.cpp"
-	// #include "code/OgreImporter.cpp"	// Moved into "AssimpUnityBuild6.cpp" since it doesn't play well together with the other source codes
-	// #include "code/OgreMaterial.cpp"	// Moved into "AssimpUnityBuild6.cpp" since it doesn't play well together with the other source codes
-	#include "code/OgreStructs.cpp"
-	#include "code/OgreXmlSerializer.cpp"
-// PostProcessing - Moved into "AssimpUnityBuild2.cpp" since "AssimpUnityBuild1.cpp" gets to huge in some configurations

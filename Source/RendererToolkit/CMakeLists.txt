@@ -42,6 +42,10 @@ include_directories(${CMAKE_SOURCE_DIR}/External/RendererToolkit)	# For "SimpleF
 include_directories(${CMAKE_SOURCE_DIR}/External/RendererToolkit/RapidJSON/configuration)	# RapidJSON configuration and assert to exception
 include_directories(${CMAKE_SOURCE_DIR}/External/RendererToolkit/RapidJSON/include)
 include_directories(${CMAKE_SOURCE_DIR}/External/RendererToolkit/Assimp/include)
+include_directories(${CMAKE_SOURCE_DIR}/External/RendererToolkit/Assimp/code)	# We want to be able to call e.g. "Assimp::RemoveRedundantMatsProcess().Execute()"
+include_directories(${CMAKE_SOURCE_DIR}/External/RendererToolkit/Assimp/contrib/irrXML)	# Needed by "unrimp\External\RendererToolkit\Assimp\include\assimp\irrXMLWrapper.h"
+include_directories(${CMAKE_SOURCE_DIR}/External/RendererToolkit/Assimp/contrib/unzip)	# Needed by "unrimp\External\RendererToolkit\Assimp\code\Common\ZipArchiveIOSystem.cpp"
+include_directories(${CMAKE_SOURCE_DIR}/External/RendererToolkit/Assimp/contrib/zlib)	# Needed by "unrimp\External\RendererToolkit\Assimp\contrib\unzip\unzip.h"
 link_directories(${CMAKE_LIBRARY_OUTPUT_DIRECTORY})
 
 
@@ -60,10 +64,6 @@ set(EXTERNAL_SOURCE_CODES
 	${CMAKE_SOURCE_DIR}/External/RendererToolkit/Assimp/AssimpUnityBuild3.cpp
 	${CMAKE_SOURCE_DIR}/External/RendererToolkit/Assimp/AssimpUnityBuild4.cpp
 	${CMAKE_SOURCE_DIR}/External/RendererToolkit/Assimp/AssimpUnityBuild5.cpp
-	${CMAKE_SOURCE_DIR}/External/RendererToolkit/Assimp/AssimpUnityBuild6.cpp
-	${CMAKE_SOURCE_DIR}/External/RendererToolkit/Assimp/AssimpUnityBuild7.cpp
-	${CMAKE_SOURCE_DIR}/External/RendererToolkit/Assimp/AssimpUnityBuild8.cpp
-	${CMAKE_SOURCE_DIR}/External/RendererToolkit/Assimp/AssimpUnityBuild9.cpp
 		# contrib
 			# zlib (at least FBX importer is using it)
 			${CMAKE_SOURCE_DIR}/External/RendererToolkit/Assimp/contrib/zlib/adler32.c
@@ -81,6 +81,9 @@ set(EXTERNAL_SOURCE_CODES
 			${CMAKE_SOURCE_DIR}/External/RendererToolkit/Assimp/contrib/zlib/trees.c
 			${CMAKE_SOURCE_DIR}/External/RendererToolkit/Assimp/contrib/zlib/uncompr.c
 			${CMAKE_SOURCE_DIR}/External/RendererToolkit/Assimp/contrib/zlib/zutil.c
+			# unzip
+			${CMAKE_SOURCE_DIR}/External/RendererToolkit/Assimp/contrib/unzip/ioapi.c
+			${CMAKE_SOURCE_DIR}/External/RendererToolkit/Assimp/contrib/unzip/unzip.c
 	# meshoptimizer external library
 	${CMAKE_SOURCE_DIR}/External/RendererToolkit/meshoptimizer/MeshOptimizerUnityBuild.cpp
 	# SimpleFileWatcher external library

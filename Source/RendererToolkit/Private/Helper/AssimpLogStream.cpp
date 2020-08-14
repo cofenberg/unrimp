@@ -44,7 +44,7 @@ namespace RendererToolkit
 
 	AssimpLogStream::~AssimpLogStream()
 	{
-		Assimp::DefaultLogger::get()->detatchStream(this, Assimp::DefaultLogger::Err);
+		Assimp::DefaultLogger::get()->detachStream(this, Assimp::DefaultLogger::Err);
 		Assimp::DefaultLogger::kill();
 	}
 

@@ -1,4 +1,4 @@
-﻿ASSIMP - Open Asset Import Library "Last Commit on February 8, 2019" - "fadfaf88db12af41348f5347af2ee926723bc539" (> 4.0.1 released July 2017)
+﻿ASSIMP - Open Asset Import Library "Last Commit on August 11, 2020" - "9fc00cbf74abcdae4fb5fdd8b64b5c58f8fce368" (> 5.0.1 released 12 January 2020)
 - License: Assimp is released as open source under the terms of a 3-clause BSD license (see "LICENSE"-file)
 - Download from: http://www.assimp.org/
 - The following changes were made to ASSIMP
