@@ -419,6 +419,7 @@ namespace Renderer
 						"ClearGraphics",
 						"DrawGraphics",
 						"DrawIndexedGraphics",
+						"DrawMeshTasks",
 						// Compute
 						"SetComputeRootSignature",
 						"SetComputePipelineState",
