@@ -779,9 +779,9 @@ namespace RendererToolkit
 					// TODO(co) Error handling
 					unsigned int r = 0, g = 0, b = 0;
 					sscanf(elements[elementIndex - 1].c_str(), "%02x%02x%02x", &r, &g, &b);
-					color[0] = r / 255.0f;
-					color[1] = g / 255.0f;
-					color[2] = b / 255.0f;
+					color[0] = static_cast<float>(r) / 255.0f;
+					color[1] = static_cast<float>(g) / 255.0f;
+					color[2] = static_cast<float>(b) / 255.0f;
 					break;
 				}
 			}

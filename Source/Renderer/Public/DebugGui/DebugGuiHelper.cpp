@@ -304,14 +304,14 @@ namespace Renderer
 			for (int32_t z = -NUMBER_OF_LINES_PER_DIRECTION; z <= NUMBER_OF_LINES_PER_DIRECTION; ++z)
 			{
 				const float thickness = (0 == z || NUMBER_OF_LINES_PER_DIRECTION == std::abs(z)) ? 4.0f : 1.0f;
-				::detail::draw3DLine(objectSpaceToClipSpaceMatrix, centerPosition + glm::vec3(-NUMBER_OF_LINES_PER_DIRECTION * cellSize, 0.0f, z * cellSize), centerPosition + glm::vec3(NUMBER_OF_LINES_PER_DIRECTION * cellSize, 0.0f, z * cellSize), GREY_COLOR, thickness, *imDrawList);
+				::detail::draw3DLine(objectSpaceToClipSpaceMatrix, centerPosition + glm::vec3(-NUMBER_OF_LINES_PER_DIRECTION * cellSize, 0.0f, static_cast<float>(z) * cellSize), centerPosition + glm::vec3(NUMBER_OF_LINES_PER_DIRECTION * cellSize, 0.0f, static_cast<float>(z) * cellSize), GREY_COLOR, thickness, *imDrawList);
 			}
 
 			// Lines along x axis
 			for (int32_t x = -NUMBER_OF_LINES_PER_DIRECTION; x <= NUMBER_OF_LINES_PER_DIRECTION; ++x)
 			{
 				const float thickness = (0 == x || NUMBER_OF_LINES_PER_DIRECTION == std::abs(x)) ? 4.0f : 1.0f;
-				::detail::draw3DLine(objectSpaceToClipSpaceMatrix, centerPosition + glm::vec3(x * cellSize, 0.0f, -NUMBER_OF_LINES_PER_DIRECTION * cellSize), centerPosition + glm::vec3(x * cellSize, 0.0f, NUMBER_OF_LINES_PER_DIRECTION * cellSize), GREY_COLOR, thickness, *imDrawList);
+				::detail::draw3DLine(objectSpaceToClipSpaceMatrix, centerPosition + glm::vec3(static_cast<float>(x) * cellSize, 0.0f, -NUMBER_OF_LINES_PER_DIRECTION * cellSize), centerPosition + glm::vec3(static_cast<float>(x) * cellSize, 0.0f, NUMBER_OF_LINES_PER_DIRECTION * cellSize), GREY_COLOR, thickness, *imDrawList);
 			}
 		}
 		ImGui::End();

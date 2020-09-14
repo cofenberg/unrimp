@@ -289,18 +289,18 @@ namespace Renderer
 						// Do AABB <-> sphere tests to figure out which clusters are actually intersected by the light
 						for (int z = z0; z < z1; ++z)
 						{
-							float dz = (pz == z) ? 0.0f : mLightClustersAabbMinimum.z + ((pz < z) ? z : z + 1) * inverseScale.z - packedShaderData.position.z;
+							float dz = (pz == z) ? 0.0f : mLightClustersAabbMinimum.z + static_cast<float>((pz < z) ? z : z + 1) * inverseScale.z - packedShaderData.position.z;
 							dz *= dz;
 
 							for (int y = y0; y < y1; ++y)
 							{
-								float dy = (py == y) ? 0.0f : mLightClustersAabbMinimum.y + ((py < y) ? y : y + 1) * inverseScale.y - packedShaderData.position.y;
+								float dy = (py == y) ? 0.0f : mLightClustersAabbMinimum.y + static_cast<float>((py < y) ? y : y + 1) * inverseScale.y - packedShaderData.position.y;
 								dy *= dy;
 								dy += dz;
 
 								for (int x = x0; x < x1; ++x)
 								{
-									float dx = (px == x) ? 0.0f : mLightClustersAabbMinimum.x + ((px < x) ? x : x + 1) * inverseScale.x - packedShaderData.position.x;
+									float dx = (px == x) ? 0.0f : mLightClustersAabbMinimum.x + static_cast<float>((px < x) ? x : x + 1) * inverseScale.x - packedShaderData.position.x;
 									dx *= dx;
 									dx += dy;
 

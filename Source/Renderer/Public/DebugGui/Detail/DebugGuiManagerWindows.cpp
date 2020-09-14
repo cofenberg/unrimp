@@ -97,8 +97,8 @@ namespace Renderer
 					}
 
 					// Tell imGui about the mouse position and while doing so take into account that the GUI might not render into the window directly but in a lower/higher resolution render target texture
-					imGuiIo.MousePos.x = static_cast<unsigned short>(lParam) * (imGuiIo.DisplaySize.x / windowWidth);
-					imGuiIo.MousePos.y = static_cast<unsigned short>(lParam >> 16) * (imGuiIo.DisplaySize.y / windowHeight);
+					imGuiIo.MousePos.x = static_cast<float>(static_cast<unsigned short>(lParam)) * (imGuiIo.DisplaySize.x / windowWidth);
+					imGuiIo.MousePos.y = static_cast<float>(static_cast<unsigned short>(lParam >> 16)) * (imGuiIo.DisplaySize.y / windowHeight);
 					return true;
 				}
 
@@ -184,7 +184,7 @@ namespace Renderer
 		{ // Setup time step
 			INT64 currentTime = 0;
 			::QueryPerformanceCounter(reinterpret_cast<LARGE_INTEGER*>(&currentTime));
-			imGuiIo.DeltaTime = static_cast<float>(currentTime - mTime) / mTicksPerSecond;
+			imGuiIo.DeltaTime = static_cast<float>(currentTime - mTime) / static_cast<float>(mTicksPerSecond);
 			mTime = currentTime;
 		}
 

@@ -70,13 +70,13 @@ void BatchInstancedArrays::initialize(Rhi::IBufferManager& bufferManager, Rhi::I
 		{
 			{ // Position
 				// r=x
-				*dataCurrent = -static_cast<int>(sceneRadius) + 2.0f * sceneRadius * (rand() % 65536) / 65536.0f;
+				*dataCurrent = -static_cast<float>(sceneRadius) + 2.0f * static_cast<float>(sceneRadius) * static_cast<float>(rand() % 65536) / 65536.0f;
 				++dataCurrent;
 				// g=y
-				*dataCurrent = -static_cast<int>(sceneRadius) + 2.0f * sceneRadius * (rand() % 65536) / 65536.0f;
+				*dataCurrent = -static_cast<float>(sceneRadius) + 2.0f * static_cast<float>(sceneRadius) * static_cast<float>(rand() % 65536) / 65536.0f;
 				++dataCurrent;
 				// b=z
-				*dataCurrent = -static_cast<int>(sceneRadius) + 2.0f * sceneRadius * (rand() % 65536) / 65536.0f;
+				*dataCurrent = -static_cast<float>(sceneRadius) + 2.0f * static_cast<float>(sceneRadius) * static_cast<float>(rand() % 65536) / 65536.0f;
 				++dataCurrent;
 				// a=Slice of the 2D texture array to use
 				*dataCurrent = static_cast<float>(rand() % numberOfTextures); // Choose a random texture
@@ -84,7 +84,7 @@ void BatchInstancedArrays::initialize(Rhi::IBufferManager& bufferManager, Rhi::I
 			}
 
 			{ // Rotation
-				rotation = Renderer::EulerAngles::eulerToQuaternion((rand() % 65536) / 65536.0f, (rand() % 65536) / 65536.0f * 2.0f, (rand() % 65536) / 65536.0f * 3.0f);
+				rotation = Renderer::EulerAngles::eulerToQuaternion(static_cast<float>(rand() % 65536) / 65536.0f, static_cast<float>(rand() % 65536) / 65536.0f * 2.0f, static_cast<float>(rand() % 65536) / 65536.0f * 3.0f);
 
 				// r=x
 				*dataCurrent = rotation.x;
@@ -96,7 +96,7 @@ void BatchInstancedArrays::initialize(Rhi::IBufferManager& bufferManager, Rhi::I
 				*dataCurrent = rotation.z;
 				++dataCurrent;
 				// a=scale
-				*dataCurrent = 2.0f * (rand() % 65536) / 65536.0f;
+				*dataCurrent = 2.0f * static_cast<float>(rand() % 65536) / 65536.0f;
 				++dataCurrent;
 			}
 		}

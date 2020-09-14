@@ -165,7 +165,7 @@ namespace Renderer
 
 				for (uint8_t cascadeIndex = 0; cascadeIndex < mNumberOfShadowCascades; ++cascadeIndex)
 				{
-					const float p = (cascadeIndex + 1) / static_cast<float>(mNumberOfShadowCascades);
+					const float p = static_cast<float>(cascadeIndex + 1) / static_cast<float>(mNumberOfShadowCascades);
 					const float log = minimumZ * std::pow(ratio, p);
 					const float uniform = minimumZ + range * p;
 					const float d = mCascadeSplitsLambda * (log - uniform) + uniform;
@@ -201,7 +201,7 @@ namespace Renderer
 				{
 					renderTargetWidth /= 2;
 				}
-				const glm::mat4 worldSpaceToClipSpaceMatrix = cameraSceneItem->getViewSpaceToClipSpaceMatrix(static_cast<float>(renderTargetWidth) / renderTargetHeight) * cameraSceneItem->getCameraRelativeWorldSpaceToViewSpaceMatrix();
+				const glm::mat4 worldSpaceToClipSpaceMatrix = cameraSceneItem->getViewSpaceToClipSpaceMatrix(static_cast<float>(renderTargetWidth) / static_cast<float>(renderTargetHeight)) * cameraSceneItem->getCameraRelativeWorldSpaceToViewSpaceMatrix();
 				const glm::mat4 clipSpaceToWorldSpaceMatrix = glm::inverse(worldSpaceToClipSpaceMatrix);
 				for (int i = 0; i < 8; ++i)
 				{

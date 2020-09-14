@@ -2535,7 +2535,7 @@ namespace DeviceInput
 							fValue = 1.0f;
 
 						// Scale from 0..1 to logical range and set value
-						pCapability->m_nValue = static_cast<uint32_t>(pCapability->m_nLogicalMin + fValue*(pCapability->m_nLogicalMax-pCapability->m_nLogicalMin));
+						pCapability->m_nValue = static_cast<uint32_t>(static_cast<float>(pCapability->m_nLogicalMin) + fValue * static_cast<float>(pCapability->m_nLogicalMax - pCapability->m_nLogicalMin));
 					}
 				}
 			}
@@ -2567,7 +2567,7 @@ namespace DeviceInput
 					uint32_t nMin	= static_cast<uint32_t>(lstInputValues[i].m_nLogicalMin);
 					uint32_t nMax	= static_cast<uint32_t>(lstInputValues[i].m_nLogicalMax);
 					uint32_t nMid	=  nMin/2 + nMax/2;
-					fValue			= (static_cast<float>(nValue) - nMid) / (static_cast<float>(nMax) - nMin) * 2.0f;
+					fValue			= (static_cast<float>(nValue) - static_cast<float>(nMid)) / (static_cast<float>(nMax) - static_cast<float>(nMin)) * 2.0f;
 				}
 
 				// Set axis value
@@ -3442,14 +3442,14 @@ namespace DeviceInput
 		if (m_sDots[0].bFound) {
 			m_sDots[0].nRawX = m_pInputBuffer[6] | ((m_pInputBuffer[8] >> 4) & 0x03) << 8;
 			m_sDots[0].nRawY = m_pInputBuffer[7] | ((m_pInputBuffer[8] >> 6) & 0x03) << 8;
-			m_sDots[0].fX    = 1.f - (m_sDots[0].nRawX / static_cast<float>(IR_MaxX));
-			m_sDots[0].fY    =	     (m_sDots[0].nRawY / static_cast<float>(IR_MaxY));
+			m_sDots[0].fX    = 1.f - (static_cast<float>(m_sDots[0].nRawX) / static_cast<float>(IR_MaxX));
+			m_sDots[0].fY    =	     (static_cast<float>(m_sDots[0].nRawY) / static_cast<float>(IR_MaxY));
 		}
 
 		// Check second dot
 		if (m_sDots[1].bFound) {
-			m_sDots[1].fX = 1.f - (m_sDots[1].nRawX / static_cast<float>(IR_MaxX));
-			m_sDots[1].fY =	      (m_sDots[1].nRawY / static_cast<float>(IR_MaxY));
+			m_sDots[1].fX = 1.f - (static_cast<float>(m_sDots[1].nRawX) / static_cast<float>(IR_MaxX));
+			m_sDots[1].fY =	      (static_cast<float>(m_sDots[1].nRawY) / static_cast<float>(IR_MaxY));
 		}
 
 		// Compute IR center
@@ -3516,9 +3516,9 @@ namespace DeviceInput
 		uint8_t nRawZ = m_pInputBuffer[nOffset+4];
 
 		// Compute acceleration
-		m_sNunchukAcc.fAccX = (static_cast<float>(nRawX) - m_sNunchukAcc.nX0) / (static_cast<float>(m_sNunchukAcc.nXG) - m_sNunchukAcc.nX0);
-		m_sNunchukAcc.fAccY = (static_cast<float>(nRawY) - m_sNunchukAcc.nY0) / (static_cast<float>(m_sNunchukAcc.nYG) - m_sNunchukAcc.nY0);
-		m_sNunchukAcc.fAccZ = (static_cast<float>(nRawZ) - m_sNunchukAcc.nZ0) / (static_cast<float>(m_sNunchukAcc.nZG) - m_sNunchukAcc.nZ0);
+		m_sNunchukAcc.fAccX = (static_cast<float>(nRawX) - static_cast<float>(m_sNunchukAcc.nX0)) / (static_cast<float>(m_sNunchukAcc.nXG) - static_cast<float>(m_sNunchukAcc.nX0));
+		m_sNunchukAcc.fAccY = (static_cast<float>(nRawY) - static_cast<float>(m_sNunchukAcc.nY0)) / (static_cast<float>(m_sNunchukAcc.nYG) - static_cast<float>(m_sNunchukAcc.nY0));
+		m_sNunchukAcc.fAccZ = (static_cast<float>(nRawZ) - static_cast<float>(m_sNunchukAcc.nZ0)) / (static_cast<float>(m_sNunchukAcc.nZG) - static_cast<float>(m_sNunchukAcc.nZ0));
 
 			// AccX
 			if (ValueChanged(NunchukAccX.getValue(), m_sNunchukAcc.fAccX))
@@ -3561,12 +3561,12 @@ namespace DeviceInput
 
 		// Compute joystick position
 		if (m_sNunchukJoy.nMaxX != 0x00) {
-			m_sNunchukJoy.fX  = (static_cast<float>(nJoyRawX) - m_sNunchukJoy.nMidX) / (static_cast<float>(m_sNunchukJoy.nMaxX) - m_sNunchukJoy.nMinX);
+			m_sNunchukJoy.fX  = (static_cast<float>(nJoyRawX) - static_cast<float>(m_sNunchukJoy.nMidX)) / (static_cast<float>(m_sNunchukJoy.nMaxX) - static_cast<float>(m_sNunchukJoy.nMinX));
 			m_sNunchukJoy.fX *= 2.0f;
 		}
 
 		if (m_sNunchukJoy.nMaxY != 0x00) {
-			m_sNunchukJoy.fY = (static_cast<float>(nJoyRawY) - m_sNunchukJoy.nMidY) / (static_cast<float>(m_sNunchukJoy.nMaxY) - m_sNunchukJoy.nMinY);
+			m_sNunchukJoy.fY = (static_cast<float>(nJoyRawY) - static_cast<float>(m_sNunchukJoy.nMidY)) / (static_cast<float>(m_sNunchukJoy.nMaxY) - static_cast<float>(m_sNunchukJoy.nMinY));
 			m_sNunchukJoy.fY *= 2.0f;
 		}
 
@@ -5270,10 +5270,10 @@ namespace DeviceInput
 							float fPos		 = 0.0f;
 							int   nThreshold = pJoystick->GetThreshold();
 							if (abs(nDelta) >= nThreshold) {
-								if (nDelta < 0.0f)
-									fPos = static_cast<float>(nDelta + nThreshold) / (nPOV - nThreshold);
+								if (nDelta < 0)
+									fPos = static_cast<float>(nDelta + nThreshold) / static_cast<float>(nPOV - nThreshold);
 								else
-									fPos = static_cast<float>(nDelta - nThreshold) / (nPOV - nThreshold);
+									fPos = static_cast<float>(nDelta - nThreshold) / static_cast<float>(nPOV - nThreshold);
 								if (fPos < -1.0f)
 									fPos = -1.0f;
 								if (fPos >  1.0f)

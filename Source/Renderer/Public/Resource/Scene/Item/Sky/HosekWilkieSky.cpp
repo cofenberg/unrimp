@@ -64,7 +64,7 @@ namespace
 			// Table has values for turbidity 1..10
 			const int turbidity0 = glm::clamp<int>(static_cast<int>(turbidity), 1, 10);
 			const int turbidity1 = std::min(turbidity0 + 1, 10);
-			const float turbidityK = glm::clamp(turbidity - turbidity0, 0.0f, 1.0f);
+			const float turbidityK = glm::clamp(turbidity - static_cast<float>(turbidity0), 0.0f, 1.0f);
 
 			const double * datasetA0 = dataset;
 			const double * datasetA1 = dataset + stride * 6 * 10;
@@ -222,14 +222,14 @@ namespace Renderer
 				// The idea is basing on "Solar Radiance Calculation" - https://www.gamedev.net/topic/671214-simple-solar-radiance-calculation/
 				const float thetaS = std::acos(1.0f - worldSpaceSunDirection.y);
 				const float elevation = (glm::pi<float>() * 0.5f) - thetaS;
-				const float sunSize = glm::radians(0.27f);	// Angular radius of the sun from Earth
+				constexpr float sunSize = glm::radians(0.27f);	// Angular radius of the sun from Earth
 				static constexpr int NUMBER_OF_DISC_SAMPLES = 8;
 				for (int x = 0; x < NUMBER_OF_DISC_SAMPLES; ++x)
 				{
 					for (int y = 0; y < NUMBER_OF_DISC_SAMPLES; ++y)
 					{
-						const float u = (x + 0.5f) / NUMBER_OF_DISC_SAMPLES;
-						const float v = (y + 0.5f) / NUMBER_OF_DISC_SAMPLES;
+						const float u = (static_cast<float>(x) + 0.5f) / static_cast<float>(NUMBER_OF_DISC_SAMPLES);
+						const float v = (static_cast<float>(y) + 0.5f) / static_cast<float>(NUMBER_OF_DISC_SAMPLES);
 						const glm::vec2 discSamplePos = ::detail::squareToConcentricDiskMapping(u, v);
 						const float cos_theta = elevation + discSamplePos.y * sunSize;
 						const float cos_gamma = discSamplePos.x * sunSize;

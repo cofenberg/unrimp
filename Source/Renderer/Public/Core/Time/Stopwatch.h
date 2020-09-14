@@ -213,7 +213,7 @@ namespace Renderer
 		*/
 		[[nodiscard]] inline float getMilliseconds() const
 		{
-			return getMicroseconds() / 1000.0f;
+			return static_cast<float>(getMicroseconds()) / 1000.0f;
 		}
 
 		/**

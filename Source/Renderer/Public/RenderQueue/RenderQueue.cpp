@@ -978,9 +978,9 @@ namespace Renderer
 				}
 
 				// Determine group count
-				groupCountX = static_cast<uint32_t>(std::ceil(compositorContextData.mGlobalComputeSize[0] / static_cast<float>(localComputeSizeInteger3Value[0])));
-				groupCountY = static_cast<uint32_t>(std::ceil(compositorContextData.mGlobalComputeSize[1] / static_cast<float>(localComputeSizeInteger3Value[1])));
-				groupCountZ = static_cast<uint32_t>(std::ceil(compositorContextData.mGlobalComputeSize[2] / static_cast<float>(localComputeSizeInteger3Value[2])));
+				groupCountX = static_cast<uint32_t>(std::ceil(static_cast<float>(compositorContextData.mGlobalComputeSize[0]) / static_cast<float>(localComputeSizeInteger3Value[0])));
+				groupCountY = static_cast<uint32_t>(std::ceil(static_cast<float>(compositorContextData.mGlobalComputeSize[1]) / static_cast<float>(localComputeSizeInteger3Value[1])));
+				groupCountZ = static_cast<uint32_t>(std::ceil(static_cast<float>(compositorContextData.mGlobalComputeSize[2]) / static_cast<float>(localComputeSizeInteger3Value[2])));
 			}
 
 			// Set the used compute pipeline state object (PSO)

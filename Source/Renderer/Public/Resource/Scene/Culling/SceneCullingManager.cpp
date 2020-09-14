@@ -611,7 +611,7 @@ namespace Renderer
 				renderTarget.getWidthAndHeight(renderTargetWidth, renderTargetHeight);
 
 				// Get view space to clip space matrix
-				viewSpaceToClipSpaceMatrix = cameraSceneItem->getViewSpaceToClipSpaceMatrix(static_cast<float>(renderTargetWidth) / renderTargetHeight);
+				viewSpaceToClipSpaceMatrix = cameraSceneItem->getViewSpaceToClipSpaceMatrix(static_cast<float>(renderTargetWidth) / static_cast<float>(renderTargetHeight));
 			}
 		}
 

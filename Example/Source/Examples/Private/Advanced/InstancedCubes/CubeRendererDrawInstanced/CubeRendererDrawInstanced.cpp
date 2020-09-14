@@ -182,11 +182,11 @@ CubeRendererDrawInstanced::CubeRendererDrawInstanced(Rhi::IRhi& rhi, Rhi::IRende
 				// Random content
 				for (uint32_t i = 0; i < TEXTURE_WIDTH * TEXTURE_HEIGHT; ++i)
 				{
-					*dataCurrent = static_cast<uint8_t>((rand() % 255) * colors[j][0]);
+					*dataCurrent = static_cast<uint8_t>(static_cast<float>(rand() % 255) * colors[j][0]);
 					++dataCurrent;
-					*dataCurrent = static_cast<uint8_t>((rand() % 255) * colors[j][1]);
+					*dataCurrent = static_cast<uint8_t>(static_cast<float>(rand() % 255) * colors[j][1]);
 					++dataCurrent;
-					*dataCurrent = static_cast<uint8_t>((rand() % 255) * colors[j][2]);
+					*dataCurrent = static_cast<uint8_t>(static_cast<float>(rand() % 255) * colors[j][2]);
 					++dataCurrent;
 					*dataCurrent = 255;
 					++dataCurrent;
@@ -361,8 +361,8 @@ void CubeRendererDrawInstanced::setNumberOfCubes(uint32_t numberOfCubes)
 
 	// There's a limitation how many instances can be created per draw call
 	// -> If required, create multiple batches
-	const uint32_t numberOfSolidBatches       = static_cast<uint32_t>(ceil(static_cast<float>(numberOfSolidCubes)       / mMaximumNumberOfInstancesPerBatch));
-	const uint32_t numberOfTransparentBatches = static_cast<uint32_t>(ceil(static_cast<float>(numberOfTransparentCubes) / mMaximumNumberOfInstancesPerBatch));
+	const uint32_t numberOfSolidBatches       = static_cast<uint32_t>(ceil(static_cast<float>(numberOfSolidCubes)       / static_cast<float>(mMaximumNumberOfInstancesPerBatch)));
+	const uint32_t numberOfTransparentBatches = static_cast<uint32_t>(ceil(static_cast<float>(numberOfTransparentCubes) / static_cast<float>(mMaximumNumberOfInstancesPerBatch)));
 
 	// Create a batch instances
 	mNumberOfBatches = numberOfSolidBatches + numberOfTransparentBatches;

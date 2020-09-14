@@ -65,6 +65,8 @@ PRAGMA_WARNING_PUSH
 	PRAGMA_WARNING_DISABLE_MSVC(5026)						// warning C5026: 'crnlib::pack_etc1_block_context': move constructor was implicitly defined as deleted
 	PRAGMA_WARNING_DISABLE_MSVC(5027)						// warning C5027: 'crnlib::pack_etc1_block_context': move assignment operator was implicitly defined as deleted
 	PRAGMA_WARNING_DISABLE_MSVC(5204)						// warning C5204: 'crnlib::task_pool::executable_task': class has virtual functions, but its trivial destructor is not virtual; instances of objects derived from this class may not be destructed correctly
+	PRAGMA_WARNING_DISABLE_MSVC(5219)						// warning C5219: implicit conversion from 'const int' to 'float', possible loss of data
+	PRAGMA_WARNING_DISABLE_MSVC(5220)						// warning C5220: 'crnlib::spinlock::m_flag': a non-static data member with a volatile qualified type no longer implies
 	PRAGMA_WARNING_DISABLE_CLANG("-Wunused-value")			// warning: expression result unused [-Wunused-value]
 	PRAGMA_WARNING_DISABLE_CLANG("-Warray-bounds")			// warning: array index 1 is past the end of the array (which contains 1 element) [-Warray-bounds]
 	PRAGMA_WARNING_DISABLE_GCC("-Wunused-value")			// warning: expression result unused [-Wunused-value]
@@ -136,7 +138,7 @@ namespace
 		[[nodiscard]] glm::vec4 fetch(crnlib::image_u8& normalMapCrunchImage, const glm::vec2& position, const glm::vec2& offset)
 		{
 			const crnlib::color_quad_u8& crunchColor = normalMapCrunchImage.get_clamped(static_cast<int>(position.x + offset.x), static_cast<int>(position.y + offset.y));
-			const glm::vec3 n((crunchColor.r / 255.0f) * 2.0f - 1.0f, (crunchColor.g / 255.0f) * 2.0f - 1.0f, (crunchColor.b / 255.0f) * 2.0f - 1.0f);
+			const glm::vec3 n((static_cast<float>(crunchColor.r) / 255.0f) * 2.0f - 1.0f, (static_cast<float>(crunchColor.g) / 255.0f) * 2.0f - 1.0f, (static_cast<float>(crunchColor.b) / 255.0f) * 2.0f - 1.0f);
 			return glm::vec4(glm::normalize(n), 1.0f) * gaussianWeight(offset);
 		}
 
@@ -199,7 +201,7 @@ namespace
 					const float toksvig = glm::clamp(calculateToksvig(*normalMapCrunchImage, glm::vec2(x, y), POWER), 0.0f, 1.0f);
 
 					// Roughness = 1 - glossiness
-					const float originalGlossiness = 1.0f - ((*roughnessMapCrunchImage)(x, y).r / 255.0f);
+					const float originalGlossiness = 1.0f - (static_cast<float>((*roughnessMapCrunchImage)(x, y).r) / 255.0f);
 					(*crunchImage)(x, y).r = 255u - static_cast<crnlib::uint8>(originalGlossiness * toksvig * 255.0f);
 				}
 			}

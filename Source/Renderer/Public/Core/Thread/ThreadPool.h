@@ -46,6 +46,7 @@ PRAGMA_WARNING_PUSH
 	PRAGMA_WARNING_DISABLE_MSVC(5027)	// warning C5027: 'Concurrency::details::_RunAllParam<Concurrency::details::_Unit_type>': move assignment operator was implicitly defined as deleted
 	PRAGMA_WARNING_DISABLE_MSVC(5039)	// warning C5039: '_Thrd_start': pointer or reference to potentially throwing function passed to extern C function under -EHc. Undefined behavior may occur if this function throws an exception.
 	PRAGMA_WARNING_DISABLE_MSVC(5204)	// warning C5204: 'Concurrency::details::_DefaultPPLTaskScheduler': class has virtual functions, but its trivial destructor is not virtual; instances of objects derived from this class may not be destructed correctly
+	PRAGMA_WARNING_DISABLE_MSVC(5220)	// warning C5220: 'Concurrency::details::_Task_impl_base::_M_TaskState': a non-static data member with a volatile qualified type no longer implies
 	#include <mutex>
 	#include <queue>
 	#include <thread>
@@ -189,7 +190,7 @@ namespace Renderer
 
 		[[nodiscard]] size_t getThreadCountAndSplitCount(size_t itemCount, size_t& splitCount) const
 		{
-			size_t threadCount = static_cast<size_t>(std::ceil(itemCount / static_cast<float>(splitCount)));
+			size_t threadCount = static_cast<size_t>(std::ceil(static_cast<float>(itemCount) / static_cast<float>(splitCount)));
 			if (threadCount > threads)
 			{
 				// Clamp thread count to maximum threads

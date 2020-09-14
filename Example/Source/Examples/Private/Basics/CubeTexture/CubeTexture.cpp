@@ -343,7 +343,7 @@ void CubeTexture::onDraw()
 					renderTarget->getWidthAndHeight(width, height);
 
 					// Get the aspect ratio
-					aspectRatio = static_cast<float>(width) / height;
+					aspectRatio = static_cast<float>(width) / static_cast<float>(height);
 				}
 			}
 

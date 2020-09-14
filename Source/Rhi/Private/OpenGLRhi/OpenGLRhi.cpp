@@ -20125,7 +20125,7 @@ namespace OpenGLRhi
 		// TODO(co) "GL_ARB_viewport_array" support ("OpenGLRhi::setGraphicsViewports()")
 		// TODO(co) Check for "numberOfViewports" out of range or are the debug events good enough?
 		RHI_ASSERT(mContext, numberOfViewports <= 1, "OpenGL supports only one viewport")
-		glViewport(static_cast<GLint>(viewports->topLeftX), static_cast<GLint>(renderTargetHeight - viewports->topLeftY - viewports->height), static_cast<GLsizei>(viewports->width), static_cast<GLsizei>(viewports->height));
+		glViewport(static_cast<GLint>(viewports->topLeftX), static_cast<GLint>(static_cast<float>(renderTargetHeight) - viewports->topLeftY - viewports->height), static_cast<GLsizei>(viewports->width), static_cast<GLsizei>(viewports->height));
 		glDepthRange(static_cast<GLclampd>(viewports->minDepth), static_cast<GLclampd>(viewports->maxDepth));
 	}
 

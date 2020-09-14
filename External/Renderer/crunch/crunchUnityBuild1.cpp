@@ -44,6 +44,7 @@
 	__pragma(warning(disable: 5027))	// warning C5027: 'std::_Generic_error_category': move assignment operator was implicitly defined as deleted
 	__pragma(warning(disable: 5039))	// warning C5039: 'tdefl_init': pointer or reference to potentially throwing function passed to extern C function under -EHc. Undefined behavior may occur if this function throws an exception.
 	__pragma(warning(disable: 5204))	// warning C5204: 'crnlib::task_pool::executable_task': class has virtual functions, but its trivial destructor is not virtual; instances of objects derived from this class may not be destructed correctly
+	__pragma(warning(disable: 5220))	// warning C5220: 'crnlib::spinlock::m_flag': a non-static data member with a volatile qualified type no longer implies
 #endif
 // api
 #include "src/crnlib.cpp"

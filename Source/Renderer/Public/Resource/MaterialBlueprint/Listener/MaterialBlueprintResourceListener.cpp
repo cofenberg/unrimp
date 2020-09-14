@@ -427,8 +427,8 @@ namespace Renderer
 					cameraSceneItem->getPreviousCameraRelativeWorldSpaceToViewSpaceMatrix(mPassData->previousCameraRelativeWorldSpaceToViewSpaceMatrix[eyeIndex]);
 
 					// Get view space to clip space matrix (aka "projection matrix")
-					viewSpaceToClipSpaceMatrix = cameraSceneItem->getViewSpaceToClipSpaceMatrix(static_cast<float>(renderTargetWidth) / mRenderTargetHeight);
-					viewSpaceToClipSpaceMatrixReversedZ = cameraSceneItem->getViewSpaceToClipSpaceMatrixReversedZ(static_cast<float>(renderTargetWidth) / mRenderTargetHeight);
+					viewSpaceToClipSpaceMatrix = cameraSceneItem->getViewSpaceToClipSpaceMatrix(static_cast<float>(renderTargetWidth) / static_cast<float>(mRenderTargetHeight));
+					viewSpaceToClipSpaceMatrixReversedZ = cameraSceneItem->getViewSpaceToClipSpaceMatrixReversedZ(static_cast<float>(renderTargetWidth) / static_cast<float>(mRenderTargetHeight));
 				}
 			}
 			else
@@ -441,8 +441,8 @@ namespace Renderer
 
 				// Get view space to clip space matrix (aka "projection matrix")
 				// -> Near and far flipped due to usage of Reversed-Z (see e.g. https://developer.nvidia.com/content/depth-precision-visualized and https://nlguillemot.wordpress.com/2016/12/07/reversed-z-in-opengl/)
-				viewSpaceToClipSpaceMatrix = glm::perspective(CameraSceneItem::DEFAULT_FOV_Y, static_cast<float>(renderTargetWidth) / mRenderTargetHeight, CameraSceneItem::DEFAULT_NEAR_Z, CameraSceneItem::DEFAULT_FAR_Z);
-				viewSpaceToClipSpaceMatrixReversedZ = glm::perspective(CameraSceneItem::DEFAULT_FOV_Y, static_cast<float>(renderTargetWidth) / mRenderTargetHeight, CameraSceneItem::DEFAULT_FAR_Z, CameraSceneItem::DEFAULT_NEAR_Z);
+				viewSpaceToClipSpaceMatrix = glm::perspective(CameraSceneItem::DEFAULT_FOV_Y, static_cast<float>(renderTargetWidth) / static_cast<float>(mRenderTargetHeight), CameraSceneItem::DEFAULT_NEAR_Z, CameraSceneItem::DEFAULT_FAR_Z);
+				viewSpaceToClipSpaceMatrixReversedZ = glm::perspective(CameraSceneItem::DEFAULT_FOV_Y, static_cast<float>(renderTargetWidth) / static_cast<float>(mRenderTargetHeight), CameraSceneItem::DEFAULT_FAR_Z, CameraSceneItem::DEFAULT_NEAR_Z);
 			}
 			mPassData->cameraRelativeWorldSpaceToViewSpaceQuaternion[eyeIndex] = glm::quat(mPassData->cameraRelativeWorldSpaceToViewSpaceMatrix[eyeIndex]);
 			mPassData->cameraRelativeWorldSpaceToClipSpaceMatrixReversedZ[eyeIndex] = viewSpaceToClipSpaceMatrixReversedZ * mPassData->cameraRelativeWorldSpaceToViewSpaceMatrix[eyeIndex];

@@ -43,6 +43,7 @@
 PRAGMA_WARNING_PUSH
 	PRAGMA_WARNING_DISABLE_MSVC(4061)	// warning C4061: enumerator 'FORCE_32BIT' in switch of enum 'aiMetadataType' is not explicitly handled by a case label
 	PRAGMA_WARNING_DISABLE_MSVC(4619)	// warning C4619: #pragma warning: there is no warning number '4351'
+	PRAGMA_WARNING_DISABLE_MSVC(5219)	// warning C5219: implicit conversion from 'int' to 'float', possible loss of data
 	#include <assimp/scene.h>
 	#include <assimp/Importer.hpp>
 PRAGMA_WARNING_POP
@@ -907,8 +908,8 @@ namespace RendererToolkit
 							{
 								std::vector<unsigned int>& currentLodIndices = lodIndices[lodIndex][subMeshIndex];
 
-								const float threshold = powf(0.7f, float(lodIndex));
-								size_t targetNumberOfIndices = size_t(subMeshNumberOfIndices * threshold) / 3 * 3;
+								const float threshold = powf(0.7f, static_cast<float>(lodIndex));
+								size_t targetNumberOfIndices = static_cast<size_t>(static_cast<float>(subMeshNumberOfIndices) * threshold) / 3 * 3;
 								static constexpr float TARGET_ERROR = 1e-2f;
 
 								// We can simplify all the way from base level or from the last result simplifying from the base level sometimes produces better results, but simplifying from last level is faster

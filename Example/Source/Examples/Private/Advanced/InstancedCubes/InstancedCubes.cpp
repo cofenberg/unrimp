@@ -137,7 +137,7 @@ void InstancedCubes::onUpdate()
 	mFPSUpdateTimer += timeDifference;
 	if (mFPSUpdateTimer > 1000.0f)
 	{
-		mFramesPerSecond   = static_cast<float>(mFramesSinceCheck / (mFPSUpdateTimer / 1000.0f));
+		mFramesPerSecond   = static_cast<float>(mFramesSinceCheck) / (mFPSUpdateTimer / 1000.0f);
 		mFPSUpdateTimer   -= 1000.0f;
 		mFramesSinceCheck  = 0;
 	}

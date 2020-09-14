@@ -1874,7 +1874,7 @@ void smolv::StatsPrint(const Stats* stats)
 	std::sort(sizes, sizes + kKnownOpsCount, CompareOpCounters);
 	std::sort(sizesSmol, sizesSmol + kKnownOpsCount, CompareOpCounters);
 	
-	printf("Stats for %i SPIR-V inputs, total size %i words (%.1fKB):\n", (int)stats->inputCount, (int)stats->totalSize, stats->totalSize * 4.0f / 1024.0f);
+	printf("Stats for %i SPIR-V inputs, total size %i words (%.1fKB):\n", (int)stats->inputCount, (int)stats->totalSize, static_cast<float>(stats->totalSize) * 4.0f / 1024.0f);
 	printf("Most occuring ops:\n");
 	for (int i = 0; i < 30; ++i)
 	{

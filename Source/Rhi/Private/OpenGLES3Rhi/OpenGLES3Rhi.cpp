@@ -9795,7 +9795,7 @@ namespace OpenGLES3Rhi
 		// Set the OpenGL ES 3 viewport
 		// -> OpenGL ES 3 supports only one viewport
 		RHI_ASSERT(mContext, numberOfViewports <= 1, "OpenGL ES 3 supports only one viewport")
-		glViewport(static_cast<GLint>(viewports->topLeftX), static_cast<GLint>(renderTargetHeight - viewports->topLeftY - viewports->height), static_cast<GLsizei>(viewports->width), static_cast<GLsizei>(viewports->height));
+		glViewport(static_cast<GLint>(viewports->topLeftX), static_cast<GLint>(static_cast<float>(renderTargetHeight) - viewports->topLeftY - viewports->height), static_cast<GLsizei>(viewports->width), static_cast<GLsizei>(viewports->height));
 		glDepthRangef(static_cast<GLclampf>(viewports->minDepth), static_cast<GLclampf>(viewports->maxDepth));
 	}
 

@@ -103,7 +103,8 @@ if(WIN32)
 	# - Disable "warning C4530: C++ exception handler used, but unwind semantics are not enabled. Specify /EHsc"
 	# - Disable "warning C4668: '__GNUC__' is not defined as a preprocessor macro, replacing with '0' for '#if/#elif'"
 	# - Disable "warning C4774: 'sscanf' : format string expected in argument 2 is not a string literal"
-	set_source_files_properties(${EXTERNAL_SOURCE_CODES} PROPERTIES COMPILE_FLAGS "/wd4201 /wd4204 /wd4255 /wd4365 /wd4456 /wd4530 /wd4668 /wd4774")
+	# - Disable "warning C5219: implicit conversion from 'int' to 'float', possible loss of data"
+	set_source_files_properties(${EXTERNAL_SOURCE_CODES} PROPERTIES COMPILE_FLAGS "/wd4201 /wd4204 /wd4255 /wd4365 /wd4456 /wd4530 /wd4668 /wd4774 /wd5219")
 endif()
 
 
