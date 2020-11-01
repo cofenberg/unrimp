@@ -25,6 +25,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 
 #include "rtm/types.h"
+#include "rtm/impl/compiler_utils.h"
 
 namespace rtm
 {
@@ -66,6 +67,16 @@ namespace rtm
 	using scalarf_arg6 = const scalarf&;
 	using scalarf_arg7 = const scalarf&;
 	using scalarf_argn = const scalarf&;
+
+	using mask4f_arg0 = const mask4f;
+	using mask4f_arg1 = const mask4f;
+	using mask4f_arg2 = const mask4f;
+	using mask4f_arg3 = const mask4f;
+	using mask4f_arg4 = const mask4f;
+	using mask4f_arg5 = const mask4f;
+	using mask4f_arg6 = const mask4f&;
+	using mask4f_arg7 = const mask4f&;
+	using mask4f_argn = const mask4f&;
 
 	using mask4i_arg0 = const mask4i;
 	using mask4i_arg1 = const mask4i;
@@ -127,6 +138,16 @@ namespace rtm
 	using scalarf_arg6 = const scalarf;
 	using scalarf_arg7 = const scalarf;
 	using scalarf_argn = const scalarf;
+
+	using mask4f_arg0 = const mask4f;
+	using mask4f_arg1 = const mask4f;
+	using mask4f_arg2 = const mask4f;
+	using mask4f_arg3 = const mask4f;
+	using mask4f_arg4 = const mask4f;
+	using mask4f_arg5 = const mask4f;
+	using mask4f_arg6 = const mask4f;
+	using mask4f_arg7 = const mask4f;
+	using mask4f_argn = const mask4f&;
 
 	using mask4i_arg0 = const mask4i;
 	using mask4i_arg1 = const mask4i;
@@ -191,6 +212,16 @@ namespace rtm
 	using scalarf_arg7 = const scalarf;
 	using scalarf_argn = const scalarf;
 
+	using mask4f_arg0 = const mask4f;
+	using mask4f_arg1 = const mask4f;
+	using mask4f_arg2 = const mask4f;
+	using mask4f_arg3 = const mask4f;
+	using mask4f_arg4 = const mask4f&;
+	using mask4f_arg5 = const mask4f&;
+	using mask4f_arg6 = const mask4f&;
+	using mask4f_arg7 = const mask4f&;
+	using mask4f_argn = const mask4f&;
+
 	using mask4i_arg0 = const mask4i;
 	using mask4i_arg1 = const mask4i;
 	using mask4i_arg2 = const mask4i;
@@ -218,7 +249,7 @@ namespace rtm
 	using matrix4x4f_arg0 = const matrix4x4f&;
 	using matrix4x4f_arg1 = const matrix4x4f&;
 	using matrix4x4f_argn = const matrix4x4f&;
-#elif defined(__x86_64__) && defined(__GNUG__) && !defined(__clang__)
+#elif defined(__x86_64__) && defined(RTM_COMPILER_GCC)
 	// On x64 with gcc, the first 8x vector4f/quatf arguments can be passed by value in a register,
 	// everything else afterwards is passed by const&. They can also be returned by register.
 
@@ -252,6 +283,16 @@ namespace rtm
 	using scalarf_arg7 = const scalarf;
 	using scalarf_argn = const scalarf&;
 
+	using mask4f_arg0 = const mask4f;
+	using mask4f_arg1 = const mask4f;
+	using mask4f_arg2 = const mask4f;
+	using mask4f_arg3 = const mask4f;
+	using mask4f_arg4 = const mask4f;
+	using mask4f_arg5 = const mask4f;
+	using mask4f_arg6 = const mask4f;
+	using mask4f_arg7 = const mask4f;
+	using mask4f_argn = const mask4f&;
+
 	using mask4i_arg0 = const mask4i;
 	using mask4i_arg1 = const mask4i;
 	using mask4i_arg2 = const mask4i;
@@ -279,7 +320,7 @@ namespace rtm
 	using matrix4x4f_arg0 = const matrix4x4f&;
 	using matrix4x4f_arg1 = const matrix4x4f&;
 	using matrix4x4f_argn = const matrix4x4f&;
-#elif defined(__x86_64__) && defined(__clang__)
+#elif defined(__x86_64__) && defined(RTM_COMPILER_CLANG)
 	// On x64 with clang, the first 8x vector4f/quatf arguments can be passed by value in a register,
 	// everything else afterwards is passed by const&. They can also be returned by register.
 
@@ -312,6 +353,16 @@ namespace rtm
 	using scalarf_arg6 = const scalarf;
 	using scalarf_arg7 = const scalarf;
 	using scalarf_argn = const scalarf&;
+
+	using mask4f_arg0 = const mask4f;
+	using mask4f_arg1 = const mask4f;
+	using mask4f_arg2 = const mask4f;
+	using mask4f_arg3 = const mask4f;
+	using mask4f_arg4 = const mask4f;
+	using mask4f_arg5 = const mask4f;
+	using mask4f_arg6 = const mask4f;
+	using mask4f_arg7 = const mask4f;
+	using mask4f_argn = const mask4f&;
 
 	using mask4i_arg0 = const mask4i;
 	using mask4i_arg1 = const mask4i;
@@ -376,6 +427,16 @@ namespace rtm
 	using scalarf_arg6 = const scalarf;
 	using scalarf_arg7 = const scalarf;
 	using scalarf_argn = const scalarf;
+
+	using mask4f_arg0 = const mask4f&;
+	using mask4f_arg1 = const mask4f&;
+	using mask4f_arg2 = const mask4f&;
+	using mask4f_arg3 = const mask4f&;
+	using mask4f_arg4 = const mask4f&;
+	using mask4f_arg5 = const mask4f&;
+	using mask4f_arg6 = const mask4f&;
+	using mask4f_arg7 = const mask4f&;
+	using mask4f_argn = const mask4f&;
 
 	using mask4i_arg0 = const mask4i&;
 	using mask4i_arg1 = const mask4i&;

@@ -1,4 +1,4 @@
-acl 1.3.0 (latest commit 1f6567f086799b17b725fae348b1cb2005e9de7d - December 21, 2019)
+acl 1.3.1 (latest commit 82e304c992ce41364c93ae7f2cbeeb536f7579d8 - September 16, 2020)
 	Animation Compression Library
 - License: "MIT License"
 - Online: https://github.com/nfrechette/acl

@@ -29,7 +29,6 @@
 #include "acl/core/error.h"
 #include "acl/core/hash.h"
 #include "acl/core/iterator.h"
-#include "acl/compression/animation_clip.h"
 #include "acl/compression/impl/track_stream.h"
 
 #include <cstdint>
@@ -40,7 +39,7 @@ namespace acl
 {
 	namespace acl_impl
 	{
-		struct ClipContext;
+		struct clip_context;
 
 		//////////////////////////////////////////////////////////////////////////
 		// The sample distribution.
@@ -56,12 +55,12 @@ namespace acl
 
 		struct SegmentContext
 		{
-			ClipContext* clip;
+			clip_context* clip;
 			BoneStreams* bone_streams;
 			BoneRanges* ranges;
 
-			uint16_t num_samples;
-			uint16_t num_bones;
+			uint32_t num_samples;
+			uint32_t num_bones;
 
 			uint32_t clip_sample_offset;
 			uint32_t segment_index;
@@ -73,17 +72,21 @@ namespace acl
 			bool are_scales_normalized;
 
 			// Stat tracking
+			uint32_t animated_pose_rotation_bit_size;
+			uint32_t animated_pose_translation_bit_size;
+			uint32_t animated_pose_scale_bit_size;
 			uint32_t animated_pose_bit_size;
 			uint32_t animated_data_size;
 			uint32_t range_data_size;
+			uint32_t segment_data_size;
 			uint32_t total_header_size;
 
 			//////////////////////////////////////////////////////////////////////////
-			Iterator<BoneStreams> bone_iterator() { return Iterator<BoneStreams>(bone_streams, num_bones); }
-			ConstIterator<BoneStreams> const_bone_iterator() const { return ConstIterator<BoneStreams>(bone_streams, num_bones); }
+			iterator<BoneStreams> bone_iterator() { return iterator<BoneStreams>(bone_streams, num_bones); }
+			const_iterator<BoneStreams> const_bone_iterator() const { return const_iterator<BoneStreams>(bone_streams, num_bones); }
 		};
 
-		inline void destroy_segment_context(IAllocator& allocator, SegmentContext& segment)
+		inline void destroy_segment_context(iallocator& allocator, SegmentContext& segment)
 		{
 			deallocate_type_array(allocator, segment.bone_streams, segment.num_bones);
 			deallocate_type_array(allocator, segment.ranges, segment.num_bones);

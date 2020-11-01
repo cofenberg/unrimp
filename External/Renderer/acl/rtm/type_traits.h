@@ -37,9 +37,8 @@ namespace rtm
 	template<>
 	struct float_traits<float>
 	{
-		using mask4 = mask4i;
+		using mask4 = mask4f;
 
-		using angle = anglef;
 		using scalar = scalarf;
 		using vector4 = vector4f;
 		using quat = quatf;
@@ -57,9 +56,8 @@ namespace rtm
 	template<>
 	struct float_traits<double>
 	{
-		using mask4 = mask4q;
+		using mask4 = mask4d;
 
-		using angle = angled;
 		using scalar = scalard;
 		using vector4 = vector4d;
 		using quat = quatd;

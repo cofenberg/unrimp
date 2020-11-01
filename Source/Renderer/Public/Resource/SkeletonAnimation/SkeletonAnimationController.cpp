@@ -90,7 +90,7 @@ namespace Renderer
 	{
 		RHI_ASSERT(mRenderer.getContext(), nullptr == mSkeletonAnimationEvaluator, "No useless update calls, please")
 		SkeletonAnimationResourceManager& skeletonAnimationResourceManager = mRenderer.getSkeletonAnimationResourceManager();
-		mSkeletonAnimationEvaluator = new SkeletonAnimationEvaluator(mRenderer.getContext().getAllocator(), skeletonAnimationResourceManager, mSkeletonAnimationResourceId);
+		mSkeletonAnimationEvaluator = new SkeletonAnimationEvaluator(skeletonAnimationResourceManager, mSkeletonAnimationResourceId);
 
 		// Register skeleton animation controller
 		skeletonAnimationResourceManager.mSkeletonAnimationControllers.push_back(this);

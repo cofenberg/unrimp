@@ -3,7 +3,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 // The MIT License (MIT)
 //
-// Copyright (c) 2017 Nicholas Frechette & Animation Compression Library contributors
+// Copyright (c) 2020 Nicholas Frechette & Animation Compression Library contributors
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -24,8 +24,11 @@
 // SOFTWARE.
 ////////////////////////////////////////////////////////////////////////////////
 
-#include "acl/core/algorithm_types.h"
+#include "acl/compression/track_array.h"
+#include "acl/core/compressed_tracks.h"
+#include "acl/core/error_result.h"
 #include "acl/core/impl/compiler_utils.h"
+#include "acl/core/iallocator.h"
 
 #include <cstdint>
 
@@ -33,22 +36,19 @@ ACL_IMPL_FILE_PRAGMA_PUSH
 
 namespace acl
 {
-	////////////////////////////////////////////////////////////////////////////////
-	// Returns the version associated with an algorithm type.
-	// This is suitable for use by serialization to detect if a compressed clip is
-	// still supported by the library or if it must be re-compressed. As such,
-	// changes to the binary format require incrementing the version number.
-	// TODO: constexpr
-	inline uint16_t get_algorithm_version(algorithm_type8 type)
-	{
-		switch (type)
-		{
-			case algorithm_type8::uniformly_sampled:	return 6;
-			//case algorithm_type8::LinearKeyReduction:	return 0;
-			//case algorithm_type8::SplineKeyReduction:	return 0;
-			default:									return 0xFFFF;
-		}
-	}
+	//////////////////////////////////////////////////////////////////////////
+	// Convert a track array instance into a raw compressed tracks instance.
+	// This is a lossless process.
+	//////////////////////////////////////////////////////////////////////////
+	error_result convert_track_list(iallocator& allocator, const track_array& track_list, compressed_tracks*& out_compressed_tracks);
+
+	//////////////////////////////////////////////////////////////////////////
+	// Convert a compressed tracks instance into a track array instance.
+	// This is a lossless process if all the metadata is present.
+	//////////////////////////////////////////////////////////////////////////
+	error_result convert_track_list(iallocator& allocator, const compressed_tracks& tracks, track_array& out_track_list);
 }
+
+#include "acl/compression/impl/convert.impl.h"
 
 ACL_IMPL_FILE_PRAGMA_POP

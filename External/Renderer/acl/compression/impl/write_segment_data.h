@@ -26,7 +26,7 @@
 
 #include "acl/core/iallocator.h"
 #include "acl/core/impl/compiler_utils.h"
-#include "acl/core/compressed_clip.h"
+#include "acl/core/impl/compressed_headers.h"
 #include "acl/compression/compression_settings.h"
 #include "acl/compression/impl/clip_context.h"
 #include "acl/compression/impl/segment_context.h"
@@ -41,62 +41,100 @@ namespace acl
 {
 	namespace acl_impl
 	{
-		inline void write_segment_start_indices(const ClipContext& clip_context, uint32_t* segment_start_indices)
+		inline uint32_t write_segment_start_indices(const clip_context& clip, uint32_t* segment_start_indices)
 		{
-			for (uint16_t segment_index = 0; segment_index < clip_context.num_segments; ++segment_index)
+			uint32_t size_written = 0;
+
+			const uint32_t num_segments = clip.num_segments;
+			for (uint32_t segment_index = 0; segment_index < num_segments; ++segment_index)
 			{
-				const SegmentContext& segment = clip_context.segments[segment_index];
+				const SegmentContext& segment = clip.segments[segment_index];
 				segment_start_indices[segment_index] = segment.clip_sample_offset;
+				size_written += sizeof(uint32_t);
 			}
 
 			// Write our sentinel value
-			segment_start_indices[clip_context.num_segments] = 0xFFFFFFFFU;
+			segment_start_indices[clip.num_segments] = 0xFFFFFFFFU;
+			size_written += sizeof(uint32_t);
+
+			return size_written;
 		}
 
-		inline void write_segment_headers(const ClipContext& clip_context, const CompressionSettings& settings, SegmentHeader* segment_headers, uint32_t segment_data_start_offset)
+		inline uint32_t write_segment_headers(const clip_context& clip, const compression_settings& settings, segment_header* segment_headers, uint32_t segment_data_start_offset)
 		{
-			const uint32_t format_per_track_data_size = get_format_per_track_data_size(clip_context, settings.rotation_format, settings.translation_format, settings.scale_format);
+			uint32_t size_written = 0;
+
+			const uint32_t format_per_track_data_size = get_format_per_track_data_size(clip, settings.rotation_format, settings.translation_format, settings.scale_format);
 
 			uint32_t segment_data_offset = segment_data_start_offset;
-			for (uint16_t segment_index = 0; segment_index < clip_context.num_segments; ++segment_index)
+			for (uint32_t segment_index = 0; segment_index < clip.num_segments; ++segment_index)
 			{
-				const SegmentContext& segment = clip_context.segments[segment_index];
-				SegmentHeader& header = segment_headers[segment_index];
+				const SegmentContext& segment = clip.segments[segment_index];
+				segment_header& header = segment_headers[segment_index];
+
+				ACL_ASSERT(header.animated_pose_bit_size == 0, "Buffer overrun detected");
 
 				header.animated_pose_bit_size = segment.animated_pose_bit_size;
-				header.format_per_track_data_offset = segment_data_offset;
-				header.range_data_offset = align_to(header.format_per_track_data_offset + format_per_track_data_size, 2);		// Aligned to 2 bytes
-				header.track_data_offset = align_to(header.range_data_offset + segment.range_data_size, 4);						// Aligned to 4 bytes
+				header.segment_data = segment_data_offset;
 
-				segment_data_offset = header.track_data_offset + segment.animated_data_size;
+				segment_data_offset = align_to(segment_data_offset + format_per_track_data_size, 2);		// Aligned to 2 bytes
+				segment_data_offset = align_to(segment_data_offset + segment.range_data_size, 4);			// Aligned to 4 bytes
+				segment_data_offset = segment_data_offset + segment.animated_data_size;
+				size_written += sizeof(segment_header);
+
+				ACL_ASSERT((segment_data_offset - (uint32_t)header.segment_data) == segment.segment_data_size, "Unexpected segment size");
 			}
+
+			return size_written;
 		}
 
-		inline void write_segment_data(const ClipContext& clip_context, const CompressionSettings& settings, range_reduction_flags8 range_reduction, ClipHeader& header, const uint16_t* output_bone_mapping, uint16_t num_output_bones)
+		inline uint32_t write_segment_data(const clip_context& clip, const compression_settings& settings, range_reduction_flags8 range_reduction, transform_tracks_header& header, const uint32_t* output_bone_mapping, uint32_t num_output_bones)
 		{
-			SegmentHeader* segment_headers = header.get_segment_headers();
-			const uint32_t format_per_track_data_size = get_format_per_track_data_size(clip_context, settings.rotation_format, settings.translation_format, settings.scale_format);
+			segment_header* segment_headers = header.get_segment_headers();
+			const uint32_t format_per_track_data_size = get_format_per_track_data_size(clip, settings.rotation_format, settings.translation_format, settings.scale_format);
 
-			for (uint16_t segment_index = 0; segment_index < clip_context.num_segments; ++segment_index)
+			uint32_t size_written = 0;
+
+			const uint32_t num_segments = clip.num_segments;
+			for (uint32_t segment_index = 0; segment_index < num_segments; ++segment_index)
 			{
-				const SegmentContext& segment = clip_context.segments[segment_index];
-				SegmentHeader& segment_header = segment_headers[segment_index];
+				const SegmentContext& segment = clip.segments[segment_index];
+				segment_header& segment_header_ = segment_headers[segment_index];
 
-				if (format_per_track_data_size > 0)
-					write_format_per_track_data(segment, header.get_format_per_track_data(segment_header), format_per_track_data_size, output_bone_mapping, num_output_bones);
-				else
-					segment_header.format_per_track_data_offset = InvalidPtrOffset();
+				uint8_t* format_per_track_data = nullptr;
+				uint8_t* range_data = nullptr;
+				uint8_t* animated_data = nullptr;
+				header.get_segment_data(segment_header_, format_per_track_data, range_data, animated_data);
 
-				if (segment.range_data_size > 0)
-					write_segment_range_data(segment, range_reduction, header.get_segment_range_data(segment_header), segment.range_data_size, output_bone_mapping, num_output_bones);
-				else
-					segment_header.range_data_offset = InvalidPtrOffset();
+				ACL_ASSERT(format_per_track_data[0] == 0, "Buffer overrun detected");
+				ACL_ASSERT(range_data[0] == 0, "Buffer overrun detected");
+				ACL_ASSERT(animated_data[0] == 0, "Buffer overrun detected");
 
-				if (segment.animated_data_size > 0)
-					write_animated_track_data(segment, header.get_track_data(segment_header), segment.animated_data_size, output_bone_mapping, num_output_bones);
-				else
-					segment_header.track_data_offset = InvalidPtrOffset();
+				if (format_per_track_data_size != 0)
+				{
+					const uint32_t size = write_format_per_track_data(segment, format_per_track_data, format_per_track_data_size, output_bone_mapping, num_output_bones);
+					(void)size;
+					ACL_ASSERT(size == format_per_track_data_size, "Unexpected format per track data size");
+				}
+
+				if (segment.range_data_size != 0)
+				{
+					const uint32_t size = write_segment_range_data(segment, range_reduction, range_data, segment.range_data_size, output_bone_mapping, num_output_bones);
+					(void)size;
+					ACL_ASSERT(size == segment.range_data_size, "Unexpected range data size");
+				}
+
+				if (segment.animated_data_size != 0)
+				{
+					const uint32_t size = write_animated_track_data(segment, animated_data, segment.animated_data_size, output_bone_mapping, num_output_bones);
+					(void)size;
+					ACL_ASSERT(size == segment.animated_data_size, "Unexpected animated data size");
+				}
+
+				size_written += segment.segment_data_size;
 			}
+
+			return size_written;
 		}
 	}
 }

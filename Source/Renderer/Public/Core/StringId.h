@@ -292,7 +292,7 @@ namespace Renderer
 //[-------------------------------------------------------]
 //[ Macros & definitions                                  ]
 //[-------------------------------------------------------]
-#if _MSC_VER
+#ifdef _MSC_VER
 	// Disable warnings in external headers, we can't fix them: warning C4307: '*': integral constant overflow
 	/**
 	*  @brief

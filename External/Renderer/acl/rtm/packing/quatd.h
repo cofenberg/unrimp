@@ -37,7 +37,7 @@ namespace rtm
 	// Returns the quaternion on the hypersphere with a positive [w] component
 	// that represents the same 3D rotation as the input.
 	//////////////////////////////////////////////////////////////////////////
-	inline quatd quat_ensure_positive_w(const quatd& input) RTM_NO_EXCEPT
+	RTM_DISABLE_SECURITY_COOKIE_CHECK RTM_FORCE_INLINE quatd quat_ensure_positive_w(const quatd& input) RTM_NO_EXCEPT
 	{
 		return quat_get_w(input) >= 0.0 ? input : quat_neg(input);
 	}
@@ -46,13 +46,18 @@ namespace rtm
 	// Returns a quaternion constructed from a vector3 representing the [xyz]
 	// components while reconstructing the [w] component by assuming it is positive.
 	//////////////////////////////////////////////////////////////////////////
-	inline quatd quat_from_positive_w(const vector4d& input) RTM_NO_EXCEPT
+	RTM_DISABLE_SECURITY_COOKIE_CHECK RTM_FORCE_INLINE quatd quat_from_positive_w(const vector4d& input) RTM_NO_EXCEPT
 	{
+		const double input_x = vector_get_x(input);
+		const double input_y = vector_get_y(input);
+		const double input_z = vector_get_z(input);
+
 		// Operation order is important here, due to rounding, ((1.0 - (X*X)) - Y*Y) - Z*Z is more accurate than 1.0 - dot3(xyz, xyz)
-		double w_squared = ((1.0 - vector_get_x(input) * vector_get_x(input)) - vector_get_y(input) * vector_get_y(input)) - vector_get_z(input) * vector_get_z(input);
+		const double w_squared = ((1.0 - (input_x * input_x)) - (input_y * input_y)) - (input_z * input_z);
+
 		// w_squared can be negative either due to rounding or due to quantization imprecision, we take the absolute value
 		// to ensure the resulting quaternion is always normalized with a positive W component
-		double w = scalar_sqrt(scalar_abs(w_squared));
+		const double w = scalar_sqrt(scalar_abs(w_squared));
 		return quat_set_w(vector_to_quat(input), w);
 	}
 }

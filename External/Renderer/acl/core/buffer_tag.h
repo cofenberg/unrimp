@@ -3,7 +3,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 // The MIT License (MIT)
 //
-// Copyright (c) 2017 Nicholas Frechette & Animation Compression Library contributors
+// Copyright (c) 2020 Nicholas Frechette & Animation Compression Library contributors
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -25,9 +25,6 @@
 ////////////////////////////////////////////////////////////////////////////////
 
 #include "acl/core/impl/compiler_utils.h"
-#include "acl/decompression/output_writer.h"
-
-#include <rtm/types.h>
 
 #include <cstdint>
 
@@ -36,39 +33,17 @@ ACL_IMPL_FILE_PRAGMA_PUSH
 namespace acl
 {
 	//////////////////////////////////////////////////////////////////////////
-	// A simple output writer implementation that simply writes out to a
-	// Transform_32 array.
-	//////////////////////////////////////////////////////////////////////////
-	struct DefaultOutputWriter : OutputWriter
+	// This enum represents raw buffer identification tags
+	enum class buffer_tag32 : uint32_t
 	{
-		DefaultOutputWriter(rtm::qvvf* transforms, uint16_t num_transforms)
-			: m_transforms(transforms)
-			, m_num_transforms(num_transforms)
-		{
-			ACL_ASSERT(transforms != nullptr, "Transforms array cannot be null");
-			ACL_ASSERT(num_transforms != 0, "Transforms array cannot be empty");
-		}
+		//////////////////////////////////////////////////////////////////////////
+		// Identifies a 'CompressedClip' buffer.
+		// Deprecated, no longer used. Belonged to pre-2.0 file format.
+		compressed_clip = 0xac10ac10,
 
-		void RTM_SIMD_CALL write_bone_rotation(uint16_t bone_index, rtm::quatf_arg0 rotation)
-		{
-			ACL_ASSERT(bone_index < m_num_transforms, "Invalid bone index. %u >= %u", bone_index, m_num_transforms);
-			m_transforms[bone_index].rotation = rotation;
-		}
-
-		void RTM_SIMD_CALL write_bone_translation(uint16_t bone_index, rtm::vector4f_arg0 translation)
-		{
-			ACL_ASSERT(bone_index < m_num_transforms, "Invalid bone index. %u >= %u", bone_index, m_num_transforms);
-			m_transforms[bone_index].translation = translation;
-		}
-
-		void RTM_SIMD_CALL write_bone_scale(uint16_t bone_index, rtm::vector4f_arg0 scale)
-		{
-			ACL_ASSERT(bone_index < m_num_transforms, "Invalid bone index. %u >= %u", bone_index, m_num_transforms);
-			m_transforms[bone_index].scale = scale;
-		}
-
-		rtm::qvvf* m_transforms;
-		uint16_t m_num_transforms;
+		//////////////////////////////////////////////////////////////////////////
+		// Identifies a 'compressed_tracks' buffer.
+		compressed_tracks = 0xac11ac11,
 	};
 }
 

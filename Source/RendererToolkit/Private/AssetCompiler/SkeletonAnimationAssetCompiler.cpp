@@ -41,12 +41,11 @@
 // Disable warnings in external headers, we can't fix them
 PRAGMA_WARNING_PUSH
 	PRAGMA_WARNING_DISABLE_MSVC(4061)	// warning C4061: enumerator 'acl::RotationFormat8::QuatDropW_48' in switch of enum 'acl::RotationFormat8' is not explicitly handled by a case label
-	PRAGMA_WARNING_DISABLE_MSVC(4355)	// warning C4355: 'this': used in base member initializer list
 	PRAGMA_WARNING_DISABLE_MSVC(4365)	// warning C4365: 'initializing': conversion from 'int' to 'uint8_t', signed/unsigned mismatch
 	PRAGMA_WARNING_DISABLE_MSVC(4625)	// warning C4625: 'acl::String': copy constructor was implicitly defined as deleted
 	PRAGMA_WARNING_DISABLE_MSVC(4626)	// warning C4626: 'acl::String': assignment operator was implicitly defined as deleted
 	PRAGMA_WARNING_DISABLE_MSVC(5027)	// warning C5027: 'rtm::rtm_impl::matrix_caster<rtm::matrix3x3f>': move assignment operator was implicitly defined as deleted
-	#include <acl/algorithm/uniformly_sampled/encoder.h>
+	#include <acl/compression/compress.h>
 PRAGMA_WARNING_POP
 
 // Disable warnings in external headers, we can't fix them
@@ -91,7 +90,7 @@ namespace
 		//[-------------------------------------------------------]
 		//[ Classes                                               ]
 		//[-------------------------------------------------------]
-		class AclAllocator final : public acl::IAllocator
+		class AclAllocator final : public acl::iallocator
 		{
 
 
@@ -243,51 +242,49 @@ namespace RendererToolkit
 					}
 				}
 
-				{ // Use ACL ( https://github.com/nfrechette/acl ) to compress the skeleton animation clip
+				{ // Use ACL ( https://github.com/nfrechette/acl ) to compress the skeleton animation tracks
 					::detail::AclAllocator aclAllocator(context.getAllocator());
 					const uint32_t numberOfSamples = static_cast<uint32_t>(assimpAnimation->mDuration) + 1;
-
-					// Create ACL rigid skeleton
-					// -> See ACL documentation https://github.com/nfrechette/acl/blob/develop/docs/creating_a_skeleton.md
-					// TODO(co) Fill bone hierarchy
 					const uint16_t numberOfBones = static_cast<uint16_t>(assimpAnimation->mNumChannels);
-					std::vector<acl::RigidBone> aclRigidBones(numberOfBones);
-					for (uint16_t boneIndex = 0; boneIndex < numberOfBones; ++boneIndex)
-					{
-						acl::RigidBone& aclRigidBone = aclRigidBones[boneIndex];
-						#ifdef RHI_DEBUG
+
+					// Assimp bones sanity checks
+					#ifdef RHI_DEBUG
+						for (uint16_t boneIndex = 0; boneIndex < numberOfBones; ++boneIndex)
 						{
 							const aiNodeAnim* assimpNodeAnim = assimpAnimation->mChannels[boneIndex];
-							aclRigidBone.name = acl::String(aclAllocator, assimpNodeAnim->mNodeName.C_Str());
 							RHI_ASSERT(context, 1 == assimpNodeAnim->mNumRotationKeys || numberOfSamples == assimpNodeAnim->mNumRotationKeys, "Number of animation rotation keys mismatch")
 							RHI_ASSERT(context, 1 == assimpNodeAnim->mNumPositionKeys || numberOfSamples == assimpNodeAnim->mNumPositionKeys, "Number of animation position keys mismatch")
 							RHI_ASSERT(context, ignoreBoneScale || 1 == assimpNodeAnim->mNumScalingKeys || numberOfSamples == assimpNodeAnim->mNumScalingKeys, "Number of animation scaling keys mismatch")
 						}
-						#endif
-						aclRigidBone.vertex_distance = CENTIMETER_TO_METER(3.0f);	// "A value of 3cm is good enough for cinematographic quality for most characters" - https://github.com/nfrechette/acl/blob/develop/docs/creating_a_skeleton.md
-					}
-					acl::RigidSkeleton aclRigidSkeleton(aclAllocator, aclRigidBones.data(), static_cast<uint16_t>(numberOfBones));
-
-					// Create ACL raw animation clip
-					// -> See ACL documentation https://github.com/nfrechette/acl/blob/develop/docs/creating_a_raw_clip.md
-					#ifdef RHI_DEBUG
-						acl::String name(aclAllocator, assimpAnimation->mName.C_Str());
-					#else
-						acl::String name;
 					#endif
+
+					// Create ACL raw animation tracks
+					// -> See ACL documentation https://github.com/nfrechette/acl/blob/develop/docs/creating_a_raw_track_list.md
 					std::vector<uint32_t> boneIds(numberOfBones);
-					acl::AnimationClip aclAnimationClip(aclAllocator, aclRigidSkeleton, numberOfSamples, static_cast<float>(assimpAnimation->mTicksPerSecond), name);
+					acl::track_array_qvvf aclTrackArrayQvvf(aclAllocator, numberOfBones);
+					#ifdef RHI_DEBUG
+						if (assimpAnimation->mName.length > 0)
+						{
+							aclTrackArrayQvvf.set_name(acl::string(aclAllocator, assimpAnimation->mName.C_Str()));
+						}
+					#endif
 					{
 						// Some Assimp importers like the MD5 one compensate coordinate system differences by setting a root node transform, so we need to take this into account
 						const aiQuaternion assimpQuaternionOffset(aiMatrix3x3(assimpScene->mRootNode->mTransformation));
 						const bool isMd5 = (aiString("<MD5_Hierarchy>") == assimpScene->mRootNode->mName);
 
-						// Fill ACL raw animation clip
+						// Fill ACL raw animation tracks
 						for (uint16_t boneIndex = 0; boneIndex < numberOfBones; ++boneIndex)
 						{
+							acl::track_desc_transformf aclTrackDesc;
+							aclTrackDesc.output_index					= boneIndex;
+							// aclTrackDesc.parent_index				=	// TODO(co) Fill bone hierarchy
+							aclTrackDesc.precision						= CENTIMETER_TO_METER(0.01f);	// We're using one unit = one meter (not centimeter)
+							aclTrackDesc.shell_distance					= CENTIMETER_TO_METER(3.0f);	// We're using one unit = one meter (not centimeter)
+							aclTrackDesc.constant_translation_threshold = CENTIMETER_TO_METER(0.001f);	// We're using one unit = one meter (not centimeter)
+							acl::track_qvvf aclTrackQvvf = acl::track_qvvf::make_reserve(aclTrackDesc, aclAllocator, numberOfSamples, static_cast<float>(assimpAnimation->mTicksPerSecond));
 							const aiNodeAnim* assimpNodeAnim = assimpAnimation->mChannels[boneIndex];
 							boneIds[boneIndex] = Renderer::StringId::calculateFNV(assimpNodeAnim->mNodeName.C_Str());
-							acl::AnimatedBone& aclAnimatedBone = aclAnimationClip.get_animated_bone(boneIndex);
 
 							// Rotation
 							// -> Some Assimp importers like the MD5 one compensate coordinate system differences by setting a root node transform, so we need to take this into account
@@ -300,16 +297,14 @@ namespace RendererToolkit
 									// TODO(co) Somehow there's a flip when loading OGRE/MD5 skeleton animations. Haven't tried other formats, yet.
 									assimpQuaternion.Conjugate();
 								}
-								const rtm::quatd rtmQuatd(rtm::quat_set(static_cast<double>(assimpQuaternion.x), static_cast<double>(assimpQuaternion.y), static_cast<double>(assimpQuaternion.z), static_cast<double>(assimpQuaternion.w)));
-								acl::AnimationRotationTrack& aclAnimationRotationTrack = aclAnimatedBone.rotation_track;
+								const rtm::quatf rtmQuatf(rtm::quat_set(assimpQuaternion.x, assimpQuaternion.y, assimpQuaternion.z, assimpQuaternion.w));
 								for (uint32_t sampleIndex = 0; sampleIndex < numberOfSamples; ++sampleIndex)
 								{
-									aclAnimationRotationTrack.set_sample(sampleIndex, rtmQuatd);
+									aclTrackQvvf[sampleIndex].rotation = rtmQuatf;
 								}
 							}
 							else if (assimpNodeAnim->mNumRotationKeys > 0)
 							{
-								acl::AnimationRotationTrack& aclAnimationRotationTrack = aclAnimatedBone.rotation_track;
 								for (uint32_t sampleIndex = 0; sampleIndex < numberOfSamples; ++sampleIndex)
 								{
 									const aiQuatKey& assimpQuatKey = assimpNodeAnim->mRotationKeys[sampleIndex];
@@ -319,7 +314,7 @@ namespace RendererToolkit
 										// TODO(co) Somehow there's a flip when loading OGRE/MD5 skeleton animations. Haven't tried other formats, yet.
 										assimpQuaternion.Conjugate();
 									}
-									aclAnimationRotationTrack.set_sample(sampleIndex, rtm::quat_set(static_cast<double>(assimpQuaternion.x), static_cast<double>(assimpQuaternion.y), static_cast<double>(assimpQuaternion.z), static_cast<double>(assimpQuaternion.w)));
+									aclTrackQvvf[sampleIndex].rotation = rtm::quat_set(assimpQuaternion.x, assimpQuaternion.y, assimpQuaternion.z, assimpQuaternion.w);
 								}
 							}
 
@@ -327,70 +322,76 @@ namespace RendererToolkit
 							if (1 == assimpNodeAnim->mNumPositionKeys)
 							{
 								const aiVectorKey& assimpVectorKey = assimpNodeAnim->mPositionKeys[0];
-								const rtm::vector4d rtmVector4d(rtm::vector_set(static_cast<double>(assimpVectorKey.mValue.x), static_cast<double>(assimpVectorKey.mValue.y), static_cast<double>(assimpVectorKey.mValue.z), 0.0));
-								acl::AnimationTranslationTrack& aclAnimationTranslationTrack = aclAnimatedBone.translation_track;
+								const rtm::vector4f rtmVector4f(rtm::vector_set(assimpVectorKey.mValue.x, assimpVectorKey.mValue.y, assimpVectorKey.mValue.z, 0.0f));
 								for (uint32_t sampleIndex = 0; sampleIndex < numberOfSamples; ++sampleIndex)
 								{
-									aclAnimationTranslationTrack.set_sample(sampleIndex, rtmVector4d);
+									aclTrackQvvf[sampleIndex].translation = rtmVector4f;
 								}
 							}
 							else if (assimpNodeAnim->mNumPositionKeys > 0)
 							{
-								acl::AnimationTranslationTrack& aclAnimationTranslationTrack = aclAnimatedBone.translation_track;
 								for (uint32_t sampleIndex = 0; sampleIndex < numberOfSamples; ++sampleIndex)
 								{
 									const aiVectorKey& assimpVectorKey = assimpNodeAnim->mPositionKeys[sampleIndex];
-									aclAnimationTranslationTrack.set_sample(sampleIndex, rtm::vector_set(static_cast<double>(assimpVectorKey.mValue.x), static_cast<double>(assimpVectorKey.mValue.y), static_cast<double>(assimpVectorKey.mValue.z), 0.0));
+									aclTrackQvvf[sampleIndex].translation = rtm::vector_set(assimpVectorKey.mValue.x, assimpVectorKey.mValue.y, assimpVectorKey.mValue.z, 0.0f);
 								}
 							}
 
 							// Scale
-							if (!ignoreBoneScale)
+							if (ignoreBoneScale)
+							{
+								// TODO(co) Is it possible to tell ACL to ignore the scale?
+								const rtm::vector4f rtmVector4f = rtm::vector_set(1.0f);
+								for (uint32_t sampleIndex = 0; sampleIndex < numberOfSamples; ++sampleIndex)
+								{
+									aclTrackQvvf[sampleIndex].scale = rtmVector4f;
+								}
+							}
+							else
 							{
 								if (1 == assimpNodeAnim->mNumScalingKeys)
 								{
 									const aiVectorKey& assimpVectorKey = assimpNodeAnim->mScalingKeys[0];
-									const rtm::vector4d rtmVector4d(rtm::vector_set(static_cast<double>(assimpVectorKey.mValue.x), static_cast<double>(assimpVectorKey.mValue.y), static_cast<double>(assimpVectorKey.mValue.z), 0.0));
-									acl::AnimationScaleTrack& aclAnimationScaleTrack = aclAnimatedBone.scale_track;
+									const rtm::vector4f rtmVector4f(rtm::vector_set(assimpVectorKey.mValue.x, assimpVectorKey.mValue.y, assimpVectorKey.mValue.z, 0.0f));
 									for (uint32_t sampleIndex = 0; sampleIndex < numberOfSamples; ++sampleIndex)
 									{
-										aclAnimationScaleTrack.set_sample(sampleIndex, rtmVector4d);
+										aclTrackQvvf[sampleIndex].scale = rtmVector4f;
 									}
 								}
 								else if (assimpNodeAnim->mNumScalingKeys > 0)
 								{
-									acl::AnimationScaleTrack& aclAnimationScaleTrack = aclAnimatedBone.scale_track;
 									for (uint32_t sampleIndex = 0; sampleIndex < numberOfSamples; ++sampleIndex)
 									{
 										const aiVectorKey& assimpVectorKey = assimpNodeAnim->mScalingKeys[sampleIndex];
-										aclAnimationScaleTrack.set_sample(sampleIndex, rtm::vector_set(static_cast<double>(assimpVectorKey.mValue.x), static_cast<double>(assimpVectorKey.mValue.y), static_cast<double>(assimpVectorKey.mValue.z), 0.0));
+										aclTrackQvvf[sampleIndex].scale = rtm::vector_set(assimpVectorKey.mValue.x, assimpVectorKey.mValue.y, assimpVectorKey.mValue.z, 0.0f);
 									}
 								}
 							}
+
+							// Done
+							aclTrackArrayQvvf[boneIndex] = std::move(aclTrackQvvf);
 						}
 					}
 
-					// Compress ACL raw animation clip
-					// -> See ACL documentation https://github.com/nfrechette/acl/blob/develop/docs/compressing_a_raw_clip.md
-					acl::CompressionSettings aclCompressionSettings;
-					aclCompressionSettings.level = acl::compression_level8::highest;
-					aclCompressionSettings.rotation_format = acl::rotation_format8::quatf_drop_w_variable;
+					// Compress ACL raw animation tracks
+					// -> See ACL documentation https://github.com/nfrechette/acl/blob/develop/docs/compressing_raw_tracks.md
+					acl::compression_settings aclCompressionSettings;
+					aclCompressionSettings.level			  = acl::compression_level8::highest;
+					aclCompressionSettings.rotation_format	  = acl::rotation_format8::quatf_drop_w_variable;
 					aclCompressionSettings.translation_format = acl::vector_format8::vector3f_variable;
-					aclCompressionSettings.scale_format = acl::vector_format8::vector3f_variable;
+					aclCompressionSettings.scale_format		  = acl::vector_format8::vector3f_variable;
 					acl::qvvf_transform_error_metric aclErrorMetric;
 					aclCompressionSettings.error_metric = &aclErrorMetric;
-					aclCompressionSettings.constant_translation_threshold = CENTIMETER_TO_METER(0.001f);
-					aclCompressionSettings.error_threshold = CENTIMETER_TO_METER(0.01f);
-					acl::OutputStats aclOutputStats;
-					acl::CompressedClip* aclCompressedClip = nullptr;
-					const acl::ErrorResult aclErrorResult = acl::uniformly_sampled::compress_clip(aclAllocator, aclAnimationClip, aclCompressionSettings, aclCompressedClip, aclOutputStats);
+					acl::output_stats aclOutputStats;
+					acl::compressed_tracks* aclCompressedTracks = nullptr;
+					acl::error_result aclErrorResult = acl::compress_track_list(aclAllocator, aclTrackArrayQvvf, aclCompressionSettings, aclCompressedTracks, aclOutputStats);
 					if (aclErrorResult.any())
 					{
-						throw std::runtime_error("ACL failed to compress the given skeleton animation clip \"" + virtualInputFilename + "\": " + aclErrorResult.c_str());
+						throw std::runtime_error("ACL failed to compress the given skeleton animation tracks \"" + virtualInputFilename + "\": " + aclErrorResult.c_str());
 					}
-					if (nullptr == aclCompressedClip || !aclCompressedClip->is_valid(true).empty())
+					if (nullptr == aclCompressedTracks || !aclCompressedTracks->is_valid(true).empty())
 					{
-						throw std::runtime_error("Compressed ACL clip \"" + virtualInputFilename + "\" is invalid");
+						throw std::runtime_error("Compressed ACL tracks \"" + virtualInputFilename + "\" is invalid");
 					}
 
 					// Open file
@@ -413,19 +414,19 @@ namespace RendererToolkit
 
 					{ // Write down the skeleton animation header
 						Renderer::v1SkeletonAnimation::SkeletonAnimationHeader skeletonAnimationHeader;
-						skeletonAnimationHeader.numberOfChannels	  = static_cast<uint8_t>(assimpAnimation->mNumChannels);
-						skeletonAnimationHeader.durationInTicks		  = static_cast<float>(assimpAnimation->mDuration);
-						skeletonAnimationHeader.ticksPerSecond		  = static_cast<float>(assimpAnimation->mTicksPerSecond);
-						skeletonAnimationHeader.aclCompressedClipSize = aclCompressedClip->get_size();
+						skeletonAnimationHeader.numberOfChannels		= static_cast<uint8_t>(assimpAnimation->mNumChannels);
+						skeletonAnimationHeader.durationInTicks			= static_cast<float>(assimpAnimation->mDuration);
+						skeletonAnimationHeader.ticksPerSecond			= static_cast<float>(assimpAnimation->mTicksPerSecond);
+						skeletonAnimationHeader.aclCompressedTracksSize = aclCompressedTracks->get_size();
 						file->write(&skeletonAnimationHeader, sizeof(Renderer::v1SkeletonAnimation::SkeletonAnimationHeader));
 					}
 
 					// Write down bone IDs
 					file->write(boneIds.data(), sizeof(uint32_t) * numberOfBones);
 
-					// Write down the ACL compressed animation clip
-					file->write(aclCompressedClip, aclCompressedClip->get_size());
-					aclAllocator.deallocate(aclCompressedClip, aclCompressedClip->get_size());
+					// Write down the ACL compressed tracks
+					file->write(aclCompressedTracks, aclCompressedTracks->get_size());
+					aclAllocator.deallocate(aclCompressedTracks, aclCompressedTracks->get_size());
 
 					// Close file
 					context.getFileManager().closeFile(*file);

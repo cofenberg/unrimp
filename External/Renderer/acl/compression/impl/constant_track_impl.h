@@ -27,6 +27,7 @@
 #include "acl/core/bitset.h"
 #include "acl/core/impl/compiler_utils.h"
 #include "acl/core/iallocator.h"
+#include "acl/core/track_desc.h"
 #include "acl/compression/impl/track_list_context.h"
 
 #include <cstdint>
@@ -40,14 +41,14 @@ namespace acl
 		inline bool is_scalarf_track_constant(const track& track_, const track_range& range)
 		{
 			const track_desc_scalarf& desc = track_.get_description<track_desc_scalarf>();
-			return range.is_constant(desc.constant_threshold);
+			return range.is_constant(desc.precision);
 		}
 
 		inline void extract_constant_tracks(track_list_context& context)
 		{
 			ACL_ASSERT(context.is_valid(), "Invalid context");
 
-			const BitSetDescription bitset_desc = BitSetDescription::make_from_num_bits(context.num_tracks);
+			const bitset_description bitset_desc = bitset_description::make_from_num_bits(context.num_tracks);
 
 			context.constant_tracks_bitset = allocate_type_array<uint32_t>(*context.allocator, bitset_desc.get_size());
 			bitset_reset(context.constant_tracks_bitset, bitset_desc, false);

@@ -25,6 +25,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 
 #include "acl/core/impl/compiler_utils.h"
+#include "acl/core/track_desc.h"
 #include "acl/core/track_types.h"
 
 #include <rtm/types.h>
@@ -91,6 +92,15 @@ namespace acl
 
 		using sample_type = rtm::vector4f;
 		using desc_type = track_desc_scalarf;
+	};
+
+	template<>
+	struct track_traits<track_type8::qvvf>
+	{
+		static constexpr track_category8 category = track_category8::transformf;
+
+		using sample_type = rtm::qvvf;
+		using desc_type = track_desc_transformf;
 	};
 }
 

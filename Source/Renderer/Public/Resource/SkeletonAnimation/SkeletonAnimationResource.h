@@ -59,7 +59,7 @@ namespace Renderer
 	//[-------------------------------------------------------]
 	/**
 	*  @brief
-	*    Rigid skeleton animation clip resource
+	*    Rigid skeleton animation tracks resource
 	*/
 	class SkeletonAnimationResource final : public IResource
 	{
@@ -97,9 +97,9 @@ namespace Renderer
 			return mBoneIds;
 		}
 
-		[[nodiscard]] inline const std::vector<uint8_t>& getAclCompressedClip() const
+		[[nodiscard]] inline const std::vector<uint8_t>& getAclCompressedTracks() const
 		{
-			return mAclCompressedClip;
+			return mAclCompressedTracks;
 		}
 
 
@@ -165,7 +165,7 @@ namespace Renderer
 		float				  mDurationInTicks;		///< Duration of the animation in ticks
 		float				  mTicksPerSecond;		///< Ticks per second; 0 if not specified in the imported file
 		std::vector<uint32_t> mBoneIds;
-		std::vector<uint8_t>  mAclCompressedClip;	///< ACL ( https://github.com/nfrechette/acl ) compressed skeleton animation clip
+		std::vector<uint8_t>  mAclCompressedTracks;	///< ACL ( https://github.com/nfrechette/acl ) compressed skeleton animation tracks
 
 
 	};

@@ -43,8 +43,11 @@ namespace acl
 	struct track_writer
 	{
 		//////////////////////////////////////////////////////////////////////////
+		// Scalar track writing
+
+		//////////////////////////////////////////////////////////////////////////
 		// Called by the decoder to write out a value for a specified track index.
-		void write_float1(uint32_t track_index, rtm::scalarf_arg0 value)
+		void RTM_SIMD_CALL write_float1(uint32_t track_index, rtm::scalarf_arg0 value)
 		{
 			(void)track_index;
 			(void)value;
@@ -52,7 +55,7 @@ namespace acl
 
 		//////////////////////////////////////////////////////////////////////////
 		// Called by the decoder to write out a value for a specified track index.
-		void write_float2(uint32_t track_index, rtm::vector4f_arg0 value)
+		void RTM_SIMD_CALL write_float2(uint32_t track_index, rtm::vector4f_arg0 value)
 		{
 			(void)track_index;
 			(void)value;
@@ -60,7 +63,7 @@ namespace acl
 
 		//////////////////////////////////////////////////////////////////////////
 		// Called by the decoder to write out a value for a specified track index.
-		void write_float3(uint32_t track_index, rtm::vector4f_arg0 value)
+		void RTM_SIMD_CALL write_float3(uint32_t track_index, rtm::vector4f_arg0 value)
 		{
 			(void)track_index;
 			(void)value;
@@ -68,7 +71,7 @@ namespace acl
 
 		//////////////////////////////////////////////////////////////////////////
 		// Called by the decoder to write out a value for a specified track index.
-		void write_float4(uint32_t track_index, rtm::vector4f_arg0 value)
+		void RTM_SIMD_CALL write_float4(uint32_t track_index, rtm::vector4f_arg0 value)
 		{
 			(void)track_index;
 			(void)value;
@@ -76,10 +79,53 @@ namespace acl
 
 		//////////////////////////////////////////////////////////////////////////
 		// Called by the decoder to write out a value for a specified track index.
-		void write_vector4(uint32_t track_index, rtm::vector4f_arg0 value)
+		void RTM_SIMD_CALL write_vector4(uint32_t track_index, rtm::vector4f_arg0 value)
 		{
 			(void)track_index;
 			(void)value;
+		}
+
+		//////////////////////////////////////////////////////////////////////////
+		// Transform track writing
+
+		//////////////////////////////////////////////////////////////////////////
+		// These allow the caller of decompress_pose to control which track types they are interested in.
+		// This information allows the codecs to avoid unpacking values that are not needed.
+		// Must be static constexpr!
+		static constexpr bool skip_all_rotations() { return false; }
+		static constexpr bool skip_all_translations() { return false; }
+		static constexpr bool skip_all_scales() { return false; }
+
+		//////////////////////////////////////////////////////////////////////////
+		// These allow the caller of decompress_pose to control which tracks they are interested in.
+		// This information allows the codecs to avoid unpacking values that are not needed.
+		// Must be non-static member functions!
+		constexpr bool skip_track_rotation(uint32_t /*track_index*/) const { return false; }
+		constexpr bool skip_track_translation(uint32_t /*track_index*/) const { return false; }
+		constexpr bool skip_track_scale(uint32_t /*track_index*/) const { return false; }
+
+		//////////////////////////////////////////////////////////////////////////
+		// Called by the decoder to write out a quaternion rotation value for a specified bone index.
+		void RTM_SIMD_CALL write_rotation(uint32_t track_index, rtm::quatf_arg0 rotation)
+		{
+			(void)track_index;
+			(void)rotation;
+		}
+
+		//////////////////////////////////////////////////////////////////////////
+		// Called by the decoder to write out a translation value for a specified bone index.
+		void RTM_SIMD_CALL write_translation(uint32_t track_index, rtm::vector4f_arg0 translation)
+		{
+			(void)track_index;
+			(void)translation;
+		}
+
+		//////////////////////////////////////////////////////////////////////////
+		// Called by the decoder to write out a scale value for a specified bone index.
+		void RTM_SIMD_CALL write_scale(uint32_t track_index, rtm::vector4f_arg0 scale)
+		{
+			(void)track_index;
+			(void)scale;
 		}
 	};
 }

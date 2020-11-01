@@ -27,6 +27,8 @@
 #include "acl/core/impl/compiler_utils.h"
 #include "acl/core/error.h"
 
+#include <rtm/math.h>
+
 #include <cstdint>
 #include <cstring>
 #include <type_traits>
@@ -39,6 +41,11 @@
 	#include <cstdlib>
 #elif defined(__APPLE__)
 	#include <libkern/OSByteOrder.h>
+#endif
+
+// For __prefetch
+#if defined(RTM_NEON64_INTRINSICS) && defined(ACL_COMPILER_MSVC)
+	#include <intrin.h>
 #endif
 
 ACL_IMPL_FILE_PRAGMA_PUSH
@@ -162,6 +169,13 @@ namespace acl
 		return memory_impl::safe_int_to_ptr_cast_impl<DestPtrType, SrcType>::cast(input);
 	}
 
+#if defined(ACL_COMPILER_GCC)
+	// GCC sometimes complains about comparisons being always true due to partial template
+	// evaluation. Disable that warning since we know it is safe.
+	#pragma GCC diagnostic push
+	#pragma GCC diagnostic ignored "-Wtype-limits"
+#endif
+
 	namespace memory_impl
 	{
 		template<typename Type, bool is_enum = true>
@@ -214,11 +228,15 @@ namespace acl
 		return static_cast<DstType>(input);
 	}
 
+#if defined(ACL_COMPILER_GCC)
+	#pragma GCC diagnostic pop
+#endif
+
 	//////////////////////////////////////////////////////////////////////////
 	// Endian and raw memory support
 
-	template<typename OutputPtrType, typename InputPtrType, typename OffsetType>
-	inline OutputPtrType* add_offset_to_ptr(InputPtrType* ptr, OffsetType offset)
+	template<typename OutputPtrType, typename InputPtrType, typename offset_type>
+	inline OutputPtrType* add_offset_to_ptr(InputPtrType* ptr, offset_type offset)
 	{
 		return safe_ptr_cast<OutputPtrType>(reinterpret_cast<uintptr_t>(ptr) + offset);
 	}
@@ -307,24 +325,38 @@ namespace acl
 		}
 	}
 
-	template<typename DataType>
-	inline DataType unaligned_load(const void* input)
+	template<typename data_type>
+	inline data_type unaligned_load(const void* input)
 	{
-		DataType result;
-		std::memcpy(&result, input, sizeof(DataType));
+		data_type result;
+		std::memcpy(&result, input, sizeof(data_type));
 		return result;
 	}
 
-	template<typename DataType>
-	inline DataType aligned_load(const void* input)
+	template<typename data_type>
+	inline data_type aligned_load(const void* input)
 	{
-		return *safe_ptr_cast<const DataType, const void*>(input);
+		return *safe_ptr_cast<const data_type, const void*>(input);
 	}
 
-	template<typename DataType>
-	inline void unaligned_write(DataType input, void* output)
+	template<typename data_type>
+	inline void unaligned_write(data_type input, void* output)
 	{
-		std::memcpy(output, &input, sizeof(DataType));
+		std::memcpy(output, &input, sizeof(data_type));
+	}
+
+	// TODO: Add support for streaming prefetch (ptr, 0, 0) for arm
+	inline void memory_prefetch(const void* ptr)
+	{
+#if defined(RTM_SSE2_INTRINSICS)
+		_mm_prefetch(reinterpret_cast<const char*>(ptr), _MM_HINT_T0);
+#elif defined(ACL_COMPILER_GCC) || defined(ACL_COMPILER_CLANG)
+		__builtin_prefetch(ptr, 0, 3);
+#elif defined(RTM_NEON64_INTRINSICS) && defined(ACL_COMPILER_MSVC)
+		__prefetch(ptr);
+#else
+		(void)ptr;
+#endif
 	}
 }
 

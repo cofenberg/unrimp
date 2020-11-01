@@ -3,7 +3,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 // The MIT License (MIT)
 //
-// Copyright (c) 2017 Nicholas Frechette & Animation Compression Library contributors
+// Copyright (c) 2020 Nicholas Frechette & Animation Compression Library contributors
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -25,7 +25,9 @@
 ////////////////////////////////////////////////////////////////////////////////
 
 #include "acl/core/impl/compiler_utils.h"
-#include "acl/core/compressed_clip.h"
+#include "acl/decompression/impl/scalar_track_decompression.h"
+#include "acl/decompression/impl/transform_track_decompression.h"
+#include "acl/decompression/impl/universal_track_decompression.h"
 
 ACL_IMPL_FILE_PRAGMA_PUSH
 
@@ -33,17 +35,28 @@ namespace acl
 {
 	namespace acl_impl
 	{
-		inline CompressedClip* make_compressed_clip(void* buffer, uint32_t size, algorithm_type8 type)
-		{
-			return new(buffer) CompressedClip(size, type);
-		}
+		//////////////////////////////////////////////////////////////////////////
+		// Helper struct to choose the decompression context type based on what tracks we support
+		template<bool supports_scalar_tracks, bool supports_transform_tracks>
+		struct persistent_decompression_context_selector {};
 
-		inline void finalize_compressed_clip(CompressedClip& compressed_clip)
+		template<>
+		struct persistent_decompression_context_selector<true, false>
 		{
-			// For now we just run the constructor in place again, it'll update the hash, etc.
-			// TODO: Fix this to be more efficient in make_compressed_clip above
-			new(&compressed_clip) CompressedClip(compressed_clip.get_size(), compressed_clip.get_algorithm_type());
-		}
+			using type = persistent_scalar_decompression_context_v0;
+		};
+
+		template<>
+		struct persistent_decompression_context_selector<false, true>
+		{
+			using type = persistent_transform_decompression_context_v0;
+		};
+
+		template<>
+		struct persistent_decompression_context_selector<true, true>
+		{
+			using type = persistent_universal_decompression_context;
+		};
 	}
 }
 

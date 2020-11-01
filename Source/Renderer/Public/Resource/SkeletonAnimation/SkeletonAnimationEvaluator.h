@@ -96,14 +96,12 @@ namespace Renderer
 		*  @brief
 		*    Constructor on a given animation; the animation is fixed throughout the lifetime of the object
 		*
-		*  @param[in] allocator
-		*    RHI allocator
 		*  @param[in] skeletonAnimationResourceManager
 		*    Skeleton animation resource manager to use
 		*  @param[in] skeletonAnimationResourceId
 		*    Skeleton animation resource ID
 		*/
-		SkeletonAnimationEvaluator(Rhi::IAllocator& allocator, SkeletonAnimationResourceManager& skeletonAnimationResourceManager, SkeletonAnimationResourceId skeletonAnimationResourceId);
+		SkeletonAnimationEvaluator(SkeletonAnimationResourceManager& skeletonAnimationResourceManager, SkeletonAnimationResourceId skeletonAnimationResourceId);
 
 		/**
 		*  @brief
@@ -161,7 +159,6 @@ namespace Renderer
 		SkeletonAnimationResourceId		  mSkeletonAnimationResourceId;			///< Skeleton animation resource ID
 		BoneIds							  mBoneIds;								///< Bone IDs ("Renderer::StringId" on bone name)
 		TransformMatrices				  mTransformMatrices;					///< The transform matrices calculated at the last "Renderer::SkeletonAnimationEvaluator::evaluate()" call
-		void*							  mAclAllocator;
 		void*							  mAclDecompressionContext;
 
 

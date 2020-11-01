@@ -63,15 +63,15 @@ namespace Renderer
 
 			// Sanity checks
 			RHI_ASSERT(mRenderer.getContext(), skeletonAnimationHeader.numberOfChannels > 0, "Invalid skeleton animation asset with zero channels detected")
-			RHI_ASSERT(mRenderer.getContext(), skeletonAnimationHeader.aclCompressedClipSize > 0, "Invalid skeleton animation asset with zero ACL compressed clip size detected")
+			RHI_ASSERT(mRenderer.getContext(), skeletonAnimationHeader.aclCompressedTracksSize > 0, "Invalid skeleton animation asset with zero ACL compressed tracks size detected")
 
 			// Read in bone IDs
 			mSkeletonAnimationResource->mBoneIds.resize(skeletonAnimationHeader.numberOfChannels);
 			file.read(mSkeletonAnimationResource->mBoneIds.data(), sizeof(uint32_t) * skeletonAnimationHeader.numberOfChannels);
 
-			// Read in the ACL ( https://github.com/nfrechette/acl ) compressed skeleton animation clip
-			mSkeletonAnimationResource->mAclCompressedClip.resize(skeletonAnimationHeader.aclCompressedClipSize);
-			file.read(mSkeletonAnimationResource->mAclCompressedClip.data(), skeletonAnimationHeader.aclCompressedClipSize);
+			// Read in the ACL ( https://github.com/nfrechette/acl ) compressed skeleton animation tracks
+			mSkeletonAnimationResource->mAclCompressedTracks.resize(skeletonAnimationHeader.aclCompressedTracksSize);
+			file.read(mSkeletonAnimationResource->mAclCompressedTracks.data(), skeletonAnimationHeader.aclCompressedTracksSize);
 
 			// Done
 			return true;

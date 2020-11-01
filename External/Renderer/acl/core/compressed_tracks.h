@@ -25,11 +25,14 @@
 ////////////////////////////////////////////////////////////////////////////////
 
 #include "acl/core/algorithm_types.h"
-#include "acl/core/algorithm_versions.h"
-#include "acl/core/impl/compiler_utils.h"
+#include "acl/core/buffer_tag.h"
+#include "acl/core/compressed_tracks_version.h"
 #include "acl/core/error_result.h"
 #include "acl/core/hash.h"
+#include "acl/core/track_desc.h"
+#include "acl/core/track_types.h"
 #include "acl/core/utils.h"
+#include "acl/core/impl/compiler_utils.h"
 #include "acl/core/impl/compressed_headers.h"
 
 #include <cstdint>
@@ -38,17 +41,6 @@ ACL_IMPL_FILE_PRAGMA_PUSH
 
 namespace acl
 {
-	class compressed_tracks;
-
-	namespace acl_impl
-	{
-		////////////////////////////////////////////////////////////////////////////////
-		// A known tag value to distinguish compressed tracks from other things.
-		static constexpr uint32_t k_compressed_tracks_tag = 0xac11ac11;
-
-		const tracks_header& get_tracks_header(const compressed_tracks& tracks);
-	}
-
 	////////////////////////////////////////////////////////////////////////////////
 	// An instance of a compressed tracks.
 	// The compressed data immediately follows this instance in memory.
@@ -59,7 +51,7 @@ namespace acl
 	public:
 		////////////////////////////////////////////////////////////////////////////////
 		// Returns the algorithm type used to compress the tracks.
-		algorithm_type8 get_algorithm_type() const { return m_tracks_header.algorithm_type; }
+		algorithm_type8 get_algorithm_type() const;
 
 		////////////////////////////////////////////////////////////////////////////////
 		// Returns the size in bytes of the compressed tracks.
@@ -72,20 +64,51 @@ namespace acl
 		uint32_t get_hash() const { return m_buffer_header.hash; }
 
 		//////////////////////////////////////////////////////////////////////////
+		// Returns the binary tag for the compressed tracks.
+		// This uniquely identifies the buffer as a proper 'compressed_tracks' object.
+		buffer_tag32 get_tag() const;
+
+		//////////////////////////////////////////////////////////////////////////
+		// Returns the binary format version.
+		compressed_tracks_version16 get_version() const;
+
+		//////////////////////////////////////////////////////////////////////////
 		// Returns the number of tracks contained.
-		uint32_t get_num_tracks() const { return m_tracks_header.num_tracks; }
+		uint32_t get_num_tracks() const;
 
 		//////////////////////////////////////////////////////////////////////////
 		// Returns the number of samples each track contains.
-		uint32_t get_num_samples_per_track() const { return m_tracks_header.num_samples; }
+		uint32_t get_num_samples_per_track() const;
+
+		//////////////////////////////////////////////////////////////////////////
+		// Returns the type of the compressed tracks.
+		track_type8 get_track_type() const;
 
 		//////////////////////////////////////////////////////////////////////////
 		// Returns the duration of each track.
-		float get_duration() const { return calculate_duration(m_tracks_header.num_samples, m_tracks_header.sample_rate); }
+		float get_duration() const;
 
 		//////////////////////////////////////////////////////////////////////////
 		// Returns the sample rate used by each track.
-		float get_sample_rate() const { return m_tracks_header.sample_rate; }
+		float get_sample_rate() const;
+
+		//////////////////////////////////////////////////////////////////////////
+		// Returns the track list name if metadata is present, nullptr otherwise.
+		const char* get_name() const;
+
+		//////////////////////////////////////////////////////////////////////////
+		// Returns the track name for the specified track index if metadata is present, k_invalid_track_index otherwise.
+		const char* get_track_name(uint32_t track_index) const;
+
+		//////////////////////////////////////////////////////////////////////////
+		// Returns the parent track index for the specified track index if metadata is present, nullptr otherwise.
+		uint32_t get_parent_track_index(uint32_t track_index) const;
+
+		//////////////////////////////////////////////////////////////////////////
+		// Returns the track description for the specified track index if metadata is present.
+		// Returns true on success, false otherwise.
+		bool get_track_description(uint32_t track_index, track_desc_scalarf& out_description) const;
+		bool get_track_description(uint32_t track_index, track_desc_transformf& out_description) const;
 
 		////////////////////////////////////////////////////////////////////////////////
 		// Returns true if the compressed tracks are valid and usable.
@@ -93,29 +116,7 @@ namespace acl
 		// memory has not been corrupted.
 		//
 		// check_hash: If true, the compressed tracks hash will also be compared.
-		ErrorResult is_valid(bool check_hash) const
-		{
-			if (!is_aligned_to(this, alignof(compressed_tracks)))
-				return ErrorResult("Invalid alignment");
-
-			if (m_tracks_header.tag != acl_impl::k_compressed_tracks_tag)
-				return ErrorResult("Invalid tag");
-
-			if (!is_valid_algorithm_type(m_tracks_header.algorithm_type))
-				return ErrorResult("Invalid algorithm type");
-
-			if (m_tracks_header.version != get_algorithm_version(m_tracks_header.algorithm_type))
-				return ErrorResult("Invalid algorithm version");
-
-			if (check_hash)
-			{
-				const uint32_t hash = hash32(safe_ptr_cast<const uint8_t>(&m_tracks_header), m_buffer_header.size - sizeof(acl_impl::raw_buffer_header));
-				if (hash != m_buffer_header.hash)
-					return ErrorResult("Invalid hash");
-			}
-
-			return ErrorResult();
-		}
+		error_result is_valid(bool check_hash) const;
 
 	private:
 		////////////////////////////////////////////////////////////////////////////////
@@ -136,20 +137,24 @@ namespace acl
 		// Everything starting here is included in the hash.
 		////////////////////////////////////////////////////////////////////////////////
 
-		acl_impl::tracks_header			m_tracks_header;
-
 		//////////////////////////////////////////////////////////////////////////
 		// Compressed data follows here in memory.
 		//////////////////////////////////////////////////////////////////////////
 
-		friend const acl_impl::tracks_header& acl_impl::get_tracks_header(const compressed_tracks& tracks);
+		// Here we define some unspecified padding but the 'tracks_header' starts here.
+		// This is done to ensure that this class is 16 byte aligned without requiring further padding
+		// if the 'tracks_header' ends up causing us to be unaligned.
+		uint32_t m_padding[2];
 	};
 
-	namespace acl_impl
-	{
-		// Hide this implementation, it shouldn't be needed in user-space
-		inline const tracks_header& get_tracks_header(const compressed_tracks& tracks) { return tracks.m_tracks_header; }
-	}
+	//////////////////////////////////////////////////////////////////////////
+	// Create a compressed_tracks instance in place from a raw memory buffer.
+	// If the buffer does not contain a valid compressed_tracks instance, nullptr is returned
+	// along with an optional error result.
+	//////////////////////////////////////////////////////////////////////////
+	const compressed_tracks* make_compressed_tracks(const void* buffer, error_result* out_error_result = nullptr);
 }
+
+#include "acl/core/impl/compressed_tracks.impl.h"
 
 ACL_IMPL_FILE_PRAGMA_POP

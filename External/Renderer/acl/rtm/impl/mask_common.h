@@ -41,7 +41,7 @@ namespace rtm
 		//////////////////////////////////////////////////////////////////////////
 		struct mask4_bool_set
 		{
-			inline RTM_SIMD_CALL operator mask4q() const RTM_NO_EXCEPT
+			RTM_DISABLE_SECURITY_COOKIE_CHECK RTM_FORCE_INLINE RTM_SIMD_CALL operator mask4d() const RTM_NO_EXCEPT
 			{
 #if defined(RTM_SSE2_INTRINSICS)
 				const uint64_t x_mask = x ? 0xFFFFFFFFFFFFFFFFULL : 0;
@@ -49,7 +49,26 @@ namespace rtm
 				const uint64_t z_mask = z ? 0xFFFFFFFFFFFFFFFFULL : 0;
 				const uint64_t w_mask = w ? 0xFFFFFFFFFFFFFFFFULL : 0;
 
-				return mask4q{ _mm_castsi128_pd(_mm_set_epi64x(y_mask, x_mask)), _mm_castsi128_pd(_mm_set_epi64x(w_mask, z_mask)) };
+				return mask4d{ _mm_castsi128_pd(_mm_set_epi64x(y_mask, x_mask)), _mm_castsi128_pd(_mm_set_epi64x(w_mask, z_mask)) };
+#else
+				const uint64_t x_mask = x ? 0xFFFFFFFFFFFFFFFFULL : 0;
+				const uint64_t y_mask = y ? 0xFFFFFFFFFFFFFFFFULL : 0;
+				const uint64_t z_mask = z ? 0xFFFFFFFFFFFFFFFFULL : 0;
+				const uint64_t w_mask = w ? 0xFFFFFFFFFFFFFFFFULL : 0;
+
+				return mask4d{ x_mask, y_mask, z_mask, w_mask };
+#endif
+			}
+
+			RTM_DISABLE_SECURITY_COOKIE_CHECK RTM_FORCE_INLINE RTM_SIMD_CALL operator mask4q() const RTM_NO_EXCEPT
+			{
+#if defined(RTM_SSE2_INTRINSICS)
+				const uint64_t x_mask = x ? 0xFFFFFFFFFFFFFFFFULL : 0;
+				const uint64_t y_mask = y ? 0xFFFFFFFFFFFFFFFFULL : 0;
+				const uint64_t z_mask = z ? 0xFFFFFFFFFFFFFFFFULL : 0;
+				const uint64_t w_mask = w ? 0xFFFFFFFFFFFFFFFFULL : 0;
+
+				return mask4q{ _mm_set_epi64x(y_mask, x_mask), _mm_set_epi64x(w_mask, z_mask) };
 #else
 				const uint64_t x_mask = x ? 0xFFFFFFFFFFFFFFFFULL : 0;
 				const uint64_t y_mask = y ? 0xFFFFFFFFFFFFFFFFULL : 0;
@@ -60,7 +79,7 @@ namespace rtm
 #endif
 			}
 
-			inline RTM_SIMD_CALL operator mask4i() const RTM_NO_EXCEPT
+			RTM_DISABLE_SECURITY_COOKIE_CHECK RTM_FORCE_INLINE RTM_SIMD_CALL operator mask4f() const RTM_NO_EXCEPT
 			{
 				const uint32_t x_mask = x ? 0xFFFFFFFFU : 0;
 				const uint32_t y_mask = y ? 0xFFFFFFFFU : 0;
@@ -73,6 +92,24 @@ namespace rtm
 				float32x2_t V0 = vcreate_f32(((uint64_t)x_mask) | ((uint64_t)(y_mask) << 32));
 				float32x2_t V1 = vcreate_f32(((uint64_t)z_mask) | ((uint64_t)(w_mask) << 32));
 				return vcombine_f32(V0, V1);
+#else
+				return mask4f{ x_mask, y_mask, z_mask, w_mask };
+#endif
+			}
+
+			RTM_DISABLE_SECURITY_COOKIE_CHECK RTM_FORCE_INLINE RTM_SIMD_CALL operator mask4i() const RTM_NO_EXCEPT
+			{
+				const uint32_t x_mask = x ? 0xFFFFFFFFU : 0;
+				const uint32_t y_mask = y ? 0xFFFFFFFFU : 0;
+				const uint32_t z_mask = z ? 0xFFFFFFFFU : 0;
+				const uint32_t w_mask = w ? 0xFFFFFFFFU : 0;
+
+#if defined(RTM_SSE2_INTRINSICS)
+				return _mm_set_epi32(w_mask, z_mask, y_mask, x_mask);
+#elif defined(RTM_NEON_INTRINSICS)
+				float32x2_t V0 = vcreate_f32(((uint64_t)x_mask) | ((uint64_t)(y_mask) << 32));
+				float32x2_t V1 = vcreate_f32(((uint64_t)z_mask) | ((uint64_t)(w_mask) << 32));
+				return RTM_IMPL_MASK4i_SET(vcombine_f32(V0, V1));
 #else
 				return mask4i{ x_mask, y_mask, z_mask, w_mask };
 #endif
@@ -88,9 +125,135 @@ namespace rtm
 	//////////////////////////////////////////////////////////////////////////
 	// Creates a mask4 from all 4 bool components.
 	//////////////////////////////////////////////////////////////////////////
-	constexpr rtm_impl::mask4_bool_set RTM_SIMD_CALL mask_set(bool x, bool y, bool z, bool w) RTM_NO_EXCEPT
+	RTM_DISABLE_SECURITY_COOKIE_CHECK RTM_FORCE_INLINE constexpr rtm_impl::mask4_bool_set RTM_SIMD_CALL mask_set(bool x, bool y, bool z, bool w) RTM_NO_EXCEPT
 	{
-		return rtm_impl::mask4_bool_set{x, y, z, w};
+		return rtm_impl::mask4_bool_set{ x, y, z, w };
+	}
+
+	namespace rtm_impl
+	{
+		//////////////////////////////////////////////////////////////////////////
+		// This is a helper struct to allow a single consistent API between
+		// various vector types when the semantics are identical but the return
+		// type differs. Implicit coercion is used to return the desired value
+		// at the call site.
+		//////////////////////////////////////////////////////////////////////////
+		struct mask4_uint32_set
+		{
+			RTM_DISABLE_SECURITY_COOKIE_CHECK RTM_FORCE_INLINE RTM_SIMD_CALL operator mask4f() const RTM_NO_EXCEPT
+			{
+#if defined(RTM_SSE2_INTRINSICS)
+				return _mm_castsi128_ps(_mm_set_epi32(w, z, y, x));
+#elif defined(RTM_NEON_INTRINSICS)
+				float32x2_t V0 = vcreate_f32(((uint64_t)x) | ((uint64_t)(y) << 32));
+				float32x2_t V1 = vcreate_f32(((uint64_t)z) | ((uint64_t)(w) << 32));
+				return vcombine_f32(V0, V1);
+#else
+				return mask4f{ x, y, z, w };
+#endif
+			}
+
+			RTM_DISABLE_SECURITY_COOKIE_CHECK RTM_FORCE_INLINE RTM_SIMD_CALL operator mask4i() const RTM_NO_EXCEPT
+			{
+#if defined(RTM_SSE2_INTRINSICS)
+				return _mm_set_epi32(w, z, y, x);
+#elif defined(RTM_NEON_INTRINSICS)
+				float32x2_t V0 = vcreate_f32(((uint64_t)x) | ((uint64_t)(y) << 32));
+				float32x2_t V1 = vcreate_f32(((uint64_t)z) | ((uint64_t)(w) << 32));
+				return RTM_IMPL_MASK4i_SET(vcombine_f32(V0, V1));
+#else
+				return mask4i{ x, y, z, w };
+#endif
+			}
+
+			uint32_t x;
+			uint32_t y;
+			uint32_t z;
+			uint32_t w;
+		};
+	}
+
+	//////////////////////////////////////////////////////////////////////////
+	// Creates a mask4 from 4 uint32 components.
+	//////////////////////////////////////////////////////////////////////////
+	RTM_DISABLE_SECURITY_COOKIE_CHECK RTM_FORCE_INLINE constexpr rtm_impl::mask4_uint32_set RTM_SIMD_CALL mask_set(uint32_t x, uint32_t y, uint32_t z, uint32_t w) RTM_NO_EXCEPT
+	{
+		return rtm_impl::mask4_uint32_set{ x, y, z, w };
+	}
+
+	namespace rtm_impl
+	{
+		//////////////////////////////////////////////////////////////////////////
+		// This is a helper struct to allow a single consistent API between
+		// various vector types when the semantics are identical but the return
+		// type differs. Implicit coercion is used to return the desired value
+		// at the call site.
+		//////////////////////////////////////////////////////////////////////////
+		struct mask4_uint64_set
+		{
+			RTM_DISABLE_SECURITY_COOKIE_CHECK RTM_FORCE_INLINE RTM_SIMD_CALL operator mask4d() const RTM_NO_EXCEPT
+			{
+#if defined(RTM_SSE2_INTRINSICS)
+	//////////////////////////////////////////////////////////////////////////
+	// HACK ALERT!
+	// VS2015, VS2017, and VS2019 crash when compiling with _mm_set_epi64x() here.
+	// To work around this, we use alternative code. We assume that the high and low words
+	// are identical in the mask, which should be true.
+	// See: https://github.com/nfrechette/rtm/issues/84
+	//////////////////////////////////////////////////////////////////////////
+	#if defined(RTM_COMPILER_MSVC) && defined(_M_IX86) && !defined(NDEBUG)
+				const uint32_t x_mask = x ? 0xFFFFFFFFU : 0;
+				const uint32_t y_mask = y ? 0xFFFFFFFFU : 0;
+				const uint32_t z_mask = z ? 0xFFFFFFFFU : 0;
+				const uint32_t w_mask = w ? 0xFFFFFFFFU : 0;
+
+				return mask4d{ _mm_castsi128_pd(_mm_set_epi32(y_mask, y_mask, x_mask, x_mask)), _mm_castsi128_pd(_mm_set_epi32(w_mask, w_mask, z_mask, z_mask)) };
+	#else
+				return mask4d{ _mm_castsi128_pd(_mm_set_epi64x(y, x)), _mm_castsi128_pd(_mm_set_epi64x(w, z)) };
+	#endif
+#else
+				return mask4d{ x, y, z, w };
+#endif
+			}
+
+			RTM_DISABLE_SECURITY_COOKIE_CHECK RTM_FORCE_INLINE RTM_SIMD_CALL operator mask4q() const RTM_NO_EXCEPT
+			{
+#if defined(RTM_SSE2_INTRINSICS)
+	//////////////////////////////////////////////////////////////////////////
+	// HACK ALERT!
+	// VS2015, VS2017, and VS2019 crash when compiling with _mm_set_epi64x() here.
+	// To work around this, we use alternative code. We assume that the high and low words
+	// are identical in the mask, which should be true.
+	// See: https://github.com/nfrechette/rtm/issues/84
+	//////////////////////////////////////////////////////////////////////////
+	#if defined(RTM_COMPILER_MSVC) && defined(_M_IX86) && !defined(NDEBUG)
+				const uint32_t x_mask = x ? 0xFFFFFFFFU : 0;
+				const uint32_t y_mask = y ? 0xFFFFFFFFU : 0;
+				const uint32_t z_mask = z ? 0xFFFFFFFFU : 0;
+				const uint32_t w_mask = w ? 0xFFFFFFFFU : 0;
+
+				return mask4q{ _mm_set_epi32(y_mask, y_mask, x_mask, x_mask), _mm_set_epi32(w_mask, w_mask, z_mask, z_mask) };
+	#else
+				return mask4q{ _mm_set_epi64x(y, x), _mm_set_epi64x(w, z) };
+	#endif
+#else
+				return mask4q{ x, y, z, w };
+#endif
+			}
+
+			uint64_t x;
+			uint64_t y;
+			uint64_t z;
+			uint64_t w;
+		};
+	}
+
+	//////////////////////////////////////////////////////////////////////////
+	// Creates a mask4 from 4 uint64 components.
+	//////////////////////////////////////////////////////////////////////////
+	RTM_DISABLE_SECURITY_COOKIE_CHECK RTM_FORCE_INLINE constexpr rtm_impl::mask4_uint64_set RTM_SIMD_CALL mask_set(uint64_t x, uint64_t y, uint64_t z, uint64_t w) RTM_NO_EXCEPT
+	{
+		return rtm_impl::mask4_uint64_set{ x, y, z, w };
 	}
 }
 

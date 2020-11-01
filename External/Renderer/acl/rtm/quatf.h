@@ -26,7 +26,6 @@
 ////////////////////////////////////////////////////////////////////////////////
 
 #include "rtm/math.h"
-#include "rtm/anglef.h"
 #include "rtm/scalarf.h"
 #include "rtm/vector4f.h"
 #include "rtm/impl/compiler_utils.h"
@@ -46,7 +45,7 @@ namespace rtm
 	//////////////////////////////////////////////////////////////////////////
 	// Loads an unaligned quaternion from memory.
 	//////////////////////////////////////////////////////////////////////////
-	inline quatf RTM_SIMD_CALL quat_load(const float* input) RTM_NO_EXCEPT
+	RTM_DISABLE_SECURITY_COOKIE_CHECK RTM_FORCE_INLINE quatf RTM_SIMD_CALL quat_load(const float* input) RTM_NO_EXCEPT
 	{
 #if defined(RTM_SSE2_INTRINSICS)
 		return _mm_loadu_ps(input);
@@ -58,18 +57,23 @@ namespace rtm
 	}
 
 	//////////////////////////////////////////////////////////////////////////
-	// Loads an unaligned quaternion from memory.
+	// Loads an unaligned quat from memory.
 	//////////////////////////////////////////////////////////////////////////
-	RTM_DEPRECATED("Use quat_load instead, to be removed in v2.0")
-	inline quatf RTM_SIMD_CALL quat_unaligned_load(const float* input) RTM_NO_EXCEPT
+	RTM_DISABLE_SECURITY_COOKIE_CHECK RTM_FORCE_INLINE quatf RTM_SIMD_CALL quat_load(const float4f* input) RTM_NO_EXCEPT
 	{
-		return quat_set(input[0], input[1], input[2], input[3]);
+#if defined(RTM_SSE2_INTRINSICS)
+		return _mm_loadu_ps(&input->x);
+#elif defined(RTM_NEON_INTRINSICS)
+		return vld1q_f32(&input->x);
+#else
+		return quat_set(input->x, input->y, input->z, input->w);
+#endif
 	}
 
 	//////////////////////////////////////////////////////////////////////////
 	// Casts a vector4 to a quaternion.
 	//////////////////////////////////////////////////////////////////////////
-	inline quatf RTM_SIMD_CALL vector_to_quat(vector4f_arg0 input) RTM_NO_EXCEPT
+	RTM_DISABLE_SECURITY_COOKIE_CHECK RTM_FORCE_INLINE quatf RTM_SIMD_CALL vector_to_quat(vector4f_arg0 input) RTM_NO_EXCEPT
 	{
 #if defined(RTM_SSE2_INTRINSICS) || defined(RTM_NEON_INTRINSICS)
 		return input;
@@ -81,7 +85,7 @@ namespace rtm
 	//////////////////////////////////////////////////////////////////////////
 	// Casts a quaternion float64 variant to a float32 variant.
 	//////////////////////////////////////////////////////////////////////////
-	inline quatf RTM_SIMD_CALL quat_cast(const quatd& input) RTM_NO_EXCEPT
+	RTM_DISABLE_SECURITY_COOKIE_CHECK RTM_FORCE_INLINE quatf RTM_SIMD_CALL quat_cast(const quatd& input) RTM_NO_EXCEPT
 	{
 #if defined(RTM_SSE2_INTRINSICS)
 		return _mm_shuffle_ps(_mm_cvtpd_ps(input.xy), _mm_cvtpd_ps(input.zw), _MM_SHUFFLE(1, 0, 1, 0));
@@ -90,66 +94,170 @@ namespace rtm
 #endif
 	}
 
+	namespace rtm_impl
+	{
+		//////////////////////////////////////////////////////////////////////////
+		// This is a helper struct to allow a single consistent API between
+		// various vector types when the semantics are identical but the return
+		// type differs. Implicit coercion is used to return the desired value
+		// at the call site.
+		//////////////////////////////////////////////////////////////////////////
+		struct quatf_quat_get_x
+		{
+			RTM_DISABLE_SECURITY_COOKIE_CHECK RTM_FORCE_INLINE RTM_SIMD_CALL operator float() const RTM_NO_EXCEPT
+			{
+#if defined(RTM_SSE2_INTRINSICS)
+				return _mm_cvtss_f32(input);
+#elif defined(RTM_NEON_INTRINSICS)
+				return vgetq_lane_f32(input, 0);
+#else
+				return input.x;
+#endif
+			}
+
+#if defined(RTM_SSE2_INTRINSICS)
+			RTM_DISABLE_SECURITY_COOKIE_CHECK RTM_FORCE_INLINE RTM_SIMD_CALL operator scalarf() const RTM_NO_EXCEPT
+			{
+				return scalarf{ input };
+			}
+#endif
+
+			quatf input;
+		};
+	}
+
 	//////////////////////////////////////////////////////////////////////////
 	// Returns the quaternion [x] component (real part).
 	//////////////////////////////////////////////////////////////////////////
-	inline float RTM_SIMD_CALL quat_get_x(quatf_arg0 input) RTM_NO_EXCEPT
+	RTM_DISABLE_SECURITY_COOKIE_CHECK RTM_FORCE_INLINE constexpr rtm_impl::quatf_quat_get_x RTM_SIMD_CALL quat_get_x(quatf_arg0 input) RTM_NO_EXCEPT
 	{
+		return rtm_impl::quatf_quat_get_x{ input };
+	}
+
+	namespace rtm_impl
+	{
+		//////////////////////////////////////////////////////////////////////////
+		// This is a helper struct to allow a single consistent API between
+		// various vector types when the semantics are identical but the return
+		// type differs. Implicit coercion is used to return the desired value
+		// at the call site.
+		//////////////////////////////////////////////////////////////////////////
+		struct quatf_quat_get_y
+		{
+			RTM_DISABLE_SECURITY_COOKIE_CHECK RTM_FORCE_INLINE RTM_SIMD_CALL operator float() const RTM_NO_EXCEPT
+			{
 #if defined(RTM_SSE2_INTRINSICS)
-		return _mm_cvtss_f32(input);
+				return _mm_cvtss_f32(_mm_shuffle_ps(input, input, _MM_SHUFFLE(1, 1, 1, 1)));
 #elif defined(RTM_NEON_INTRINSICS)
-		return vgetq_lane_f32(input, 0);
+				return vgetq_lane_f32(input, 1);
 #else
-		return input.x;
+				return input.y;
 #endif
+			}
+
+#if defined(RTM_SSE2_INTRINSICS)
+			RTM_DISABLE_SECURITY_COOKIE_CHECK RTM_FORCE_INLINE RTM_SIMD_CALL operator scalarf() const RTM_NO_EXCEPT
+			{
+				return scalarf{ _mm_shuffle_ps(input, input, _MM_SHUFFLE(1, 1, 1, 1)) };
+			}
+#endif
+
+			quatf input;
+		};
 	}
 
 	//////////////////////////////////////////////////////////////////////////
 	// Returns the quaternion [y] component (real part).
 	//////////////////////////////////////////////////////////////////////////
-	inline float RTM_SIMD_CALL quat_get_y(quatf_arg0 input) RTM_NO_EXCEPT
+	RTM_DISABLE_SECURITY_COOKIE_CHECK RTM_FORCE_INLINE constexpr rtm_impl::quatf_quat_get_y RTM_SIMD_CALL quat_get_y(quatf_arg0 input) RTM_NO_EXCEPT
 	{
+		return rtm_impl::quatf_quat_get_y{ input };
+	}
+
+	namespace rtm_impl
+	{
+		//////////////////////////////////////////////////////////////////////////
+		// This is a helper struct to allow a single consistent API between
+		// various vector types when the semantics are identical but the return
+		// type differs. Implicit coercion is used to return the desired value
+		// at the call site.
+		//////////////////////////////////////////////////////////////////////////
+		struct quatf_quat_get_z
+		{
+			RTM_DISABLE_SECURITY_COOKIE_CHECK RTM_FORCE_INLINE RTM_SIMD_CALL operator float() const RTM_NO_EXCEPT
+			{
 #if defined(RTM_SSE2_INTRINSICS)
-		return _mm_cvtss_f32(_mm_shuffle_ps(input, input, _MM_SHUFFLE(1, 1, 1, 1)));
+				return _mm_cvtss_f32(_mm_shuffle_ps(input, input, _MM_SHUFFLE(2, 2, 2, 2)));
 #elif defined(RTM_NEON_INTRINSICS)
-		return vgetq_lane_f32(input, 1);
+				return vgetq_lane_f32(input, 2);
 #else
-		return input.y;
+				return input.z;
 #endif
+			}
+
+#if defined(RTM_SSE2_INTRINSICS)
+			RTM_DISABLE_SECURITY_COOKIE_CHECK RTM_FORCE_INLINE RTM_SIMD_CALL operator scalarf() const RTM_NO_EXCEPT
+			{
+				return scalarf{ _mm_shuffle_ps(input, input, _MM_SHUFFLE(2, 2, 2, 2)) };
+			}
+#endif
+
+			quatf input;
+		};
 	}
 
 	//////////////////////////////////////////////////////////////////////////
 	// Returns the quaternion [z] component (real part).
 	//////////////////////////////////////////////////////////////////////////
-	inline float RTM_SIMD_CALL quat_get_z(quatf_arg0 input) RTM_NO_EXCEPT
+	RTM_DISABLE_SECURITY_COOKIE_CHECK RTM_FORCE_INLINE constexpr rtm_impl::quatf_quat_get_z RTM_SIMD_CALL quat_get_z(quatf_arg0 input) RTM_NO_EXCEPT
 	{
+		return rtm_impl::quatf_quat_get_z{ input };
+	}
+
+	namespace rtm_impl
+	{
+		//////////////////////////////////////////////////////////////////////////
+		// This is a helper struct to allow a single consistent API between
+		// various vector types when the semantics are identical but the return
+		// type differs. Implicit coercion is used to return the desired value
+		// at the call site.
+		//////////////////////////////////////////////////////////////////////////
+		struct quatf_quat_get_w
+		{
+			RTM_DISABLE_SECURITY_COOKIE_CHECK RTM_FORCE_INLINE RTM_SIMD_CALL operator float() const RTM_NO_EXCEPT
+			{
 #if defined(RTM_SSE2_INTRINSICS)
-		return _mm_cvtss_f32(_mm_shuffle_ps(input, input, _MM_SHUFFLE(2, 2, 2, 2)));
+				return _mm_cvtss_f32(_mm_shuffle_ps(input, input, _MM_SHUFFLE(3, 3, 3, 3)));
 #elif defined(RTM_NEON_INTRINSICS)
-		return vgetq_lane_f32(input, 2);
+				return vgetq_lane_f32(input, 3);
 #else
-		return input.z;
+				return input.w;
 #endif
+			}
+
+#if defined(RTM_SSE2_INTRINSICS)
+			RTM_DISABLE_SECURITY_COOKIE_CHECK RTM_FORCE_INLINE RTM_SIMD_CALL operator scalarf() const RTM_NO_EXCEPT
+			{
+				return scalarf{ _mm_shuffle_ps(input, input, _MM_SHUFFLE(3, 3, 3, 3)) };
+			}
+#endif
+
+			quatf input;
+		};
 	}
 
 	//////////////////////////////////////////////////////////////////////////
 	// Returns the quaternion [w] component (imaginary part).
 	//////////////////////////////////////////////////////////////////////////
-	inline float RTM_SIMD_CALL quat_get_w(quatf_arg0 input) RTM_NO_EXCEPT
+	RTM_DISABLE_SECURITY_COOKIE_CHECK RTM_FORCE_INLINE constexpr rtm_impl::quatf_quat_get_w RTM_SIMD_CALL quat_get_w(quatf_arg0 input) RTM_NO_EXCEPT
 	{
-#if defined(RTM_SSE2_INTRINSICS)
-		return _mm_cvtss_f32(_mm_shuffle_ps(input, input, _MM_SHUFFLE(3, 3, 3, 3)));
-#elif defined(RTM_NEON_INTRINSICS)
-		return vgetq_lane_f32(input, 3);
-#else
-		return input.w;
-#endif
+		return rtm_impl::quatf_quat_get_w{ input };
 	}
 
 	//////////////////////////////////////////////////////////////////////////
 	// Sets the quaternion [x] component (real part) and returns the new value.
 	//////////////////////////////////////////////////////////////////////////
-	inline quatf RTM_SIMD_CALL quat_set_x(quatf_arg0 input, float lane_value) RTM_NO_EXCEPT
+	RTM_DISABLE_SECURITY_COOKIE_CHECK RTM_FORCE_INLINE quatf RTM_SIMD_CALL quat_set_x(quatf_arg0 input, float lane_value) RTM_NO_EXCEPT
 	{
 #if defined(RTM_SSE2_INTRINSICS)
 		return _mm_move_ss(input, _mm_set_ss(lane_value));
@@ -160,10 +268,20 @@ namespace rtm
 #endif
 	}
 
+#if defined(RTM_SSE2_INTRINSICS)
+	//////////////////////////////////////////////////////////////////////////
+	// Sets the quaternion [x] component (real part) and returns the new value.
+	//////////////////////////////////////////////////////////////////////////
+	RTM_DISABLE_SECURITY_COOKIE_CHECK RTM_FORCE_INLINE quatf RTM_SIMD_CALL quat_set_x(quatf_arg0 input, scalarf_arg1 lane_value) RTM_NO_EXCEPT
+	{
+		return _mm_move_ss(input, lane_value.value);
+	}
+#endif
+
 	//////////////////////////////////////////////////////////////////////////
 	// Sets the quaternion [y] component (real part) and returns the new value.
 	//////////////////////////////////////////////////////////////////////////
-	inline quatf RTM_SIMD_CALL quat_set_y(quatf_arg0 input, float lane_value) RTM_NO_EXCEPT
+	RTM_DISABLE_SECURITY_COOKIE_CHECK RTM_FORCE_INLINE quatf RTM_SIMD_CALL quat_set_y(quatf_arg0 input, float lane_value) RTM_NO_EXCEPT
 	{
 #if defined(RTM_SSE4_INTRINSICS)
 		return _mm_insert_ps(input, _mm_set_ss(lane_value), 0x10);
@@ -178,10 +296,26 @@ namespace rtm
 #endif
 	}
 
+#if defined(RTM_SSE2_INTRINSICS)
+	//////////////////////////////////////////////////////////////////////////
+	// Sets the quaternion [y] component (real part) and returns the new value.
+	//////////////////////////////////////////////////////////////////////////
+	RTM_DISABLE_SECURITY_COOKIE_CHECK RTM_FORCE_INLINE quatf RTM_SIMD_CALL quat_set_y(quatf_arg0 input, scalarf_arg1 lane_value) RTM_NO_EXCEPT
+	{
+#if defined(RTM_SSE4_INTRINSICS)
+		return _mm_insert_ps(input, lane_value.value, 0x10);
+#else
+		const __m128 yxzw = _mm_shuffle_ps(input, input, _MM_SHUFFLE(3, 2, 0, 1));
+		const __m128 vxzw = _mm_move_ss(yxzw, lane_value.value);
+		return _mm_shuffle_ps(vxzw, vxzw, _MM_SHUFFLE(3, 2, 0, 1));
+#endif
+	}
+#endif
+
 	//////////////////////////////////////////////////////////////////////////
 	// Sets the quaternion [z] component (real part) and returns the new value.
 	//////////////////////////////////////////////////////////////////////////
-	inline quatf RTM_SIMD_CALL quat_set_z(quatf_arg0 input, float lane_value) RTM_NO_EXCEPT
+	RTM_DISABLE_SECURITY_COOKIE_CHECK RTM_FORCE_INLINE quatf RTM_SIMD_CALL quat_set_z(quatf_arg0 input, float lane_value) RTM_NO_EXCEPT
 	{
 #if defined(RTM_SSE4_INTRINSICS)
 		return _mm_insert_ps(input, _mm_set_ss(lane_value), 0x20);
@@ -196,10 +330,26 @@ namespace rtm
 #endif
 	}
 
+#if defined(RTM_SSE2_INTRINSICS)
+	//////////////////////////////////////////////////////////////////////////
+	// Sets the quaternion [z] component (real part) and returns the new value.
+	//////////////////////////////////////////////////////////////////////////
+	RTM_DISABLE_SECURITY_COOKIE_CHECK RTM_FORCE_INLINE quatf RTM_SIMD_CALL quat_set_z(quatf_arg0 input, scalarf_arg1 lane_value) RTM_NO_EXCEPT
+	{
+#if defined(RTM_SSE4_INTRINSICS)
+		return _mm_insert_ps(input, lane_value.value, 0x20);
+#else
+		const __m128 zyxw = _mm_shuffle_ps(input, input, _MM_SHUFFLE(3, 0, 1, 2));
+		const __m128 vyxw = _mm_move_ss(zyxw, lane_value.value);
+		return _mm_shuffle_ps(vyxw, vyxw, _MM_SHUFFLE(3, 0, 1, 2));
+#endif
+	}
+#endif
+
 	//////////////////////////////////////////////////////////////////////////
 	// Sets the quaternion [w] component (imaginary part) and returns the new value.
 	//////////////////////////////////////////////////////////////////////////
-	inline quatf RTM_SIMD_CALL quat_set_w(quatf_arg0 input, float lane_value) RTM_NO_EXCEPT
+	RTM_DISABLE_SECURITY_COOKIE_CHECK RTM_FORCE_INLINE quatf RTM_SIMD_CALL quat_set_w(quatf_arg0 input, float lane_value) RTM_NO_EXCEPT
 	{
 #if defined(RTM_SSE4_INTRINSICS)
 		return _mm_insert_ps(input, _mm_set_ss(lane_value), 0x30);
@@ -214,10 +364,26 @@ namespace rtm
 #endif
 	}
 
+#if defined(RTM_SSE2_INTRINSICS)
+	//////////////////////////////////////////////////////////////////////////
+	// Sets the quaternion [w] component (imaginary part) and returns the new value.
+	//////////////////////////////////////////////////////////////////////////
+	RTM_DISABLE_SECURITY_COOKIE_CHECK RTM_FORCE_INLINE quatf RTM_SIMD_CALL quat_set_w(quatf_arg0 input, scalarf_arg1 lane_value) RTM_NO_EXCEPT
+	{
+#if defined(RTM_SSE4_INTRINSICS)
+		return _mm_insert_ps(input, lane_value.value, 0x30);
+#else
+		const __m128 wyzx = _mm_shuffle_ps(input, input, _MM_SHUFFLE(0, 2, 1, 3));
+		const __m128 vyzx = _mm_move_ss(wyzx, lane_value.value);
+		return _mm_shuffle_ps(vyzx, vyzx, _MM_SHUFFLE(0, 2, 1, 3));
+#endif
+	}
+#endif
+
 	//////////////////////////////////////////////////////////////////////////
 	// Writes a quaternion to unaligned memory.
 	//////////////////////////////////////////////////////////////////////////
-	inline void RTM_SIMD_CALL quat_store(quatf_arg0 input, float* output) RTM_NO_EXCEPT
+	RTM_DISABLE_SECURITY_COOKIE_CHECK RTM_FORCE_INLINE void RTM_SIMD_CALL quat_store(quatf_arg0 input, float* output) RTM_NO_EXCEPT
 	{
 #if defined(RTM_SSE2_INTRINSICS)
 		_mm_storeu_ps(output, input);
@@ -232,10 +398,16 @@ namespace rtm
 	//////////////////////////////////////////////////////////////////////////
 	// Writes a quaternion to unaligned memory.
 	//////////////////////////////////////////////////////////////////////////
-	RTM_DEPRECATED("Use quat_store instead, to be removed in v2.0")
-	inline void RTM_SIMD_CALL quat_unaligned_write(quatf_arg0 input, float* output) RTM_NO_EXCEPT
+	RTM_DISABLE_SECURITY_COOKIE_CHECK RTM_FORCE_INLINE void RTM_SIMD_CALL quat_store(quatf_arg0 input, float4f* output) RTM_NO_EXCEPT
 	{
-		quat_store(input, output);
+#if defined(RTM_SSE2_INTRINSICS)
+		_mm_storeu_ps(&output->x, input);
+#else
+		output->x = quat_get_x(input);
+		output->y = quat_get_y(input);
+		output->z = quat_get_z(input);
+		output->w = quat_get_w(input);
+#endif
 	}
 
 
@@ -249,16 +421,13 @@ namespace rtm
 	//////////////////////////////////////////////////////////////////////////
 	// Returns the quaternion conjugate.
 	//////////////////////////////////////////////////////////////////////////
-	inline quatf RTM_SIMD_CALL quat_conjugate(quatf_arg0 input) RTM_NO_EXCEPT
+	RTM_DISABLE_SECURITY_COOKIE_CHECK RTM_FORCE_INLINE quatf RTM_SIMD_CALL quat_conjugate(quatf_arg0 input) RTM_NO_EXCEPT
 	{
 #if defined(RTM_SSE2_INTRINSICS)
 		constexpr __m128 signs = { -0.0F, -0.0F, -0.0F, 0.0F };
 		return _mm_xor_ps(input, signs);
-#elif defined(RTM_NEON_INTRINSICS)
-		alignas(16) constexpr uint32_t signs_u[4] = { 0x80000000U, 0x80000000U, 0x80000000U, 0 };
-		const uint32x4_t signs = *reinterpret_cast<const uint32x4_t*>(&signs_u[0]);
-		return vreinterpretq_f32_u32(veorq_u32(vreinterpretq_u32_f32(input), signs));
 #else
+		// On ARMv7 the scalar version performs best or among the best while on ARM64 it beats the others.
 		return quat_set(-quat_get_x(input), -quat_get_y(input), -quat_get_z(input), quat_get_w(input));
 #endif
 	}
@@ -268,7 +437,7 @@ namespace rtm
 	// Note that due to floating point rounding, the result might not be perfectly normalized.
 	// Multiplication order is as follow: local_to_world = quat_mul(local_to_object, object_to_world)
 	//////////////////////////////////////////////////////////////////////////
-	inline quatf RTM_SIMD_CALL quat_mul(quatf_arg0 lhs, quatf_arg1 rhs) RTM_NO_EXCEPT
+	RTM_DISABLE_SECURITY_COOKIE_CHECK inline quatf RTM_SIMD_CALL quat_mul(quatf_arg0 lhs, quatf_arg1 rhs) RTM_NO_EXCEPT
 	{
 #if defined(RTM_SSE4_INTRINSICS) && 0
 		// TODO: Profile this, the accuracy is the same as with SSE2, should be binary exact
@@ -321,9 +490,48 @@ namespace rtm
 		const __m128 nlyrz_lxrz_lwrz_wlzrz = _mm_xor_ps(lyrz_lxrz_lwrz_lzrz, control_yxwz);
 		const __m128 result1 = _mm_add_ps(lzry_lwry_nlxry_nlyry, nlyrz_lxrz_lwrz_wlzrz);
 		return _mm_add_ps(result0, result1);
-#else
-		// On ARMv7 and ARM64, the scalar version is faster than SIMD variants.
+#elif defined(RTM_NEON64_INTRINSICS)
+		// Use shuffles and negation instead of loading constants and doing mul/xor.
+		// On ARM64, this is the fastest version.
 
+		// Dispatch rev first, if we can't dual dispatch with neg below, we won't stall it
+		// [l.y, l.x, l.w, l.z]
+		const float32x4_t y_x_w_z = vrev64q_f32(lhs);
+
+		// [-l.x, -l.y, -l.z, -l.w]
+		const float32x4_t neg_lhs = vnegq_f32(lhs);
+
+		// trn([l.y, l.x, l.w, l.z], [-l.x, -l.y, -l.z, -l.w]) = [l.y, -l.x, l.w, -l.z], [l.x, -l.y, l.z, -l.w]
+		float32x4x2_t y_nx_w_nz__x_ny_z_nw = vtrnq_f32(y_x_w_z, neg_lhs);
+
+		// [l.w, -l.z, l.y, -l.x]
+		float32x4_t l_wzyx = vcombine_f32(vget_high_f32(y_nx_w_nz__x_ny_z_nw.val[0]), vget_low_f32(y_nx_w_nz__x_ny_z_nw.val[0]));
+
+		// [l.z, l.w, -l.x, -l.y]
+		float32x4_t l_zwxy = vcombine_f32(vget_high_f32(lhs), vget_low_f32(neg_lhs));
+
+		// neg([l.w, -l.z, l.y, -l.x]) = [-l.w, l.z, -l.y, l.x]
+		float32x4_t nw_z_ny_x = vnegq_f32(l_wzyx);
+
+		// [-l.y, l.x, l.w, -l.z]
+		float32x4_t l_yxwz = vcombine_f32(vget_high_f32(nw_z_ny_x), vget_low_f32(l_wzyx));
+
+		const float32x2_t r_xy = vget_low_f32(rhs);
+		const float32x2_t r_zw = vget_high_f32(rhs);
+
+		const float32x4_t lxrw_lyrw_lzrw_lwrw = vmulq_lane_f32(lhs, r_zw, 1);
+
+	#if defined(RTM_NEON64_INTRINSICS)
+		const float32x4_t result0 = vfmaq_lane_f32(lxrw_lyrw_lzrw_lwrw, l_wzyx, r_xy, 0);
+		const float32x4_t result1 = vfmaq_lane_f32(result0, l_zwxy, r_xy, 1);
+		return vfmaq_lane_f32(result1, l_yxwz, r_zw, 0);
+	#else
+		const float32x4_t result0 = vmlaq_lane_f32(lxrw_lyrw_lzrw_lwrw, l_wzyx, r_xy, 0);
+		const float32x4_t result1 = vmlaq_lane_f32(result0, l_zwxy, r_xy, 1);
+		return vmlaq_lane_f32(result1, l_yxwz, r_zw, 0);
+	#endif
+#else
+		// On ARMv7, the scalar version is often the fastest.
 		const float lhs_x = quat_get_x(lhs);
 		const float lhs_y = quat_get_y(lhs);
 		const float lhs_z = quat_get_z(lhs);
@@ -345,9 +553,9 @@ namespace rtm
 
 	//////////////////////////////////////////////////////////////////////////
 	// Multiplies a quaternion and a 3D vector, rotating it.
-	// Multiplication order is as follow: world_position = quat_mul_vector3(local_position, local_to_world)
+	// Multiplication order is as follow: world_position = quat_mul_vector3(local_vector, local_to_world)
 	//////////////////////////////////////////////////////////////////////////
-	inline vector4f RTM_SIMD_CALL quat_mul_vector3(vector4f_arg0 vector, quatf_arg1 rotation) RTM_NO_EXCEPT
+	RTM_DISABLE_SECURITY_COOKIE_CHECK inline vector4f RTM_SIMD_CALL quat_mul_vector3(vector4f_arg0 vector, quatf_arg1 rotation) RTM_NO_EXCEPT
 	{
 #if defined(RTM_SSE2_INTRINSICS)
 		const __m128 inv_rotation = quat_conjugate(rotation);
@@ -406,12 +614,7 @@ namespace rtm
 			return _mm_add_ps(result0, result1);
 		}
 #elif defined(RTM_NEON_INTRINSICS)
-
-		// Normally when we multiply our inverse rotation quaternion with the input vector as a quaternion with W = 0.0.
-		// As a result, we can strip the whole part that uses W saving a few instructions.
-		// We also don't care about the result W lane.
-		// On ARMv7 and ARM64, the scalar version is faster than SIMD variants.
-
+		// On ARMv7 and ARM64, the scalar version is often the fastest.
 		const float32x4_t n_rotation = vnegq_f32(rotation);
 
 		// temp = quat_mul(inv_rotation, vector_quat)
@@ -460,28 +663,141 @@ namespace rtm
 #endif
 	}
 
+	namespace rtm_impl
+	{
+		//////////////////////////////////////////////////////////////////////////
+		// This is a helper struct to allow a single consistent API between
+		// various vector types when the semantics are identical but the return
+		// type differs. Implicit coercion is used to return the desired value
+		// at the call site.
+		//////////////////////////////////////////////////////////////////////////
+		struct quatf_quat_dot
+		{
+			RTM_DISABLE_SECURITY_COOKIE_CHECK RTM_FORCE_INLINE RTM_SIMD_CALL operator float() const RTM_NO_EXCEPT
+			{
+#if defined(RTM_SSE4_INTRINSICS) && 0
+				// SSE4 dot product instruction isn't precise enough
+				return _mm_cvtss_f32(_mm_dp_ps(lhs, rhs, 0xFF));
+#elif defined(RTM_SSE2_INTRINSICS)
+				__m128 x2_y2_z2_w2 = _mm_mul_ps(lhs, rhs);
+				__m128 z2_w2_0_0 = _mm_shuffle_ps(x2_y2_z2_w2, x2_y2_z2_w2, _MM_SHUFFLE(0, 0, 3, 2));
+				__m128 x2z2_y2w2_0_0 = _mm_add_ps(x2_y2_z2_w2, z2_w2_0_0);
+				__m128 y2w2_0_0_0 = _mm_shuffle_ps(x2z2_y2w2_0_0, x2z2_y2w2_0_0, _MM_SHUFFLE(0, 0, 0, 1));
+				__m128 x2y2z2w2_0_0_0 = _mm_add_ps(x2z2_y2w2_0_0, y2w2_0_0_0);
+				return _mm_cvtss_f32(x2y2z2w2_0_0_0);
+#else
+				return (quat_get_x(lhs) * quat_get_x(rhs)) + (quat_get_y(lhs) * quat_get_y(rhs)) + (quat_get_z(lhs) * quat_get_z(rhs)) + (quat_get_w(lhs) * quat_get_w(rhs));
+#endif
+			}
+
+#if defined(RTM_SSE2_INTRINSICS)
+			RTM_DISABLE_SECURITY_COOKIE_CHECK RTM_FORCE_INLINE RTM_SIMD_CALL operator scalarf() const RTM_NO_EXCEPT
+			{
+#if defined(RTM_SSE4_INTRINSICS) && 0
+				// SSE4 dot product instruction isn't precise enough
+				return scalarf{ _mm_cvtss_f32(_mm_dp_ps(lhs, rhs, 0xFF)) };
+#else
+				__m128 x2_y2_z2_w2 = _mm_mul_ps(lhs, rhs);
+				__m128 z2_w2_0_0 = _mm_shuffle_ps(x2_y2_z2_w2, x2_y2_z2_w2, _MM_SHUFFLE(0, 0, 3, 2));
+				__m128 x2z2_y2w2_0_0 = _mm_add_ps(x2_y2_z2_w2, z2_w2_0_0);
+				__m128 y2w2_0_0_0 = _mm_shuffle_ps(x2z2_y2w2_0_0, x2z2_y2w2_0_0, _MM_SHUFFLE(0, 0, 0, 1));
+				__m128 x2y2z2w2_0_0_0 = _mm_add_ps(x2z2_y2w2_0_0, y2w2_0_0_0);
+				return scalarf{ x2y2z2w2_0_0_0 };
+#endif
+			}
+#endif
+
+			quatf lhs;
+			quatf rhs;
+		};
+	}
+
+	//////////////////////////////////////////////////////////////////////////
+	// Quaternion dot product: lhs . rhs
+	//////////////////////////////////////////////////////////////////////////
+	RTM_DISABLE_SECURITY_COOKIE_CHECK RTM_FORCE_INLINE constexpr rtm_impl::quatf_quat_dot RTM_SIMD_CALL quat_dot(quatf_arg0 lhs, quatf_arg1 rhs) RTM_NO_EXCEPT
+	{
+		return rtm_impl::quatf_quat_dot{ lhs, rhs };
+	}
+
 	//////////////////////////////////////////////////////////////////////////
 	// Returns the squared length/norm of the quaternion.
 	//////////////////////////////////////////////////////////////////////////
-	inline float RTM_SIMD_CALL quat_length_squared(quatf_arg0 input) RTM_NO_EXCEPT
+	RTM_DISABLE_SECURITY_COOKIE_CHECK RTM_FORCE_INLINE constexpr rtm_impl::quatf_quat_dot RTM_SIMD_CALL quat_length_squared(quatf_arg0 input) RTM_NO_EXCEPT
 	{
-		return vector_length_squared(quat_to_vector(input));
+		return rtm_impl::quatf_quat_dot{ input, input };
+	}
+
+	namespace rtm_impl
+	{
+		//////////////////////////////////////////////////////////////////////////
+		// This is a helper struct to allow a single consistent API between
+		// various vector types when the semantics are identical but the return
+		// type differs. Implicit coercion is used to return the desired value
+		// at the call site.
+		//////////////////////////////////////////////////////////////////////////
+		struct quatf_quat_length
+		{
+			RTM_DISABLE_SECURITY_COOKIE_CHECK RTM_FORCE_INLINE RTM_SIMD_CALL operator float() const RTM_NO_EXCEPT
+			{
+				const scalarf len_sq = quat_length_squared(input);
+				return scalar_cast(scalar_sqrt(len_sq));
+			}
+
+#if defined(RTM_SSE2_INTRINSICS)
+			RTM_DISABLE_SECURITY_COOKIE_CHECK RTM_FORCE_INLINE RTM_SIMD_CALL operator scalarf() const RTM_NO_EXCEPT
+			{
+				const scalarf len_sq = quat_length_squared(input);
+				return scalar_sqrt(len_sq);
+			}
+#endif
+
+			quatf input;
+		};
 	}
 
 	//////////////////////////////////////////////////////////////////////////
 	// Returns the length/norm of the quaternion.
 	//////////////////////////////////////////////////////////////////////////
-	inline float RTM_SIMD_CALL quat_length(quatf_arg0 input) RTM_NO_EXCEPT
+	RTM_DISABLE_SECURITY_COOKIE_CHECK RTM_FORCE_INLINE constexpr rtm_impl::quatf_quat_length RTM_SIMD_CALL quat_length(quatf_arg0 input) RTM_NO_EXCEPT
 	{
-		return vector_length(quat_to_vector(input));
+		return rtm_impl::quatf_quat_length{ input };
+	}
+
+	namespace rtm_impl
+	{
+		//////////////////////////////////////////////////////////////////////////
+		// This is a helper struct to allow a single consistent API between
+		// various vector types when the semantics are identical but the return
+		// type differs. Implicit coercion is used to return the desired value
+		// at the call site.
+		//////////////////////////////////////////////////////////////////////////
+		struct quatf_quat_length_reciprocal
+		{
+			RTM_DISABLE_SECURITY_COOKIE_CHECK RTM_FORCE_INLINE RTM_SIMD_CALL operator float() const RTM_NO_EXCEPT
+			{
+				const scalarf len_sq = quat_length_squared(input);
+				return scalar_cast(scalar_sqrt_reciprocal(len_sq));
+			}
+
+#if defined(RTM_SSE2_INTRINSICS)
+			RTM_DISABLE_SECURITY_COOKIE_CHECK RTM_FORCE_INLINE RTM_SIMD_CALL operator scalarf() const RTM_NO_EXCEPT
+			{
+				const scalarf len_sq = quat_length_squared(input);
+				return scalar_sqrt_reciprocal(len_sq);
+			}
+#endif
+
+			quatf input;
+		};
 	}
 
 	//////////////////////////////////////////////////////////////////////////
 	// Returns the reciprocal length/norm of the quaternion.
 	//////////////////////////////////////////////////////////////////////////
-	inline float RTM_SIMD_CALL quat_length_reciprocal(quatf_arg0 input) RTM_NO_EXCEPT
+	RTM_DISABLE_SECURITY_COOKIE_CHECK RTM_FORCE_INLINE constexpr rtm_impl::quatf_quat_length_reciprocal RTM_SIMD_CALL quat_length_reciprocal(quatf_arg0 input) RTM_NO_EXCEPT
 	{
-		return vector_length_reciprocal(quat_to_vector(input));
+		return rtm_impl::quatf_quat_length_reciprocal{ input };
 	}
 
 	//////////////////////////////////////////////////////////////////////////
@@ -489,7 +805,7 @@ namespace rtm
 	// Note that if the input quaternion is invalid (pure zero or with NaN/Inf),
 	// the result is undefined.
 	//////////////////////////////////////////////////////////////////////////
-	inline quatf RTM_SIMD_CALL quat_normalize(quatf_arg0 input) RTM_NO_EXCEPT
+	RTM_DISABLE_SECURITY_COOKIE_CHECK RTM_FORCE_INLINE quatf RTM_SIMD_CALL quat_normalize(quatf_arg0 input) RTM_NO_EXCEPT
 	{
 #if defined(RTM_SSE2_INTRINSICS)
 		// We first calculate the dot product to get the length squared: dot(input, input)
@@ -537,8 +853,16 @@ namespace rtm
 
 	//////////////////////////////////////////////////////////////////////////
 	// Returns the linear interpolation between start and end for a given alpha value.
+	// The formula used is: ((1.0 - alpha) * start) + (alpha * end).
+	// Interpolation is stable and will return 'start' when 'alpha' is 0.0 and 'end' when it is 1.0.
+	// This is the same instruction count when FMA is present but it might be slightly slower
+	// due to the extra multiplication compared to: start + (alpha * (end - start)).
+	// Note that if 'start' and 'end' are on the opposite ends of the hypersphere, 'end' is negated
+	// before we interpolate. As such, when 'alpha' is 1.0, either 'end' or its negated equivalent
+	// is returned. Furthermore, if 'start' and 'end' aren't exactly normalized, the result might
+	// not match exactly when 'alpha' is 0.0 or 1.0 because we normalize the resulting quaternion.
 	//////////////////////////////////////////////////////////////////////////
-	inline quatf RTM_SIMD_CALL quat_lerp(quatf_arg0 start, quatf_arg1 end, float alpha) RTM_NO_EXCEPT
+	RTM_DISABLE_SECURITY_COOKIE_CHECK inline quatf RTM_SIMD_CALL quat_lerp(quatf_arg0 start, quatf_arg1 end, float alpha) RTM_NO_EXCEPT
 	{
 #if defined(RTM_SSE2_INTRINSICS)
 		// Calculate the vector4 dot product: dot(start, end)
@@ -572,7 +896,9 @@ namespace rtm
 		__m128 bias = _mm_and_ps(dot, _mm_set_ps1(-0.0F));
 
 		// Lerp the rotation after applying the bias
-		__m128 interpolated_rotation = _mm_add_ps(_mm_mul_ps(_mm_sub_ps(_mm_xor_ps(end, bias), start), _mm_set_ps1(alpha)), start);
+		// ((1.0 - alpha) * start) + (alpha * (end ^ bias)) == (start - alpha * start) + (alpha * (end ^ bias))
+		__m128 alpha_ = _mm_set_ps1(alpha);
+		__m128 interpolated_rotation = _mm_add_ps(_mm_sub_ps(start, _mm_mul_ps(alpha_, start)), _mm_mul_ps(alpha_, _mm_xor_ps(end, bias)));
 
 		// Now we need to normalize the resulting rotation. We first calculate the
 		// dot product to get the length squared: dot(interpolated_rotation, interpolated_rotation)
@@ -612,7 +938,8 @@ namespace rtm
 		// using a AND/XOR with the bias (same number of instructions)
 		float dot = vector_dot(start, end);
 		float bias = dot >= 0.0F ? 1.0F : -1.0F;
-		vector4f interpolated_rotation = vector_neg_mul_sub(vector_neg_mul_sub(end, bias, start), alpha, start);
+		// ((1.0 - alpha) * start) + (alpha * (end * bias)) == (start - alpha * start) + (alpha * (end * bias))
+		vector4f interpolated_rotation = vector_mul_add(vector_mul(end, bias), alpha, vector_neg_mul_sub(start, alpha, start));
 		// Use sqrt/div/mul to normalize because the sqrt/div are faster than rsqrt
 		float inv_len = 1.0F / scalar_sqrt(vector_length_squared(interpolated_rotation));
 		return vector_mul(interpolated_rotation, inv_len);
@@ -630,8 +957,9 @@ namespace rtm
 		uint32x2_t bias = vand_u32(vreinterpret_u32_f32(x2y2z2w2), vdup_n_u32(0x80000000));
 
 		// Lerp the rotation after applying the bias
+		// ((1.0 - alpha) * start) + (alpha * (end ^ bias)) == (start - alpha * start) + (alpha * (end ^ bias))
 		float32x4_t end_biased = vreinterpretq_f32_u32(veorq_u32(vreinterpretq_u32_f32(end), vcombine_u32(bias, bias)));
-		float32x4_t interpolated_rotation = vmlaq_n_f32(start, vsubq_f32(end_biased, start), alpha);
+		float32x4_t interpolated_rotation = vmlaq_n_f32(vmlsq_n_f32(start, start, alpha), end_biased, alpha);
 
 		// Now we need to normalize the resulting rotation. We first calculate the
 		// dot product to get the length squared: dot(interpolated_rotation, interpolated_rotation)
@@ -652,17 +980,170 @@ namespace rtm
 		vector4f end_vector = quat_to_vector(end);
 		float dot = vector_dot(start_vector, end_vector);
 		float bias = dot >= 0.0F ? 1.0F : -1.0F;
-		vector4f interpolated_rotation = vector_neg_mul_sub(vector_neg_mul_sub(end_vector, bias, start_vector), alpha, start_vector);
-		// TODO: Test with this instead: Rotation = (B * Alpha) + (A * (Bias * (1.f - Alpha)));
-		//vector4f value = vector_add(vector_mul(end_vector, alpha), vector_mul(start_vector, bias * (1.0f - alpha)));
+		// ((1.0 - alpha) * start) + (alpha * (end * bias)) == (start - alpha * start) + (alpha * (end * bias))
+		vector4f interpolated_rotation = vector_mul_add(vector_mul(end_vector, bias), alpha, vector_neg_mul_sub(start_vector, alpha, start_vector));
 		return quat_normalize(vector_to_quat(interpolated_rotation));
 #endif
+	}
+
+#if defined(RTM_SSE2_INTRINSICS)
+	//////////////////////////////////////////////////////////////////////////
+	// Returns the linear interpolation between start and end for a given alpha value.
+	// The formula used is: ((1.0 - alpha) * start) + (alpha * end).
+	// Interpolation is stable and will return 'start' when 'alpha' is 0.0 and 'end' when it is 1.0.
+	// This is the same instruction count when FMA is present but it might be slightly slower
+	// due to the extra multiplication compared to: start + (alpha * (end - start)).
+	// Note that if 'start' and 'end' are on the opposite ends of the hypersphere, 'end' is negated
+	// before we interpolate. As such, when 'alpha' is 1.0, either 'end' or its negated equivalent
+	// is returned. Furthermore, if 'start' and 'end' aren't exactly normalized, the result might
+	// not match exactly when 'alpha' is 0.0 or 1.0 because we normalize the resulting quaternion.
+	//////////////////////////////////////////////////////////////////////////
+	RTM_DISABLE_SECURITY_COOKIE_CHECK inline quatf RTM_SIMD_CALL quat_lerp(quatf_arg0 start, quatf_arg1 end, scalarf_arg2 alpha) RTM_NO_EXCEPT
+	{
+		// Calculate the vector4 dot product: dot(start, end)
+		__m128 dot;
+#if defined(RTM_SSE4_INTRINSICS)
+		// The dpps instruction isn't as accurate but we don't care here, we only need the sign of the
+		// dot product. If both rotations are on opposite ends of the hypersphere, the result will be
+		// very negative. If we are on the edge, the rotations are nearly opposite but not quite which
+		// means that the linear interpolation here will have terrible accuracy to begin with. It is designed
+		// for interpolating rotations that are reasonably close together. The bias check is mainly necessary
+		// because the W component is often kept positive which flips the sign.
+		// Using the dpps instruction reduces the number of registers that we need and helps the function get
+		// inlined.
+		dot = _mm_dp_ps(start, end, 0xFF);
+#else
+		{
+			__m128 x2_y2_z2_w2 = _mm_mul_ps(start, end);
+			__m128 z2_w2_0_0 = _mm_shuffle_ps(x2_y2_z2_w2, x2_y2_z2_w2, _MM_SHUFFLE(0, 0, 3, 2));
+			__m128 x2z2_y2w2_0_0 = _mm_add_ps(x2_y2_z2_w2, z2_w2_0_0);
+			__m128 y2w2_0_0_0 = _mm_shuffle_ps(x2z2_y2w2_0_0, x2z2_y2w2_0_0, _MM_SHUFFLE(0, 0, 0, 1));
+			__m128 x2y2z2w2_0_0_0 = _mm_add_ps(x2z2_y2w2_0_0, y2w2_0_0_0);
+			// Shuffle the dot product to all SIMD lanes, there is no _mm_and_ss and loading
+			// the constant from memory with the 'and' instruction is faster, it uses fewer registers
+			// and fewer instructions
+			dot = _mm_shuffle_ps(x2y2z2w2_0_0_0, x2y2z2w2_0_0_0, _MM_SHUFFLE(0, 0, 0, 0));
+		}
+#endif
+
+		// Calculate the bias, if the dot product is positive or zero, there is no bias
+		// but if it is negative, we want to flip the 'end' rotation XYZW components
+		__m128 bias = _mm_and_ps(dot, _mm_set_ps1(-0.0F));
+
+		// Lerp the rotation after applying the bias
+		// ((1.0 - alpha) * start) + (alpha * (end ^ bias)) == (start - alpha * start) + (alpha * (end ^ bias))
+		__m128 alpha_ = _mm_shuffle_ps(alpha.value, alpha.value, _MM_SHUFFLE(0, 0, 0, 0));
+		__m128 interpolated_rotation = _mm_add_ps(_mm_sub_ps(start, _mm_mul_ps(alpha_, start)), _mm_mul_ps(alpha_, _mm_xor_ps(end, bias)));
+
+		// Now we need to normalize the resulting rotation. We first calculate the
+		// dot product to get the length squared: dot(interpolated_rotation, interpolated_rotation)
+		__m128 x2_y2_z2_w2 = _mm_mul_ps(interpolated_rotation, interpolated_rotation);
+		__m128 z2_w2_0_0 = _mm_shuffle_ps(x2_y2_z2_w2, x2_y2_z2_w2, _MM_SHUFFLE(0, 0, 3, 2));
+		__m128 x2z2_y2w2_0_0 = _mm_add_ps(x2_y2_z2_w2, z2_w2_0_0);
+		__m128 y2w2_0_0_0 = _mm_shuffle_ps(x2z2_y2w2_0_0, x2z2_y2w2_0_0, _MM_SHUFFLE(0, 0, 0, 1));
+		__m128 x2y2z2w2_0_0_0 = _mm_add_ps(x2z2_y2w2_0_0, y2w2_0_0_0);
+
+		// Keep the dot product result as a scalar within the first lane, it is faster to
+		// calculate the reciprocal square root of a single lane VS all 4 lanes
+		dot = x2y2z2w2_0_0_0;
+
+		// Calculate the reciprocal square root to get the inverse length of our vector
+		// Perform two passes of Newton-Raphson iteration on the hardware estimate
+		__m128 half = _mm_set_ss(0.5F);
+		__m128 input_half_v = _mm_mul_ss(dot, half);
+		__m128 x0 = _mm_rsqrt_ss(dot);
+
+		// First iteration
+		__m128 x1 = _mm_mul_ss(x0, x0);
+		x1 = _mm_sub_ss(half, _mm_mul_ss(input_half_v, x1));
+		x1 = _mm_add_ss(_mm_mul_ss(x0, x1), x0);
+
+		// Second iteration
+		__m128 x2 = _mm_mul_ss(x1, x1);
+		x2 = _mm_sub_ss(half, _mm_mul_ss(input_half_v, x2));
+		x2 = _mm_add_ss(_mm_mul_ss(x1, x2), x1);
+
+		// Broadcast the vector length reciprocal to all 4 lanes in order to multiply it with the vector
+		__m128 inv_len = _mm_shuffle_ps(x2, x2, _MM_SHUFFLE(0, 0, 0, 0));
+
+		// Multiply the rotation by it's inverse length in order to normalize it
+		return _mm_mul_ps(interpolated_rotation, inv_len);
+	}
+#endif
+
+#if defined(RTM_SSE2_INTRINSICS)
+	//////////////////////////////////////////////////////////////////////////
+	// Returns the spherical interpolation between start and end for a given alpha value.
+	// See: https://www.euclideanspace.com/maths/algebra/realNormedAlgebra/quaternions/slerp/index.htm
+	// Perhaps try this someday: http://number-none.com/product/Understanding%20Slerp,%20Then%20Not%20Using%20It/
+	//////////////////////////////////////////////////////////////////////////
+	RTM_DISABLE_SECURITY_COOKIE_CHECK inline quatf RTM_SIMD_CALL quat_slerp(quatf_arg0 start, quatf_arg1 end, scalarf_arg2 alpha) RTM_NO_EXCEPT
+	{
+		vector4f start_v = quat_to_vector(start);
+		vector4f end_v = quat_to_vector(end);
+
+		vector4f cos_half_angle_v = vector_dot(start_v, end_v);
+		mask4f is_angle_negative = vector_less_than(cos_half_angle_v, vector_zero());
+
+		// If the two input quaternions aren't on the same half of the hypersphere, flip one and the angle sign
+		end_v = vector_select(is_angle_negative, vector_neg(end_v), end_v);
+		cos_half_angle_v = vector_select(is_angle_negative, vector_neg(cos_half_angle_v), cos_half_angle_v);
+
+		scalarf cos_half_angle = vector_get_x(cos_half_angle_v);
+		scalarf half_angle = scalar_acos(cos_half_angle);
+		scalarf sin_half_angle = scalar_sqrt(scalar_sub(scalar_set(1.0F), scalar_mul(cos_half_angle, cos_half_angle)));
+		scalarf inv_sin_half_angle = scalar_reciprocal(sin_half_angle);
+
+		scalarf start_contribution_angle = scalar_mul(scalar_sub(scalar_set(1.0F), alpha), half_angle);
+		scalarf end_contribution_angle = scalar_mul(alpha, half_angle);
+		vector4f contribution_angles = vector_set(start_contribution_angle, end_contribution_angle, start_contribution_angle, end_contribution_angle);
+		vector4f contributions = vector_mul(vector_sin(contribution_angles), inv_sin_half_angle);
+		vector4f start_contribution = vector_dup_x(contributions);
+		vector4f end_contribution = vector_dup_y(contributions);
+
+		vector4f result = vector_add(vector_mul(start_v, start_contribution), vector_mul(end_v, end_contribution));
+		return vector_to_quat(result);
+	}
+#endif
+
+	//////////////////////////////////////////////////////////////////////////
+	// Returns the spherical interpolation between start and end for a given alpha value.
+	// See: https://www.euclideanspace.com/maths/algebra/realNormedAlgebra/quaternions/slerp/index.htm
+	// Perhaps try this someday: http://number-none.com/product/Understanding%20Slerp,%20Then%20Not%20Using%20It/
+	//////////////////////////////////////////////////////////////////////////
+	RTM_DISABLE_SECURITY_COOKIE_CHECK inline quatf RTM_SIMD_CALL quat_slerp(quatf_arg0 start, quatf_arg1 end, float alpha) RTM_NO_EXCEPT
+	{
+		vector4f start_v = quat_to_vector(start);
+		vector4f end_v = quat_to_vector(end);
+		scalarf alpha_s = scalar_set(alpha);
+
+		vector4f cos_half_angle_v = vector_dot(start_v, end_v);
+		mask4f is_angle_negative = vector_less_than(cos_half_angle_v, vector_zero());
+
+		// If the two input quaternions aren't on the same half of the hypersphere, flip one and the angle sign
+		end_v = vector_select(is_angle_negative, vector_neg(end_v), end_v);
+		cos_half_angle_v = vector_select(is_angle_negative, vector_neg(cos_half_angle_v), cos_half_angle_v);
+
+		scalarf cos_half_angle = vector_get_x(cos_half_angle_v);
+		scalarf half_angle = scalar_acos(cos_half_angle);
+		scalarf sin_half_angle = scalar_sqrt(scalar_sub(scalar_set(1.0F), scalar_mul(cos_half_angle, cos_half_angle)));
+		scalarf inv_sin_half_angle = scalar_reciprocal(sin_half_angle);
+
+		scalarf start_contribution_angle = scalar_mul(scalar_sub(scalar_set(1.0F), alpha_s), half_angle);
+		scalarf end_contribution_angle = scalar_mul(alpha_s, half_angle);
+		vector4f contribution_angles = vector_set(start_contribution_angle, end_contribution_angle, start_contribution_angle, end_contribution_angle);
+		vector4f contributions = vector_mul(vector_sin(contribution_angles), inv_sin_half_angle);
+		vector4f start_contribution = vector_dup_x(contributions);
+		vector4f end_contribution = vector_dup_y(contributions);
+
+		vector4f result = vector_add(vector_mul(start_v, start_contribution), vector_mul(end_v, end_contribution));
+		return vector_to_quat(result);
 	}
 
 	//////////////////////////////////////////////////////////////////////////
 	// Returns a component wise negated quaternion.
 	//////////////////////////////////////////////////////////////////////////
-	inline quatf RTM_SIMD_CALL quat_neg(quatf_arg0 input) RTM_NO_EXCEPT
+	RTM_DISABLE_SECURITY_COOKIE_CHECK RTM_FORCE_INLINE quatf RTM_SIMD_CALL quat_neg(quatf_arg0 input) RTM_NO_EXCEPT
 	{
 #if defined(RTM_SSE2_INTRINSICS)
 		constexpr __m128 signs = { -0.0F, -0.0F, -0.0F, -0.0F };
@@ -685,12 +1166,13 @@ namespace rtm
 	//////////////////////////////////////////////////////////////////////////
 	// Returns the rotation axis and rotation angle that make up the input quaternion.
 	//////////////////////////////////////////////////////////////////////////
-	inline void RTM_SIMD_CALL quat_to_axis_angle(quatf_arg0 input, vector4f& out_axis, anglef& out_angle) RTM_NO_EXCEPT
+	RTM_DISABLE_SECURITY_COOKIE_CHECK inline void RTM_SIMD_CALL quat_to_axis_angle(quatf_arg0 input, vector4f& out_axis, float& out_angle) RTM_NO_EXCEPT
 	{
 		constexpr float epsilon = 1.0E-8F;
 		constexpr float epsilon_squared = epsilon * epsilon;
 
-		out_angle = radians(scalar_acos(quat_get_w(input)) * 2.0F);
+		const scalarf input_w = quat_get_w(input);
+		out_angle = scalar_cast(scalar_acos(input_w)) * 2.0F;
 
 		const float scale_sq = scalar_max(1.0F - quat_get_w(input) * quat_get_w(input), 0.0F);
 		out_axis = scale_sq >= epsilon_squared ? vector_mul(quat_to_vector(input), vector_set(scalar_sqrt_reciprocal(scale_sq))) : vector_set(1.0F, 0.0F, 0.0F);
@@ -699,7 +1181,7 @@ namespace rtm
 	//////////////////////////////////////////////////////////////////////////
 	// Returns the rotation axis part of the input quaternion.
 	//////////////////////////////////////////////////////////////////////////
-	inline vector4f RTM_SIMD_CALL quat_get_axis(quatf_arg0 input) RTM_NO_EXCEPT
+	RTM_DISABLE_SECURITY_COOKIE_CHECK inline vector4f RTM_SIMD_CALL quat_get_axis(quatf_arg0 input) RTM_NO_EXCEPT
 	{
 		constexpr float epsilon = 1.0E-8F;
 		constexpr float epsilon_squared = epsilon * epsilon;
@@ -711,21 +1193,22 @@ namespace rtm
 	//////////////////////////////////////////////////////////////////////////
 	// Returns the rotation angle part of the input quaternion.
 	//////////////////////////////////////////////////////////////////////////
-	inline anglef RTM_SIMD_CALL quat_get_angle(quatf_arg0 input) RTM_NO_EXCEPT
+	RTM_DISABLE_SECURITY_COOKIE_CHECK inline float RTM_SIMD_CALL quat_get_angle(quatf_arg0 input) RTM_NO_EXCEPT
 	{
-		return radians(scalar_acos(quat_get_w(input)) * 2.0F);
+		const scalarf input_w = quat_get_w(input);
+		return scalar_cast(scalar_acos(input_w)) * 2.0F;
 	}
 
 	//////////////////////////////////////////////////////////////////////////
 	// Creates a quaternion from a rotation axis and a rotation angle.
 	//////////////////////////////////////////////////////////////////////////
-	inline quatf RTM_SIMD_CALL quat_from_axis_angle(vector4f_arg0 axis, anglef angle) RTM_NO_EXCEPT
+	RTM_DISABLE_SECURITY_COOKIE_CHECK inline quatf RTM_SIMD_CALL quat_from_axis_angle(vector4f_arg0 axis, float angle) RTM_NO_EXCEPT
 	{
-		float s;
-		float c;
-		scalar_sincos(0.5F * angle.as_radians(), s, c);
+		vector4f sincos_ = scalar_sincos(0.5F * angle);
+		vector4f sin_ = vector_dup_x(sincos_);
+		scalarf cos_ = vector_get_y(sincos_);
 
-		return vector_to_quat(vector_set_w(vector_mul(vector_set(s), axis), c));
+		return vector_to_quat(vector_set_w(vector_mul(sin_, axis), cos_));
 	}
 
 	//////////////////////////////////////////////////////////////////////////
@@ -734,7 +1217,7 @@ namespace rtm
 	// Yaw is around the Z axis (up)
 	// Roll is around the X axis (forward)
 	//////////////////////////////////////////////////////////////////////////
-	inline quatf RTM_SIMD_CALL quat_from_euler(anglef pitch, anglef yaw, anglef roll) RTM_NO_EXCEPT
+	RTM_DISABLE_SECURITY_COOKIE_CHECK inline quatf RTM_SIMD_CALL quat_from_euler(float pitch, float yaw, float roll) RTM_NO_EXCEPT
 	{
 		float sp;
 		float sy;
@@ -743,9 +1226,9 @@ namespace rtm
 		float cy;
 		float cr;
 
-		scalar_sincos(pitch.as_radians() * 0.5F, sp, cp);
-		scalar_sincos(yaw.as_radians() * 0.5F, sy, cy);
-		scalar_sincos(roll.as_radians() * 0.5F, sr, cr);
+		scalar_sincos(pitch * 0.5F, sp, cp);
+		scalar_sincos(yaw * 0.5F, sy, cy);
+		scalar_sincos(roll * 0.5F, sr, cr);
 
 		return quat_set(cr * sp * sy - sr * cp * cy,
 			-cr * sp * cy - sr * cp * sy,
@@ -764,15 +1247,28 @@ namespace rtm
 	//////////////////////////////////////////////////////////////////////////
 	// Returns true if the input quaternion does not contain any NaN or Inf, otherwise false.
 	//////////////////////////////////////////////////////////////////////////
-	inline bool RTM_SIMD_CALL quat_is_finite(quatf_arg0 input) RTM_NO_EXCEPT
+	RTM_DISABLE_SECURITY_COOKIE_CHECK RTM_FORCE_INLINE bool RTM_SIMD_CALL quat_is_finite(quatf_arg0 input) RTM_NO_EXCEPT
 	{
+#if defined(RTM_SSE2_INTRINSICS)
+		const __m128i abs_mask = _mm_set_epi32(0x7FFFFFFFULL, 0x7FFFFFFFULL, 0x7FFFFFFFULL, 0x7FFFFFFFULL);
+		__m128 abs_input = _mm_and_ps(input, _mm_castsi128_ps(abs_mask));
+
+		const __m128 infinity = _mm_set_ps1(std::numeric_limits<float>::infinity());
+		__m128 is_infinity = _mm_cmpeq_ps(abs_input, infinity);
+
+		__m128 is_nan = _mm_cmpneq_ps(input, input);
+
+		__m128 is_not_finite = _mm_or_ps(is_infinity, is_nan);
+		return _mm_movemask_ps(is_not_finite) == 0;
+#else
 		return scalar_is_finite(quat_get_x(input)) && scalar_is_finite(quat_get_y(input)) && scalar_is_finite(quat_get_z(input)) && scalar_is_finite(quat_get_w(input));
+#endif
 	}
 
 	//////////////////////////////////////////////////////////////////////////
 	// Returns true if the input quaternion is normalized, otherwise false.
 	//////////////////////////////////////////////////////////////////////////
-	inline bool RTM_SIMD_CALL quat_is_normalized(quatf_arg0 input, float threshold = 0.00001F) RTM_NO_EXCEPT
+	RTM_DISABLE_SECURITY_COOKIE_CHECK RTM_FORCE_INLINE bool RTM_SIMD_CALL quat_is_normalized(quatf_arg0 input, float threshold = 0.00001F) RTM_NO_EXCEPT
 	{
 		float length_squared = quat_length_squared(input);
 		return scalar_abs(length_squared - 1.0F) < threshold;
@@ -781,7 +1277,7 @@ namespace rtm
 	//////////////////////////////////////////////////////////////////////////
 	// Returns true if the two quaternions are nearly equal component wise, otherwise false.
 	//////////////////////////////////////////////////////////////////////////
-	inline bool RTM_SIMD_CALL quat_near_equal(quatf_arg0 lhs, quatf_arg1 rhs, float threshold = 0.00001F) RTM_NO_EXCEPT
+	RTM_DISABLE_SECURITY_COOKIE_CHECK RTM_FORCE_INLINE bool RTM_SIMD_CALL quat_near_equal(quatf_arg0 lhs, quatf_arg1 rhs, float threshold = 0.00001F) RTM_NO_EXCEPT
 	{
 		return vector_all_near_equal(quat_to_vector(lhs), quat_to_vector(rhs), threshold);
 	}
@@ -790,7 +1286,7 @@ namespace rtm
 	// Returns true if the input quaternion is nearly equal to the identity quaternion
 	// by comparing its rotation angle.
 	//////////////////////////////////////////////////////////////////////////
-	inline bool RTM_SIMD_CALL quat_near_identity(quatf_arg0 input, anglef threshold_angle = radians(0.00284714461F)) RTM_NO_EXCEPT
+	RTM_DISABLE_SECURITY_COOKIE_CHECK inline bool RTM_SIMD_CALL quat_near_identity(quatf_arg0 input, float threshold_angle = 0.00284714461F) RTM_NO_EXCEPT
 	{
 		// Because of floating point precision, we cannot represent very small rotations.
 		// The closest float to 1.0 that is not 1.0 itself yields:
@@ -805,8 +1301,9 @@ namespace rtm
 		// If the quat.w is close to -1.0, the angle will be near 2*PI which is close to
 		// a negative 0 rotation. By forcing quat.w to be positive, we'll end up with
 		// the shortest path.
-		const float positive_w_angle = scalar_acos(scalar_abs(quat_get_w(input))) * 2.0F;
-		return positive_w_angle < threshold_angle.as_radians();
+		const scalarf input_w = quat_get_w(input);
+		const float positive_w_angle = scalar_acos(scalar_cast(scalar_abs(input_w))) * 2.0F;
+		return positive_w_angle < threshold_angle;
 	}
 }
 

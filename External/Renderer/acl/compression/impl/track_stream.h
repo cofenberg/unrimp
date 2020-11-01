@@ -27,8 +27,10 @@
 #include "acl/core/iallocator.h"
 #include "acl/core/impl/compiler_utils.h"
 #include "acl/core/error.h"
+#include "acl/core/track_formats.h"
 #include "acl/core/track_types.h"
 #include "acl/core/utils.h"
+#include "acl/core/variable_bit_rates.h"
 #include "acl/math/quat_packing.h"
 #include "acl/math/vector4_packing.h"
 
@@ -75,7 +77,7 @@ namespace acl
 			void RTM_SIMD_CALL set_raw_sample(uint32_t sample_index, SampleType sample)
 #endif
 			{
-				ACL_ASSERT(m_sample_size == sizeof(SampleType), "Unexpected sample size. %u != %u", m_sample_size, sizeof(SampleType));
+				ACL_ASSERT(m_sample_size == sizeof(SampleType), "Unexpected sample size. %u != %zu", m_sample_size, sizeof(SampleType));
 				uint8_t* ptr = get_raw_sample_ptr(sample_index);
 				*safe_ptr_cast<SampleType>(ptr) = sample;
 			}
@@ -97,9 +99,9 @@ namespace acl
 			}
 
 		protected:
-			TrackStream(animation_track_type8 type, track_format8 format) : m_allocator(nullptr), m_samples(nullptr), m_num_samples(0), m_sample_size(0), m_sample_rate(0.0F), m_type(type), m_format(format), m_bit_rate(0) {}
+			TrackStream(animation_track_type8 type, track_format8 format) noexcept : m_allocator(nullptr), m_samples(nullptr), m_num_samples(0), m_sample_size(0), m_sample_rate(0.0F), m_type(type), m_format(format), m_bit_rate(0) {}
 
-			TrackStream(IAllocator& allocator, uint32_t num_samples, uint32_t sample_size, float sample_rate, animation_track_type8 type, track_format8 format, uint8_t bit_rate)
+			TrackStream(iallocator& allocator, uint32_t num_samples, uint32_t sample_size, float sample_rate, animation_track_type8 type, track_format8 format, uint8_t bit_rate)
 				: m_allocator(&allocator)
 				, m_samples(reinterpret_cast<uint8_t*>(allocator.allocate(sample_size * num_samples + k_padding, 16)))
 				, m_num_samples(num_samples)
@@ -111,7 +113,7 @@ namespace acl
 			{}
 
 			TrackStream(const TrackStream&) = delete;
-			TrackStream(TrackStream&& other)
+			TrackStream(TrackStream&& other) noexcept
 				: m_allocator(other.m_allocator)
 				, m_samples(other.m_samples)
 				, m_num_samples(other.m_num_samples)
@@ -131,7 +133,7 @@ namespace acl
 			}
 
 			TrackStream& operator=(const TrackStream&) = delete;
-			TrackStream& operator=(TrackStream&& rhs)
+			TrackStream& operator=(TrackStream&& rhs) noexcept
 			{
 				std::swap(m_allocator, rhs.m_allocator);
 				std::swap(m_samples, rhs.m_samples);
@@ -164,7 +166,7 @@ namespace acl
 			// In order to guarantee the safety of unaligned SIMD loads of every byte, we add some padding
 			static constexpr uint32_t k_padding = 15;
 
-			IAllocator*				m_allocator;
+			iallocator*				m_allocator;
 			uint8_t*				m_samples;
 			uint32_t				m_num_samples;
 			uint32_t				m_sample_size;
@@ -178,20 +180,20 @@ namespace acl
 		class RotationTrackStream final : public TrackStream
 		{
 		public:
-			RotationTrackStream() : TrackStream(animation_track_type8::rotation, track_format8(rotation_format8::quatf_full)) {}
-			RotationTrackStream(IAllocator& allocator, uint32_t num_samples, uint32_t sample_size, float sample_rate, rotation_format8 format, uint8_t bit_rate = k_invalid_bit_rate)
+			RotationTrackStream() noexcept : TrackStream(animation_track_type8::rotation, track_format8(rotation_format8::quatf_full)) {}
+			RotationTrackStream(iallocator& allocator, uint32_t num_samples, uint32_t sample_size, float sample_rate, rotation_format8 format, uint8_t bit_rate = k_invalid_bit_rate)
 				: TrackStream(allocator, num_samples, sample_size, sample_rate, animation_track_type8::rotation, track_format8(format), bit_rate)
 			{}
 			RotationTrackStream(const RotationTrackStream&) = delete;
-			RotationTrackStream(RotationTrackStream&& other)
-				: TrackStream(std::forward<TrackStream>(other))
+			RotationTrackStream(RotationTrackStream&& other) noexcept
+				: TrackStream(static_cast<TrackStream&&>(other))
 			{}
 			~RotationTrackStream() = default;
 
 			RotationTrackStream& operator=(const RotationTrackStream&) = delete;
-			RotationTrackStream& operator=(RotationTrackStream&& rhs)
+			RotationTrackStream& operator=(RotationTrackStream&& rhs) noexcept
 			{
-				TrackStream::operator=(std::forward<TrackStream>(rhs));
+				TrackStream::operator=(static_cast<TrackStream&&>(rhs));
 				return *this;
 			}
 
@@ -208,20 +210,20 @@ namespace acl
 		class TranslationTrackStream final : public TrackStream
 		{
 		public:
-			TranslationTrackStream() : TrackStream(animation_track_type8::translation, track_format8(vector_format8::vector3f_full)) {}
-			TranslationTrackStream(IAllocator& allocator, uint32_t num_samples, uint32_t sample_size, float sample_rate, vector_format8 format, uint8_t bit_rate = k_invalid_bit_rate)
+			TranslationTrackStream() noexcept : TrackStream(animation_track_type8::translation, track_format8(vector_format8::vector3f_full)) {}
+			TranslationTrackStream(iallocator& allocator, uint32_t num_samples, uint32_t sample_size, float sample_rate, vector_format8 format, uint8_t bit_rate = k_invalid_bit_rate)
 				: TrackStream(allocator, num_samples, sample_size, sample_rate, animation_track_type8::translation, track_format8(format), bit_rate)
 			{}
 			TranslationTrackStream(const TranslationTrackStream&) = delete;
-			TranslationTrackStream(TranslationTrackStream&& other)
-				: TrackStream(std::forward<TrackStream>(other))
+			TranslationTrackStream(TranslationTrackStream&& other) noexcept
+				: TrackStream(static_cast<TrackStream&&>(other))
 			{}
 			~TranslationTrackStream() = default;
 
 			TranslationTrackStream& operator=(const TranslationTrackStream&) = delete;
-			TranslationTrackStream& operator=(TranslationTrackStream&& rhs)
+			TranslationTrackStream& operator=(TranslationTrackStream&& rhs) noexcept
 			{
-				TrackStream::operator=(std::forward<TrackStream>(rhs));
+				TrackStream::operator=(static_cast<TrackStream&&>(rhs));
 				return *this;
 			}
 
@@ -238,20 +240,20 @@ namespace acl
 		class ScaleTrackStream final : public TrackStream
 		{
 		public:
-			ScaleTrackStream() : TrackStream(animation_track_type8::scale, track_format8(vector_format8::vector3f_full)) {}
-			ScaleTrackStream(IAllocator& allocator, uint32_t num_samples, uint32_t sample_size, float sample_rate, vector_format8 format, uint8_t bit_rate = k_invalid_bit_rate)
+			ScaleTrackStream() noexcept : TrackStream(animation_track_type8::scale, track_format8(vector_format8::vector3f_full)) {}
+			ScaleTrackStream(iallocator& allocator, uint32_t num_samples, uint32_t sample_size, float sample_rate, vector_format8 format, uint8_t bit_rate = k_invalid_bit_rate)
 				: TrackStream(allocator, num_samples, sample_size, sample_rate, animation_track_type8::scale, track_format8(format), bit_rate)
 			{}
 			ScaleTrackStream(const ScaleTrackStream&) = delete;
-			ScaleTrackStream(ScaleTrackStream&& other)
-				: TrackStream(std::forward<TrackStream>(other))
+			ScaleTrackStream(ScaleTrackStream&& other) noexcept
+				: TrackStream(static_cast<TrackStream&&>(other))
 			{}
 			~ScaleTrackStream() = default;
 
 			ScaleTrackStream& operator=(const ScaleTrackStream&) = delete;
-			ScaleTrackStream& operator=(ScaleTrackStream&& rhs)
+			ScaleTrackStream& operator=(ScaleTrackStream&& rhs) noexcept
 			{
-				TrackStream::operator=(std::forward<TrackStream>(rhs));
+				TrackStream::operator=(static_cast<TrackStream&&>(rhs));
 				return *this;
 			}
 
@@ -316,9 +318,9 @@ namespace acl
 		struct BoneStreams
 		{
 			SegmentContext* segment;
-			uint16_t bone_index;
-			uint16_t parent_bone_index;
-			uint16_t output_index;
+			uint32_t bone_index;
+			uint32_t parent_bone_index;
+			uint32_t output_index;
 
 			RotationTrackStream rotations;
 			TranslationTrackStream translations;
@@ -331,7 +333,7 @@ namespace acl
 			bool is_scale_constant;
 			bool is_scale_default;
 
-			bool is_stripped_from_output() const { return output_index == k_invalid_bone_index; }
+			bool is_stripped_from_output() const { return output_index == k_invalid_track_index; }
 
 			BoneStreams duplicate() const
 			{

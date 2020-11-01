@@ -27,6 +27,7 @@
 #include "acl/core/iallocator.h"
 #include "acl/core/impl/compiler_utils.h"
 #include "acl/core/error.h"
+#include "acl/core/track_formats.h"
 #include "acl/compression/impl/clip_context.h"
 
 #include <rtm/quatf.h>
@@ -60,7 +61,7 @@ namespace acl
 			}
 		}
 
-		inline void convert_rotation_streams(IAllocator& allocator, SegmentContext& segment, rotation_format8 rotation_format)
+		inline void convert_rotation_streams(iallocator& allocator, SegmentContext& segment, rotation_format8 rotation_format)
 		{
 			const rotation_format8 high_precision_format = get_rotation_variant(rotation_format) == rotation_variant8::quat ? rotation_format8::quatf_full : rotation_format8::quatf_drop_w_full;
 
@@ -68,7 +69,7 @@ namespace acl
 			{
 				// We convert our rotation stream in place. We assume that the original format is quatf_full stored as rtm::quatf
 				// For all other formats, we keep the same sample size and either keep Quat_32 or use rtm::vector4f
-				ACL_ASSERT(bone_stream.rotations.get_sample_size() == sizeof(rtm::quatf), "Unexpected rotation sample size. %u != %u", bone_stream.rotations.get_sample_size(), sizeof(rtm::quatf));
+				ACL_ASSERT(bone_stream.rotations.get_sample_size() == sizeof(rtm::quatf), "Unexpected rotation sample size. %u != %zu", bone_stream.rotations.get_sample_size(), sizeof(rtm::quatf));
 
 				const uint32_t num_samples = bone_stream.rotations.get_num_samples();
 				const float sample_rate = bone_stream.rotations.get_sample_rate();
@@ -99,9 +100,9 @@ namespace acl
 			}
 		}
 
-		inline void convert_rotation_streams(IAllocator& allocator, ClipContext& clip_context, rotation_format8 rotation_format)
+		inline void convert_rotation_streams(iallocator& allocator, clip_context& context, rotation_format8 rotation_format)
 		{
-			for (SegmentContext& segment : clip_context.segment_iterator())
+			for (SegmentContext& segment : context.segment_iterator())
 				convert_rotation_streams(allocator, segment, rotation_format);
 		}
 	}

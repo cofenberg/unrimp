@@ -74,7 +74,7 @@ RTM_IMPL_FILE_PRAGMA_PUSH
 	{
 		namespace rtm_impl
 		{
-			inline void on_assert_abort(const char* expression, int line, const char* file, const char* format, ...)
+			RTM_DISABLE_SECURITY_COOKIE_CHECK inline void on_assert_abort(const char* expression, int line, const char* file, const char* format, ...)
 			{
 				(void)expression;
 				(void)line;
@@ -115,7 +115,7 @@ RTM_IMPL_FILE_PRAGMA_PUSH
 
 		namespace rtm_impl
 		{
-			inline void on_assert_throw(const char* expression, int line, const char* file, const char* format, ...)
+			RTM_DISABLE_SECURITY_COOKIE_CHECK inline void on_assert_throw(const char* expression, int line, const char* file, const char* format, ...)
 			{
 				(void)expression;
 				(void)line;
@@ -150,7 +150,7 @@ RTM_IMPL_FILE_PRAGMA_PUSH
 	#endif
 
 	#define RTM_HAS_ASSERT_CHECKS
-	#define RTM_NO_EXCEPT noexcept
+	#define RTM_NO_EXCEPT
 
 #else
 
@@ -170,9 +170,9 @@ RTM_IMPL_FILE_PRAGMA_PUSH
 #endif
 
 #if !defined(RTM_DEPRECATED)
-	#if defined(__GNUC__) || defined(__clang__)
+	#if defined(RTM_COMPILER_GCC) || defined(RTM_COMPILER_CLANG)
 		#define RTM_DEPRECATED(msg) __attribute__((deprecated))
-	#elif defined(_MSC_VER)
+	#elif defined(RTM_COMPILER_MSVC)
 		#define RTM_DEPRECATED(msg) __declspec(deprecated)
 	#else
 		#define RTM_DEPRECATED(msg)

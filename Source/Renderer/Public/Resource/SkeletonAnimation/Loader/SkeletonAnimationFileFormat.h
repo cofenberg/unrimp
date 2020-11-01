@@ -37,11 +37,11 @@ namespace Renderer
 {
 
 
-	// Rigid skeleton animation clip file format content:
+	// Rigid skeleton animation tracks file format content:
 	// - File format header
 	// - Skeleton animation header
 	// - Bone IDs
-	// - ACL ( https://github.com/nfrechette/acl ) compressed skeleton animation clip
+	// - ACL ( https://github.com/nfrechette/acl ) compressed skeleton animation tracks
 	namespace v1SkeletonAnimation
 	{
 
@@ -56,10 +56,10 @@ namespace Renderer
 		#pragma pack(1)
 			struct SkeletonAnimationHeader final
 			{
-				uint8_t  numberOfChannels;		///< The number of bone animation channels; each channel affects a single bone
-				float	 durationInTicks;		///< Duration of the animation in ticks
-				float	 ticksPerSecond;		///< Ticks per second; 0 if not specified in the imported file
-				uint32_t aclCompressedClipSize;	///< ACL compressed clip size in bytes
+				uint8_t  numberOfChannels;			///< The number of bone animation channels; each channel affects a single bone
+				float	 durationInTicks;			///< Duration of the animation in ticks
+				float	 ticksPerSecond;			///< Ticks per second; 0 if not specified in the imported file
+				uint32_t aclCompressedTracksSize;	///< ACL compressed tracks size in bytes
 			};
 		#pragma pack(pop)
 

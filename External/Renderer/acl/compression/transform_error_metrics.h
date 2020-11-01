@@ -27,7 +27,6 @@
 #include "acl/core/additive_utils.h"
 #include "acl/core/impl/compiler_utils.h"
 #include "acl/core/hash.h"
-#include "acl/compression/skeleton.h"
 
 #include <rtm/matrix3x4f.h>
 #include <rtm/qvvf.h>
@@ -78,7 +77,7 @@ namespace acl
 		{
 			//////////////////////////////////////////////////////////////////////////
 			// A list of transform indices that are dirty and need conversion.
-			const uint16_t* dirty_transform_indices;
+			const uint32_t* dirty_transform_indices;
 
 			//////////////////////////////////////////////////////////////////////////
 			// The number of dirty transforms that need conversion.
@@ -120,7 +119,7 @@ namespace acl
 		{
 			//////////////////////////////////////////////////////////////////////////
 			// A list of transform indices that are dirty and need transformation.
-			const uint16_t* dirty_transform_indices;
+			const uint32_t* dirty_transform_indices;
 
 			//////////////////////////////////////////////////////////////////////////
 			// The number of dirty transforms that need transformation.
@@ -129,7 +128,7 @@ namespace acl
 			//////////////////////////////////////////////////////////////////////////
 			// A list of parent transform indices for every transform.
 			// An index of 0xFFFF represents a root transform with no parent.
-			const uint16_t* parent_transform_indices;
+			const uint32_t* parent_transform_indices;
 
 			//////////////////////////////////////////////////////////////////////////
 			// The input transforms in the type expected by the error metric to be transformed.
@@ -165,7 +164,7 @@ namespace acl
 		{
 			//////////////////////////////////////////////////////////////////////////
 			// A list of transform indices that are dirty and need the base applied.
-			const uint16_t* dirty_transform_indices;
+			const uint32_t* dirty_transform_indices;
 
 			//////////////////////////////////////////////////////////////////////////
 			// The number of dirty transforms that need the base applied.
@@ -222,16 +221,16 @@ namespace acl
 			rtm::vector4f shell_point_z;
 
 			//////////////////////////////////////////////////////////////////////////
-			// The raw reference transform against which we measure the error.
+			// The first transform used to measure the error.
 			// In the type expected by the error metric.
 			// Could be in local or object space (same space as lossy).
-			const void* raw_transform;
+			const void* transform0;
 
 			//////////////////////////////////////////////////////////////////////////
-			// The lossy transform we are measuring the error for.
+			// The second transform used to measure the error.
 			// In the type expected by the error metric.
 			// Could be in local or object space (same space as raw).
-			const void* lossy_transform;
+			const void* transform1;
 
 			//////////////////////////////////////////////////////////////////////////
 			// We measure the error on a rigid shell around each transform.
@@ -270,8 +269,8 @@ namespace acl
 
 		virtual ACL_DISABLE_SECURITY_COOKIE_CHECK void local_to_object_space(const local_to_object_space_args& args, void* out_object_transforms) const override
 		{
-			const uint16_t* dirty_transform_indices = args.dirty_transform_indices;
-			const uint16_t* parent_transform_indices = args.parent_transform_indices;
+			const uint32_t* dirty_transform_indices = args.dirty_transform_indices;
+			const uint32_t* parent_transform_indices = args.parent_transform_indices;
 			const rtm::qvvf* local_transforms_ = static_cast<const rtm::qvvf*>(args.local_transforms);
 			rtm::qvvf* out_object_transforms_ = static_cast<rtm::qvvf*>(out_object_transforms);
 
@@ -282,7 +281,7 @@ namespace acl
 				const uint32_t parent_transform_index = parent_transform_indices[transform_index];
 
 				rtm::qvvf obj_transform;
-				if (parent_transform_index == k_invalid_bone_index)
+				if (parent_transform_index == k_invalid_track_index)
 					obj_transform = local_transforms_[transform_index];	// Just copy the root as-is, it has no parent and thus local and object space transforms are equal
 				else
 					obj_transform = rtm::qvv_mul(local_transforms_[transform_index], out_object_transforms_[parent_transform_index]);
@@ -293,8 +292,8 @@ namespace acl
 
 		virtual ACL_DISABLE_SECURITY_COOKIE_CHECK void local_to_object_space_no_scale(const local_to_object_space_args& args, void* out_object_transforms) const override
 		{
-			const uint16_t* dirty_transform_indices = args.dirty_transform_indices;
-			const uint16_t* parent_transform_indices = args.parent_transform_indices;
+			const uint32_t* dirty_transform_indices = args.dirty_transform_indices;
+			const uint32_t* parent_transform_indices = args.parent_transform_indices;
 			const rtm::qvvf* local_transforms_ = static_cast<const rtm::qvvf*>(args.local_transforms);
 			rtm::qvvf* out_object_transforms_ = static_cast<rtm::qvvf*>(out_object_transforms);
 
@@ -305,7 +304,7 @@ namespace acl
 				const uint32_t parent_transform_index = parent_transform_indices[transform_index];
 
 				rtm::qvvf obj_transform;
-				if (parent_transform_index == k_invalid_bone_index)
+				if (parent_transform_index == k_invalid_track_index)
 					obj_transform = local_transforms_[transform_index];	// Just copy the root as-is, it has no parent and thus local and object space transforms are equal
 				else
 					obj_transform = rtm::qvv_mul_no_scale(local_transforms_[transform_index], out_object_transforms_[parent_transform_index]);
@@ -316,8 +315,8 @@ namespace acl
 
 		virtual ACL_DISABLE_SECURITY_COOKIE_CHECK rtm::scalarf RTM_SIMD_CALL calculate_error(const calculate_error_args& args) const override
 		{
-			const rtm::qvvf& raw_transform_ = *static_cast<const rtm::qvvf*>(args.raw_transform);
-			const rtm::qvvf& lossy_transform_ = *static_cast<const rtm::qvvf*>(args.lossy_transform);
+			const rtm::qvvf& raw_transform_ = *static_cast<const rtm::qvvf*>(args.transform0);
+			const rtm::qvvf& lossy_transform_ = *static_cast<const rtm::qvvf*>(args.transform1);
 
 			// Note that because we have scale, we must measure all three axes
 			const rtm::vector4f vtx0 = args.shell_point_x;
@@ -341,8 +340,8 @@ namespace acl
 
 		virtual ACL_DISABLE_SECURITY_COOKIE_CHECK rtm::scalarf RTM_SIMD_CALL calculate_error_no_scale(const calculate_error_args& args) const override
 		{
-			const rtm::qvvf& raw_transform_ = *static_cast<const rtm::qvvf*>(args.raw_transform);
-			const rtm::qvvf& lossy_transform_ = *static_cast<const rtm::qvvf*>(args.lossy_transform);
+			const rtm::qvvf& raw_transform_ = *static_cast<const rtm::qvvf*>(args.transform0);
+			const rtm::qvvf& lossy_transform_ = *static_cast<const rtm::qvvf*>(args.transform1);
 
 			const rtm::vector4f vtx0 = args.shell_point_x;
 			const rtm::vector4f vtx1 = args.shell_point_y;
@@ -378,8 +377,8 @@ namespace acl
 
 		virtual ACL_DISABLE_SECURITY_COOKIE_CHECK void convert_transforms(const convert_transforms_args& args, void* out_transforms) const override
 		{
-			const uint16_t* dirty_transform_indices = args.dirty_transform_indices;
-			const rtm::qvvf* transforms_ = static_cast<const rtm::qvvf*>(args.transforms);
+			const uint32_t* dirty_transform_indices = args.dirty_transform_indices;
+			const rtm::qvvf* transforms_ = args.transforms;
 			rtm::matrix3x4f* out_transforms_ = static_cast<rtm::matrix3x4f*>(out_transforms);
 
 			const uint32_t num_dirty_transforms = args.num_dirty_transforms;
@@ -396,8 +395,8 @@ namespace acl
 
 		virtual ACL_DISABLE_SECURITY_COOKIE_CHECK void local_to_object_space(const local_to_object_space_args& args, void* out_object_transforms) const override
 		{
-			const uint16_t* dirty_transform_indices = args.dirty_transform_indices;
-			const uint16_t* parent_transform_indices = args.parent_transform_indices;
+			const uint32_t* dirty_transform_indices = args.dirty_transform_indices;
+			const uint32_t* parent_transform_indices = args.parent_transform_indices;
 			const rtm::matrix3x4f* local_transforms_ = static_cast<const rtm::matrix3x4f*>(args.local_transforms);
 			rtm::matrix3x4f* out_object_transforms_ = static_cast<rtm::matrix3x4f*>(out_object_transforms);
 
@@ -408,7 +407,7 @@ namespace acl
 				const uint32_t parent_transform_index = parent_transform_indices[transform_index];
 
 				rtm::matrix3x4f obj_transform;
-				if (parent_transform_index == k_invalid_bone_index)
+				if (parent_transform_index == k_invalid_track_index)
 					obj_transform = local_transforms_[transform_index];	// Just copy the root as-is, it has no parent and thus local and object space transforms are equal
 				else
 					obj_transform = rtm::matrix_mul(local_transforms_[transform_index], out_object_transforms_[parent_transform_index]);
@@ -419,8 +418,8 @@ namespace acl
 
 		virtual ACL_DISABLE_SECURITY_COOKIE_CHECK rtm::scalarf RTM_SIMD_CALL calculate_error(const calculate_error_args& args) const override
 		{
-			const rtm::matrix3x4f& raw_transform_ = *static_cast<const rtm::matrix3x4f*>(args.raw_transform);
-			const rtm::matrix3x4f& lossy_transform_ = *static_cast<const rtm::matrix3x4f*>(args.lossy_transform);
+			const rtm::matrix3x4f& raw_transform_ = *static_cast<const rtm::matrix3x4f*>(args.transform0);
+			const rtm::matrix3x4f& lossy_transform_ = *static_cast<const rtm::matrix3x4f*>(args.transform1);
 
 			// Note that because we have scale, we must measure all three axes
 			const rtm::vector4f vtx0 = args.shell_point_x;
@@ -466,7 +465,7 @@ namespace acl
 
 		virtual ACL_DISABLE_SECURITY_COOKIE_CHECK void apply_additive_to_base(const apply_additive_to_base_args& args, void* out_transforms) const override
 		{
-			const uint16_t* dirty_transform_indices = args.dirty_transform_indices;
+			const uint32_t* dirty_transform_indices = args.dirty_transform_indices;
 			const rtm::qvvf* local_transforms_ = static_cast<const rtm::qvvf*>(args.local_transforms);
 			const rtm::qvvf* base_transforms_ = static_cast<const rtm::qvvf*>(args.base_transforms);
 			rtm::qvvf* out_transforms_ = static_cast<rtm::qvvf*>(out_transforms);
@@ -486,7 +485,7 @@ namespace acl
 
 		virtual ACL_DISABLE_SECURITY_COOKIE_CHECK void apply_additive_to_base_no_scale(const apply_additive_to_base_args& args, void* out_transforms) const override
 		{
-			const uint16_t* dirty_transform_indices = args.dirty_transform_indices;
+			const uint32_t* dirty_transform_indices = args.dirty_transform_indices;
 			const rtm::qvvf* local_transforms_ = static_cast<const rtm::qvvf*>(args.local_transforms);
 			const rtm::qvvf* base_transforms_ = static_cast<const rtm::qvvf*>(args.base_transforms);
 			rtm::qvvf* out_transforms_ = static_cast<rtm::qvvf*>(out_transforms);

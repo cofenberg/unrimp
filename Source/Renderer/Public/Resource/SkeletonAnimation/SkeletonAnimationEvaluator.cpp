@@ -30,8 +30,7 @@
 PRAGMA_WARNING_PUSH
 	PRAGMA_WARNING_DISABLE_MSVC(4061)	// warning C4061: enumerator 'rtm::mix4::b' in switch of enum 'rtm::mix4' is not explicitly handled by a case label
 	PRAGMA_WARNING_DISABLE_MSVC(4365)	// warning C4365: 'initializing': conversion from 'int' to 'uint8_t', signed/unsigned mismatch
-	PRAGMA_WARNING_DISABLE_MSVC(5027)	// warning C5027: 'rtm::rtm_impl::matrix_caster<rtm::matrix3x3f>': move assignment operator was implicitly defined as deleted
-	#include <acl/algorithm/uniformly_sampled/decoder.h>
+	#include <acl/decompression/decompress.h>
 PRAGMA_WARNING_POP
 
 // Disable warnings in external headers, we can't fix them
@@ -54,59 +53,60 @@ namespace
 		//[-------------------------------------------------------]
 		//[ Global definitions                                    ]
 		//[-------------------------------------------------------]
-		typedef acl::uniformly_sampled::DecompressionContext<acl::uniformly_sampled::DefaultDecompressionSettings> AclDecompressionContext;
+		typedef acl::decompression_context<acl::default_transform_decompression_settings> AclDecompressionContext;
 
 
 		//[-------------------------------------------------------]
 		//[ Classes                                               ]
 		//[-------------------------------------------------------]
-		class AclAllocator final : public acl::IAllocator
+		struct TrackWriter final : public acl::track_writer
 		{
 
 
-		//[-------------------------------------------------------]
-		//[ Public methods                                        ]
-		//[-------------------------------------------------------]
-		public:
-			inline explicit AclAllocator(Rhi::IAllocator& allocator) :
-				mAllocator(allocator)
-			{
-				// Nothing here
-			}
-
-			explicit AclAllocator(const AclAllocator&) = delete;
-
-			virtual ~AclAllocator() override
-			{
-				// Nothing here
-			}
-
-			AclAllocator& operator=(const AclAllocator&) = delete;
+			//[-------------------------------------------------------]
+			//[ Public data                                           ]
+			//[-------------------------------------------------------]
+			public:
+				rtm::quatf	  mRotation	   = rtm::quat_identity();
+				rtm::vector4f mTranslation = rtm::vector_zero();
+				rtm::vector4f mScale	   = rtm::vector_set(1.0f);
 
 
-		//[-------------------------------------------------------]
-		//[ Public virtual acl::IAllocator methods                ]
-		//[-------------------------------------------------------]
-		public:
-			virtual void* allocate(size_t size, size_t alignment = k_default_alignment) override
-			{
-				return mAllocator.reallocate(nullptr, 0, size, alignment);
-			}
+			//[-------------------------------------------------------]
+			//[ Public methods                                        ]
+			//[-------------------------------------------------------]
+			public:
+				// Called by the decoder to write out a quaternion rotation value for a specified bone index
+				void RTM_SIMD_CALL write_rotation(uint32_t, rtm::quatf_arg0 rotation)
+				{
+					mRotation = rotation;
+				}
 
-			virtual void deallocate(void* ptr, size_t size) override
-			{
-				mAllocator.reallocate(ptr, size, 0, 1);
-			}
+				// Called by the decoder to write out a translation value for a specified bone index
+				void RTM_SIMD_CALL write_translation(uint32_t, rtm::vector4f_arg0 translation)
+				{
+					mTranslation = translation;
+				}
+
+				// Called by the decoder to write out a scale value for a specified bone index
+				void RTM_SIMD_CALL write_scale(uint32_t, rtm::vector4f_arg0 scale)
+				{
+					mScale = scale;
+				}
+
+				void getTransformMatrix(glm::mat4& transformMatrix) const
+				{
+					// Build a transformation matrix from it
+					// TODO(co) Handle case of no scale
+					// TODO(co) Review temporary matrix instances on the C-runtime stack
+					glm::quat presentRotation(rtm::quat_get_w(mRotation), rtm::quat_get_x(mRotation), rtm::quat_get_y(mRotation), rtm::quat_get_z(mRotation));
+					glm::vec3 presentPosition(rtm::vector_get_x(mTranslation), rtm::vector_get_y(mTranslation), rtm::vector_get_z(mTranslation));
+					glm::vec3 presentScale(rtm::vector_get_x(mScale), rtm::vector_get_y(mScale), rtm::vector_get_z(mScale));
+					transformMatrix = glm::translate(Renderer::Math::MAT4_IDENTITY, presentPosition) * glm::toMat4(presentRotation) * glm::scale(Renderer::Math::MAT4_IDENTITY, presentScale);
+				}
 
 
-		//[-------------------------------------------------------]
-		//[ Private data                                          ]
-		//[-------------------------------------------------------]
-		private:
-			Rhi::IAllocator& mAllocator;
-
-
-	};
+		};
 
 
 //[-------------------------------------------------------]
@@ -126,15 +126,13 @@ namespace Renderer
 	//[-------------------------------------------------------]
 	//[ Public methods                                        ]
 	//[-------------------------------------------------------]
-	SkeletonAnimationEvaluator::SkeletonAnimationEvaluator(Rhi::IAllocator& allocator, SkeletonAnimationResourceManager& skeletonAnimationResourceManager, SkeletonAnimationResourceId skeletonAnimationResourceId) :
+	SkeletonAnimationEvaluator::SkeletonAnimationEvaluator(SkeletonAnimationResourceManager& skeletonAnimationResourceManager, SkeletonAnimationResourceId skeletonAnimationResourceId) :
 		mSkeletonAnimationResourceManager(skeletonAnimationResourceManager),
 		mSkeletonAnimationResourceId(skeletonAnimationResourceId)
 	{
-		mAclAllocator = new ::detail::AclAllocator(allocator);
 		mAclDecompressionContext = new ::detail::AclDecompressionContext();
-//		mAclDecompressionContext = new ::detail::AclDecompressionContext(static_cast<acl::IAllocator*>(mAclAllocator));	// TODO(co) When using ACL decompression context with custom allocator there are reports about damaged blocks on destruction
 		const SkeletonAnimationResource& skeletonAnimationResource = mSkeletonAnimationResourceManager.getById(mSkeletonAnimationResourceId);
-		static_cast<::detail::AclDecompressionContext*>(mAclDecompressionContext)->initialize(*reinterpret_cast<const acl::CompressedClip*>(skeletonAnimationResource.getAclCompressedClip().data()));
+		static_cast<::detail::AclDecompressionContext*>(mAclDecompressionContext)->initialize(*reinterpret_cast<const acl::compressed_tracks*>(skeletonAnimationResource.getAclCompressedTracks().data()));
 		mBoneIds = skeletonAnimationResource.getBoneIds();
 		mTransformMatrices.resize(skeletonAnimationResource.getNumberOfChannels());
 	}
@@ -142,7 +140,6 @@ namespace Renderer
 	SkeletonAnimationEvaluator::~SkeletonAnimationEvaluator()
 	{
 		delete static_cast<::detail::AclDecompressionContext*>(mAclDecompressionContext);
-		delete static_cast<::detail::AclAllocator*>(mAclAllocator);
 	}
 
 	void SkeletonAnimationEvaluator::evaluate(float timeInSeconds)
@@ -150,7 +147,7 @@ namespace Renderer
 		const SkeletonAnimationResource& skeletonAnimationResource = mSkeletonAnimationResourceManager.getById(mSkeletonAnimationResourceId);
 		const uint8_t numberOfChannels = skeletonAnimationResource.getNumberOfChannels();
 
-		// Decompress the ACL compressed skeleton animation clip
+		// Decompress the ACL compressed skeleton animation tracks
 		::detail::AclDecompressionContext* aclDecompressionContext = static_cast<::detail::AclDecompressionContext*>(mAclDecompressionContext);
 		const float duration = skeletonAnimationResource.getDurationInTicks() / skeletonAnimationResource.getTicksPerSecond();
 		while (timeInSeconds > duration)
@@ -158,20 +155,11 @@ namespace Renderer
 			timeInSeconds -= duration;
 		}
 		static_cast<::detail::AclDecompressionContext*>(mAclDecompressionContext)->seek(timeInSeconds, acl::sample_rounding_policy::none);
+		::detail::TrackWriter trackWriter;
 		for (uint8_t i = 0; i < numberOfChannels; ++i)
 		{
-			rtm::quatf rotation;
-			rtm::vector4f translation;
-			rtm::vector4f scale;
-			aclDecompressionContext->decompress_bone(i, &rotation, &translation, &scale);
-
-			// Build a transformation matrix from it
-			// TODO(co) Handle case of no scale
-			// TODO(co) Review temporary matrix instances on the C-runtime stack
-			glm::quat presentRotation(rtm::quat_get_w(rotation), rtm::quat_get_x(rotation), rtm::quat_get_y(rotation), rtm::quat_get_z(rotation));
-			glm::vec3 presentPosition(rtm::vector_get_x(translation), rtm::vector_get_y(translation), rtm::vector_get_z(translation));
-			glm::vec3 presentScale(rtm::vector_get_x(scale), rtm::vector_get_y(scale), rtm::vector_get_z(scale));
-			mTransformMatrices[i] = glm::translate(Math::MAT4_IDENTITY, presentPosition) * glm::toMat4(presentRotation) * glm::scale(Math::MAT4_IDENTITY, presentScale);
+			aclDecompressionContext->decompress_track(i, trackWriter);
+			trackWriter.getTransformMatrix(mTransformMatrices[i]);
 		}
 	}
 

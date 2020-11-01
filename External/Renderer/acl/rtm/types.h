@@ -63,17 +63,31 @@ namespace rtm
 	};
 
 	//////////////////////////////////////////////////////////////////////////
+	// A 4x32 bit vector comparison mask for 32 bit floats: ~0 if true, 0 otherwise.
+	//////////////////////////////////////////////////////////////////////////
+	using mask4f = __m128;
+
+	//////////////////////////////////////////////////////////////////////////
+	// A 4x64 bit vector comparison mask for 64 bit floats: ~0 if true, 0 otherwise.
+	//////////////////////////////////////////////////////////////////////////
+	struct mask4d
+	{
+		__m128d xy;
+		__m128d zw;
+	};
+
+	//////////////////////////////////////////////////////////////////////////
 	// A 4x32 bit vector comparison mask: ~0 if true, 0 otherwise.
 	//////////////////////////////////////////////////////////////////////////
-	using mask4i = __m128;
+	using mask4i = __m128i;
 
 	//////////////////////////////////////////////////////////////////////////
 	// A 4x64 bit vector comparison mask: ~0 if true, 0 otherwise.
 	//////////////////////////////////////////////////////////////////////////
 	struct mask4q
 	{
-		__m128d xy;
-		__m128d zw;
+		__m128i xy;
+		__m128i zw;
 	};
 #elif defined(RTM_NEON_INTRINSICS)
 	//////////////////////////////////////////////////////////////////////////
@@ -111,9 +125,46 @@ namespace rtm
 	};
 
 	//////////////////////////////////////////////////////////////////////////
+	// A 4x32 bit vector comparison mask for 32 bit floats: ~0 if true, 0 otherwise.
+	//////////////////////////////////////////////////////////////////////////
+	using mask4f = float32x4_t;
+
+	//////////////////////////////////////////////////////////////////////////
+	// A 4x64 bit vector comparison mask for 64 bit floats: ~0 if true, 0 otherwise.
+	//////////////////////////////////////////////////////////////////////////
+	struct alignas(16) mask4d
+	{
+		uint64_t x;
+		uint64_t y;
+		uint64_t z;
+		uint64_t w;
+	};
+
+#if defined(_MSC_VER)
+	// MSVC uses a simple typedef to an identical underlying type for uint32x4_t and float32x4_t
+	// To avoid issues of duplicate symbols, we introduce a concrete type
+
+	//////////////////////////////////////////////////////////////////////////
 	// A 4x32 bit vector comparison mask: ~0 if true, 0 otherwise.
 	//////////////////////////////////////////////////////////////////////////
-	using mask4i = float32x4_t;
+	struct alignas(16) mask4i
+	{
+		uint32x4_t value;
+	};
+
+	// Helper macros to simplify usage
+	#define RTM_IMPL_MASK4i_GET(mask) mask.value
+	#define RTM_IMPL_MASK4i_SET(mask) mask4i{ mask }
+#else
+	//////////////////////////////////////////////////////////////////////////
+	// A 4x32 bit vector comparison mask: ~0 if true, 0 otherwise.
+	//////////////////////////////////////////////////////////////////////////
+	using mask4i = uint32x4_t;
+
+	// Helper macros to simplify usage
+	#define RTM_IMPL_MASK4i_GET(mask) mask
+	#define RTM_IMPL_MASK4i_SET(mask) mask
+#endif
 
 	//////////////////////////////////////////////////////////////////////////
 	// A 4x64 bit vector comparison mask: ~0 if true, 0 otherwise.
@@ -173,6 +224,28 @@ namespace rtm
 	};
 
 	//////////////////////////////////////////////////////////////////////////
+	// A 4x32 bit vector comparison mask for 32 bit floats: ~0 if true, 0 otherwise.
+	//////////////////////////////////////////////////////////////////////////
+	struct alignas(16) mask4f
+	{
+		uint32_t x;
+		uint32_t y;
+		uint32_t z;
+		uint32_t w;
+	};
+
+	//////////////////////////////////////////////////////////////////////////
+	// A 4x64 bit vector comparison mask for 64 bit floats: ~0 if true, 0 otherwise.
+	//////////////////////////////////////////////////////////////////////////
+	struct alignas(16) mask4d
+	{
+		uint64_t x;
+		uint64_t y;
+		uint64_t z;
+		uint64_t w;
+	};
+
+	//////////////////////////////////////////////////////////////////////////
 	// A 4x32 bit vector comparison mask: ~0 if true, 0 otherwise.
 	//////////////////////////////////////////////////////////////////////////
 	struct alignas(16) mask4i
@@ -196,19 +269,20 @@ namespace rtm
 #endif
 
 #if defined(RTM_SSE2_INTRINSICS)
-	//////////////////////////////////////////////////////////////////////////
-	// A SIMD friendly scalar type. Different architectures have an easier or harder time
-	// working with scalar floating point numbers. For example, older PowerPC processors
-	// had to write to memory and reload from it to transfer from one register file into
-	// another (e.g convert from a float to a SIMD vector). Modern processors handle
-	// this much better but inefficiencies remain, especially with SSE. While it is
-	// free to convert a SIMD scalar into a float with _mm_cvtss_f32(..) the reverse generally
-	// requires the compiler to fill the unused SIMD lanes with known values (either zero or the same).
-	// This introduces an extra instruction that isn't always required when only the first lane is used
-	// such as with scalar_sqrt_reciprocal(..). By introducing a type for SIMD scalar values,
-	// each platform is free to make an optimal choice.
-	//////////////////////////////////////////////////////////////////////////
-	using scalarf = __m128;
+	// With SSE2, we use a concrete type for scalarf/scalard unlike other platforms and other types
+	// like vector4f and quatf. We don't use a concrete type when we can avoid it to help the compiler
+	// optimize as much as possible. But we must be able to tell a scalar apart from a vector for
+	// return type overloading and argument overloading.
+	// For example, we want to support vector_mul(vec4, vec4) and vector_mul(vec4, scalar).
+	// When scalarf is a 'float', the type is distinct and everything works as expected
+	// but if we use __m128, the type is the same as vector4f and we won't be able to tell
+	// them apart.
+	// Another example is vector_dot where we want to support returning a float, a scalarf, and
+	// a vector4f depending on what the user expects. We could always return a float/scalarf but
+	// if we need a vector4f it is less efficient if _mm_dp_ps is used: we would have an extra
+	// shuffle.
+	// Using a concrete type here allows us to tell the types apart and properly overload them
+	// when required. The compiler should still be able to optimize properly.
 
 	//////////////////////////////////////////////////////////////////////////
 	// A SIMD friendly scalar type. Different architectures have an easier or harder time
@@ -222,7 +296,27 @@ namespace rtm
 	// such as with scalar_sqrt_reciprocal(..). By introducing a type for SIMD scalar values,
 	// each platform is free to make an optimal choice.
 	//////////////////////////////////////////////////////////////////////////
-	using scalard = __m128d;
+	struct scalarf
+	{
+		__m128 value;
+	};
+
+	//////////////////////////////////////////////////////////////////////////
+	// A SIMD friendly scalar type. Different architectures have an easier or harder time
+	// working with scalar floating point numbers. For example, older PowerPC processors
+	// had to write to memory and reload from it to transfer from one register file into
+	// another (e.g convert from a float to a SIMD vector). Modern processors handle
+	// this much better but inefficiencies remain, especially with SSE. While it is
+	// free to convert a SIMD scalar into a float with _mm_cvtss_f32(..) the reverse generally
+	// requires the compiler to fill the unused SIMD lanes with known values (either zero or the same).
+	// This introduces an extra instruction that isn't always required when only the first lane is used
+	// such as with scalar_sqrt_reciprocal(..). By introducing a type for SIMD scalar values,
+	// each platform is free to make an optimal choice.
+	//////////////////////////////////////////////////////////////////////////
+	struct scalard
+	{
+		__m128d value;
+	};
 #else
 	//////////////////////////////////////////////////////////////////////////
 	// A SIMD friendly scalar type. Different architectures have an easier or harder time
@@ -383,6 +477,16 @@ namespace rtm
 	};
 
 	//////////////////////////////////////////////////////////////////////////
+	// Represents an axis in 3D.
+	//////////////////////////////////////////////////////////////////////////
+	enum class axis3
+	{
+		x = 0,
+		y = 1,
+		z = 2,
+	};
+
+	//////////////////////////////////////////////////////////////////////////
 	// Represents an axis in 4D.
 	//////////////////////////////////////////////////////////////////////////
 	enum class axis4
@@ -392,12 +496,6 @@ namespace rtm
 		z = 2,
 		w = 3,
 	};
-
-	//////////////////////////////////////////////////////////////////////////
-	// An angle class for added type safety.
-	//////////////////////////////////////////////////////////////////////////
-	class anglef;
-	class angled;
 
 
 	//////////////////////////////////////////////////////////////////////////

@@ -33,28 +33,16 @@ RTM_IMPL_FILE_PRAGMA_PUSH
 namespace rtm
 {
 	//////////////////////////////////////////////////////////////////////////
-	// Creates a mask4q from all 4 integer components.
-	//////////////////////////////////////////////////////////////////////////
-	inline mask4q RTM_SIMD_CALL mask_set(uint64_t x, uint64_t y, uint64_t z, uint64_t w) RTM_NO_EXCEPT
-	{
-#if defined(RTM_SSE2_INTRINSICS)
-		return mask4q{ _mm_castsi128_pd(_mm_set_epi64x(y, x)), _mm_castsi128_pd(_mm_set_epi64x(w, z)) };
-#else
-		return mask4q{ x, y, z, w };
-#endif
-	}
-
-	//////////////////////////////////////////////////////////////////////////
 	// Returns the mask4q [x] component.
 	//////////////////////////////////////////////////////////////////////////
-	inline uint64_t RTM_SIMD_CALL mask_get_x(const mask4q& input) RTM_NO_EXCEPT
+	RTM_DISABLE_SECURITY_COOKIE_CHECK RTM_FORCE_INLINE uint64_t RTM_SIMD_CALL mask_get_x(const mask4q& input) RTM_NO_EXCEPT
 	{
 #if defined(RTM_SSE2_INTRINSICS)
 #if defined(_M_X64)
-		return _mm_cvtsi128_si64(_mm_castpd_si128(input.xy));
+		return _mm_cvtsi128_si64(input.xy);
 #else
 		// Just sign extend on 32bit systems
-		return (uint64_t)_mm_cvtsi128_si32(_mm_castpd_si128(input.xy));
+		return (uint64_t)_mm_cvtsi128_si32(input.xy);
 #endif
 #else
 		return input.x;
@@ -64,14 +52,14 @@ namespace rtm
 	//////////////////////////////////////////////////////////////////////////
 	// Returns the mask4q [y] component.
 	//////////////////////////////////////////////////////////////////////////
-	inline uint64_t RTM_SIMD_CALL mask_get_y(const mask4q& input) RTM_NO_EXCEPT
+	RTM_DISABLE_SECURITY_COOKIE_CHECK RTM_FORCE_INLINE uint64_t RTM_SIMD_CALL mask_get_y(const mask4q& input) RTM_NO_EXCEPT
 	{
 #if defined(RTM_SSE2_INTRINSICS)
 #if defined(_M_X64)
-		return _mm_cvtsi128_si64(_mm_castpd_si128(_mm_shuffle_pd(input.xy, input.xy, 1)));
+		return _mm_cvtsi128_si64(_mm_shuffle_epi32(input.xy, _MM_SHUFFLE(3, 2, 3, 2)));
 #else
 		// Just sign extend on 32bit systems
-		return (uint64_t)_mm_cvtsi128_si32(_mm_castpd_si128(_mm_shuffle_pd(input.xy, input.xy, 1)));
+		return (uint64_t)_mm_cvtsi128_si32(_mm_shuffle_epi32(input.xy, _MM_SHUFFLE(3, 2, 3, 2)));
 #endif
 #else
 		return input.y;
@@ -81,14 +69,14 @@ namespace rtm
 	//////////////////////////////////////////////////////////////////////////
 	// Returns the mask4q [z] component.
 	//////////////////////////////////////////////////////////////////////////
-	inline uint64_t RTM_SIMD_CALL mask_get_z(const mask4q& input) RTM_NO_EXCEPT
+	RTM_DISABLE_SECURITY_COOKIE_CHECK RTM_FORCE_INLINE uint64_t RTM_SIMD_CALL mask_get_z(const mask4q& input) RTM_NO_EXCEPT
 	{
 #if defined(RTM_SSE2_INTRINSICS)
 #if defined(_M_X64)
-		return _mm_cvtsi128_si64(_mm_castpd_si128(input.zw));
+		return _mm_cvtsi128_si64(input.zw);
 #else
 		// Just sign extend on 32bit systems
-		return (uint64_t)_mm_cvtsi128_si32(_mm_castpd_si128(input.zw));
+		return (uint64_t)_mm_cvtsi128_si32(input.zw);
 #endif
 #else
 		return input.z;
@@ -98,17 +86,89 @@ namespace rtm
 	//////////////////////////////////////////////////////////////////////////
 	// Returns the mask4q [w] component.
 	//////////////////////////////////////////////////////////////////////////
-	inline uint64_t RTM_SIMD_CALL mask_get_w(const mask4q& input) RTM_NO_EXCEPT
+	RTM_DISABLE_SECURITY_COOKIE_CHECK RTM_FORCE_INLINE uint64_t RTM_SIMD_CALL mask_get_w(const mask4q& input) RTM_NO_EXCEPT
 	{
 #if defined(RTM_SSE2_INTRINSICS)
 #if defined(_M_X64)
-		return _mm_cvtsi128_si64(_mm_castpd_si128(_mm_shuffle_pd(input.zw, input.zw, 1)));
+		return _mm_cvtsi128_si64(_mm_shuffle_epi32(input.zw, _MM_SHUFFLE(3, 2, 3, 2)));
 #else
 		// Just sign extend on 32bit systems
-		return (uint64_t)_mm_cvtsi128_si32(_mm_castpd_si128(_mm_shuffle_pd(input.zw, input.zw, 1)));
+		return (uint64_t)_mm_cvtsi128_si32(_mm_shuffle_epi32(input.zw, _MM_SHUFFLE(3, 2, 3, 2)));
 #endif
 #else
 		return input.w;
+#endif
+	}
+
+	//////////////////////////////////////////////////////////////////////////
+	// Returns true if all 4 components are true, otherwise false: all(input != 0)
+	//////////////////////////////////////////////////////////////////////////
+	RTM_DISABLE_SECURITY_COOKIE_CHECK RTM_FORCE_INLINE bool RTM_SIMD_CALL mask_all_true(const mask4q& input) RTM_NO_EXCEPT
+	{
+#if defined(RTM_SSE2_INTRINSICS)
+		return (_mm_movemask_epi8(input.xy) & _mm_movemask_epi8(input.zw)) == 0xFFFF;
+#else
+		return input.x != 0 && input.y != 0 && input.z != 0 && input.w != 0;
+#endif
+	}
+
+	//////////////////////////////////////////////////////////////////////////
+	// Returns true if all [xy] components are true, otherwise false: all(input != 0)
+	//////////////////////////////////////////////////////////////////////////
+	RTM_DISABLE_SECURITY_COOKIE_CHECK RTM_FORCE_INLINE bool RTM_SIMD_CALL mask_all_true2(const mask4q& input) RTM_NO_EXCEPT
+	{
+#if defined(RTM_SSE2_INTRINSICS)
+		return _mm_movemask_epi8(input.xy) == 0xFFFF;
+#else
+		return input.x != 0 && input.y != 0;
+#endif
+	}
+
+	//////////////////////////////////////////////////////////////////////////
+	// Returns true if all [xyz] components are true, otherwise false: all(input != 0)
+	//////////////////////////////////////////////////////////////////////////
+	RTM_DISABLE_SECURITY_COOKIE_CHECK RTM_FORCE_INLINE bool RTM_SIMD_CALL mask_all_true3(const mask4q& input) RTM_NO_EXCEPT
+	{
+#if defined(RTM_SSE2_INTRINSICS)
+		return _mm_movemask_epi8(input.xy) == 0xFFFF && (_mm_movemask_epi8(input.zw) & 0x00FF) == 0x00FF;
+#else
+		return input.x != 0 && input.y != 0 && input.z != 0;
+#endif
+	}
+
+	//////////////////////////////////////////////////////////////////////////
+	// Returns true if any 4 components are true, otherwise false: any(input != 0)
+	//////////////////////////////////////////////////////////////////////////
+	RTM_DISABLE_SECURITY_COOKIE_CHECK RTM_FORCE_INLINE bool RTM_SIMD_CALL mask_any_true(const mask4q& input) RTM_NO_EXCEPT
+	{
+#if defined(RTM_SSE2_INTRINSICS)
+		return (_mm_movemask_epi8(input.xy) | _mm_movemask_epi8(input.zw)) != 0;
+#else
+		return input.x != 0 || input.y != 0 || input.z != 0 || input.w != 0;
+#endif
+	}
+
+	//////////////////////////////////////////////////////////////////////////
+	// Returns true if any [xy] components are true, otherwise false: any(input != 0)
+	//////////////////////////////////////////////////////////////////////////
+	RTM_DISABLE_SECURITY_COOKIE_CHECK RTM_FORCE_INLINE bool RTM_SIMD_CALL mask_any_true2(const mask4q& input) RTM_NO_EXCEPT
+	{
+#if defined(RTM_SSE2_INTRINSICS)
+		return _mm_movemask_epi8(input.xy) != 0;
+#else
+		return input.x != 0 || input.y != 0;
+#endif
+	}
+
+	//////////////////////////////////////////////////////////////////////////
+	// Returns true if any [xyz] components are true, otherwise false: any(input != 0)
+	//////////////////////////////////////////////////////////////////////////
+	RTM_DISABLE_SECURITY_COOKIE_CHECK RTM_FORCE_INLINE bool RTM_SIMD_CALL mask_any_true3(const mask4q& input) RTM_NO_EXCEPT
+	{
+#if defined(RTM_SSE2_INTRINSICS)
+		return _mm_movemask_epi8(input.xy) != 0 || (_mm_movemask_epi8(input.zw) & 0x00FF) != 0;
+#else
+		return input.x != 0 || input.y != 0 || input.z != 0;
 #endif
 	}
 }
