@@ -67,7 +67,7 @@ MAIN_BEGIN_COMPUTE(32, 32, 1)
 		// Apply timing to velocity
 		// -> "Motion Blur Tutorial" - "A sly problem" - "mblurScale = currentFps / targeFps" - http://john-chapman-graphics.blogspot.de/2013/01/what-is-motion-blur-motion-pictures-are.html
 		//    "... if the framerate goes up we increase the blur length, if it goes down we decrease the blur length. When I say "goes up" or "goes down" I mean "changes relative to the target framerate.""
-		const float TARGET_FRAMES_PER_SECOND = 60.0f;
+		const float TARGET_FRAMES_PER_SECOND = 120.0f;
 		velocity *= PassData.FramesPerSecond / TARGET_FRAMES_PER_SECOND;
 
 		// Clamp to a maximum velocity: The maximum we can go without artifacts is 1.4f * PassData.NumberOfSamples... but we can fudge things a little
