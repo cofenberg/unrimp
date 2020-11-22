@@ -300,7 +300,7 @@ namespace Renderer
 	*/
 	#define STRING_ID(string) \
 		__pragma(warning(push)) \
-		__pragma(warning(disable:4307)) \
+			__pragma(warning(disable:4307)) \
 			std::integral_constant<uint32_t, Renderer::StringId::compileTimeFNV(string)>::value \
 		__pragma(warning(pop))
 #else

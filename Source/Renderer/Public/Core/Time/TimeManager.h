@@ -62,7 +62,11 @@ namespace Renderer
 		inline TimeManager() :
 			mPastSecondsSinceLastFrame(std::numeric_limits<float>::min()),	// Don't initialize with zero or time advancing enforcement asserts will get more complicated
 			mGlobalTimeInSeconds(0.0f),
-			mNumberOfRenderedFrames(0)
+			mNumberOfRenderedFrames(0),
+			mFramesPerSecond(std::numeric_limits<float>::max()),	// Not zero to avoid division through zero border case
+			mFramerateSecondsPerFrame{},
+			mFramerateSecondsPerFrameIndex(0),
+			mFramerateSecondsPerFrameAccumulated(0.0f)
 		{
 			// Nothing here
 		}
@@ -85,6 +89,11 @@ namespace Renderer
 		[[nodiscard]] inline uint64_t getNumberOfRenderedFrames() const
 		{
 			return mNumberOfRenderedFrames;
+		}
+
+		[[nodiscard]] inline float getFramesPerSecond() const
+		{
+			return mFramesPerSecond;
 		}
 
 		/**
@@ -113,6 +122,10 @@ namespace Renderer
 		float	  mPastSecondsSinceLastFrame;
 		float	  mGlobalTimeInSeconds;
 		uint64_t  mNumberOfRenderedFrames;
+		float	  mFramesPerSecond;
+		float	  mFramerateSecondsPerFrame[120];	// Calculate estimate of framerate over the last two seconds
+		int		  mFramerateSecondsPerFrameIndex;
+		float	  mFramerateSecondsPerFrameAccumulated;
 
 
 	};

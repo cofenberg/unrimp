@@ -87,11 +87,11 @@
 							"ValueType": "INTEGER_3",
 							"Value": "@GLOBAL_COMPUTE_SIZE"
 						},
-						"PastSecondsSinceLastFrame":
+						"FramesPerSecond":
 						{
 							"Usage": "GLOBAL_REFERENCE",
 							"ValueType": "FLOAT",
-							"Value": "@GlobalPastSecondsSinceLastFrame"
+							"Value": "@GlobalFramesPerSecond"
 						},
 						"Strength":
 						{

@@ -52,6 +52,13 @@ namespace Renderer
 		mGlobalTimeInSeconds += mPastSecondsSinceLastFrame;	// TODO(co) Add some kind of wrapping to avoid that issues with a too huge global time can come up?
 		++mNumberOfRenderedFrames;
 
+		// Calculate frames per second
+		// -> Using the approach from ImGui 1.78 WIP (latest commit 76ddacd2a12f713a218116c849928ef2274d3f8b - July 29, 2020)
+		mFramerateSecondsPerFrameAccumulated += mPastSecondsSinceLastFrame - mFramerateSecondsPerFrame[mFramerateSecondsPerFrameIndex];
+		mFramerateSecondsPerFrame[mFramerateSecondsPerFrameIndex] = mPastSecondsSinceLastFrame;
+		mFramerateSecondsPerFrameIndex = (mFramerateSecondsPerFrameIndex + 1) % static_cast<int>(GLM_COUNTOF(mFramerateSecondsPerFrame));
+		mFramesPerSecond = (mFramerateSecondsPerFrameAccumulated > 0.0f) ? (1.0f / (mFramerateSecondsPerFrameAccumulated / static_cast<float>(GLM_COUNTOF(mFramerateSecondsPerFrame)))) : std::numeric_limits<float>::max();
+
 		// Start the stopwatch
 		mStopwatch.start();
 	}
