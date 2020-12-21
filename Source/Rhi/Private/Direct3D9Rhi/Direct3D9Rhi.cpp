@@ -1973,11 +1973,6 @@ namespace Direct3D9Rhi
 		[[nodiscard]] virtual bool beginScene() override;
 		virtual void submitCommandBuffer(const Rhi::CommandBuffer& commandBuffer) override;
 		virtual void endScene() override;
-		//[-------------------------------------------------------]
-		//[ Synchronization                                       ]
-		//[-------------------------------------------------------]
-		virtual void flush() override;
-		virtual void finish() override;
 
 
 	//[-------------------------------------------------------]
@@ -9101,47 +9096,6 @@ namespace Direct3D9Rhi
 		setGraphicsRenderTarget(nullptr);
 
 		FAILED_DEBUG_BREAK(mDirect3DDevice9->EndScene())
-	}
-
-
-	//[-------------------------------------------------------]
-	//[ Synchronization                                       ]
-	//[-------------------------------------------------------]
-	void Direct3D9Rhi::flush()
-	{
-		// Create the Direct3D 9 query instance used for flush right now?
-		if (nullptr == mDirect3DQuery9Flush)
-		{
-			FAILED_DEBUG_BREAK(mDirect3DDevice9->CreateQuery(D3DQUERYTYPE_EVENT, &mDirect3DQuery9Flush))
-
-			// "IDirect3DQuery9" is not derived from "IDirect3DResource9", meaning we can't use the "IDirect3DResource9::SetPrivateData()"-method in order to set a debug name
-		}
-		if (nullptr != mDirect3DQuery9Flush)
-		{
-			// Perform the flush
-			FAILED_DEBUG_BREAK(mDirect3DQuery9Flush->Issue(D3DISSUE_END))
-			FAILED_DEBUG_BREAK(mDirect3DQuery9Flush->GetData(nullptr, 0, D3DGETDATA_FLUSH))
-		}
-	}
-
-	void Direct3D9Rhi::finish()
-	{
-		// Create the Direct3D 9 query instance used for flush right now?
-		if (nullptr == mDirect3DQuery9Flush)
-		{
-			FAILED_DEBUG_BREAK(mDirect3DDevice9->CreateQuery(D3DQUERYTYPE_EVENT, &mDirect3DQuery9Flush))
-
-			// "IDirect3DQuery9" is not derived from "IDirect3DResource9", meaning we can't use the "IDirect3DResource9::SetPrivateData()"-method in order to set a debug name
-		}
-		if (nullptr != mDirect3DQuery9Flush)
-		{
-			// Perform the flush and wait
-			FAILED_DEBUG_BREAK(mDirect3DQuery9Flush->Issue(D3DISSUE_END))
-			while (mDirect3DQuery9Flush->GetData(nullptr, 0, D3DGETDATA_FLUSH) == S_FALSE)
-			{
-				// Spin-wait
-			}
-		}
 	}
 
 

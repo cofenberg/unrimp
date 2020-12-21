@@ -665,11 +665,6 @@ namespace NullRhi
 		[[nodiscard]] virtual bool beginScene() override;
 		virtual void submitCommandBuffer(const Rhi::CommandBuffer& commandBuffer) override;
 		virtual void endScene() override;
-		//[-------------------------------------------------------]
-		//[ Synchronization                                       ]
-		//[-------------------------------------------------------]
-		virtual void flush() override;
-		virtual void finish() override;
 
 
 	//[-------------------------------------------------------]
@@ -4484,16 +4479,6 @@ namespace NullRhi
 		// We need to forget about the currently set render target
 		setGraphicsRenderTarget(nullptr);
 	}
-
-
-	//[-------------------------------------------------------]
-	//[ Synchronization                                       ]
-	//[-------------------------------------------------------]
-	void NullRhi::flush()
-	{}
-
-	void NullRhi::finish()
-	{}
 
 
 	//[-------------------------------------------------------]

@@ -1940,11 +1940,6 @@ namespace OpenGLRhi
 		[[nodiscard]] virtual bool beginScene() override;
 		virtual void submitCommandBuffer(const Rhi::CommandBuffer& commandBuffer) override;
 		virtual void endScene() override;
-		//[-------------------------------------------------------]
-		//[ Synchronization                                       ]
-		//[-------------------------------------------------------]
-		virtual void flush() override;
-		virtual void finish() override;
 
 
 	//[-------------------------------------------------------]
@@ -21810,20 +21805,6 @@ namespace OpenGLRhi
 
 		// We need to forget about the currently set vertex array
 		unsetGraphicsVertexArray();
-	}
-
-
-	//[-------------------------------------------------------]
-	//[ Synchronization                                       ]
-	//[-------------------------------------------------------]
-	void OpenGLRhi::flush()
-	{
-		glFlush();
-	}
-
-	void OpenGLRhi::finish()
-	{
-		glFinish();
 	}
 
 

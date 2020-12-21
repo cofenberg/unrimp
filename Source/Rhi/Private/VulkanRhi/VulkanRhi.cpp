@@ -2163,11 +2163,6 @@ namespace VulkanRhi
 		[[nodiscard]] virtual bool beginScene() override;
 		virtual void submitCommandBuffer(const Rhi::CommandBuffer& commandBuffer) override;
 		virtual void endScene() override;
-		//[-------------------------------------------------------]
-		//[ Synchronization                                       ]
-		//[-------------------------------------------------------]
-		virtual void flush() override;
-		virtual void finish() override;
 
 
 	//[-------------------------------------------------------]
@@ -12875,20 +12870,6 @@ namespace VulkanRhi
 			// Error!
 			RHI_LOG(getContext(), CRITICAL, "Failed to end Vulkan command buffer instance")
 		}
-	}
-
-
-	//[-------------------------------------------------------]
-	//[ Synchronization                                       ]
-	//[-------------------------------------------------------]
-	void VulkanRhi::flush()
-	{
-		// TODO(co) Implement me
-	}
-
-	void VulkanRhi::finish()
-	{
-		// TODO(co) Implement me
 	}
 
 

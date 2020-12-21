@@ -2855,11 +2855,6 @@ namespace Direct3D11Rhi
 		[[nodiscard]] virtual bool beginScene() override;
 		virtual void submitCommandBuffer(const Rhi::CommandBuffer& commandBuffer) override;
 		virtual void endScene() override;
-		//[-------------------------------------------------------]
-		//[ Synchronization                                       ]
-		//[-------------------------------------------------------]
-		virtual void flush() override;
-		virtual void finish() override;
 
 		//[-------------------------------------------------------]
 		//[ Implementation specific                               ]
@@ -14746,48 +14741,6 @@ namespace Direct3D11Rhi
 
 		// We need to forget about the currently set render target
 		setGraphicsRenderTarget(nullptr);
-	}
-
-
-	//[-------------------------------------------------------]
-	//[ Synchronization                                       ]
-	//[-------------------------------------------------------]
-	void Direct3D11Rhi::flush()
-	{
-		mD3D11DeviceContext->Flush();
-	}
-
-	void Direct3D11Rhi::finish()
-	{
-		// Create the Direct3D 11 query instance used for flush right now?
-		if (nullptr == mD3D11QueryFlush)
-		{
-			D3D11_QUERY_DESC d3d11QueryDesc;
-			d3d11QueryDesc.Query	 = D3D11_QUERY_EVENT;
-			d3d11QueryDesc.MiscFlags = 0;
-			FAILED_DEBUG_BREAK(mD3D11Device->CreateQuery(&d3d11QueryDesc, &mD3D11QueryFlush))
-
-			#ifdef RHI_DEBUG
-				// Set the debug name
-				if (nullptr != mD3D11QueryFlush)
-				{
-					// No need to reset the previous private data, there shouldn't be any...
-					FAILED_DEBUG_BREAK(mD3D11QueryFlush->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(__FUNCTION__)), __FUNCTION__))
-				}
-			#endif
-		}
-		if (nullptr != mD3D11QueryFlush)
-		{
-			// Perform the flush and wait
-			mD3D11DeviceContext->End(mD3D11QueryFlush);
-			mD3D11DeviceContext->Flush();
-			BOOL result = FALSE;
-			do
-			{
-				// Spin-wait
-				FAILED_DEBUG_BREAK(mD3D11DeviceContext->GetData(mD3D11QueryFlush, &result, sizeof(BOOL), 0))
-			} while (!result);
-		}
 	}
 
 

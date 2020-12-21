@@ -1273,11 +1273,6 @@ namespace OpenGLES3Rhi
 		[[nodiscard]] virtual bool beginScene() override;
 		virtual void submitCommandBuffer(const Rhi::CommandBuffer& commandBuffer) override;
 		virtual void endScene() override;
-		//[-------------------------------------------------------]
-		//[ Synchronization                                       ]
-		//[-------------------------------------------------------]
-		virtual void flush() override;
-		virtual void finish() override;
 
 
 	//[-------------------------------------------------------]
@@ -10872,20 +10867,6 @@ namespace OpenGLES3Rhi
 
 		// We need to forget about the currently set vertex array
 		setGraphicsVertexArray(nullptr);
-	}
-
-
-	//[-------------------------------------------------------]
-	//[ Synchronization                                       ]
-	//[-------------------------------------------------------]
-	void OpenGLES3Rhi::flush()
-	{
-		glFlush();
-	}
-
-	void OpenGLES3Rhi::finish()
-	{
-		glFinish();
 	}
 
 

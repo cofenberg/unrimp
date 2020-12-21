@@ -4290,11 +4290,6 @@ namespace Direct3D12Rhi
 		[[nodiscard]] virtual bool beginScene() override;
 		virtual void submitCommandBuffer(const Rhi::CommandBuffer& commandBuffer) override;
 		virtual void endScene() override;
-		//[-------------------------------------------------------]
-		//[ Synchronization                                       ]
-		//[-------------------------------------------------------]
-		virtual void flush() override;
-		virtual void finish() override;
 
 
 	//[-------------------------------------------------------]
@@ -13875,20 +13870,6 @@ namespace Direct3D12Rhi
 			mComputeRootSignature->releaseReference();
 			mComputeRootSignature = nullptr;
 		}
-	}
-
-
-	//[-------------------------------------------------------]
-	//[ Synchronization                                       ]
-	//[-------------------------------------------------------]
-	void Direct3D12Rhi::flush()
-	{
-		// TODO(co) Implement me
-	}
-
-	void Direct3D12Rhi::finish()
-	{
-		// TODO(co) Implement me
 	}
 
 

@@ -2346,11 +2346,6 @@ namespace Direct3D10Rhi
 		[[nodiscard]] virtual bool beginScene() override;
 		virtual void submitCommandBuffer(const Rhi::CommandBuffer& commandBuffer) override;
 		virtual void endScene() override;
-		//[-------------------------------------------------------]
-		//[ Synchronization                                       ]
-		//[-------------------------------------------------------]
-		virtual void flush() override;
-		virtual void finish() override;
 
 
 	//[-------------------------------------------------------]
@@ -11333,48 +11328,6 @@ namespace Direct3D10Rhi
 
 		// We need to forget about the currently set render target
 		setGraphicsRenderTarget(nullptr);
-	}
-
-
-	//[-------------------------------------------------------]
-	//[ Synchronization                                       ]
-	//[-------------------------------------------------------]
-	void Direct3D10Rhi::flush()
-	{
-		mD3D10Device->Flush();
-	}
-
-	void Direct3D10Rhi::finish()
-	{
-		// Create the Direct3D 10 query instance used for flush right now?
-		if (nullptr == mD3D10QueryFlush)
-		{
-			D3D10_QUERY_DESC d3d10QueryDesc;
-			d3d10QueryDesc.Query	  = D3D10_QUERY_EVENT;
-			d3d10QueryDesc.MiscFlags = 0;
-			FAILED_DEBUG_BREAK(mD3D10Device->CreateQuery(&d3d10QueryDesc, &mD3D10QueryFlush))
-
-			#ifdef RHI_DEBUG
-				// Set the debug name
-				if (nullptr != mD3D10QueryFlush)
-				{
-					// No need to reset the previous private data, there shouldn't be any...
-					FAILED_DEBUG_BREAK(mD3D10QueryFlush->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(__FUNCTION__)), __FUNCTION__))
-				}
-			#endif
-		}
-		if (nullptr != mD3D10QueryFlush)
-		{
-			// Perform the flush and wait
-			mD3D10QueryFlush->End();
-			mD3D10Device->Flush();
-			BOOL result = FALSE;
-			do
-			{
-				// Spin-wait
-				FAILED_DEBUG_BREAK(mD3D10QueryFlush->GetData(&result, sizeof(BOOL), 0))
-			} while (!result);
-		}
 	}
 
 

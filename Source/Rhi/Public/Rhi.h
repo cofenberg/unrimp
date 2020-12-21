@@ -4679,21 +4679,6 @@ namespace Rhi
 		virtual void endScene() = 0;
 
 		//[-------------------------------------------------------]
-		//[ Synchronization                                       ]
-		//[-------------------------------------------------------]
-		/**
-		*  @brief
-		*    Force the execution of render commands in finite time (synchronization)
-		*/
-		virtual void flush() = 0;
-
-		/**
-		*  @brief
-		*    Force the execution of render commands in finite time and wait until it's done (synchronization)
-		*/
-		virtual void finish() = 0;
-
-		//[-------------------------------------------------------]
 		//[ RHI implementation specific                           ]
 		//[-------------------------------------------------------]
 		[[nodiscard]] virtual void* getD3D11DevicePointer() const
