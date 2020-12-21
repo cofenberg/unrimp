@@ -70,7 +70,7 @@ public:
 	*  @param[in] exampleName
 	*    Example name
 	*/
-	inline explicit MultipleSwapChains(ExampleRunner& exampleRunner, const char* rhiName, const std::string_view& exampleName) :
+	inline MultipleSwapChains(ExampleRunner& exampleRunner, const char* rhiName, const std::string_view& exampleName) :
 		IApplicationRhi(rhiName, mExampleBaseDummy),
 		mExampleBaseDummy(exampleRunner),
 		mExampleName(exampleName)

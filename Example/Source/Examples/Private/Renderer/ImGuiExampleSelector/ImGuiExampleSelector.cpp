@@ -53,27 +53,22 @@ void ImGuiExampleSelector::onInitialization()
 	#endif
 }
 
-void ImGuiExampleSelector::onDraw()
+void ImGuiExampleSelector::onDraw(Rhi::CommandBuffer& commandBuffer)
 {
-	// Get and check the RHI instance
-	Rhi::IRhiPtr rhi(getRhi());
-	if (nullptr != rhi)
+	// Clear the graphics color buffer of the current render target with gray, do also clear the depth buffer
+	Rhi::Command::ClearGraphics::create(mCommandBuffer, Rhi::ClearFlag::COLOR_DEPTH, Color4::GRAY);
+
+	// GUI
+	if (nullptr != getMainRenderTarget())
 	{
-		// Clear the graphics color buffer of the current render target with gray, do also clear the depth buffer
-		Rhi::Command::ClearGraphics::create(mCommandBuffer, Rhi::ClearFlag::COLOR_DEPTH, Color4::GRAY);
-
-		// GUI
-		if (nullptr != getMainRenderTarget())
-		{
-			Renderer::DebugGuiManager& debugGuiManager = getRendererSafe().getDebugGuiManager();
-			debugGuiManager.newFrame(*getMainRenderTarget());
-			createDebugGui();
-			debugGuiManager.fillGraphicsCommandBufferUsingFixedBuildInRhiConfiguration(mCommandBuffer);
-		}
-
-		// Submit command buffer to the RHI implementation
-		mCommandBuffer.submitToRhiAndClear(*rhi);
+		Renderer::DebugGuiManager& debugGuiManager = getRendererSafe().getDebugGuiManager();
+		debugGuiManager.newFrame(*getMainRenderTarget());
+		createDebugGui();
+		debugGuiManager.fillGraphicsCommandBufferUsingFixedBuildInRhiConfiguration(mCommandBuffer);
 	}
+
+	// Submit command buffer to the given command buffer
+	mCommandBuffer.submitToCommandBufferAndClear(commandBuffer);
 }
 
 

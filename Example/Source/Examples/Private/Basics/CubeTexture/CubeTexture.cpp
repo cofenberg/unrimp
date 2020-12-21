@@ -324,7 +324,7 @@ void CubeTexture::onDeinitialization()
 	}
 #endif
 
-void CubeTexture::onDraw()
+void CubeTexture::onDraw(Rhi::CommandBuffer& commandBuffer)
 {
 	// Get and check the RHI instance
 	Rhi::IRhiPtr rhi(getRhi());
@@ -382,8 +382,8 @@ void CubeTexture::onDraw()
 			}
 		}
 
-		// Submit command buffer to the RHI implementation
-		mCommandBuffer.submitToRhi(*rhi);
+		// Submit command buffer to the given command buffer
+		mCommandBuffer.submitToCommandBuffer(commandBuffer);
 	}
 }
 

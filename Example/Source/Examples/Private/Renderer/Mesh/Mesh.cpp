@@ -238,7 +238,7 @@ void Mesh::onUpdate()
 	mStopwatch.start();
 }
 
-void Mesh::onDraw()
+void Mesh::onDraw(Rhi::CommandBuffer& commandBuffer)
 {
 	// Get and check the RHI instance
 	Rhi::IRhiPtr rhi(getRhi());
@@ -303,10 +303,10 @@ void Mesh::onDraw()
 			}
 		}
 
-		// Submit command buffer to the RHI implementation, in case the referenced assets have already been loaded and the command buffer has been filled as a consequence
+		// Submit command buffer to the given command buffer, in case the referenced assets have already been loaded and the command buffer has been filled as a consequence
 		if (!mCommandBuffer.isEmpty())
 		{
-			mCommandBuffer.submitToRhi(*rhi);
+			mCommandBuffer.submitToCommandBuffer(commandBuffer);
 		}
 	}
 }

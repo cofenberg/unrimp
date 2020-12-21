@@ -215,56 +215,51 @@ void InstancedCubes::onUpdate()
 	}
 }
 
-void InstancedCubes::onDraw()
+void InstancedCubes::onDraw(Rhi::CommandBuffer& commandBuffer)
 {
-	// Get and check the RHI instance
-	Rhi::IRhiPtr rhi(getRhi());
-	if (nullptr != rhi)
+	// Clear the graphics color buffer of the current render target with gray, do also clear the depth buffer
+	Rhi::Command::ClearGraphics::create(mCommandBuffer, Rhi::ClearFlag::COLOR_DEPTH, Color4::GRAY);
+
+	// Draw the cubes
+	if (nullptr != mCubeRenderer)
 	{
-		// Clear the graphics color buffer of the current render target with gray, do also clear the depth buffer
-		Rhi::Command::ClearGraphics::create(mCommandBuffer, Rhi::ClearFlag::COLOR_DEPTH, Color4::GRAY);
-
-		// Draw the cubes
-		if (nullptr != mCubeRenderer)
-		{
-			mCubeRenderer->fillCommandBuffer(mGlobalTimer, mGlobalScale, sin(mGlobalTimer * 0.001f) * SCENE_RADIUS, sin(mGlobalTimer * 0.0005f) * SCENE_RADIUS, cos(mGlobalTimer * 0.0008f) * SCENE_RADIUS, mCommandBuffer);
-		}
-
-		// Display statistics
-		#ifdef RENDERER_IMGUI
-			if (mDisplayStatistics && nullptr != getMainRenderTarget() && nullptr != getRenderer())
-			{
-				Renderer::DebugGuiManager& debugGuiManager = getRendererSafe().getDebugGuiManager();
-				debugGuiManager.newFrame(*getMainRenderTarget());
-
-				// Is there a cube renderer instance?
-				if (nullptr != mCubeRenderer)
-				{
-					char text[128];
-
-					// Number of cubes
-					snprintf(text, GLM_COUNTOF(text), "Number of cubes: %u", mNumberOfCubeInstances);
-					Renderer::DebugGuiHelper::drawText(text, 10.0f, 10.0f);
-
-					// Frames per second
-					snprintf(text, GLM_COUNTOF(text), "Frames per second: %.2f", mFramesPerSecond);
-					Renderer::DebugGuiHelper::drawText(text, 10.0f, 40.0f);
-
-					// Cubes per second
-					// -> In every frame we draw n-cubes...
-					// -> TODO(co) This number can get huge... had over 1 million cubes with >25 FPS... million cubes at ~2.4 FPS...
-					snprintf(text, GLM_COUNTOF(text), "Cubes per second: %u", static_cast<uint32_t>(mFramesPerSecond) * mNumberOfCubeInstances);
-					Renderer::DebugGuiHelper::drawText(text, 10.0f, 70.0f);
-				}
-				else
-				{
-					Renderer::DebugGuiHelper::drawText("No cube renderer instance", 10.0f, 10.0f);
-				}
-				debugGuiManager.fillGraphicsCommandBufferUsingFixedBuildInRhiConfiguration(mCommandBuffer);
-			}
-		#endif
-
-		// Submit command buffer to the RHI implementation
-		mCommandBuffer.submitToRhiAndClear(*rhi);
+		mCubeRenderer->fillCommandBuffer(mGlobalTimer, mGlobalScale, sin(mGlobalTimer * 0.001f) * SCENE_RADIUS, sin(mGlobalTimer * 0.0005f) * SCENE_RADIUS, cos(mGlobalTimer * 0.0008f) * SCENE_RADIUS, mCommandBuffer);
 	}
+
+	// Display statistics
+	#ifdef RENDERER_IMGUI
+		if (mDisplayStatistics && nullptr != getMainRenderTarget() && nullptr != getRenderer())
+		{
+			Renderer::DebugGuiManager& debugGuiManager = getRendererSafe().getDebugGuiManager();
+			debugGuiManager.newFrame(*getMainRenderTarget());
+
+			// Is there a cube renderer instance?
+			if (nullptr != mCubeRenderer)
+			{
+				char text[128];
+
+				// Number of cubes
+				snprintf(text, GLM_COUNTOF(text), "Number of cubes: %u", mNumberOfCubeInstances);
+				Renderer::DebugGuiHelper::drawText(text, 10.0f, 10.0f);
+
+				// Frames per second
+				snprintf(text, GLM_COUNTOF(text), "Frames per second: %.2f", mFramesPerSecond);
+				Renderer::DebugGuiHelper::drawText(text, 10.0f, 40.0f);
+
+				// Cubes per second
+				// -> In every frame we draw n-cubes...
+				// -> TODO(co) This number can get huge... had over 1 million cubes with >25 FPS... million cubes at ~2.4 FPS...
+				snprintf(text, GLM_COUNTOF(text), "Cubes per second: %u", static_cast<uint32_t>(mFramesPerSecond) * mNumberOfCubeInstances);
+				Renderer::DebugGuiHelper::drawText(text, 10.0f, 70.0f);
+			}
+			else
+			{
+				Renderer::DebugGuiHelper::drawText("No cube renderer instance", 10.0f, 10.0f);
+			}
+			debugGuiManager.fillGraphicsCommandBufferUsingFixedBuildInRhiConfiguration(mCommandBuffer);
+		}
+	#endif
+
+	// Submit command buffer to the given command buffer
+	mCommandBuffer.submitToCommandBufferAndClear(commandBuffer);
 }

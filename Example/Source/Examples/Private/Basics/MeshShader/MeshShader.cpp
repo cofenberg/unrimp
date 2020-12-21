@@ -104,15 +104,10 @@ void MeshShader::onDeinitialization()
 	mBufferManager = nullptr;
 }
 
-void MeshShader::onDraw()
+void MeshShader::onDraw(Rhi::CommandBuffer& commandBuffer)
 {
-	// Get and check the RHI instance
-	Rhi::IRhiPtr rhi(getRhi());
-	if (nullptr != rhi)
-	{
-		// Submit command buffer to the RHI implementation
-		mCommandBuffer.submitToRhi(*rhi);
-	}
+	// Submit command buffer to the given command buffer
+	mCommandBuffer.submitToCommandBuffer(commandBuffer);
 }
 
 

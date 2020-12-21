@@ -105,7 +105,7 @@ public:
 	virtual void onInitialization() override;
 	virtual void onDeinitialization() override;
 	virtual void onUpdate() override;
-	virtual void onDraw() override;
+	virtual void onDraw(Rhi::CommandBuffer& commandBuffer) override;
 
 	[[nodiscard]] inline virtual bool doesCompleteOwnDrawing() const override
 	{

@@ -76,7 +76,7 @@ void Compositor::onDeinitialization()
 	getRendererSafe().getCompositorNodeResourceManager().setCompositorPassFactory(nullptr);
 }
 
-void Compositor::onDraw()
+void Compositor::onDraw(Rhi::CommandBuffer&)
 {
 	// Is there a compositor workspace instance?
 	if (nullptr != mCompositorWorkspaceInstance)

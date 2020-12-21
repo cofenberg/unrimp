@@ -31,6 +31,15 @@
 
 
 //[-------------------------------------------------------]
+//[ Forward declarations                                  ]
+//[-------------------------------------------------------]
+namespace Rhi
+{
+	class CommandBuffer;
+}
+
+
+//[-------------------------------------------------------]
 //[ Classes                                               ]
 //[-------------------------------------------------------]
 /**
@@ -228,7 +237,7 @@ public:
 	*  @note
 	*    - The base implementation is empty
 	*/
-	inline virtual void onDraw()
+	inline virtual void onDraw([[maybe_unused]] Rhi::CommandBuffer& commandBuffer)
 	{
 		// Nothing here
 	}

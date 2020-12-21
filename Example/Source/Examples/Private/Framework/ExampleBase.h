@@ -43,6 +43,7 @@ namespace Rhi
 {
 	class ILog;
 	class IRhi;
+	class CommandBuffer;
 	class IRenderTarget;
 }
 namespace Renderer
@@ -140,9 +141,9 @@ public:
 	*  @brief
 	*    Let the example draw one frame
 	*/
-	inline void draw()
+	inline void draw(Rhi::CommandBuffer& commandBuffer)
 	{
-		onDraw();
+		onDraw(commandBuffer);
 	}
 
 	/**
@@ -245,7 +246,7 @@ public:
 		// Base does nothing
 	}
 
-	inline virtual void onDraw()
+	inline virtual void onDraw([[maybe_unused]] Rhi::CommandBuffer& commandBuffer)
 	{
 		// Base does nothing
 	}

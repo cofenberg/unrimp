@@ -93,7 +93,7 @@ public:
 	#ifdef RENDERER
 		virtual void onUpdate() override;
 	#endif
-	virtual void onDraw() override;
+	virtual void onDraw(Rhi::CommandBuffer& commandBuffer) override;
 
 
 //[-------------------------------------------------------]

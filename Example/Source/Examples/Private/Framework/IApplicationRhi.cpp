@@ -156,7 +156,7 @@ void IApplicationRhi::onDrawRequest()
 	if (mExampleBase.doesCompleteOwnDrawing())
 	{
 		// The example does the drawing completely on its own
-		mExampleBase.draw();
+		mExampleBase.draw(mCommandBuffer);
 	}
 
 	// Is there a RHI and main swap chain instance?
@@ -182,11 +182,8 @@ void IApplicationRhi::onDrawRequest()
 					Rhi::Command::SetGraphicsViewportAndScissorRectangle::create(mCommandBuffer, 0, 0, width, height);
 				}
 
-				// Submit command buffer to the RHI implementation
-				mCommandBuffer.submitToRhiAndClear(*mRhi);
-
 				// Call the draw method
-				mExampleBase.draw();
+				mExampleBase.draw(mCommandBuffer);
 			}
 
 			// Submit command buffer to the RHI implementation

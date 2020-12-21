@@ -59,10 +59,10 @@ void Queries::onDeinitialization()
 	Triangle::onDeinitialization();
 }
 
-void Queries::onDraw()
+void Queries::onDraw(Rhi::CommandBuffer& commandBuffer)
 {
 	// Call the base implementation
-	Triangle::onDraw();
+	Triangle::onDraw(commandBuffer);
 
 	// Get query results
 	Rhi::IRhiPtr rhi(getRhi());

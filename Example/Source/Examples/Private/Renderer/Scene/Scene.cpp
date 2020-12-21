@@ -406,7 +406,7 @@ void Scene::onUpdate()
 	#endif
 }
 
-void Scene::onDraw()
+void Scene::onDraw(Rhi::CommandBuffer&)
 {
 	Rhi::IRenderTarget* mainRenderTarget = getMainRenderTarget();
 	if (nullptr != mainRenderTarget && nullptr != mCompositorWorkspaceInstance)
