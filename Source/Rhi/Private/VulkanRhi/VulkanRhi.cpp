@@ -973,7 +973,7 @@ namespace
 
 				{ // Reject physical Vulkan devices basing on swap chain support
 					// Check device extensions
-					static constexpr std::array<const char*, 3> deviceExtensions =
+					static constexpr std::array<const char*, 2> deviceExtensions =
 					{
 						VK_KHR_SWAPCHAIN_EXTENSION_NAME,
 						VK_KHR_MAINTENANCE1_EXTENSION_NAME	// We want to be able to specify a negative viewport height, this way we don't have to apply "<output position>.y = -<output position>.y" inside vertex shaders to compensate for the Vulkan coordinate system
@@ -1061,7 +1061,7 @@ namespace
 		[[nodiscard]] VkResult createVkDevice(const Rhi::Context& context, const VkAllocationCallbacks* vkAllocationCallbacks, VkPhysicalDevice vkPhysicalDevice, const VkDeviceQueueCreateInfo& vkDeviceQueueCreateInfo, bool enableValidation, bool enableDebugMarker, VkDevice& vkDevice)
 		{
 			// See http://vulkan.gpuinfo.org/listfeatures.php to check out GPU hardware capabilities
-			static constexpr std::array<const char*, 4> enabledExtensions =
+			static constexpr std::array<const char*, 3> enabledExtensions =
 			{
 				VK_KHR_SWAPCHAIN_EXTENSION_NAME,
 				VK_KHR_MAINTENANCE1_EXTENSION_NAME,		// We want to be able to specify a negative viewport height, this way we don't have to apply "<output position>.y = -<output position>.y" inside vertex shaders to compensate for the Vulkan coordinate system
@@ -1071,8 +1071,8 @@ namespace
 
 			// This will only be used if meshShadingSupported=true (see below)
 			VkPhysicalDeviceMeshShaderFeaturesNV vkPhysicalDeviceMeshShaderFeaturesNV = { VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MESH_SHADER_FEATURES_NV };
-			vkPhysicalDeviceMeshShaderFeaturesNV.taskShader = true;
-			vkPhysicalDeviceMeshShaderFeaturesNV.meshShader = true;
+			vkPhysicalDeviceMeshShaderFeaturesNV.taskShader = false;	// TODO(co) Mesh shader support must be optional
+			vkPhysicalDeviceMeshShaderFeaturesNV.meshShader = false;	// TODO(co) Mesh shader support must be optional
 			static constexpr VkPhysicalDeviceFeatures vkPhysicalDeviceFeatures =
 			{
 				VK_FALSE,	// robustBufferAccess (VkBool32)
@@ -2502,7 +2502,7 @@ namespace VulkanRhi
 			IMPORT_FUNC(vkAcquireNextImageKHR)
 			IMPORT_FUNC(vkQueuePresentKHR)
 			// "VK_NV_mesh_shader"-extension
-			IMPORT_FUNC(vkCmdDrawMeshTasksNV)
+			//IMPORT_FUNC(vkCmdDrawMeshTasksNV)	// TODO(co) Mesh shader support must be optional
 
 			// Undefine the helper macro
 			#undef IMPORT_FUNC
