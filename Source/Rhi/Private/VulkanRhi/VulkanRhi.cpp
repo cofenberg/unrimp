@@ -4115,7 +4115,7 @@ namespace VulkanRhi
 
 			// Get Vulkan format
 			const VkFormat vkFormat   = Mapping::getVulkanFormat(textureFormat);
-			const bool     layered    = (VK_IMAGE_VIEW_TYPE_2D_ARRAY == vkImageViewType || VK_IMAGE_VIEW_TYPE_CUBE == vkImageViewType || VK_IMAGE_VIEW_TYPE_CUBE_ARRAY == vkImageViewType);
+			const bool     layered    = (VK_IMAGE_VIEW_TYPE_1D_ARRAY == vkImageViewType || VK_IMAGE_VIEW_TYPE_2D_ARRAY == vkImageViewType || VK_IMAGE_VIEW_TYPE_CUBE == vkImageViewType || VK_IMAGE_VIEW_TYPE_CUBE_ARRAY == vkImageViewType);
 			const uint32_t layerCount = layered ? vkExtent3D.depth : 1;
 			const uint32_t depth	  = layered ? 1 : vkExtent3D.depth;
 			const VkSampleCountFlagBits vkSampleCountFlagBits = Mapping::getVulkanSampleCountFlagBits(vulkanRhi.getContext(), numberOfMultisamples);
