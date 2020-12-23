@@ -4643,7 +4643,7 @@ namespace Rhi
 		*  @return
 		*    "true" if all went fine, else "false"
 		*/
-		[[nodiscard]] virtual bool getQueryPoolResults(IQueryPool& queryPool, uint32_t numberOfDataBytes, uint8_t* data, uint32_t firstQueryIndex = 0, uint32_t numberOfQueries = 1, uint32_t strideInBytes = 0, uint32_t queryResultFlags = QueryResultFlags::WAIT) = 0;
+		[[nodiscard]] virtual bool getQueryPoolResults(IQueryPool& queryPool, uint32_t numberOfDataBytes, uint8_t* data, uint32_t firstQueryIndex = 0, uint32_t numberOfQueries = 1, uint32_t strideInBytes = 0, uint32_t queryResultFlags = 0) = 0;
 
 		//[-------------------------------------------------------]
 		//[ Operations                                            ]

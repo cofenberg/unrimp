@@ -310,9 +310,9 @@ namespace Renderer
 			#ifdef RHI_STATISTICS
 				if (nullptr != mPipelineStatisticsQueryPoolPtr)
 				{
-					// We explicitly wait ("Rhi::QueryResultFlags::WAIT" default value) if the previous result isn't available yet to avoid
+					// We explicitly wait if the previous result isn't available yet to avoid
 					// "D3D11 WARNING: ID3D10Query::Begin: Begin is being invoked on a Query, where the previous results have not been obtained with GetData. This is valid; but unusual. The previous results are being abandoned, and new Query results will be generated. [ EXECUTION WARNING #408: QUERY_BEGIN_ABANDONING_PREVIOUS_RESULTS]"
-					if (isValid(mPreviousCurrentPipelineStatisticsQueryIndex) && !rhi.getQueryPoolResults(*mPipelineStatisticsQueryPoolPtr, sizeof(Rhi::PipelineStatisticsQueryResult), reinterpret_cast<uint8_t*>(&mPipelineStatisticsQueryResult), mPreviousCurrentPipelineStatisticsQueryIndex))
+					if (isValid(mPreviousCurrentPipelineStatisticsQueryIndex) && !rhi.getQueryPoolResults(*mPipelineStatisticsQueryPoolPtr, sizeof(Rhi::PipelineStatisticsQueryResult), reinterpret_cast<uint8_t*>(&mPipelineStatisticsQueryResult), mPreviousCurrentPipelineStatisticsQueryIndex, 1, 0, Rhi::QueryResultFlags::WAIT))
 					{
 						mPipelineStatisticsQueryResult = {};
 					}
