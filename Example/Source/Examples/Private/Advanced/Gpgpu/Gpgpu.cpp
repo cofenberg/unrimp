@@ -79,15 +79,8 @@ int Gpgpu::run()
 		// Call initialization method
 		onInitialization();
 
-		// Begin scene rendering
-		if (mRhi->beginScene())
-		{
-			// Let the application to its job
-			onDoJob();
-
-			// End scene rendering
-			mRhi->endScene();
-		}
+		// Let the application to its job
+		onDoJob();
 
 		// Call de-initialization method
 		onDeinitialization();
@@ -265,7 +258,7 @@ void Gpgpu::onInitialization()
 		}
 	}
 
-	// Since we're always submitting the same commands to the RHI, we can fill the command buffer once during initialization and then reuse it multiple times during runtime
+	// Since we're always dispatching the same commands to the RHI, we can fill the command buffer once during initialization and then reuse it multiple times during runtime
 	fillCommandBufferContentGeneration();
 	fillCommandBufferContentProcessing();
 }
@@ -378,11 +371,11 @@ void Gpgpu::onDoJob()
 {
 	// Generate the content of the 2D texture to process later on
 	// -> After this step, "mTexture2D[0]" holds the content we want to process later on
-	mCommandBufferContentGeneration.submitToRhi(*mRhi);
+	mCommandBufferContentGeneration.dispatchToRhi(*mRhi);
 
 	// Content processing
 	// -> After this step, "mTexture2D[1]" holds the processed content
-	mCommandBufferContentProcessing.submitToRhi(*mRhi);
+	mCommandBufferContentProcessing.dispatchToRhi(*mRhi);
 
 	// TODO(co) "Rhi::IRhi::map()"/"Rhi::IRhi::unmap()" are currently under construction
 	// Map the texture holding the processed content

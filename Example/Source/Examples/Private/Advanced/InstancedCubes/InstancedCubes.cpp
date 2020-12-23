@@ -261,6 +261,6 @@ void InstancedCubes::onDraw(Rhi::CommandBuffer& commandBuffer)
 		}
 	#endif
 
-	// Submit command buffer to the given command buffer
-	mCommandBuffer.submitToCommandBufferAndClear(commandBuffer);
+	// Append command buffer to the given command buffer
+	mCommandBuffer.appendToCommandBufferAndClear(commandBuffer);
 }

@@ -48,7 +48,7 @@ void IndirectBuffer::onInitialization()
 			mIndirectBuffer = mBufferManager->createIndirectBuffer(sizeof(Rhi::DrawArguments), &drawArguments, Rhi::IndirectBufferFlag::DRAW_ARGUMENTS);
 		}
 
-		// Since we're always submitting the same commands to the RHI, we can fill the command buffer once during initialization and then reuse it multiple times during runtime
+		// Since we're always dispatching the same commands to the RHI, we can fill the command buffer once during initialization and then reuse it multiple times during runtime
 		mCommandBuffer.clear();	// Throw away "Triangle"-stuff
 		fillCommandBuffer();
 	}

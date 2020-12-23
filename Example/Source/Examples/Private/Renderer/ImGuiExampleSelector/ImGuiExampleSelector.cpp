@@ -67,8 +67,8 @@ void ImGuiExampleSelector::onDraw(Rhi::CommandBuffer& commandBuffer)
 		debugGuiManager.fillGraphicsCommandBufferUsingFixedBuildInRhiConfiguration(mCommandBuffer);
 	}
 
-	// Submit command buffer to the given command buffer
-	mCommandBuffer.submitToCommandBufferAndClear(commandBuffer);
+	// Append command buffer to the given command buffer
+	mCommandBuffer.appendToCommandBufferAndClear(commandBuffer);
 }
 
 

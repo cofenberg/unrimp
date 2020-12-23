@@ -163,19 +163,19 @@ namespace Renderer
 		}
 	}
 
-	void MaterialBlueprintResourceManager::onPreCommandBufferExecution()
+	void MaterialBlueprintResourceManager::onPreCommandBufferDispatch()
 	{
 		if (nullptr != mUniformInstanceBufferManager)
 		{
-			mUniformInstanceBufferManager->onPreCommandBufferExecution();
+			mUniformInstanceBufferManager->onPreCommandBufferDispatch();
 		}
 		if (nullptr != mTextureInstanceBufferManager)
 		{
-			mTextureInstanceBufferManager->onPreCommandBufferExecution();
+			mTextureInstanceBufferManager->onPreCommandBufferDispatch();
 		}
 		if (nullptr != mIndirectBufferManager)
 		{
-			mIndirectBufferManager->onPreCommandBufferExecution();
+			mIndirectBufferManager->onPreCommandBufferDispatch();
 		}
 	}
 

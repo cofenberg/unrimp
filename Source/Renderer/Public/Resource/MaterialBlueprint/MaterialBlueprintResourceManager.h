@@ -157,9 +157,9 @@ namespace Renderer
 
 		/**
 		*  @brief
-		*    Called pre command buffer execution
+		*    Called pre command buffer dispatch
 		*/
-		void onPreCommandBufferExecution();
+		void onPreCommandBufferDispatch();
 
 		//[-------------------------------------------------------]
 		//[ Default texture filtering                             ]

@@ -121,9 +121,9 @@ namespace Renderer
 
 		/**
 		*  @brief
-		*    Called post command buffer execution
+		*    Called post command buffer dispatch
 		*/
-		void onPostCommandBufferExecution() const;
+		void onPostCommandBufferDispatch() const;
 
 
 	//[-------------------------------------------------------]

@@ -114,12 +114,12 @@ namespace Renderer
 
 		/**
 		*  @brief
-		*    Called post command buffer execution
+		*    Called post command buffer dispatch
 		*
 		*  @note
 		*    - The default implementation is empty
 		*/
-		inline virtual void onPostCommandBufferExecution()
+		inline virtual void onPostCommandBufferDispatch()
 		{
 			// Nothing here
 		}

@@ -4646,37 +4646,16 @@ namespace Rhi
 		[[nodiscard]] virtual bool getQueryPoolResults(IQueryPool& queryPool, uint32_t numberOfDataBytes, uint8_t* data, uint32_t firstQueryIndex = 0, uint32_t numberOfQueries = 1, uint32_t strideInBytes = 0, uint32_t queryResultFlags = 0) = 0;
 
 		//[-------------------------------------------------------]
-		//[ Operations                                            ]
+		//[ Operation                                             ]
 		//[-------------------------------------------------------]
 		/**
 		*  @brief
-		*    Begin scene rendering
-		*
-		*  @return
-		*    "true" if all went fine, else "false" (In this case: Don't dare to render something)
-		*
-		*  @note
-		*    - In order to be RHI implementation independent, call this method when starting to render something
-		*/
-		[[nodiscard]] virtual bool beginScene() = 0;
-
-		/**
-		*  @brief
-		*    Submit command buffer to RHI
+		*    Dispatch command buffer to RHI
 		*
 		*  @param[in] commandBuffer
-		*    Command buffer to submit
+		*    Command buffer to dispatch
 		*/
-		virtual void submitCommandBuffer(const CommandBuffer& commandBuffer) = 0;
-
-		/**
-		*  @brief
-		*    End scene rendering
-		*
-		*  @note
-		*    - In order to be RHI implementation independent, call this method when you're done with rendering
-		*/
-		virtual void endScene() = 0;
+		virtual void dispatchCommandBuffer(const CommandBuffer& commandBuffer) = 0;
 
 		//[-------------------------------------------------------]
 		//[ RHI implementation specific                           ]
@@ -8861,7 +8840,7 @@ namespace Rhi
 	enum class CommandDispatchFunctionIndex : uint8_t
 	{
 		// Command buffer
-		EXECUTE_COMMAND_BUFFER = 0,
+		DISPATCH_COMMAND_BUFFER = 0,
 		// Graphics
 		SET_GRAPHICS_ROOT_SIGNATURE,
 		SET_GRAPHICS_PIPELINE_STATE,
@@ -9007,8 +8986,8 @@ namespace Rhi
 	*
 	*  @note
 	*    - The commands are stored as a flat contiguous array to be cache friendly
-	*    - Each command can have an additional auxiliary buffer, e.g. to store uniform buffer data to submit to the RHI
-	*    - It's valid to record a command buffer only once, and submit it multiple times to the RHI
+	*    - Each command can have an additional auxiliary buffer, e.g. to store uniform buffer data to dispatch to the RHI
+	*    - It's valid to record a command buffer only once, and dispatch it multiple times to the RHI
 	*/
 	class CommandBuffer final
 	{
@@ -9100,7 +9079,7 @@ namespace Rhi
 		*    Add command
 		*
 		*  @param[in] numberOfAuxiliaryBytes
-		*    Optional number of auxiliary bytes, e.g. to store uniform buffer data to submit to the RHI
+		*    Optional number of auxiliary bytes, e.g. to store uniform buffer data to dispatch to the RHI
 		*
 		*  @return
 		*    Pointer to the added command, only null pointer in case of apocalypse, don't destroy the memory
@@ -9156,41 +9135,44 @@ namespace Rhi
 
 		/**
 		*  @brief
-		*    Submit the command buffer to the RHI without flushing; use this for recording command buffers once and submit them multiple times
+		*    Dispatch the command buffer to the RHI without flushing; use this for recording command buffers once and dispatch them multiple times
 		*
 		*  @param[in] rhi
-		*    RHI to submit the command buffer to
+		*    RHI to dispatch the command buffer to
 		*/
-		inline void submitToRhi(IRhi& rhi) const
+		inline void dispatchToRhi(IRhi& rhi) const
 		{
-			rhi.submitCommandBuffer(*this);
+			rhi.dispatchCommandBuffer(*this);
 		}
 
 		/**
 		*  @brief
-		*    Submit the command buffer to the RHI and clear so the command buffer is empty again
+		*    Dispatch the command buffer to the RHI and clear so the command buffer is empty again
 		*
 		*  @param[in] rhi
-		*    RHI to submit the command buffer to
+		*    RHI to dispatch the command buffer to
 		*/
-		inline void submitToRhiAndClear(IRhi& rhi)
+		inline void dispatchToRhiAndClear(IRhi& rhi)
 		{
-			rhi.submitCommandBuffer(*this);
+			rhi.dispatchCommandBuffer(*this);
 			clear();
 		}
 
 		/**
 		*  @brief
-		*    Submit the command buffer to another command buffer without flushing; use this for recording command buffers once and submit them multiple times
+		*    Append the command buffer to another command buffer without flushing; use this for recording command buffers once and append them multiple times
 		*
 		*  @param[in] commandBuffer
-		*    Command buffer to submit the command buffer to
+		*    Command buffer to append the command buffer to
+		*
+		*  @note
+		*    - Use "Rhi::Command::DispatchCommandBuffer" to dispatch a command buffer inside another command buffer instead of appending it
 		*/
-		inline void submitToCommandBuffer(CommandBuffer& commandBuffer) const
+		inline void appendToCommandBuffer(CommandBuffer& commandBuffer) const
 		{
 			// Sanity checks
-			ASSERT(this != &commandBuffer, "Can't submit a command buffer to itself")
-			ASSERT(!isEmpty(), "Can't submit empty command buffers")
+			ASSERT(this != &commandBuffer, "Can't append a command buffer to itself")
+			ASSERT(!isEmpty(), "Can't append empty command buffers")
 
 			// How many command package buffer bytes are consumed by the command to add?
 			const uint32_t numberOfCommandBytes = mCurrentCommandPacketByteIndex;
@@ -9248,14 +9230,14 @@ namespace Rhi
 
 		/**
 		*  @brief
-		*    Submit the command buffer to another command buffer and clear so the command buffer is empty again
+		*    Append the command buffer to another command buffer and clear so the command buffer is empty again
 		*
 		*  @param[in] commandBuffer
-		*    Command buffer to submit the command buffer to
+		*    Command buffer to append the command buffer to
 		*/
-		inline void submitToCommandBufferAndClear(CommandBuffer& commandBuffer)
+		inline void appendToCommandBufferAndClear(CommandBuffer& commandBuffer)
 		{
-			submitToCommandBuffer(commandBuffer);
+			appendToCommandBuffer(commandBuffer);
 			clear();
 		}
 
@@ -9284,22 +9266,29 @@ namespace Rhi
 		//[-------------------------------------------------------]
 		//[ Command buffer                                        ]
 		//[-------------------------------------------------------]
-		struct ExecuteCommandBuffer final
+		/**
+		*  @brief
+		*    Dispatch command buffer
+		*
+		*  @note
+		*    - Use "Rhi::CommandBuffer::appendToCommandBuffer()" to append a command buffer to another command buffer instead of dispatching it
+		*/
+		struct DispatchCommandBuffer final
 		{
 			// Static methods
-			static inline void create(CommandBuffer& commandBuffer, CommandBuffer* commandBufferToExecute)
+			static inline void create(CommandBuffer& commandBuffer, CommandBuffer* commandBufferToDispatch)
 			{
-				ASSERT(nullptr != commandBufferToExecute, "Invalid command buffer to execute")
-				*commandBuffer.addCommand<ExecuteCommandBuffer>() = ExecuteCommandBuffer(commandBufferToExecute);
+				ASSERT(nullptr != commandBufferToDispatch, "Invalid command buffer to dispatch")
+				*commandBuffer.addCommand<DispatchCommandBuffer>() = DispatchCommandBuffer(commandBufferToDispatch);
 			}
 			// Constructor
-			inline explicit ExecuteCommandBuffer(CommandBuffer* _commandBufferToExecute) :
-				commandBufferToExecute(_commandBufferToExecute)
+			inline explicit DispatchCommandBuffer(CommandBuffer* _commandBufferToDispatch) :
+				commandBufferToDispatch(_commandBufferToDispatch)
 			{}
 			// Data
-			CommandBuffer* commandBufferToExecute;
+			CommandBuffer* commandBufferToDispatch;
 			// Static data
-			static constexpr CommandDispatchFunctionIndex COMMAND_DISPATCH_FUNCTION_INDEX = CommandDispatchFunctionIndex::EXECUTE_COMMAND_BUFFER;
+			static constexpr CommandDispatchFunctionIndex COMMAND_DISPATCH_FUNCTION_INDEX = CommandDispatchFunctionIndex::DISPATCH_COMMAND_BUFFER;
 		};
 
 		//[-------------------------------------------------------]

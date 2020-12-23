@@ -407,7 +407,7 @@ namespace Renderer
 					static constexpr const char* commandFunction[static_cast<uint32_t>(Rhi::CommandDispatchFunctionIndex::NUMBER_OF_FUNCTIONS)] =
 					{
 						// Command buffer
-						"ExecuteCommandBuffer",
+						"DispatchCommandBuffer",
 						// Graphics
 						"SetGraphicsRootSignature",
 						"SetGraphicsPipelineState",

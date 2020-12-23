@@ -4196,6 +4196,8 @@ namespace Direct3D12Rhi
 			return *mSamplerDescriptorHeap;
 		}
 
+		void dispatchCommandBufferInternal(const Rhi::CommandBuffer& commandBuffer);
+
 		//[-------------------------------------------------------]
 		//[ Graphics                                              ]
 		//[-------------------------------------------------------]
@@ -4285,11 +4287,9 @@ namespace Direct3D12Rhi
 		virtual void unmap(Rhi::IResource& resource, uint32_t subresource) override;
 		[[nodiscard]] virtual bool getQueryPoolResults(Rhi::IQueryPool& queryPool, uint32_t numberOfDataBytes, uint8_t* data, uint32_t firstQueryIndex = 0, uint32_t numberOfQueries = 1, uint32_t strideInBytes = 0, uint32_t queryResultFlags = 0) override;
 		//[-------------------------------------------------------]
-		//[ Operations                                            ]
+		//[ Operation                                             ]
 		//[-------------------------------------------------------]
-		[[nodiscard]] virtual bool beginScene() override;
-		virtual void submitCommandBuffer(const Rhi::CommandBuffer& commandBuffer) override;
-		virtual void endScene() override;
+		virtual void dispatchCommandBuffer(const Rhi::CommandBuffer& commandBuffer) override;
 
 
 	//[-------------------------------------------------------]
@@ -4354,9 +4354,6 @@ namespace Direct3D12Rhi
 		RootSignature*			 mGraphicsRootSignature;	///< Currently set graphics root signature (we keep a reference to it), can be a null pointer
 		RootSignature*			 mComputeRootSignature;		///< Currently set compute root signature (we keep a reference to it), can be a null pointer
 		VertexArray*			 mVertexArray;				///< Currently set vertex array (we keep a reference to it), can be a null pointer
-		#ifdef RHI_DEBUG
-			bool mDebugBetweenBeginEndScene;	///< Just here for state tracking in debug builds
-		#endif
 
 
 	};
@@ -8203,7 +8200,7 @@ namespace Direct3D12Rhi
 
 			{ // Create the Direct3D 12 resource for query heap result readback
 			  // -> Due to the asynchronous nature of queries (see "ID3D12GraphicsCommandList::ResolveQueryData()"), we need a result readback buffer which can hold enough frames
-			  // +1 = One more frame as an instance is guaranteed to be written to if "Direct3D12Rhi::NUMBER_OF_FRAMES" frames have been submitted since. This is due to a fact that present stalls when none of the maximum number of frames are done/available.
+			  // +1 = One more frame as an instance is guaranteed to be written to if "Direct3D12Rhi::NUMBER_OF_FRAMES" frames have been dispatched since. This is due to a fact that present stalls when none of the maximum number of frames are done/available.
 				const CD3DX12_HEAP_PROPERTIES d3d12XHeapProperties(D3D12_HEAP_TYPE_READBACK);
 				const D3D12_RESOURCE_DESC d3d12ResourceDesc = CD3DX12_RESOURCE_DESC::Buffer(static_cast<UINT64>(numberOfBytesPerQuery) * numberOfQueries * (Direct3D12Rhi::NUMBER_OF_FRAMES + 1));
 				FAILED_DEBUG_BREAK(d3d12Device.CreateCommittedResource(&d3d12XHeapProperties, D3D12_HEAP_FLAG_NONE, &d3d12ResourceDesc, D3D12_RESOURCE_STATE_COPY_DEST, nullptr, IID_PPV_ARGS(&mD3D12ResourceQueryHeapResultReadback)))
@@ -8371,7 +8368,7 @@ namespace Direct3D12Rhi
 			}
 
 			// Readback query result by grabbing readback data for the queries from a finished frame "Direct3D12Rhi::NUMBER_OF_FRAMES" ago
-			// +1 = One more frame as an instance is guaranteed to be written to if "Direct3D12Rhi::NUMBER_OF_FRAMES" frames have been submitted since. This is due to a fact that present stalls when none of the maximum number of frames are done/available.
+			// +1 = One more frame as an instance is guaranteed to be written to if "Direct3D12Rhi::NUMBER_OF_FRAMES" frames have been dispatched since. This is due to a fact that present stalls when none of the maximum number of frames are done/available.
 			const uint32_t readbackFrameNumber = (mResolveToFrameNumber + 1) % (Direct3D12Rhi::NUMBER_OF_FRAMES + 1);
 			const uint32_t readbackBaseOffset = numberOfBytesPerQuery * mNumberOfQueries * readbackFrameNumber + numberOfBytesPerQuery * firstQueryIndex;
 			const D3D12_RANGE d3d12Range = { readbackBaseOffset, readbackBaseOffset + numberOfBytesPerQuery * numberOfQueries };
@@ -12069,11 +12066,11 @@ namespace
 			//[-------------------------------------------------------]
 			//[ Command buffer                                        ]
 			//[-------------------------------------------------------]
-			void ExecuteCommandBuffer(const void* data, Rhi::IRhi& rhi)
+			void DispatchCommandBuffer(const void* data, Rhi::IRhi& rhi)
 			{
-				const Rhi::Command::ExecuteCommandBuffer* realData = static_cast<const Rhi::Command::ExecuteCommandBuffer*>(data);
-				RHI_ASSERT(rhi.getContext(), nullptr != realData->commandBufferToExecute, "The Direct3D 12 command buffer to execute must be valid")
-				rhi.submitCommandBuffer(*realData->commandBufferToExecute);
+				const Rhi::Command::DispatchCommandBuffer* realData = static_cast<const Rhi::Command::DispatchCommandBuffer*>(data);
+				RHI_ASSERT(rhi.getContext(), nullptr != realData->commandBufferToDispatch, "The Direct3D 12 command buffer to dispatch must be valid")
+				static_cast<Direct3D12Rhi::Direct3D12Rhi&>(rhi).dispatchCommandBufferInternal(*realData->commandBufferToDispatch);
 			}
 
 			//[-------------------------------------------------------]
@@ -12300,7 +12297,7 @@ namespace
 		static constexpr Rhi::ImplementationDispatchFunction DISPATCH_FUNCTIONS[static_cast<uint8_t>(Rhi::CommandDispatchFunctionIndex::NUMBER_OF_FUNCTIONS)] =
 		{
 			// Command buffer
-			&ImplementationDispatch::ExecuteCommandBuffer,
+			&ImplementationDispatch::DispatchCommandBuffer,
 			// Graphics
 			&ImplementationDispatch::SetGraphicsRootSignature,
 			&ImplementationDispatch::SetGraphicsPipelineState,
@@ -12373,9 +12370,6 @@ namespace Direct3D12Rhi
 		mGraphicsRootSignature(nullptr),
 		mComputeRootSignature(nullptr),
 		mVertexArray(nullptr)
-		#ifdef RHI_DEBUG
-			, mDebugBetweenBeginEndScene(false)
-		#endif
 	{
 		mDirect3D12RuntimeLinking = RHI_NEW(mContext, Direct3D12RuntimeLinking)(*this);
 
@@ -12575,6 +12569,26 @@ namespace Direct3D12Rhi
 
 		// Destroy the Direct3D 12 runtime linking instance
 		RHI_DELETE(mContext, Direct3D12RuntimeLinking, mDirect3D12RuntimeLinking);
+	}
+
+	void Direct3D12Rhi::dispatchCommandBufferInternal(const Rhi::CommandBuffer& commandBuffer)
+	{
+		// Loop through all commands
+		const uint8_t* commandPacketBuffer = commandBuffer.getCommandPacketBuffer();
+		Rhi::ConstCommandPacket constCommandPacket = commandPacketBuffer;
+		while (nullptr != constCommandPacket)
+		{
+			{ // Dispatch command packet
+				const Rhi::CommandDispatchFunctionIndex commandDispatchFunctionIndex = Rhi::CommandPacketHelper::loadCommandDispatchFunctionIndex(constCommandPacket);
+				const void* command = Rhi::CommandPacketHelper::loadCommand(constCommandPacket);
+				detail::DISPATCH_FUNCTIONS[static_cast<uint32_t>(commandDispatchFunctionIndex)](command, *this);
+			}
+
+			{ // Next command
+				const uint32_t nextCommandPacketByteIndex = Rhi::CommandPacketHelper::getNextCommandPacketByteIndex(constCommandPacket);
+				constCommandPacket = (~0u != nextCommandPacketByteIndex) ? &commandPacketBuffer[nextCommandPacketByteIndex] : nullptr;
+			}
+		}
 	}
 
 
@@ -13760,18 +13774,10 @@ namespace Direct3D12Rhi
 	//[-------------------------------------------------------]
 	//[ Operations                                            ]
 	//[-------------------------------------------------------]
-	bool Direct3D12Rhi::beginScene()
+	void Direct3D12Rhi::dispatchCommandBuffer(const Rhi::CommandBuffer& commandBuffer)
 	{
-		bool result = false;	// Error by default
-
 		// Sanity check
-		#ifdef RHI_DEBUG
-			RHI_ASSERT(mContext, false == mDebugBetweenBeginEndScene, "Direct3D 12: Begin scene was called while scene rendering is already in progress, missing end scene call?")
-			mDebugBetweenBeginEndScene = true;
-		#endif
-
-		// Not required when using Direct3D 12
-		// TODO(co) Until we have a command list interface, we must perform the command list handling in here
+		RHI_ASSERT(mContext, !commandBuffer.isEmpty(), "The Direct3D 12 command buffer to dispatch mustn't be empty")
 
 		// Command list allocators can only be reset when the associated
 		// command lists have finished execution on the GPU; apps should use
@@ -13781,94 +13787,63 @@ namespace Direct3D12Rhi
 			// However, when ExecuteCommandList() is called on a particular command
 			// list, that command list can then be reset at any time and must be before
 			// re-recording.
-			result = SUCCEEDED(mD3D12GraphicsCommandList->Reset(mD3D12CommandAllocator, nullptr));
-			if (result)
+			if (SUCCEEDED(mD3D12GraphicsCommandList->Reset(mD3D12CommandAllocator, nullptr)))
 			{
 				// Set descriptor heaps
 				ID3D12DescriptorHeap* d3d12DescriptorHeaps[] = { mShaderResourceViewDescriptorHeap->getD3D12DescriptorHeap(), mSamplerDescriptorHeap->getD3D12DescriptorHeap() };
 				mD3D12GraphicsCommandList->SetDescriptorHeaps(2, d3d12DescriptorHeaps);
 			}
-		}
 
-		// Reset our cached states where needed
-		mD3D12PrimitiveTopology = D3D_PRIMITIVE_TOPOLOGY_UNDEFINED;
+			// Reset our cached states where needed
+			mD3D12PrimitiveTopology = D3D_PRIMITIVE_TOPOLOGY_UNDEFINED;
 
-		// Done
-		return result;
-	}
+			// Dispatch command buffer
+			dispatchCommandBufferInternal(commandBuffer);
 
-	void Direct3D12Rhi::submitCommandBuffer(const Rhi::CommandBuffer& commandBuffer)
-	{
-		// Sanity check
-		RHI_ASSERT(mContext, !commandBuffer.isEmpty(), "The Direct3D 12 command buffer to execute mustn't be empty")
+			{ // End scene
+				// Begin debug event
+				RHI_BEGIN_DEBUG_EVENT_FUNCTION(this)
 
-		// Loop through all commands
-		const uint8_t* commandPacketBuffer = commandBuffer.getCommandPacketBuffer();
-		Rhi::ConstCommandPacket constCommandPacket = commandPacketBuffer;
-		while (nullptr != constCommandPacket)
-		{
-			{ // Submit command packet
-				const Rhi::CommandDispatchFunctionIndex commandDispatchFunctionIndex = Rhi::CommandPacketHelper::loadCommandDispatchFunctionIndex(constCommandPacket);
-				const void* command = Rhi::CommandPacketHelper::loadCommand(constCommandPacket);
-				detail::DISPATCH_FUNCTIONS[static_cast<uint32_t>(commandDispatchFunctionIndex)](command, *this);
+				// Finish previous uploads and start new ones
+				ID3D12CommandList* uploadD3d12CommandList = mUploadContext.getD3d12GraphicsCommandList();
+				mUploadContext.begin();
+
+				// We need to forget about the currently set render target
+				setGraphicsRenderTarget(nullptr);
+
+				// We need to forget about the currently set vertex array
+				unsetGraphicsVertexArray();
+
+				// End debug event
+				RHI_END_DEBUG_EVENT(this)
+
+				// Close and execute the command list
+				if (SUCCEEDED(mD3D12GraphicsCommandList->Close()))
+				{
+					if (nullptr != uploadD3d12CommandList)
+					{
+						ID3D12CommandList* commandLists[] = { uploadD3d12CommandList, mD3D12GraphicsCommandList };
+						mD3D12CommandQueue->ExecuteCommandLists(_countof(commandLists), commandLists);
+					}
+					else
+					{
+						ID3D12CommandList* commandLists[] = { mD3D12GraphicsCommandList };
+						mD3D12CommandQueue->ExecuteCommandLists(_countof(commandLists), commandLists);
+					}
+				}
+
+				// Release the graphics and compute root signature instance, in case we have one
+				if (nullptr != mGraphicsRootSignature)
+				{
+					mGraphicsRootSignature->releaseReference();
+					mGraphicsRootSignature = nullptr;
+				}
+				if (nullptr != mComputeRootSignature)
+				{
+					mComputeRootSignature->releaseReference();
+					mComputeRootSignature = nullptr;
+				}
 			}
-
-			{ // Next command
-				const uint32_t nextCommandPacketByteIndex = Rhi::CommandPacketHelper::getNextCommandPacketByteIndex(constCommandPacket);
-				constCommandPacket = (~0u != nextCommandPacketByteIndex) ? &commandPacketBuffer[nextCommandPacketByteIndex] : nullptr;
-			}
-		}
-	}
-
-	void Direct3D12Rhi::endScene()
-	{
-		// Sanity check
-		#ifdef RHI_DEBUG
-			RHI_ASSERT(mContext, true == mDebugBetweenBeginEndScene, "Direct3D 12: End scene was called while scene rendering isn't in progress, missing start scene call?")
-			mDebugBetweenBeginEndScene = false;
-		#endif
-
-		// Begin debug event
-		RHI_BEGIN_DEBUG_EVENT_FUNCTION(this)
-
-		// Finish previous uploads and start new ones
-		ID3D12CommandList* uploadD3d12CommandList = mUploadContext.getD3d12GraphicsCommandList();
-		mUploadContext.begin();
-
-		// We need to forget about the currently set render target
-		setGraphicsRenderTarget(nullptr);
-
-		// We need to forget about the currently set vertex array
-		unsetGraphicsVertexArray();
-
-		// End debug event
-		RHI_END_DEBUG_EVENT(this)
-
-		// Close and execute the command list
-		if (SUCCEEDED(mD3D12GraphicsCommandList->Close()))
-		{
-			if (nullptr != uploadD3d12CommandList)
-			{
-				ID3D12CommandList* commandLists[] = { uploadD3d12CommandList, mD3D12GraphicsCommandList };
-				mD3D12CommandQueue->ExecuteCommandLists(_countof(commandLists), commandLists);
-			}
-			else
-			{
-				ID3D12CommandList* commandLists[] = { mD3D12GraphicsCommandList };
-				mD3D12CommandQueue->ExecuteCommandLists(_countof(commandLists), commandLists);
-			}
-		}
-
-		// Release the graphics and compute root signature instance, in case we have one
-		if (nullptr != mGraphicsRootSignature)
-		{
-			mGraphicsRootSignature->releaseReference();
-			mGraphicsRootSignature = nullptr;
-		}
-		if (nullptr != mComputeRootSignature)
-		{
-			mComputeRootSignature->releaseReference();
-			mComputeRootSignature = nullptr;
 		}
 	}
 

@@ -68,7 +68,7 @@ namespace Renderer
 		virtual void onCompositorWorkspaceInstanceLoadingFinished() override;
 		virtual void onFillCommandBuffer(const Rhi::IRenderTarget* renderTarget, const CompositorContextData& compositorContextData, Rhi::CommandBuffer& commandBuffer) override;
 
-		inline virtual void onPostCommandBufferExecution() override
+		inline virtual void onPostCommandBufferDispatch() override
 		{
 			// Directly clear the render queue as soon as the frame rendering has been finished to avoid evil dangling pointers
 			mRenderQueue.clear();

@@ -42,7 +42,7 @@ void Queries::onInitialization()
 		mPipelineStatisticsQueryPool = rhi->createQueryPool(Rhi::QueryType::PIPELINE_STATISTICS);
 		mTimestampQueryPool = rhi->createQueryPool(Rhi::QueryType::TIMESTAMP, 2);
 
-		// Since we're always submitting the same commands to the RHI, we can fill the command buffer once during initialization and then reuse it multiple times during runtime
+		// Since we're always dispatching the same commands to the RHI, we can fill the command buffer once during initialization and then reuse it multiple times during runtime
 		mCommandBuffer.clear();	// Throw away "Triangle"-stuff
 		fillCommandBuffer();
 	}

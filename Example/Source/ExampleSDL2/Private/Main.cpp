@@ -319,15 +319,8 @@ int main(int arc, char* argv[])
 							switch (sdlEvent.window.event)
 							{
 								case SDL_WINDOWEVENT_EXPOSED:
-									// Begin scene rendering
-									if (rhi->beginScene())
-									{
-										// Submit command buffer to the RHI implementation
-										commandBuffer.submitToRhi(*rhi);
-
-										// End scene rendering
-										rhi->endScene();
-									}
+									// Dispatch command buffer to the RHI implementation
+									commandBuffer.dispatchToRhi(*rhi);
 
 									// Present the content of the current back buffer
 									mainSwapChain->present();

@@ -191,7 +191,7 @@ void MultipleRenderTargets::onInitialization()
 			RHI_LOG(rhi->getContext(), CRITICAL, "This example requires support for multiple simultaneous render targets")
 		}
 
-		// Since we're always submitting the same commands to the RHI, we can fill the command buffer once during initialization and then reuse it multiple times during runtime
+		// Since we're always dispatching the same commands to the RHI, we can fill the command buffer once during initialization and then reuse it multiple times during runtime
 		fillCommandBuffer();
 	}
 }
@@ -213,8 +213,8 @@ void MultipleRenderTargets::onDeinitialization()
 
 void MultipleRenderTargets::onDraw(Rhi::CommandBuffer& commandBuffer)
 {
-	// Submit command buffer to the given command buffer
-	mCommandBuffer.submitToCommandBuffer(commandBuffer);
+	// Dispatch pre-recorded command buffer
+	Rhi::Command::DispatchCommandBuffer::create(commandBuffer, &mCommandBuffer);
 }
 
 

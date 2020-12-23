@@ -342,47 +342,40 @@ void MultipleSwapChains::onDraw(Rhi::CommandBuffer&)
 			Rhi::IRenderTarget* mainRenderTarget = getMainRenderTarget();
 			if (nullptr != mainRenderTarget)
 			{
-				// Begin scene rendering
-				if (rhi->beginScene())
+				{ // Fill the command buffer
+					// Scoped debug event
+					COMMAND_SCOPED_DEBUG_EVENT(mCommandBuffer, "Draw into the main swap chain")
+
+					// Set the graphics render target to render into
+					Rhi::Command::SetGraphicsRenderTarget::create(mCommandBuffer, mainRenderTarget);
+
+					{ // Set the graphics viewport
+						// Get the render target with and height
+						uint32_t width  = 1;
+						uint32_t height = 1;
+						mainRenderTarget->getWidthAndHeight(width, height);
+
+						// Set the graphics viewport and scissor rectangle
+						Rhi::Command::SetGraphicsViewportAndScissorRectangle::create(mCommandBuffer, 0, 0, width, height);
+					}
+
+					// Draw into the main swap chain
+					fillCommandBuffer(Color4::GRAY, mCommandBuffer);
+				}
+
+				// Dispatch command buffer to the RHI implementation
+				mCommandBuffer.dispatchToRhiAndClear(*rhi);
+
+				// Present the content of the current back buffer
+				if (mainRenderTarget->getResourceType() == Rhi::ResourceType::SWAP_CHAIN)
 				{
-					{ // Fill the command buffer
-						// Scoped debug event
-						COMMAND_SCOPED_DEBUG_EVENT(mCommandBuffer, "Draw into the main swap chain")
-
-						// Set the graphics render target to render into
-						Rhi::Command::SetGraphicsRenderTarget::create(mCommandBuffer, mainRenderTarget);
-
-						{ // Set the graphics viewport
-							// Get the render target with and height
-							uint32_t width  = 1;
-							uint32_t height = 1;
-							mainRenderTarget->getWidthAndHeight(width, height);
-
-							// Set the graphics viewport and scissor rectangle
-							Rhi::Command::SetGraphicsViewportAndScissorRectangle::create(mCommandBuffer, 0, 0, width, height);
-						}
-
-						// Draw into the main swap chain
-						fillCommandBuffer(Color4::GRAY, mCommandBuffer);
-					}
-
-					// Submit command buffer to the RHI implementation
-					mCommandBuffer.submitToRhiAndClear(*rhi);
-
-					// End scene rendering
-					rhi->endScene();
-
-					// Present the content of the current back buffer
-					if (mainRenderTarget->getResourceType() == Rhi::ResourceType::SWAP_CHAIN)
-					{
-						static_cast<Rhi::ISwapChain*>(mainRenderTarget)->present();
-					}
+					static_cast<Rhi::ISwapChain*>(mainRenderTarget)->present();
 				}
 			}
 		}
 
 		// Render to the swap chain created in this example, but only if it's valid: Begin scene rendering
-		if (nullptr != mSwapChain && rhi->beginScene())
+		if (nullptr != mSwapChain)
 		{
 			{ // Fill the command buffer
 				// Scoped debug event
@@ -416,11 +409,8 @@ void MultipleSwapChains::onDraw(Rhi::CommandBuffer&)
 				fillCommandBuffer(Color4::GREEN, mCommandBuffer);
 			}
 
-			// Submit command buffer to the RHI implementation
-			mCommandBuffer.submitToRhiAndClear(*rhi);
-
-			// End scene rendering
-			rhi->endScene();
+			// Dispatch command buffer to the RHI implementation
+			mCommandBuffer.dispatchToRhiAndClear(*rhi);
 
 			// Present the content of the current back buffer
 			mSwapChain->present();

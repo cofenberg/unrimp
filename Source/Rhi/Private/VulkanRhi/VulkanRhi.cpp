@@ -2079,6 +2079,8 @@ namespace VulkanRhi
 			return *mVulkanContext;
 		}
 
+		void dispatchCommandBufferInternal(const Rhi::CommandBuffer& commandBuffer);
+
 		//[-------------------------------------------------------]
 		//[ Graphics                                              ]
 		//[-------------------------------------------------------]
@@ -2158,11 +2160,9 @@ namespace VulkanRhi
 		virtual void unmap(Rhi::IResource& resource, uint32_t subresource) override;
 		[[nodiscard]] virtual bool getQueryPoolResults(Rhi::IQueryPool& queryPool, uint32_t numberOfDataBytes, uint8_t* data, uint32_t firstQueryIndex = 0, uint32_t numberOfQueries = 1, uint32_t strideInBytes = 0, uint32_t queryResultFlags = 0) override;
 		//[-------------------------------------------------------]
-		//[ Operations                                            ]
+		//[ Operation                                             ]
 		//[-------------------------------------------------------]
-		[[nodiscard]] virtual bool beginScene() override;
-		virtual void submitCommandBuffer(const Rhi::CommandBuffer& commandBuffer) override;
-		virtual void endScene() override;
+		virtual void dispatchCommandBuffer(const Rhi::CommandBuffer& commandBuffer) override;
 
 
 	//[-------------------------------------------------------]
@@ -2222,9 +2222,6 @@ namespace VulkanRhi
 		//[ Output-merger (OM) stage                              ]
 		//[-------------------------------------------------------]
 		Rhi::IRenderTarget* mRenderTarget;	///< Currently set render target (we keep a reference to it), can be a null pointer
-		#ifdef RHI_DEBUG
-			bool mDebugBetweenBeginEndScene;	///< Just here for state tracking in debug builds
-		#endif
 
 
 	};
@@ -11371,11 +11368,11 @@ namespace
 			//[-------------------------------------------------------]
 			//[ Command buffer                                        ]
 			//[-------------------------------------------------------]
-			void ExecuteCommandBuffer(const void* data, Rhi::IRhi& rhi)
+			void DispatchCommandBuffer(const void* data, Rhi::IRhi& rhi)
 			{
-				const Rhi::Command::ExecuteCommandBuffer* realData = static_cast<const Rhi::Command::ExecuteCommandBuffer*>(data);
-				RHI_ASSERT(rhi.getContext(), nullptr != realData->commandBufferToExecute, "The Vulkan command buffer to execute must be valid")
-				rhi.submitCommandBuffer(*realData->commandBufferToExecute);
+				const Rhi::Command::DispatchCommandBuffer* realData = static_cast<const Rhi::Command::DispatchCommandBuffer*>(data);
+				RHI_ASSERT(rhi.getContext(), nullptr != realData->commandBufferToDispatch, "The Vulkan command buffer to dispatch must be valid")
+				static_cast<VulkanRhi::VulkanRhi&>(rhi).dispatchCommandBufferInternal(*realData->commandBufferToDispatch);
 			}
 
 			//[-------------------------------------------------------]
@@ -11625,7 +11622,7 @@ namespace
 		static constexpr Rhi::ImplementationDispatchFunction DISPATCH_FUNCTIONS[static_cast<uint8_t>(Rhi::CommandDispatchFunctionIndex::NUMBER_OF_FUNCTIONS)] =
 		{
 			// Command buffer
-			&ImplementationDispatch::ExecuteCommandBuffer,
+			&ImplementationDispatch::DispatchCommandBuffer,
 			// Graphics
 			&ImplementationDispatch::SetGraphicsRootSignature,
 			&ImplementationDispatch::SetGraphicsPipelineState,
@@ -11693,9 +11690,6 @@ namespace VulkanRhi
 		mVkClearValues{},
 		mVertexArray(nullptr),
 		mRenderTarget(nullptr)
-		#ifdef RHI_DEBUG
-			, mDebugBetweenBeginEndScene(false)
-		#endif
 	{
 		// TODO(co) Make it possible to enable/disable validation from the outside?
 		#ifdef RHI_DEBUG
@@ -11790,6 +11784,26 @@ namespace VulkanRhi
 
 		// Destroy the Vulkan runtime linking instance
 		RHI_DELETE(mContext, VulkanRuntimeLinking, mVulkanRuntimeLinking);
+	}
+
+	void VulkanRhi::dispatchCommandBufferInternal(const Rhi::CommandBuffer& commandBuffer)
+	{
+		// Loop through all commands
+		const uint8_t* commandPacketBuffer = commandBuffer.getCommandPacketBuffer();
+		Rhi::ConstCommandPacket constCommandPacket = commandPacketBuffer;
+		while (nullptr != constCommandPacket)
+		{
+			{ // Dispatch command packet
+				const Rhi::CommandDispatchFunctionIndex commandDispatchFunctionIndex = Rhi::CommandPacketHelper::loadCommandDispatchFunctionIndex(constCommandPacket);
+				const void* command = Rhi::CommandPacketHelper::loadCommand(constCommandPacket);
+				detail::DISPATCH_FUNCTIONS[static_cast<uint32_t>(commandDispatchFunctionIndex)](command, *this);
+			}
+
+			{ // Next command
+				const uint32_t nextCommandPacketByteIndex = Rhi::CommandPacketHelper::getNextCommandPacketByteIndex(constCommandPacket);
+				constCommandPacket = (~0u != nextCommandPacketByteIndex) ? &commandPacketBuffer[nextCommandPacketByteIndex] : nullptr;
+			}
+		}
 	}
 
 
@@ -12795,15 +12809,12 @@ namespace VulkanRhi
 
 
 	//[-------------------------------------------------------]
-	//[ Operations                                            ]
+	//[ Operation                                             ]
 	//[-------------------------------------------------------]
-	bool VulkanRhi::beginScene()
+	void VulkanRhi::dispatchCommandBuffer(const Rhi::CommandBuffer& commandBuffer)
 	{
 		// Sanity check
-		#ifdef RHI_DEBUG
-			RHI_ASSERT(mContext, false == mDebugBetweenBeginEndScene, "Vulkan: Begin scene was called while scene rendering is already in progress, missing end scene call?")
-			mDebugBetweenBeginEndScene = true;
-		#endif
+		RHI_ASSERT(mContext, !commandBuffer.isEmpty(), "The Vulkan command buffer to dispatch mustn't be empty")
 
 		// Begin Vulkan command buffer
 		// -> This automatically resets the Vulkan command buffer in case it was previously already recorded
@@ -12816,61 +12827,28 @@ namespace VulkanRhi
 		};
 		if (vkBeginCommandBuffer(getVulkanContext().getVkCommandBuffer(), &vkCommandBufferBeginInfo) == VK_SUCCESS)
 		{
-			// Done
-			return true;
+			// Dispatch command buffer
+			dispatchCommandBufferInternal(commandBuffer);
+
+			// We need to forget about the currently set render target
+			// -> "Critical: Vulkan debug report callback: Object type: "VK_DEBUG_REPORT_OBJECT_TYPE_COMMAND_BUFFER_EXT" Object: "54336828" Location: "0" Message code: "0" Layer prefix: "Validation" Message: " [ VUID-vkEndCommandBuffer-commandBuffer-00060 ] Object: 0x33d1d3c (Type = 6) | vkEndCommandBuffer(): It is invalid to issue this call inside an active render pass (0x20). The Vulkan spec states: If commandBuffer is a primary command buffer, there must not be an active render pass instance (https://www.khronos.org/registry/vulkan/specs/1.1-extensions/html/vkspec.html#VUID-vkEndCommandBuffer-commandBuffer-00060)" "
+			setGraphicsRenderTarget(nullptr);
+
+			// We need to forget about the currently set vertex array
+			// -> "Critical: Vulkan debug report callback: Object type: "VK_DEBUG_REPORT_OBJECT_TYPE_COMMAND_BUFFER_EXT" Object: "217049444" Location: "0" Message code: "0" Layer prefix: "Validation" Message: " [ UNASSIGNED-CoreValidation-DrawState-VtxIndexOutOfBounds ] Object: 0xcefe964 (Type = 6) | The Pipeline State Object (0x1b) expects that this Command Buffer's vertex binding Index 0 should be set via vkCmdBindVertexBuffers. This is because VkVertexInputBindingDescription struct at index 0 of pVertexBindingDescriptions has a binding value of 0." "
+			unsetGraphicsVertexArray();
+
+			// End Vulkan command buffer
+			if (vkEndCommandBuffer(getVulkanContext().getVkCommandBuffer()) != VK_SUCCESS)
+			{
+				// Error!
+				RHI_LOG(getContext(), CRITICAL, "Failed to end Vulkan command buffer instance")
+			}
 		}
 		else
 		{
 			// Error!
 			RHI_LOG(getContext(), CRITICAL, "Failed to begin Vulkan command buffer instance")
-			return false;
-		}
-	}
-
-	void VulkanRhi::submitCommandBuffer(const Rhi::CommandBuffer& commandBuffer)
-	{
-		// Sanity check
-		RHI_ASSERT(mContext, !commandBuffer.isEmpty(), "The Vulkan command buffer to execute mustn't be empty")
-
-		// Loop through all commands
-		const uint8_t* commandPacketBuffer = commandBuffer.getCommandPacketBuffer();
-		Rhi::ConstCommandPacket constCommandPacket = commandPacketBuffer;
-		while (nullptr != constCommandPacket)
-		{
-			{ // Submit command packet
-				const Rhi::CommandDispatchFunctionIndex commandDispatchFunctionIndex = Rhi::CommandPacketHelper::loadCommandDispatchFunctionIndex(constCommandPacket);
-				const void* command = Rhi::CommandPacketHelper::loadCommand(constCommandPacket);
-				detail::DISPATCH_FUNCTIONS[static_cast<uint32_t>(commandDispatchFunctionIndex)](command, *this);
-			}
-
-			{ // Next command
-				const uint32_t nextCommandPacketByteIndex = Rhi::CommandPacketHelper::getNextCommandPacketByteIndex(constCommandPacket);
-				constCommandPacket = (~0u != nextCommandPacketByteIndex) ? &commandPacketBuffer[nextCommandPacketByteIndex] : nullptr;
-			}
-		}
-	}
-
-	void VulkanRhi::endScene()
-	{
-		// Sanity check
-		#ifdef RHI_DEBUG
-			RHI_ASSERT(mContext, true == mDebugBetweenBeginEndScene, "Vulkan: End scene was called while scene rendering isn't in progress, missing start scene call?")
-			mDebugBetweenBeginEndScene = false;
-		#endif
-
-		// We need to forget about the currently set render target
-		// -> "Critical: Vulkan debug report callback: Object type: "VK_DEBUG_REPORT_OBJECT_TYPE_COMMAND_BUFFER_EXT" Object: "54336828" Location: "0" Message code: "0" Layer prefix: "Validation" Message: " [ VUID-vkEndCommandBuffer-commandBuffer-00060 ] Object: 0x33d1d3c (Type = 6) | vkEndCommandBuffer(): It is invalid to issue this call inside an active render pass (0x20). The Vulkan spec states: If commandBuffer is a primary command buffer, there must not be an active render pass instance (https://www.khronos.org/registry/vulkan/specs/1.1-extensions/html/vkspec.html#VUID-vkEndCommandBuffer-commandBuffer-00060)" "
-		setGraphicsRenderTarget(nullptr);
-
-		// We need to forget about the currently set vertex array
-		// -> "Critical: Vulkan debug report callback: Object type: "VK_DEBUG_REPORT_OBJECT_TYPE_COMMAND_BUFFER_EXT" Object: "217049444" Location: "0" Message code: "0" Layer prefix: "Validation" Message: " [ UNASSIGNED-CoreValidation-DrawState-VtxIndexOutOfBounds ] Object: 0xcefe964 (Type = 6) | The Pipeline State Object (0x1b) expects that this Command Buffer's vertex binding Index 0 should be set via vkCmdBindVertexBuffers. This is because VkVertexInputBindingDescription struct at index 0 of pVertexBindingDescriptions has a binding value of 0." "
-		unsetGraphicsVertexArray();
-
-		// End Vulkan command buffer
-		if (vkEndCommandBuffer(getVulkanContext().getVkCommandBuffer()) != VK_SUCCESS)
-		{
-			// Error!
-			RHI_LOG(getContext(), CRITICAL, "Failed to end Vulkan command buffer instance")
 		}
 	}
 

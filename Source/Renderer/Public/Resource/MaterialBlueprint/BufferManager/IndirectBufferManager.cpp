@@ -138,7 +138,7 @@ namespace Renderer
 		return mCurrentIndirectBuffer;
 	}
 
-	void IndirectBufferManager::onPreCommandBufferExecution()
+	void IndirectBufferManager::onPreCommandBufferDispatch()
 	{
 		// Unmap current indirect buffer
 		if (nullptr != mCurrentIndirectBuffer)

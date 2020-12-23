@@ -399,7 +399,7 @@ void CubeRendererInstancedArrays::setNumberOfCubes(uint32_t numberOfCubes)
 		batch->initialize(*mBufferManager, *mRootSignature, detail::CubeRendererInstancedArraysVertexAttributes, *mVertexBuffer, *mIndexBuffer, *mGraphicsProgram, mRenderPass, currentNumberOfCubes, true, mNumberOfTextures, mSceneRadius);
 	}
 
-	// Since we're always submitting the same commands to the RHI, we can fill the command buffer once during initialization and then reuse it multiple times during runtime
+	// Since we're always dispatching the same commands to the RHI, we can fill the command buffer once during initialization and then reuse it multiple times during runtime
 	mCommandBuffer.clear();
 	fillReusableCommandBuffer();
 }
@@ -459,8 +459,8 @@ void CubeRendererInstancedArrays::fillCommandBuffer(float globalTimer, float glo
 		mGraphicsProgram->setUniformMatrix4fv(mGraphicsProgram->getUniformHandle("MVP"), MVP);
 	}
 
-	// Execute pre-recorded command buffer
-	Rhi::Command::ExecuteCommandBuffer::create(commandBuffer, &mCommandBuffer);
+	// Dispatch pre-recorded command buffer
+	Rhi::Command::DispatchCommandBuffer::create(commandBuffer, &mCommandBuffer);
 }
 
 

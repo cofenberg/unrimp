@@ -222,7 +222,7 @@ namespace Renderer
 		return mStartInstanceLocation - 1;
 	}
 
-	void UniformInstanceBufferManager::onPreCommandBufferExecution()
+	void UniformInstanceBufferManager::onPreCommandBufferDispatch()
 	{
 		// Unmap the current instance buffer and reset the current instance buffer to the first instance
 		if (isValid(mCurrentInstanceBufferIndex))

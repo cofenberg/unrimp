@@ -1855,6 +1855,8 @@ namespace OpenGLRhi
 			return *mExtensions;
 		}
 
+		void dispatchCommandBufferInternal(const Rhi::CommandBuffer& commandBuffer);
+
 		//[-------------------------------------------------------]
 		//[ Graphics                                              ]
 		//[-------------------------------------------------------]
@@ -1935,11 +1937,9 @@ namespace OpenGLRhi
 		virtual void unmap(Rhi::IResource& resource, uint32_t subresource) override;
 		[[nodiscard]] virtual bool getQueryPoolResults(Rhi::IQueryPool& queryPool, uint32_t numberOfDataBytes, uint8_t* data, uint32_t firstQueryIndex = 0, uint32_t numberOfQueries = 1, uint32_t strideInBytes = 0, uint32_t queryResultFlags = 0) override;
 		//[-------------------------------------------------------]
-		//[ Operations                                            ]
+		//[ Operation                                             ]
 		//[-------------------------------------------------------]
-		[[nodiscard]] virtual bool beginScene() override;
-		virtual void submitCommandBuffer(const Rhi::CommandBuffer& commandBuffer) override;
-		virtual void endScene() override;
+		virtual void dispatchCommandBuffer(const Rhi::CommandBuffer& commandBuffer) override;
 
 
 	//[-------------------------------------------------------]
@@ -2069,9 +2069,6 @@ namespace OpenGLRhi
 		GLuint	 mOpenGLVertexProgram;			///< Currently set OpenGL vertex program, can be zero if no resource is set
 		GLint	 mDrawIdUniformLocation;		///< Draw ID uniform location
 		uint32_t mCurrentStartInstanceLocation;	///< Currently set start instance location
-		#ifdef RHI_DEBUG
-			bool mDebugBetweenBeginEndScene;	///< Just here for state tracking in debug builds
-		#endif
 
 
 	};
@@ -19493,11 +19490,11 @@ namespace
 			//[-------------------------------------------------------]
 			//[ Command buffer                                        ]
 			//[-------------------------------------------------------]
-			void ExecuteCommandBuffer(const void* data, Rhi::IRhi& rhi)
+			void DispatchCommandBuffer(const void* data, Rhi::IRhi& rhi)
 			{
-				const Rhi::Command::ExecuteCommandBuffer* realData = static_cast<const Rhi::Command::ExecuteCommandBuffer*>(data);
-				RHI_ASSERT(rhi.getContext(), nullptr != realData->commandBufferToExecute, "The OpenGL command buffer to execute must be valid")
-				rhi.submitCommandBuffer(*realData->commandBufferToExecute);
+				const Rhi::Command::DispatchCommandBuffer* realData = static_cast<const Rhi::Command::DispatchCommandBuffer*>(data);
+				RHI_ASSERT(rhi.getContext(), nullptr != realData->commandBufferToDispatch, "The OpenGL command buffer to dispatch must be valid")
+				static_cast<OpenGLRhi::OpenGLRhi&>(rhi).dispatchCommandBufferInternal(*realData->commandBufferToDispatch);
 			}
 
 			//[-------------------------------------------------------]
@@ -19723,7 +19720,7 @@ namespace
 		static constexpr Rhi::ImplementationDispatchFunction DISPATCH_FUNCTIONS[static_cast<uint8_t>(Rhi::CommandDispatchFunctionIndex::NUMBER_OF_FUNCTIONS)] =
 		{
 			// Command buffer
-			&ImplementationDispatch::ExecuteCommandBuffer,
+			&ImplementationDispatch::DispatchCommandBuffer,
 			// Graphics
 			&ImplementationDispatch::SetGraphicsRootSignature,
 			&ImplementationDispatch::SetGraphicsPipelineState,
@@ -19807,9 +19804,6 @@ namespace OpenGLRhi
 		mOpenGLVertexProgram(0),
 		mDrawIdUniformLocation(-1),
 		mCurrentStartInstanceLocation(~0u)
-		#ifdef RHI_DEBUG
-			, mDebugBetweenBeginEndScene(false)
-		#endif
 	{
 		// Is OpenGL available?
 		mOpenGLRuntimeLinking = RHI_NEW(mContext, OpenGLRuntimeLinking)(*this);
@@ -19969,6 +19963,26 @@ namespace OpenGLRhi
 
 		// Destroy the OpenGL runtime linking instance
 		RHI_DELETE(mContext, OpenGLRuntimeLinking, mOpenGLRuntimeLinking);
+	}
+
+	void OpenGLRhi::dispatchCommandBufferInternal(const Rhi::CommandBuffer& commandBuffer)
+	{
+		// Loop through all commands
+		const uint8_t* commandPacketBuffer = commandBuffer.getCommandPacketBuffer();
+		Rhi::ConstCommandPacket constCommandPacket = commandPacketBuffer;
+		while (nullptr != constCommandPacket)
+		{
+			{ // Dispatch command packet
+				const Rhi::CommandDispatchFunctionIndex commandDispatchFunctionIndex = Rhi::CommandPacketHelper::loadCommandDispatchFunctionIndex(constCommandPacket);
+				const void* command = Rhi::CommandPacketHelper::loadCommand(constCommandPacket);
+				detail::DISPATCH_FUNCTIONS[static_cast<uint32_t>(commandDispatchFunctionIndex)](command, *this);
+			}
+
+			{ // Next command
+				const uint32_t nextCommandPacketByteIndex = Rhi::CommandPacketHelper::getNextCommandPacketByteIndex(constCommandPacket);
+				constCommandPacket = (~0u != nextCommandPacketByteIndex) ? &commandPacketBuffer[nextCommandPacketByteIndex] : nullptr;
+			}
+		}
 	}
 
 
@@ -21753,52 +21767,15 @@ namespace OpenGLRhi
 
 
 	//[-------------------------------------------------------]
-	//[ Operations                                            ]
+	//[ Operation                                             ]
 	//[-------------------------------------------------------]
-	bool OpenGLRhi::beginScene()
-	{
-		// Not required when using OpenGL
-
-		// Sanity check
-		#ifdef RHI_DEBUG
-			RHI_ASSERT(mContext, false == mDebugBetweenBeginEndScene, "OpenGL: Begin scene was called while scene rendering is already in progress, missing end scene call?")
-			mDebugBetweenBeginEndScene = true;
-		#endif
-
-		// Done
-		return true;
-	}
-
-	void OpenGLRhi::submitCommandBuffer(const Rhi::CommandBuffer& commandBuffer)
+	void OpenGLRhi::dispatchCommandBuffer(const Rhi::CommandBuffer& commandBuffer)
 	{
 		// Sanity check
-		RHI_ASSERT(mContext, !commandBuffer.isEmpty(), "The OpenGL command buffer to execute mustn't be empty")
+		RHI_ASSERT(mContext, !commandBuffer.isEmpty(), "The OpenGL command buffer to dispatch mustn't be empty")
 
-		// Loop through all commands
-		const uint8_t* commandPacketBuffer = commandBuffer.getCommandPacketBuffer();
-		Rhi::ConstCommandPacket constCommandPacket = commandPacketBuffer;
-		while (nullptr != constCommandPacket)
-		{
-			{ // Submit command packet
-				const Rhi::CommandDispatchFunctionIndex commandDispatchFunctionIndex = Rhi::CommandPacketHelper::loadCommandDispatchFunctionIndex(constCommandPacket);
-				const void* command = Rhi::CommandPacketHelper::loadCommand(constCommandPacket);
-				detail::DISPATCH_FUNCTIONS[static_cast<uint32_t>(commandDispatchFunctionIndex)](command, *this);
-			}
-
-			{ // Next command
-				const uint32_t nextCommandPacketByteIndex = Rhi::CommandPacketHelper::getNextCommandPacketByteIndex(constCommandPacket);
-				constCommandPacket = (~0u != nextCommandPacketByteIndex) ? &commandPacketBuffer[nextCommandPacketByteIndex] : nullptr;
-			}
-		}
-	}
-
-	void OpenGLRhi::endScene()
-	{
-		// Sanity check
-		#ifdef RHI_DEBUG
-			RHI_ASSERT(mContext, true == mDebugBetweenBeginEndScene, "OpenGL: End scene was called while scene rendering isn't in progress, missing start scene call?")
-			mDebugBetweenBeginEndScene = false;
-		#endif
+		// Dispatch command buffer
+		dispatchCommandBufferInternal(commandBuffer);
 	}
 
 

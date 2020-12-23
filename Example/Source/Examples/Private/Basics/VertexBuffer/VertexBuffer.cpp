@@ -208,7 +208,7 @@ void VertexBuffer::onInitialization()
 			}
 		}
 
-		// Since we're always submitting the same commands to the RHI, we can fill the command buffer once during initialization and then reuse it multiple times during runtime
+		// Since we're always dispatching the same commands to the RHI, we can fill the command buffer once during initialization and then reuse it multiple times during runtime
 		fillCommandBuffer();
 	}
 }
@@ -227,8 +227,8 @@ void VertexBuffer::onDeinitialization()
 
 void VertexBuffer::onDraw(Rhi::CommandBuffer& commandBuffer)
 {
-	// Submit command buffer to the given command buffer
-	mCommandBuffer.submitToCommandBuffer(commandBuffer);
+	// Dispatch pre-recorded command buffer
+	Rhi::Command::DispatchCommandBuffer::create(commandBuffer, &mCommandBuffer);
 }
 
 

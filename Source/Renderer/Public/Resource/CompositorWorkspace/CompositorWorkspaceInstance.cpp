@@ -214,7 +214,6 @@ namespace Renderer
 
 			// Begin scene rendering
 			Rhi::IRhi& rhi = renderTarget.getRhi();
-			if (rhi.beginScene())
 			{
 				#ifdef RENDERER_GRAPHICS_DEBUGGER
 					IGraphicsDebugger& graphicsDebugger = mRenderer.getContext().getGraphicsDebugger();
@@ -259,23 +258,23 @@ namespace Renderer
 					}
 				}
 
-				{ // Submit command buffer to the RHI implementation
-					// The command buffer is about to be submitted, inform everyone who cares about this
-					materialBlueprintResourceManager.onPreCommandBufferExecution();
+				{ // Dispatch command buffer to the RHI implementation
+					// The command buffer is about to be dispatched, inform everyone who cares about this
+					materialBlueprintResourceManager.onPreCommandBufferDispatch();
 
-					// Submit command buffer to the RHI implementation
+					// Dispatch command buffer to the RHI implementation
 					#ifdef RHI_STATISTICS
 						if (nullptr != mPipelineStatisticsQueryPoolPtr)
 						{
 							Rhi::Command::EndQuery::create(mCommandBuffer, *mPipelineStatisticsQueryPoolPtr, mCurrentPipelineStatisticsQueryIndex);
 						}
 					#endif
-					mCommandBuffer.submitToRhiAndClear(rhi);
+					mCommandBuffer.dispatchToRhiAndClear(rhi);
 
-					// The command buffer has been submitted, inform everyone who cares about this
+					// The command buffer has been dispatched, inform everyone who cares about this
 					for (const CompositorNodeInstance* compositorNodeInstance : mSequentialCompositorNodeInstances)
 					{
-						compositorNodeInstance->onPostCommandBufferExecution();
+						compositorNodeInstance->onPostCommandBufferDispatch();
 					}
 					{
 						const uint32_t numberOfResources = materialBlueprintResourceManager.getNumberOfResources();
@@ -284,7 +283,7 @@ namespace Renderer
 							PassBufferManager* passBufferManager = materialBlueprintResourceManager.getByIndex(i).getPassBufferManager();
 							if (nullptr != passBufferManager)
 							{
-								passBufferManager->onPostCommandBufferExecution();
+								passBufferManager->onPostCommandBufferDispatch();
 							}
 						}
 					}
@@ -297,7 +296,6 @@ namespace Renderer
 						graphicsDebugger.endFrameCapture((renderTarget.getResourceType() == Rhi::ResourceType::SWAP_CHAIN) ? static_cast<Rhi::ISwapChain&>(renderTarget).getNativeWindowHandle() : NULL_HANDLE);
 					}
 				#endif
-				rhi.endScene();
 			}
 
 			// In case the render target is a swap chain, present the content of the current back buffer

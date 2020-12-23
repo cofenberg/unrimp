@@ -106,11 +106,11 @@ namespace Renderer
 		return *currentRenderTarget;
 	}
 
-	void CompositorNodeInstance::onPostCommandBufferExecution() const
+	void CompositorNodeInstance::onPostCommandBufferDispatch() const
 	{
 		for (ICompositorInstancePass* compositorInstancePass : mCompositorInstancePasses)
 		{
-			compositorInstancePass->onPostCommandBufferExecution();
+			compositorInstancePass->onPostCommandBufferDispatch();
 		}
 	}
 

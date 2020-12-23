@@ -162,36 +162,29 @@ void IApplicationRhi::onDrawRequest()
 	// Is there a RHI and main swap chain instance?
 	else if (nullptr != mRhi && nullptr != mMainSwapChain)
 	{
-		// Begin scene rendering
-		if (mRhi->beginScene())
-		{
-			{ // Scene rendering
-				// Scoped debug event
-				COMMAND_SCOPED_DEBUG_EVENT_FUNCTION(mCommandBuffer)
+		{ // Scene rendering
+			// Scoped debug event
+			COMMAND_SCOPED_DEBUG_EVENT_FUNCTION(mCommandBuffer)
 
-				// Make the graphics main swap chain to the current render target
-				Rhi::Command::SetGraphicsRenderTarget::create(mCommandBuffer, mMainSwapChain);
+			// Make the graphics main swap chain to the current render target
+			Rhi::Command::SetGraphicsRenderTarget::create(mCommandBuffer, mMainSwapChain);
 
-				{ // Since Direct3D 12 is command list based, the viewport and scissor rectangle must be set in every draw call to work with all supported RHI implementations
-					// Get the window size
-					uint32_t width  = 1;
-					uint32_t height = 1;
-					mMainSwapChain->getWidthAndHeight(width, height);
+			{ // Since Direct3D 12 is command list based, the viewport and scissor rectangle must be set in every draw call to work with all supported RHI implementations
+				// Get the window size
+				uint32_t width  = 1;
+				uint32_t height = 1;
+				mMainSwapChain->getWidthAndHeight(width, height);
 
-					// Set the graphics viewport and scissor rectangle
-					Rhi::Command::SetGraphicsViewportAndScissorRectangle::create(mCommandBuffer, 0, 0, width, height);
-				}
-
-				// Call the draw method
-				mExampleBase.draw(mCommandBuffer);
+				// Set the graphics viewport and scissor rectangle
+				Rhi::Command::SetGraphicsViewportAndScissorRectangle::create(mCommandBuffer, 0, 0, width, height);
 			}
 
-			// Submit command buffer to the RHI implementation
-			mCommandBuffer.submitToRhiAndClear(*mRhi);
-
-			// End scene rendering
-			mRhi->endScene();
+			// Call the draw method
+			mExampleBase.draw(mCommandBuffer);
 		}
+
+		// Dispatch command buffer to the RHI implementation
+		mCommandBuffer.dispatchToRhiAndClear(*mRhi);
 
 		// Present the content of the current back buffer
 		mMainSwapChain->present();

@@ -123,7 +123,7 @@ namespace Renderer
 								// Execute the compute pass
 								CompositorContextData localCompositorContextData(compositorContextData.getCompositorWorkspaceInstance(), nullptr);
 								mCompositorInstancePassCompute->onFillCommandBuffer(mFramebuffersPtrs[mipmapIndex], localCompositorContextData, mCommandBuffer);
-								mCompositorInstancePassCompute->onPostCommandBufferExecution();
+								mCompositorInstancePassCompute->onPostCommandBufferDispatch();
 							}
 
 							// Reset mipmap level range for the depth texture
@@ -146,7 +146,7 @@ namespace Renderer
 			// Fill given command buffer, if necessary
 			if (!mCommandBuffer.isEmpty())
 			{
-				mCommandBuffer.submitToCommandBuffer(commandBuffer);
+				mCommandBuffer.appendToCommandBuffer(commandBuffer);
 			}
 		}
 		else

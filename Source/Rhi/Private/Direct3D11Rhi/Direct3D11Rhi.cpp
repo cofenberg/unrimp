@@ -2758,6 +2758,8 @@ namespace Direct3D11Rhi
 			return mRenderTarget;
 		}
 
+		void dispatchCommandBufferInternal(const Rhi::CommandBuffer& commandBuffer);
+
 		//[-------------------------------------------------------]
 		//[ Graphics                                              ]
 		//[-------------------------------------------------------]
@@ -2850,11 +2852,9 @@ namespace Direct3D11Rhi
 		virtual void unmap(Rhi::IResource& resource, uint32_t subresource) override;
 		[[nodiscard]] virtual bool getQueryPoolResults(Rhi::IQueryPool& queryPool, uint32_t numberOfDataBytes, uint8_t* data, uint32_t firstQueryIndex = 0, uint32_t numberOfQueries = 1, uint32_t strideInBytes = 0, uint32_t queryResultFlags = 0) override;
 		//[-------------------------------------------------------]
-		//[ Operations                                            ]
+		//[ Operation                                             ]
 		//[-------------------------------------------------------]
-		[[nodiscard]] virtual bool beginScene() override;
-		virtual void submitCommandBuffer(const Rhi::CommandBuffer& commandBuffer) override;
-		virtual void endScene() override;
+		virtual void dispatchCommandBuffer(const Rhi::CommandBuffer& commandBuffer) override;
 
 		//[-------------------------------------------------------]
 		//[ Implementation specific                               ]
@@ -2929,9 +2929,6 @@ namespace Direct3D11Rhi
 		// Generate asynchronous mipmaps for textures
 		std::mutex					mGenerateAsynchronousMipmapsForTexturesMutex;
 		std::vector<Rhi::ITexture*> mGenerateAsynchronousMipmapsForTextures;
-		#ifdef RHI_DEBUG
-			bool mDebugBetweenBeginEndScene;	///< Just here for state tracking in debug builds
-		#endif
 
 
 	};
@@ -11975,11 +11972,11 @@ namespace
 			//[-------------------------------------------------------]
 			//[ Command buffer                                        ]
 			//[-------------------------------------------------------]
-			void ExecuteCommandBuffer(const void* data, Rhi::IRhi& rhi)
+			void DispatchCommandBuffer(const void* data, Rhi::IRhi& rhi)
 			{
-				const Rhi::Command::ExecuteCommandBuffer* realData = static_cast<const Rhi::Command::ExecuteCommandBuffer*>(data);
-				RHI_ASSERT(rhi.getContext(), nullptr != realData->commandBufferToExecute, "The Direct3D 11 command buffer to execute must be valid")
-				rhi.submitCommandBuffer(*realData->commandBufferToExecute);
+				const Rhi::Command::DispatchCommandBuffer* realData = static_cast<const Rhi::Command::DispatchCommandBuffer*>(data);
+				RHI_ASSERT(rhi.getContext(), nullptr != realData->commandBufferToDispatch, "The Direct3D 11 command buffer to dispatch must be valid")
+				static_cast<Direct3D11Rhi::Direct3D11Rhi&>(rhi).dispatchCommandBufferInternal(*realData->commandBufferToDispatch);
 			}
 
 			//[-------------------------------------------------------]
@@ -12243,7 +12240,7 @@ namespace
 		static Rhi::ImplementationDispatchFunction DISPATCH_FUNCTIONS[static_cast<uint8_t>(Rhi::CommandDispatchFunctionIndex::NUMBER_OF_FUNCTIONS)] =
 		{
 			// Command buffer
-			&ImplementationDispatch::ExecuteCommandBuffer,
+			&ImplementationDispatch::DispatchCommandBuffer,
 			// Graphics
 			&ImplementationDispatch::SetGraphicsRootSignature,
 			&ImplementationDispatch::SetGraphicsPipelineState,
@@ -12319,9 +12316,6 @@ namespace Direct3D11Rhi
 		mD3d11GeometryShader(nullptr),
 		mD3d11PixelShader(nullptr),
 		mD3d11ComputeShader(nullptr)
-		#ifdef RHI_DEBUG
-			, mDebugBetweenBeginEndScene(false)
-		#endif
 	{
 		mDirect3D11RuntimeLinking = RHI_NEW(context, Direct3D11RuntimeLinking)(*this);
 
@@ -12522,6 +12516,26 @@ namespace Direct3D11Rhi
 
 		// Destroy the Direct3D 11 runtime linking instance
 		RHI_DELETE(mContext, Direct3D11RuntimeLinking, mDirect3D11RuntimeLinking);
+	}
+
+	void Direct3D11Rhi::dispatchCommandBufferInternal(const Rhi::CommandBuffer& commandBuffer)
+	{
+		// Loop through all commands
+		const uint8_t* commandPacketBuffer = commandBuffer.getCommandPacketBuffer();
+		Rhi::ConstCommandPacket constCommandPacket = commandPacketBuffer;
+		while (nullptr != constCommandPacket)
+		{
+			{ // Dispatch command packet
+				const Rhi::CommandDispatchFunctionIndex commandDispatchFunctionIndex = Rhi::CommandPacketHelper::loadCommandDispatchFunctionIndex(constCommandPacket);
+				const void* command = Rhi::CommandPacketHelper::loadCommand(constCommandPacket);
+				detail::DISPATCH_FUNCTIONS[static_cast<uint32_t>(commandDispatchFunctionIndex)](command, *this);
+			}
+
+			{ // Next command
+				const uint32_t nextCommandPacketByteIndex = Rhi::CommandPacketHelper::getNextCommandPacketByteIndex(constCommandPacket);
+				constCommandPacket = (~0u != nextCommandPacketByteIndex) ? &commandPacketBuffer[nextCommandPacketByteIndex] : nullptr;
+			}
+		}
 	}
 
 
@@ -14613,26 +14627,12 @@ namespace Direct3D11Rhi
 
 
 	//[-------------------------------------------------------]
-	//[ Operations                                            ]
+	//[ Operation                                             ]
 	//[-------------------------------------------------------]
-	bool Direct3D11Rhi::beginScene()
-	{
-		// Not required when using Direct3D 11
-
-		// Sanity check
-		#ifdef RHI_DEBUG
-			RHI_ASSERT(mContext, false == mDebugBetweenBeginEndScene, "Direct3D 11: Begin scene was called while scene rendering is already in progress, missing end scene call?")
-			mDebugBetweenBeginEndScene = true;
-		#endif
-
-		// Done
-		return true;
-	}
-
-	void Direct3D11Rhi::submitCommandBuffer(const Rhi::CommandBuffer& commandBuffer)
+	void Direct3D11Rhi::dispatchCommandBuffer(const Rhi::CommandBuffer& commandBuffer)
 	{
 		// Sanity check
-		RHI_ASSERT(mContext, !commandBuffer.isEmpty(), "The Direct3D 11 command buffer to execute mustn't be empty")
+		RHI_ASSERT(mContext, !commandBuffer.isEmpty(), "The Direct3D 11 command buffer to dispatch mustn't be empty")
 
 		// Generate asynchronous mipmaps for textures
 		// -> For multithreading we could also use a deferred context, but in first tests there were random "FinishCommandList()"/"ExecuteCommandList()" state glitches
@@ -14713,22 +14713,8 @@ namespace Direct3D11Rhi
 			}
 		}
 
-		// Loop through all commands
-		const uint8_t* commandPacketBuffer = commandBuffer.getCommandPacketBuffer();
-		Rhi::ConstCommandPacket constCommandPacket = commandPacketBuffer;
-		while (nullptr != constCommandPacket)
-		{
-			{ // Submit command packet
-				const Rhi::CommandDispatchFunctionIndex commandDispatchFunctionIndex = Rhi::CommandPacketHelper::loadCommandDispatchFunctionIndex(constCommandPacket);
-				const void* command = Rhi::CommandPacketHelper::loadCommand(constCommandPacket);
-				detail::DISPATCH_FUNCTIONS[static_cast<uint32_t>(commandDispatchFunctionIndex)](command, *this);
-			}
-
-			{ // Next command
-				const uint32_t nextCommandPacketByteIndex = Rhi::CommandPacketHelper::getNextCommandPacketByteIndex(constCommandPacket);
-				constCommandPacket = (~0u != nextCommandPacketByteIndex) ? &commandPacketBuffer[nextCommandPacketByteIndex] : nullptr;
-			}
-		}
+		// Dispatch command buffer
+		dispatchCommandBufferInternal(commandBuffer);
 
 		// "ID3D11DeviceContext::OMSetRenderTargets()" must be called every frame since it might become invalid
 		// -> Hence the reset of our redundant state change avoidance "Direct3D11Rhi::mRenderTarget" at this point in time
@@ -14737,15 +14723,6 @@ namespace Direct3D11Rhi
 			mRenderTarget->releaseReference();
 			mRenderTarget = nullptr;
 		}
-	}
-
-	void Direct3D11Rhi::endScene()
-	{
-		// Sanity check
-		#ifdef RHI_DEBUG
-			RHI_ASSERT(mContext, true == mDebugBetweenBeginEndScene, "Direct3D 11: End scene was called while scene rendering isn't in progress, missing start scene call?")
-			mDebugBetweenBeginEndScene = false;
-		#endif
 	}
 
 

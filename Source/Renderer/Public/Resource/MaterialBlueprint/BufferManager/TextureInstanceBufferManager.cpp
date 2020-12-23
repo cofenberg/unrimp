@@ -285,7 +285,7 @@ namespace Renderer
 		return mStartInstanceLocation - 1;
 	}
 
-	void TextureInstanceBufferManager::onPreCommandBufferExecution()
+	void TextureInstanceBufferManager::onPreCommandBufferDispatch()
 	{
 		// Unmap the current instance buffer and reset the current instance buffer to the first instance
 		if (isValid(mCurrentInstanceBufferIndex))

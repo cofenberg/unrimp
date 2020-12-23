@@ -752,10 +752,10 @@ namespace Renderer
 							currentDrawIndirectBufferOffset = indirectBufferOffset;
 						}
 
-						// Inject scratch command buffer into the main command buffer
+						// Append scratch command buffer into the main command buffer
 						if (!mScratchCommandBuffer.isEmpty())
 						{
-							mScratchCommandBuffer.submitToCommandBufferAndClear(commandBuffer);
+							mScratchCommandBuffer.appendToCommandBufferAndClear(commandBuffer);
 						}
 
 						// Render the specified geometric primitive, based on indexing into an array of vertices

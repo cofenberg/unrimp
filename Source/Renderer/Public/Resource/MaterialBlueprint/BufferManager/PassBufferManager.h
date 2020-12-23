@@ -169,9 +169,9 @@ namespace Renderer
 
 		/**
 		*  @brief
-		*    Called post command buffer execution
+		*    Called post command buffer dispatch
 		*/
-		inline void onPostCommandBufferExecution()
+		inline void onPostCommandBufferDispatch()
 		{
 			mCurrentUniformBufferIndex = 0;
 		}

@@ -404,20 +404,20 @@ namespace Renderer
 					RHI_ASSERT(renderer.getContext(), nullptr != mVarianceFramebufferPtr[::detail::INTERMEDIATE_CASCADE_INDEX], "Invalid variance framebuffer")
 					Rhi::Command::SetGraphicsRenderTarget::create(commandBuffer, mVarianceFramebufferPtr[::detail::INTERMEDIATE_CASCADE_INDEX]);
 					mDepthToExponentialVarianceCompositorInstancePassCompute->onFillCommandBuffer(mVarianceFramebufferPtr[::detail::INTERMEDIATE_CASCADE_INDEX], shadowCompositorContextData, commandBuffer);
-					mDepthToExponentialVarianceCompositorInstancePassCompute->onPostCommandBufferExecution();
+					mDepthToExponentialVarianceCompositorInstancePassCompute->onPostCommandBufferDispatch();
 
 					// Horizontal blur
 					mPassData.shadowFilterSize = filterSizeX;
 					Rhi::Command::SetGraphicsRenderTarget::create(commandBuffer, mIntermediateFramebufferPtr);
 					mHorizontalBlurCompositorInstancePassCompute->onFillCommandBuffer(mIntermediateFramebufferPtr, shadowCompositorContextData, commandBuffer);
-					mHorizontalBlurCompositorInstancePassCompute->onPostCommandBufferExecution();
+					mHorizontalBlurCompositorInstancePassCompute->onPostCommandBufferDispatch();
 
 					// Vertical blur
 					mPassData.shadowFilterSize = filterSizeY;
 					RHI_ASSERT(renderer.getContext(), nullptr != mVarianceFramebufferPtr[cascadeIndex], "Invalid variance framebuffer")
 					Rhi::Command::SetGraphicsRenderTarget::create(commandBuffer, mVarianceFramebufferPtr[cascadeIndex]);
 					mVerticalBlurCompositorInstancePassCompute->onFillCommandBuffer(mVarianceFramebufferPtr[cascadeIndex], shadowCompositorContextData, commandBuffer);
-					mVerticalBlurCompositorInstancePassCompute->onPostCommandBufferExecution();
+					mVerticalBlurCompositorInstancePassCompute->onPostCommandBufferDispatch();
 				}
 				else
 				{
@@ -425,7 +425,7 @@ namespace Renderer
 					RHI_ASSERT(renderer.getContext(), nullptr != mVarianceFramebufferPtr[cascadeIndex], "Invalid variance framebuffer")
 					Rhi::Command::SetGraphicsRenderTarget::create(commandBuffer, mVarianceFramebufferPtr[cascadeIndex]);
 					mDepthToExponentialVarianceCompositorInstancePassCompute->onFillCommandBuffer(mVarianceFramebufferPtr[cascadeIndex], shadowCompositorContextData, commandBuffer);
-					mDepthToExponentialVarianceCompositorInstancePassCompute->onPostCommandBufferExecution();
+					mDepthToExponentialVarianceCompositorInstancePassCompute->onPostCommandBufferDispatch();
 				}
 			}
 		}
