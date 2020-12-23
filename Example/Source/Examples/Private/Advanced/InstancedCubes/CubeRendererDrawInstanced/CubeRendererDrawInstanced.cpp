@@ -424,9 +424,8 @@ void CubeRendererDrawInstanced::fillCommandBuffer(float globalTimer, float globa
 			// Set individual graphics program uniforms
 			// -> Using uniform buffers (aka constant buffers in Direct3D) would be more efficient, but Direct3D 9 doesn't support it (neither does e.g. OpenGL ES 3.0)
 			// -> To keep it simple in here, I just use a less efficient string to identity the uniform (does not really hurt in here)
-			// TODO(co) Update
-			// mGraphicsProgram->setUniform2fv(mGraphicsProgram->getUniformHandle("TimerAndGlobalScale"), timerAndGlobalScale);
-			// mGraphicsProgram->setUniform3fv(mGraphicsProgram->getUniformHandle("LightPosition"), lightPosition);
+			mGraphicsProgram->setUniform2fv(mGraphicsProgram->getUniformHandle("TimerAndGlobalScale"), timerAndGlobalScale);
+			mGraphicsProgram->setUniform3fv(mGraphicsProgram->getUniformHandle("LightPosition"), lightPosition);
 		}
 	}
 
@@ -435,17 +434,16 @@ void CubeRendererDrawInstanced::fillCommandBuffer(float globalTimer, float globa
 	{
 		// TODO(co) Ugly fixed hacked in model-view-projection matrix
 		// TODO(co) OpenGL matrix, Direct3D has minor differences within the projection matrix we have to compensate
-// 		static constexpr float MVP[] =
-// 		{
-// 				1.2803299f,	-0.97915620f,	-0.58038759f,	-0.57922798f,
-// 				0.0f,			 1.9776078f,	-0.57472473f,	-0.573576453f,
-// 			-1.2803299f,	-0.97915620f,	-0.58038759f,	-0.57922798f,
-// 				0.0f,			 0.0f,			 9.8198195f,	 10.0f
-// 		};
+		static constexpr float MVP[] =
+		{
+			 1.2803299f,	-0.97915620f,	-0.58038759f,	-0.57922798f,
+			 0.0f,			 1.9776078f,	-0.57472473f,	-0.573576453f,
+			-1.2803299f,	-0.97915620f,	-0.58038759f,	-0.57922798f,
+			 0.0f,			 0.0f,			 9.8198195f,	 10.0f
+		};
 
 		// There's no uniform buffer: We have to set individual uniforms
-		// TODO(co) Update
-		// mGraphicsProgram->setUniform4fv(mGraphicsProgram->getUniformHandle("MVP"), MVP);
+		mGraphicsProgram->setUniform4fv(mGraphicsProgram->getUniformHandle("MVP"), MVP);
 	}
 
 	// Execute pre-recorded command buffer

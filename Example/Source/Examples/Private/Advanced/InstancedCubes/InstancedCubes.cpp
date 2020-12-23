@@ -228,7 +228,8 @@ void InstancedCubes::onDraw(Rhi::CommandBuffer& commandBuffer)
 
 	// Display statistics
 	#ifdef RENDERER_IMGUI
-		if (mDisplayStatistics && nullptr != getMainRenderTarget() && nullptr != getRenderer())
+		// TODO(co): Debug GUI rendering is currently not working with Direct3D 9
+		if (mDisplayStatistics && nullptr != getMainRenderTarget() && nullptr != getRenderer() && nullptr != getRhi() && getRhi()->getNameId() != Rhi::NameId::DIRECT3D9)
 		{
 			Renderer::DebugGuiManager& debugGuiManager = getRendererSafe().getDebugGuiManager();
 			debugGuiManager.newFrame(*getMainRenderTarget());
