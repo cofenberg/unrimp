@@ -54,7 +54,7 @@ class Queries final : public Triangle
 public:
 	/**
 	*  @brief
-	*    Constructor
+	*    Default constructor
 	*/
 	inline Queries()
 	{

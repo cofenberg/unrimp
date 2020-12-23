@@ -51,7 +51,8 @@ public:
 //[ Public data                                           ]
 //[-------------------------------------------------------]
 public:
-	union {
+	union
+	{
 		float value[4];
 		struct
 		{

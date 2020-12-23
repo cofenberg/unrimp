@@ -54,7 +54,7 @@ class IndirectBuffer final : public Triangle
 public:
 	/**
 	*  @brief
-	*    Constructor
+	*    Default constructor
 	*/
 	inline IndirectBuffer()
 	{

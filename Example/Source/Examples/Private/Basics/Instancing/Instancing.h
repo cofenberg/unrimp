@@ -60,7 +60,7 @@ class Instancing final : public ExampleBase
 public:
 	/**
 	*  @brief
-	*    Constructor
+	*    Default constructor
 	*/
 	inline Instancing()
 	{

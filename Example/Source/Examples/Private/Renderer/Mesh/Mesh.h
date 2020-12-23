@@ -77,7 +77,7 @@ class Mesh final : public ExampleBase, public Renderer::IResourceListener
 public:
 	/**
 	*  @brief
-	*    Constructor
+	*    Default constructor
 	*/
 	Mesh();
 

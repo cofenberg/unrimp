@@ -64,7 +64,7 @@ class CubeTexture final : public ExampleBase
 public:
 	/**
 	*  @brief
-	*    Constructor
+	*    Default constructor
 	*/
 	inline CubeTexture() :
 		mObjectSpaceToClipSpaceMatrixUniformHandle(NULL_HANDLE),

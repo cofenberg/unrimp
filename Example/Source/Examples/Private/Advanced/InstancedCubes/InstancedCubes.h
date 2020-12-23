@@ -77,7 +77,7 @@ class InstancedCubes final : public ExampleBase
 public:
 	/**
 	*  @brief
-	*    Constructor
+	*    Default constructor
 	*/
 	InstancedCubes();
 

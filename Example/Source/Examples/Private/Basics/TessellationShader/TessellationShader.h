@@ -57,7 +57,7 @@ class TessellationShader final : public ExampleBase
 public:
 	/**
 	*  @brief
-	*    Constructor
+	*    Default constructor
 	*/
 	inline TessellationShader()
 	{

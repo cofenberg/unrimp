@@ -55,7 +55,7 @@ class MeshShader : public ExampleBase
 public:
 	/**
 	*  @brief
-	*    Constructor
+	*    Default constructor
 	*/
 	inline MeshShader()
 	{

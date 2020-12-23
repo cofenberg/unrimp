@@ -87,7 +87,7 @@ class Scene final : public ExampleBase, public Renderer::IResourceListener
 public:
 	/**
 	*  @brief
-	*    Constructor
+	*    Default constructor
 	*/
 	Scene();
 

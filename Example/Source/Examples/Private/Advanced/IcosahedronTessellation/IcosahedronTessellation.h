@@ -59,7 +59,7 @@ class IcosahedronTessellation final : public ExampleBase
 public:
 	/**
 	*  @brief
-	*    Constructor
+	*    Default constructor
 	*/
 	inline IcosahedronTessellation() :
 		mTessellationLevelOuter(2.0f),

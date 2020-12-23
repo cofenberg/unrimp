@@ -60,7 +60,7 @@ class Compositor final : public ExampleBase
 public:
 	/**
 	*  @brief
-	*    Constructor
+	*    Default constructor
 	*/
 	inline Compositor() :
 		mCompositorWorkspaceInstance(nullptr)
