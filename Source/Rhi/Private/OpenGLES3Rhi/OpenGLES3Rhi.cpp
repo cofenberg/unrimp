@@ -2045,8 +2045,11 @@ namespace OpenGLES3Rhi
 					}																																				\
 				}
 
-			// Get the extensions string
+			// Get the extensions string and the OpenGL ES version
 			const char* extensions = reinterpret_cast<const char*>(glGetString(GL_EXTENSIONS));
+			GLint majorVersion = 0, minorVersion = 0; 
+			glGetIntegerv(GL_MAJOR_VERSION, &majorVersion); 
+			glGetIntegerv(GL_MINOR_VERSION, &minorVersion);
 
 			//[-------------------------------------------------------]
 			//[ EXT                                                   ]
@@ -2056,6 +2059,7 @@ namespace OpenGLES3Rhi
 			mGL_EXT_texture_compression_dxt1 = (nullptr != strstr(extensions, "GL_EXT_texture_compression_dxt1"));
 			mGL_EXT_texture_compression_latc = (nullptr != strstr(extensions, "GL_EXT_texture_compression_latc"));
 
+			// "GL_EXT_texture_buffer"
 			// TODO(sw) Core in opengles 3.2
 			//mGL_EXT_texture_buffer = (nullptr != strstr(extensions, "GL_EXT_texture_buffer"));
 			// TODO(sw) Disabled for now. With mesa 17.1.3 the OpenGLES driver supports version 3.1 + texture buffer. But currently the shader of the Example project supports only the emulation path
@@ -2068,17 +2072,40 @@ namespace OpenGLES3Rhi
 				mGL_EXT_texture_buffer = result;
 			}
 
-			// TODO(sw) Core in opengles 3.2
-			mGL_EXT_draw_elements_base_vertex = (nullptr != strstr(extensions, "GL_EXT_draw_elements_base_vertex"));
-			if (mGL_EXT_draw_elements_base_vertex)
+			// "GL_EXT_draw_elements_base_vertex" is part of OpenGL ES 3.2
+			if (majorVersion >= 3 && minorVersion >= 2)
 			{
-				// Load the entry points
+				#define FNDEF_EX(retType, funcName, args) retType (GL_APIENTRY *funcPtr_##funcName) args = nullptr
+				FNDEF_EX(void,	glDrawElementsBaseVertex,			(GLenum mode, GLsizei count, GLenum type, const void* indices, GLint basevertex));
+				FNDEF_EX(void,	glDrawElementsInstancedBaseVertex,	(GLenum mode, GLsizei count, GLenum type, const void* indices, GLsizei instancecount, GLint basevertex));
+				#define glDrawElementsBaseVertex			FNPTR(glDrawElementsBaseVertex)
+				#define glDrawElementsInstancedBaseVertex	FNPTR(glDrawElementsInstancedBaseVertex)
+
 				bool result = true;	// Success by default
-				IMPORT_FUNC(glDrawElementsBaseVertexEXT)
-				IMPORT_FUNC(glDrawElementsInstancedBaseVertexEXT)
+				IMPORT_FUNC(glDrawElementsBaseVertex)
+				IMPORT_FUNC(glDrawElementsInstancedBaseVertex)
 				mGL_EXT_draw_elements_base_vertex = result;
+				glDrawElementsBaseVertexEXT = glDrawElementsBaseVertex;
+				glDrawElementsInstancedBaseVertexEXT = glDrawElementsInstancedBaseVertex;
+
+				#undef FNDEF_EX
+				#undef glDrawElementsBaseVertex
+				#undef glDrawElementsInstancedBaseVertex
+			}
+			else
+			{
+				mGL_EXT_draw_elements_base_vertex = (nullptr != strstr(extensions, "GL_EXT_draw_elements_base_vertex"));
+				if (mGL_EXT_draw_elements_base_vertex)
+				{
+					// Load the entry points
+					bool result = true;	// Success by default
+					IMPORT_FUNC(glDrawElementsBaseVertexEXT)
+					IMPORT_FUNC(glDrawElementsInstancedBaseVertexEXT)
+					mGL_EXT_draw_elements_base_vertex = result;
+				}
 			}
 
+			// "GL_EXT_base_instance"
 			mGL_EXT_base_instance = (nullptr != strstr(extensions, "GL_EXT_base_instance"));
 			if (mGL_EXT_base_instance)
 			{
@@ -2090,6 +2117,7 @@ namespace OpenGLES3Rhi
 				mGL_EXT_base_instance = result;
 			}
 
+			// "GL_EXT_clip_control"
 			mGL_EXT_clip_control = (nullptr != strstr(extensions, "GL_EXT_clip_control"));
 			if (mGL_EXT_clip_control)
 			{
