@@ -80,7 +80,7 @@
 
 		// Blend dual quaternions
 		float2x4 blendedDualQuaternion = blendWeights.x * dualQuaternion0 + blendWeights.y * dualQuaternion1 + blendWeights.z * dualQuaternion2 + blendWeights.w * dualQuaternion3;
-		blendedDualQuaternion[0][3] += int(blendWeightsSum < 1) * (1 - blendWeightsSum);
+		blendedDualQuaternion[0][3] += float(blendWeightsSum < 1.0f) * (1.0f - blendWeightsSum);
 		blendedDualQuaternion = blendedDualQuaternion / length(blendedDualQuaternion[0]);
 
 		// Dual quaternion to matrix
