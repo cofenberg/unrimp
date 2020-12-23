@@ -14729,6 +14729,14 @@ namespace Direct3D11Rhi
 				constCommandPacket = (~0u != nextCommandPacketByteIndex) ? &commandPacketBuffer[nextCommandPacketByteIndex] : nullptr;
 			}
 		}
+
+		// "ID3D11DeviceContext::OMSetRenderTargets()" must be called every frame since it might become invalid
+		// -> Hence the reset of our redundant state change avoidance "Direct3D11Rhi::mRenderTarget" at this point in time
+		if (nullptr != mRenderTarget)
+		{
+			mRenderTarget->releaseReference();
+			mRenderTarget = nullptr;
+		}
 	}
 
 	void Direct3D11Rhi::endScene()
@@ -14738,9 +14746,6 @@ namespace Direct3D11Rhi
 			RHI_ASSERT(mContext, true == mDebugBetweenBeginEndScene, "Direct3D 11: End scene was called while scene rendering isn't in progress, missing start scene call?")
 			mDebugBetweenBeginEndScene = false;
 		#endif
-
-		// We need to forget about the currently set render target
-		setGraphicsRenderTarget(nullptr);
 	}
 
 

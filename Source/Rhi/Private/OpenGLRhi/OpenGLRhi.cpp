@@ -21799,12 +21799,6 @@ namespace OpenGLRhi
 			RHI_ASSERT(mContext, true == mDebugBetweenBeginEndScene, "OpenGL: End scene was called while scene rendering isn't in progress, missing start scene call?")
 			mDebugBetweenBeginEndScene = false;
 		#endif
-
-		// We need to forget about the currently set render target
-		setGraphicsRenderTarget(nullptr);
-
-		// We need to forget about the currently set vertex array
-		unsetGraphicsVertexArray();
 	}
 
 

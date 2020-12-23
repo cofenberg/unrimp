@@ -4475,9 +4475,6 @@ namespace NullRhi
 			RHI_ASSERT(mContext, true == mDebugBetweenBeginEndScene, "Null: End scene was called while scene rendering isn't in progress, missing start scene call?")
 			mDebugBetweenBeginEndScene = false;
 		#endif
-
-		// We need to forget about the currently set render target
-		setGraphicsRenderTarget(nullptr);
 	}
 
 

@@ -12859,9 +12859,11 @@ namespace VulkanRhi
 		#endif
 
 		// We need to forget about the currently set render target
+		// -> "Critical: Vulkan debug report callback: Object type: "VK_DEBUG_REPORT_OBJECT_TYPE_COMMAND_BUFFER_EXT" Object: "54336828" Location: "0" Message code: "0" Layer prefix: "Validation" Message: " [ VUID-vkEndCommandBuffer-commandBuffer-00060 ] Object: 0x33d1d3c (Type = 6) | vkEndCommandBuffer(): It is invalid to issue this call inside an active render pass (0x20). The Vulkan spec states: If commandBuffer is a primary command buffer, there must not be an active render pass instance (https://www.khronos.org/registry/vulkan/specs/1.1-extensions/html/vkspec.html#VUID-vkEndCommandBuffer-commandBuffer-00060)" "
 		setGraphicsRenderTarget(nullptr);
 
 		// We need to forget about the currently set vertex array
+		// -> "Critical: Vulkan debug report callback: Object type: "VK_DEBUG_REPORT_OBJECT_TYPE_COMMAND_BUFFER_EXT" Object: "217049444" Location: "0" Message code: "0" Layer prefix: "Validation" Message: " [ UNASSIGNED-CoreValidation-DrawState-VtxIndexOutOfBounds ] Object: 0xcefe964 (Type = 6) | The Pipeline State Object (0x1b) expects that this Command Buffer's vertex binding Index 0 should be set via vkCmdBindVertexBuffers. This is because VkVertexInputBindingDescription struct at index 0 of pVertexBindingDescriptions has a binding value of 0." "
 		unsetGraphicsVertexArray();
 
 		// End Vulkan command buffer

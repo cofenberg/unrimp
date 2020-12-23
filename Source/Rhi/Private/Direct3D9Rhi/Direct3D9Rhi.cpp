@@ -9082,6 +9082,10 @@ namespace Direct3D9Rhi
 				constCommandPacket = (~0u != nextCommandPacketByteIndex) ? &commandPacketBuffer[nextCommandPacketByteIndex] : nullptr;
 			}
 		}
+
+		// Setting the render target must be called every frame since it might become invalid
+		// -> Hence the reset of our redundant state change avoidance "Direct3D9Rhi::mRenderTarget" at this point in time
+		setGraphicsRenderTarget(nullptr);
 	}
 
 	void Direct3D9Rhi::endScene()
@@ -9091,9 +9095,6 @@ namespace Direct3D9Rhi
 			RHI_ASSERT(mContext, true == mDebugBetweenBeginEndScene, "Direct3D 9: End scene was called while scene rendering isn't in progress, missing start scene call?")
 			mDebugBetweenBeginEndScene = false;
 		#endif
-
-		// We need to forget about the currently set render target
-		setGraphicsRenderTarget(nullptr);
 
 		FAILED_DEBUG_BREAK(mDirect3DDevice9->EndScene())
 	}
