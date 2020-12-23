@@ -152,7 +152,7 @@ ExampleRunner::ExampleRunner() :
 	addExample("RenderToTexture",			&runRhiExample<RenderToTexture>,				supportsAllRhi);
 	addExample("MultipleRenderTargets",		&runRhiExample<MultipleRenderTargets>,			supportsAllRhi);
 	#ifndef __ANDROID__
-		addExample("MultipleSwapChains",	&runBasicExample<MultipleSwapChains>,			supportsAllRhi);
+		addExample("MultipleSwapChains",	&runRhiExample<MultipleSwapChains>,				supportsAllRhi);
 	#endif
 	addExample("Instancing",				&runRhiExample<Instancing>,						supportsAllRhi);
 	addExample("GeometryShader",			&runRhiExample<GeometryShader>,					onlyShaderModel4Plus);

@@ -28,7 +28,8 @@
 //[ Includes                                              ]
 //[-------------------------------------------------------]
 #include "Examples/Private/Framework/ExampleBase.h"
-#include "Examples/Private/Framework/IApplicationRhi.h"
+
+#include <Rhi/Public/Rhi.h>
 
 
 //[-------------------------------------------------------]
@@ -50,7 +51,7 @@
 *  @note
 *    - This example is intentionally using OS dependent native window creation in order to keep the example "close to metal"
 */
-class MultipleSwapChains final : public IApplicationRhi
+class MultipleSwapChains final : public ExampleBase
 {
 
 
@@ -60,20 +61,9 @@ class MultipleSwapChains final : public IApplicationRhi
 public:
 	/**
 	*  @brief
-	*    Constructor
-	*
-	*  @param[in] exampleRunner
-	*    Example runner
-	*  @param[in] rhiName
-	*    Case sensitive ASCII name of the RHI to instance, if null pointer or unknown RHI no RHI will be used.
-	*    Example RHI names: "Null", "OpenGL", "OpenGLES3", "Vulkan", "Direct3D9", "Direct3D10", "Direct3D11", "Direct3D12"
-	*  @param[in] exampleName
-	*    Example name
+	*    Default constructor
 	*/
-	inline MultipleSwapChains(ExampleRunner& exampleRunner, const char* rhiName, const std::string_view& exampleName) :
-		IApplicationRhi(rhiName, mExampleBaseDummy),
-		mExampleBaseDummy(exampleRunner),
-		mExampleName(exampleName)
+	inline MultipleSwapChains()
 	{
 		// Nothing here
 	}
@@ -93,19 +83,21 @@ public:
 //[ Public virtual IApplication methods                   ]
 //[-------------------------------------------------------]
 public:
-	[[nodiscard]] virtual bool onInitialization() override;
+	virtual void onInitialization() override;
 	virtual void onDeinitialization() override;
-	virtual void onDrawRequest() override;
-	virtual void onEscapeKey() override;
+	virtual void onDraw(Rhi::CommandBuffer& commandBuffer) override;
+
+	[[nodiscard]] inline virtual bool doesCompleteOwnDrawing() const override
+	{
+		// This example wants complete control of the drawing
+		return true;
+	}
 
 
 //[-------------------------------------------------------]
 //[ Private methods                                       ]
 //[-------------------------------------------------------]
 private:
-	explicit MultipleSwapChains(const MultipleSwapChains& source) = delete;
-	MultipleSwapChains& operator =(const MultipleSwapChains& source) = delete;
-
 	/**
 	*  @brief
 	*    Fill the given commando buffer
@@ -122,8 +114,6 @@ private:
 //[ Private data                                          ]
 //[-------------------------------------------------------]
 private:
-	ExampleBase						mExampleBaseDummy;
-	const std::string_view			mExampleName;
 	Rhi::IBufferManagerPtr			mBufferManager;			///< Buffer manager, can be a null pointer
 	Rhi::CommandBuffer				mCommandBuffer;			///< Command buffer
 	Rhi::IRootSignaturePtr			mRootSignature;			///< Root signature, can be a null pointer

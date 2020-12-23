@@ -120,11 +120,8 @@ PRAGMA_WARNING_POP
 //[-------------------------------------------------------]
 //[ Public virtual IApplication methods                   ]
 //[-------------------------------------------------------]
-bool MultipleSwapChains::onInitialization()
+void MultipleSwapChains::onInitialization()
 {
-	// Call the base implementation
-	const bool result = IApplicationRhi::onInitialization();
-
 	// Get and check the RHI instance
 	Rhi::IRhiPtr rhi(getRhi());
 	if (nullptr != rhi)
@@ -288,9 +285,6 @@ bool MultipleSwapChains::onInitialization()
 			#endif
 		}
 	}
-
-	// Done
-	return result;
 }
 
 void MultipleSwapChains::onDeinitialization()
@@ -325,12 +319,9 @@ void MultipleSwapChains::onDeinitialization()
 	mRootSignature = nullptr;
 	mCommandBuffer.clear();
 	mBufferManager = nullptr;
-
-	// Call the base implementation
-	IApplicationRhi::onDeinitialization();
 }
 
-void MultipleSwapChains::onDrawRequest()
+void MultipleSwapChains::onDraw(Rhi::CommandBuffer&)
 {
 	// Get and check the RHI instance
 	Rhi::IRhiPtr rhi(getRhi());
@@ -435,11 +426,6 @@ void MultipleSwapChains::onDrawRequest()
 			mSwapChain->present();
 		}
 	}
-}
-
-void MultipleSwapChains::onEscapeKey()
-{
-	switchExample("ImGuiExampleSelector");
 }
 
 
