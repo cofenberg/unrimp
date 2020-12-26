@@ -71,7 +71,7 @@
 
 #include <DeviceInput/DeviceInput.h>
 
-#define INI_IMPLEMENTATION
+// "ini.h"-library
 #define INI_MALLOC(ctx, size) (static_cast<Rhi::IAllocator*>(ctx)->reallocate(nullptr, 0, size, 1))
 #define INI_FREE(ctx, ptr) (static_cast<Rhi::IAllocator*>(ctx)->reallocate(ptr, 0, 0, 1))
 #include <ini/ini.h>
@@ -101,7 +101,7 @@ extern Rhi::DefaultAllocator g_DefaultAllocator;
 //[-------------------------------------------------------]
 namespace
 {
-	namespace detail
+	namespace SceneDetail
 	{
 
 
@@ -257,10 +257,10 @@ void Scene::onInitialization()
 	}
 
 	// Create the scene resource
-	renderer.getSceneResourceManager().loadSceneResourceByAssetId(::detail::SCENE_ASSET_ID, mSceneResourceId, this);
+	renderer.getSceneResourceManager().loadSceneResourceByAssetId(::SceneDetail::SCENE_ASSET_ID, mSceneResourceId, this);
 
 	// Load the material resource we're going to clone
-	renderer.getMaterialResourceManager().loadMaterialResourceByAssetId(::detail::IMROD_MATERIAL_ASSET_ID, mMaterialResourceId, this);
+	renderer.getMaterialResourceManager().loadMaterialResourceByAssetId(::SceneDetail::IMROD_MATERIAL_ASSET_ID, mMaterialResourceId, this);
 
 	// Try to startup the VR-manager if a HMD is present
 	#ifdef RENDERER_OPENVR
@@ -437,7 +437,7 @@ void Scene::onDraw(Rhi::CommandBuffer&)
 void Scene::onLoadingStateChange(const Renderer::IResource& resource)
 {
 	const Renderer::IResource::LoadingState loadingState = resource.getLoadingState();
-	if (resource.getAssetId() == ::detail::SCENE_ASSET_ID)
+	if (resource.getAssetId() == ::SceneDetail::SCENE_ASSET_ID)
 	{
 		if (Renderer::IResource::LoadingState::LOADED == loadingState)
 		{
@@ -543,7 +543,7 @@ void Scene::onLoadingStateChange(const Renderer::IResource& resource)
 			mSceneNode = nullptr;
 		}
 	}
-	else if (Renderer::IResource::LoadingState::LOADED == loadingState && resource.getAssetId() == ::detail::IMROD_MATERIAL_ASSET_ID)
+	else if (Renderer::IResource::LoadingState::LOADED == loadingState && resource.getAssetId() == ::SceneDetail::IMROD_MATERIAL_ASSET_ID)
 	{
 		// Create our material resource clone
 		mCloneMaterialResourceId = getRendererSafe().getMaterialResourceManager().createMaterialResourceByCloning(resource.getId());
@@ -563,9 +563,9 @@ void Scene::loadIni()
 	// Try to load ini settings from file
 	Renderer::IRenderer& renderer = getRendererSafe();
 	const Renderer::IFileManager& fileManager = renderer.getFileManager();
-	if (fileManager.doesFileExist(::detail::VIRTUAL_SETTINGS_FILENAME))
+	if (fileManager.doesFileExist(::SceneDetail::VIRTUAL_SETTINGS_FILENAME))
 	{
-		Renderer::IFile* file = fileManager.openFile(Renderer::IFileManager::FileMode::READ, ::detail::VIRTUAL_SETTINGS_FILENAME);
+		Renderer::IFile* file = fileManager.openFile(Renderer::IFileManager::FileMode::READ, ::SceneDetail::VIRTUAL_SETTINGS_FILENAME);
 		if (nullptr != file)
 		{
 			mIniFileContent.resize(file->getNumberOfBytes());
@@ -588,7 +588,7 @@ void Scene::saveIni()
 	if (nullptr != mIni)
 	{
 		const Renderer::IFileManager& fileManager = getRendererSafe().getFileManager();
-		Renderer::IFile* file = fileManager.openFile(Renderer::IFileManager::FileMode::WRITE, ::detail::VIRTUAL_SETTINGS_FILENAME);
+		Renderer::IFile* file = fileManager.openFile(Renderer::IFileManager::FileMode::WRITE, ::SceneDetail::VIRTUAL_SETTINGS_FILENAME);
 		if (nullptr != file)
 		{
 			Renderer::IRenderer& renderer = getRendererSafe();

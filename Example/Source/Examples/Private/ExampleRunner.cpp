@@ -57,6 +57,12 @@
 	#include "Examples/Private/Renderer/Scene/Scene.h"
 #endif
 
+// "ini.h"-library implementation in here since the tiny external library is used by multiple examples
+#define INI_IMPLEMENTATION
+#define INI_MALLOC(ctx, size) (static_cast<Rhi::IAllocator*>(ctx)->reallocate(nullptr, 0, size, 1))
+#define INI_FREE(ctx, ptr) (static_cast<Rhi::IAllocator*>(ctx)->reallocate(ptr, 0, 0, 1))
+#include <ini/ini.h>
+
 #ifdef _WIN32
 	// Disable warnings in external headers, we can't fix them
 	PRAGMA_WARNING_PUSH

@@ -33,6 +33,12 @@
 
 
 //[-------------------------------------------------------]
+//[ Forward declarations                                  ]
+//[-------------------------------------------------------]
+typedef struct ini_t ini_t;
+
+
+//[-------------------------------------------------------]
 //[ Classes                                               ]
 //[-------------------------------------------------------]
 /**
@@ -51,10 +57,7 @@ public:
 	*  @brief
 	*    Default constructor
 	*/
-	inline ImGuiExampleSelector()
-	{
-		// Nothing here
-	}
+	ImGuiExampleSelector();
 
 	/**
 	*  @brief
@@ -72,6 +75,7 @@ public:
 //[-------------------------------------------------------]
 public:
 	virtual void onInitialization() override;
+	virtual void onDeinitialization() override;
 	virtual void onDraw(Rhi::CommandBuffer& commandBuffer) override;
 
 
@@ -79,6 +83,9 @@ public:
 //[ Private methods                                       ]
 //[-------------------------------------------------------]
 private:
+	void loadIni();
+	void saveIni();
+	void destroyIni();
 	void createDebugGui();
 
 
@@ -87,6 +94,14 @@ private:
 //[-------------------------------------------------------]
 private:
 	Rhi::CommandBuffer mCommandBuffer;	///< RHI command buffer
+	// Current selection
+	std::string mSelectedRhiName;
+	std::string mSelectedExampleName;
+	// Ini settings indices
+	std::vector<char> mIniFileContent;	// Defined here to avoid reallocations
+	ini_t*			  mIni;
+	int				  mSelectedRhiNameIndex;
+	int				  mSelectedExampleNameIndex;
 
 
 };

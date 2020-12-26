@@ -30,13 +30,56 @@
 #include "Examples/Private/Framework/Color4.h"
 #include "Examples/Private/ExampleRunner.h"
 
+#include <Renderer/Public/Context.h>
 #include <Renderer/Public/IRenderer.h>
+#include <Renderer/Public/Core/File/IFile.h>
+#include <Renderer/Public/Core/File/IFileManager.h>
 #include <Renderer/Public/DebugGui/DebugGuiManager.h>
 #ifdef RENDERER_OPENVR
 	#include <Renderer/Public/Vr/IVrManager.h>
 #endif
 
+// "ini.h"-library
+#define INI_MALLOC(ctx, size) (static_cast<Rhi::IAllocator*>(ctx)->reallocate(nullptr, 0, size, 1))
+#define INI_FREE(ctx, ptr) (static_cast<Rhi::IAllocator*>(ctx)->reallocate(ptr, 0, 0, 1))
+#include <ini/ini.h>
+
 #include <ImGui/imgui.h>
+
+
+//[-------------------------------------------------------]
+//[ Anonymous detail namespace                            ]
+//[-------------------------------------------------------]
+namespace
+{
+	namespace ImGuiExampleSelectorDetail
+	{
+
+
+		//[-------------------------------------------------------]
+		//[ Global definitions                                    ]
+		//[-------------------------------------------------------]
+		static constexpr char* VIRTUAL_SETTINGS_FILENAME = "LocalData/ImGuiExampleSelectorExample.ini";
+
+
+//[-------------------------------------------------------]
+//[ Anonymous detail namespace                            ]
+//[-------------------------------------------------------]
+	} // detail
+}
+
+
+//[-------------------------------------------------------]
+//[ Public methods                                        ]
+//[-------------------------------------------------------]
+ImGuiExampleSelector::ImGuiExampleSelector() :
+	// Ini settings indices
+	mIni(nullptr),
+	mSelectedRhiNameIndex(INI_NOT_FOUND),
+	mSelectedExampleNameIndex(INI_NOT_FOUND)
+{
+	// Nothing here
+}
 
 
 //[-------------------------------------------------------]
@@ -44,6 +87,8 @@
 //[-------------------------------------------------------]
 void ImGuiExampleSelector::onInitialization()
 {
+	loadIni();
+
 	// Ease-of-use: If a HMD is present automatically start the "Scene"-example so the user can see something
 	#ifdef RENDERER_OPENVR
 		if (getRendererSafe().getVrManager().isHmdPresent())
@@ -51,6 +96,12 @@ void ImGuiExampleSelector::onInitialization()
 			switchExample("Scene");
 		}
 	#endif
+}
+
+void ImGuiExampleSelector::onDeinitialization()
+{
+	saveIni();
+	destroyIni();
 }
 
 void ImGuiExampleSelector::onDraw(Rhi::CommandBuffer& commandBuffer)
@@ -75,21 +126,97 @@ void ImGuiExampleSelector::onDraw(Rhi::CommandBuffer& commandBuffer)
 //[-------------------------------------------------------]
 //[ Private methods                                       ]
 //[-------------------------------------------------------]
+void ImGuiExampleSelector::loadIni()
+{
+	// Reset ini
+	destroyIni();
+
+	// Try to load ini settings from file
+	Renderer::IRenderer& renderer = getRendererSafe();
+	const Renderer::IFileManager& fileManager = renderer.getFileManager();
+	if (fileManager.doesFileExist(::ImGuiExampleSelectorDetail::VIRTUAL_SETTINGS_FILENAME))
+	{
+		Renderer::IFile* file = fileManager.openFile(Renderer::IFileManager::FileMode::READ, ::ImGuiExampleSelectorDetail::VIRTUAL_SETTINGS_FILENAME);
+		if (nullptr != file)
+		{
+			mIniFileContent.resize(file->getNumberOfBytes());
+			file->read(mIniFileContent.data(), mIniFileContent.size());
+			fileManager.closeFile(*file);
+			mIni = ini_load(mIniFileContent.data(), &renderer.getContext().getAllocator());
+			mSelectedRhiNameIndex = ini_find_property(mIni, INI_GLOBAL_SECTION, "SelectedRhiName", 0);
+			mSelectedExampleNameIndex = ini_find_property(mIni, INI_GLOBAL_SECTION, "SelectedExampleName", 0);
+		}
+	}
+	if (nullptr == mIni)
+	{
+		mIni = ini_create(&renderer.getContext().getAllocator());
+	}
+}
+
+void ImGuiExampleSelector::saveIni()
+{
+	if (nullptr != mIni)
+	{
+		const Renderer::IFileManager& fileManager = getRendererSafe().getFileManager();
+		Renderer::IFile* file = fileManager.openFile(Renderer::IFileManager::FileMode::WRITE, ::ImGuiExampleSelectorDetail::VIRTUAL_SETTINGS_FILENAME);
+		if (nullptr != file)
+		{
+			// Backup settings to ini
+			if (INI_NOT_FOUND == mSelectedRhiNameIndex)
+			{
+				mSelectedRhiNameIndex = ini_property_add(mIni, INI_GLOBAL_SECTION, "SelectedRhiName", 0, mSelectedRhiName.c_str(), 0);
+			}
+			else
+			{
+				ini_property_value_set(mIni, INI_GLOBAL_SECTION, mSelectedRhiNameIndex, mSelectedRhiName.c_str(), 0);
+			}
+			if (INI_NOT_FOUND == mSelectedExampleNameIndex)
+			{
+				mSelectedExampleNameIndex = ini_property_add(mIni, INI_GLOBAL_SECTION, "SelectedExampleName", 0, mSelectedExampleName.c_str(), 0);
+			}
+			else
+			{
+				ini_property_value_set(mIni, INI_GLOBAL_SECTION, mSelectedExampleNameIndex, mSelectedExampleName.c_str(), 0);
+			}
+
+			// Save ini
+			mIniFileContent.resize(static_cast<size_t>(ini_save(mIni, nullptr, 0)));
+			ini_save(mIni, mIniFileContent.data(), static_cast<int>(mIniFileContent.size()));
+			file->write(mIniFileContent.data(), mIniFileContent.size() - 1);
+			fileManager.closeFile(*file);
+		}
+	}
+}
+
+void ImGuiExampleSelector::destroyIni()
+{
+	if (nullptr != mIni)
+	{
+		ini_destroy(mIni);
+		mIni = nullptr;
+		mSelectedRhiNameIndex = INI_NOT_FOUND;
+		mSelectedExampleNameIndex = INI_NOT_FOUND;
+	}
+}
+
 void ImGuiExampleSelector::createDebugGui()
 {
 	ImGui::SetNextWindowSize(ImVec2(260.0f, 100.0f), ImGuiCond_FirstUseEver);
 	if (ImGui::Begin("Example Selector"))
 	{
 		// Selection of RHI
-		std::string selectedRhiName;
 		static int selectedRhiIndex = -1;
+		if (-1 == selectedRhiIndex && INI_NOT_FOUND != mSelectedRhiNameIndex)
 		{
-			// Fill list of RHI names
+			// Restore the previously selected RHI from ini
+			mSelectedRhiName = ini_property_value(mIni, INI_GLOBAL_SECTION, mSelectedRhiNameIndex);
+		}
+		{ // Fill list of RHI names
 			std::string itemsSeparatedByZeros;
 			const ExampleRunner::AvailableRhis& availableRhis = getExampleRunner().getAvailableRhis();
 			{
 				int rhiIndex = 0;
-				const std::string& defaultRhiName = getExampleRunner().getDefaultRhiName();
+				const std::string& defaultRhiName = mSelectedRhiName.empty() ? getExampleRunner().getDefaultRhiName() : mSelectedRhiName;
 				for (const std::string_view& rhiName : availableRhis)
 				{
 					itemsSeparatedByZeros += rhiName;
@@ -101,7 +228,7 @@ void ImGuiExampleSelector::createDebugGui()
 					}
 					if (rhiIndex == selectedRhiIndex)
 					{
-						selectedRhiName = rhiName;
+						mSelectedRhiName = rhiName;
 					}
 					++rhiIndex;
 				}
@@ -112,31 +239,35 @@ void ImGuiExampleSelector::createDebugGui()
 			ImGui::Combo("RHI", &selectedRhiIndex, itemsSeparatedByZeros.c_str());
 		}
 
-		// Selection of example
-		std::string selectedExampleName;
-		{
+		{ // Selection of example
 			static int selectedExampleIndex = -1;
+			if (-1 == selectedExampleIndex && INI_NOT_FOUND != mSelectedExampleNameIndex)
+			{
+				// Restore the previously selected example from ini
+				mSelectedExampleName = ini_property_value(mIni, INI_GLOBAL_SECTION, mSelectedExampleNameIndex);
+			}
 
 			// Fill list of examples supported by the currently selected RHI
 			std::string itemsSeparatedByZeros;
 			{
 				int exampleIndex = 0;
+				const std::string& defaultExampleName = mSelectedExampleName.empty() ? "Scene" : mSelectedExampleName;
 				const ExampleRunner::ExampleToSupportedRhis& exampleToSupportedRhis = getExampleRunner().getExampleToSupportedRhis();
 				for (const auto& pair : exampleToSupportedRhis)
 				{
 					const ExampleRunner::SupportedRhis& supportedRhiList = pair.second;
-					if (pair.first != "ImGuiExampleSelector" && std::find(supportedRhiList.begin(), supportedRhiList.end(), selectedRhiName) != supportedRhiList.end())
+					if (pair.first != "ImGuiExampleSelector" && std::find(supportedRhiList.begin(), supportedRhiList.end(), mSelectedRhiName) != supportedRhiList.end())
 					{
 						itemsSeparatedByZeros += pair.first;
 						itemsSeparatedByZeros += '\0';
-						if (-1 == selectedExampleIndex && "Scene" == pair.first)
+						if (-1 == selectedExampleIndex && defaultExampleName == pair.first)
 						{
 							// Set initially selected example index, "Scene" is preferred since it's the most advantaged example
 							selectedExampleIndex = exampleIndex;
 						}
 						if (exampleIndex == selectedExampleIndex)
 						{
-							selectedExampleName = pair.first;
+							mSelectedExampleName = pair.first;
 						}
 						++exampleIndex;
 					}
@@ -147,7 +278,7 @@ void ImGuiExampleSelector::createDebugGui()
 				if (-1 == selectedExampleIndex && 0 != exampleIndex)
 				{
 					selectedExampleIndex = 0;
-					selectedExampleName = itemsSeparatedByZeros;
+					mSelectedExampleName = itemsSeparatedByZeros;
 				}
 			}
 
@@ -158,7 +289,7 @@ void ImGuiExampleSelector::createDebugGui()
 		// Start selected example
 		if (ImGui::Button("Start"))
 		{
-			switchExample(selectedExampleName.c_str(), selectedRhiName.c_str());
+			switchExample(mSelectedExampleName.c_str(), mSelectedRhiName.c_str());
 		}
 
 		// Exit
