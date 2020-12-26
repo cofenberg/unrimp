@@ -1066,7 +1066,7 @@ namespace
 				VK_KHR_SWAPCHAIN_EXTENSION_NAME,
 				VK_KHR_MAINTENANCE1_EXTENSION_NAME		// We want to be able to specify a negative viewport height, this way we don't have to apply "<output position>.y = -<output position>.y" inside vertex shaders to compensate for the Vulkan coordinate system
 			};
-			if (enableValidation)
+			if (enableDebugMarker)
 			{
 				enabledExtensions.emplace_back(VK_EXT_DEBUG_MARKER_EXTENSION_NAME);
 			}
