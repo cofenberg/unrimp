@@ -1146,7 +1146,7 @@ namespace
 				&vkDeviceQueueCreateInfo,												// pQueueCreateInfos (const VkDeviceQueueCreateInfo*)
 				enableValidation ? NUMBER_OF_VALIDATION_LAYERS : 0,						// enabledLayerCount (uint32_t)
 				enableValidation ? VALIDATION_LAYER_NAMES : nullptr,					// ppEnabledLayerNames (const char* const*)
-				enabledExtensions.size(),												// enabledExtensionCount (uint32_t)
+				static_cast<uint32_t>(enabledExtensions.size()),						// enabledExtensionCount (uint32_t)
 				enabledExtensions.empty() ? nullptr : enabledExtensions.data(),			// ppEnabledExtensionNames (const char* const*)
 				&vkPhysicalDeviceFeatures												// pEnabledFeatures (const VkPhysicalDeviceFeatures*)
 			};
