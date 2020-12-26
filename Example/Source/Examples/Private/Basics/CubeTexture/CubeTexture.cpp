@@ -326,52 +326,47 @@ void CubeTexture::onDeinitialization()
 
 void CubeTexture::onDraw(Rhi::CommandBuffer& commandBuffer)
 {
-	// Get and check the RHI instance
-	Rhi::IRhiPtr rhi(getRhi());
-	if (nullptr != rhi)
-	{
-		{ // Set uniform
-			// Get the aspect ratio
-			float aspectRatio = 4.0f / 3.0f;
+	{ // Set uniform
+		// Get the aspect ratio
+		float aspectRatio = 4.0f / 3.0f;
+		{
+			// Get the render target with and height
+			const Rhi::IRenderTarget* renderTarget = getMainRenderTarget();
+			if (nullptr != renderTarget)
 			{
-				// Get the render target with and height
-				const Rhi::IRenderTarget* renderTarget = getMainRenderTarget();
-				if (nullptr != renderTarget)
-				{
-					uint32_t width  = 1;
-					uint32_t height = 1;
-					renderTarget->getWidthAndHeight(width, height);
+				uint32_t width  = 1;
+				uint32_t height = 1;
+				renderTarget->getWidthAndHeight(width, height);
 
-					// Get the aspect ratio
-					aspectRatio = static_cast<float>(width) / static_cast<float>(height);
-				}
-			}
-
-			// Calculate the object space to clip space matrix
-			const glm::mat4 viewSpaceToClipSpace	= glm::perspective(45.0f, aspectRatio, 100.0f, 0.1f);	// Near and far flipped due to usage of Reversed-Z (see e.g. https://developer.nvidia.com/content/depth-precision-visualized and https://nlguillemot.wordpress.com/2016/12/07/reversed-z-in-opengl/)
-			const glm::mat4 viewTranslate			= glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, 3.0f));
-			const glm::mat4 worldSpaceToViewSpace	= glm::rotate(viewTranslate, mGlobalTimer, glm::normalize(glm::vec3(1.0f, 1.0f, 0.0f)));
-			const glm::mat4 objectSpaceToWorldSpace	= glm::scale(glm::mat4(1.0f), glm::vec3(0.5f));
-				  glm::mat4 objectSpaceToViewSpace	= worldSpaceToViewSpace * objectSpaceToWorldSpace;
-			const glm::mat4 objectSpaceToClipSpace	= viewSpaceToClipSpace * objectSpaceToViewSpace;
-
-			// Upload the uniform data
-			// -> Two versions: One using an uniform buffer and one setting an individual uniform
-			if (nullptr != mUniformBuffer)
-			{
-				// Copy data into the uniform buffer
-				Rhi::Command::CopyUniformBufferData::create(commandBuffer, *mUniformBuffer, glm::value_ptr(objectSpaceToClipSpace), sizeof(float) * 4 * 4);
-			}
-			else
-			{
-				// Set legacy uniforms
-				Rhi::Command::SetUniform::createMatrix4fv(commandBuffer, *mGraphicsProgram, mObjectSpaceToClipSpaceMatrixUniformHandle, glm::value_ptr(objectSpaceToClipSpace));
+				// Get the aspect ratio
+				aspectRatio = static_cast<float>(width) / static_cast<float>(height);
 			}
 		}
 
-		// Dispatch pre-recorded command buffer
-		Rhi::Command::DispatchCommandBuffer::create(commandBuffer, &mCommandBuffer);
+		// Calculate the object space to clip space matrix
+		const glm::mat4 viewSpaceToClipSpace	= glm::perspective(45.0f, aspectRatio, 100.0f, 0.1f);	// Near and far flipped due to usage of Reversed-Z (see e.g. https://developer.nvidia.com/content/depth-precision-visualized and https://nlguillemot.wordpress.com/2016/12/07/reversed-z-in-opengl/)
+		const glm::mat4 viewTranslate			= glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, 3.0f));
+		const glm::mat4 worldSpaceToViewSpace	= glm::rotate(viewTranslate, mGlobalTimer, glm::normalize(glm::vec3(1.0f, 1.0f, 0.0f)));
+		const glm::mat4 objectSpaceToWorldSpace	= glm::scale(glm::mat4(1.0f), glm::vec3(0.5f));
+			  glm::mat4 objectSpaceToViewSpace  = worldSpaceToViewSpace * objectSpaceToWorldSpace;
+		const glm::mat4 objectSpaceToClipSpace	= viewSpaceToClipSpace * objectSpaceToViewSpace;
+
+		// Upload the uniform data
+		// -> Two versions: One using an uniform buffer and one setting an individual uniform
+		if (nullptr != mUniformBuffer)
+		{
+			// Copy data into the uniform buffer
+			Rhi::Command::CopyUniformBufferData::create(commandBuffer, *mUniformBuffer, glm::value_ptr(objectSpaceToClipSpace), sizeof(float) * 4 * 4);
+		}
+		else
+		{
+			// Set legacy uniforms
+			Rhi::Command::SetUniform::createMatrix4fv(commandBuffer, *mGraphicsProgram, mObjectSpaceToClipSpaceMatrixUniformHandle, glm::value_ptr(objectSpaceToClipSpace));
+		}
 	}
+
+	// Dispatch pre-recorded command buffer
+	Rhi::Command::DispatchCommandBuffer::create(commandBuffer, &mCommandBuffer);
 }
 
 

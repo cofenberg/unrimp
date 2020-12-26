@@ -240,69 +240,64 @@ void Mesh::onUpdate()
 
 void Mesh::onDraw(Rhi::CommandBuffer& commandBuffer)
 {
-	// Get and check the RHI instance
-	Rhi::IRhiPtr rhi(getRhi());
-	if (nullptr != rhi)
-	{
-		{ // Set uniform
-			// Get the aspect ratio
-			float aspectRatio = 4.0f / 3.0f;
-			{
-				// Get the render target with and height
-				const Rhi::IRenderTarget* renderTarget = getMainRenderTarget();
-				if (nullptr != renderTarget)
-				{
-					uint32_t width  = 1;
-					uint32_t height = 1;
-					renderTarget->getWidthAndHeight(width, height);
-
-					// Get the aspect ratio
-					aspectRatio = static_cast<float>(width) / static_cast<float>(height);
-				}
-			}
-
-			// Calculate the object space to clip space matrix
-			const glm::mat4 viewSpaceToClipSpace	= glm::perspective(45.0f, aspectRatio, 100.0f, 0.1f);	// Near and far flipped due to usage of Reversed-Z (see e.g. https://developer.nvidia.com/content/depth-precision-visualized and https://nlguillemot.wordpress.com/2016/12/07/reversed-z-in-opengl/)
-			const glm::mat4 viewTranslate			= glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, -7.0f, 25.0f));
-			const glm::mat4 worldSpaceToViewSpace	= glm::rotate(viewTranslate, mGlobalTimer, glm::vec3(0.0f, 1.0f, 0.0f));
-			const glm::mat4 objectSpaceToWorldSpace	= glm::scale(glm::mat4(1.0f), glm::vec3(0.5f));
-				  glm::mat4 objectSpaceToViewSpace	= worldSpaceToViewSpace * objectSpaceToWorldSpace;
-			const glm::mat4 objectSpaceToClipSpace	= viewSpaceToClipSpace * objectSpaceToViewSpace;
-
-			// Upload the uniform data
-			// -> Two versions: One using an uniform buffer and one setting an individual uniform
-			if (nullptr != mUniformBuffer)
-			{
-				// Using "Rhi::Command::CopyUniformBufferData::create()" in here would be more compact to write, but would also result in copying around things inside memory, hence we're using the command buffer auxiliary memory directly in here
-				struct UniformBlockDynamicVs final
-				{
-					float objectSpaceToClipSpaceMatrix[4 * 4];	// Object space to clip space matrix
-					float objectSpaceToViewSpaceMatrix[4 * 4];	// Object space to view space matrix
-				};
-				Rhi::Command::CopyUniformBufferData* copyUniformBufferData = commandBuffer.addCommand<Rhi::Command::CopyUniformBufferData>(sizeof(UniformBlockDynamicVs));
-				copyUniformBufferData->uniformBuffer = mUniformBuffer;
-				copyUniformBufferData->numberOfBytes = sizeof(UniformBlockDynamicVs);
-				UniformBlockDynamicVs* uniformBlockDynamicVS = reinterpret_cast<UniformBlockDynamicVs*>(Rhi::CommandPacketHelper::getAuxiliaryMemory(copyUniformBufferData));
-				memcpy(uniformBlockDynamicVS->objectSpaceToClipSpaceMatrix, glm::value_ptr(objectSpaceToClipSpace), sizeof(float) * 4 * 4);
-
-				// TODO(co) float3x3 (currently there are alignment issues when using Direct3D, have a look into possible solutions)
-				glm::mat3 objectSpaceToViewSpace3x3 = glm::mat3(objectSpaceToViewSpace);
-				objectSpaceToViewSpace = glm::mat4(objectSpaceToViewSpace3x3);
-				memcpy(uniformBlockDynamicVS->objectSpaceToViewSpaceMatrix, glm::value_ptr(objectSpaceToViewSpace), sizeof(float) * 4 * 4);
-			}
-			else
-			{
-				// Set legacy uniforms
-				Rhi::Command::SetUniform::createMatrix4fv(commandBuffer, *mGraphicsProgram, mObjectSpaceToClipSpaceMatrixUniformHandle, glm::value_ptr(objectSpaceToClipSpace));
-				Rhi::Command::SetUniform::createMatrix3fv(commandBuffer, *mGraphicsProgram, mObjectSpaceToViewSpaceMatrixUniformHandle, glm::value_ptr(glm::mat3(objectSpaceToViewSpace)));
-			}
-		}
-
-		// Dispatch pre-recorded command buffer, in case the referenced assets have already been loaded and the command buffer has been filled as a consequence
-		if (!mCommandBuffer.isEmpty())
+	{ // Set uniform
+		// Get the aspect ratio
+		float aspectRatio = 4.0f / 3.0f;
 		{
-			Rhi::Command::DispatchCommandBuffer::create(commandBuffer, &mCommandBuffer);
+			// Get the render target with and height
+			const Rhi::IRenderTarget* renderTarget = getMainRenderTarget();
+			if (nullptr != renderTarget)
+			{
+				uint32_t width  = 1;
+				uint32_t height = 1;
+				renderTarget->getWidthAndHeight(width, height);
+
+				// Get the aspect ratio
+				aspectRatio = static_cast<float>(width) / static_cast<float>(height);
+			}
 		}
+
+		// Calculate the object space to clip space matrix
+		const glm::mat4 viewSpaceToClipSpace	= glm::perspective(45.0f, aspectRatio, 100.0f, 0.1f);	// Near and far flipped due to usage of Reversed-Z (see e.g. https://developer.nvidia.com/content/depth-precision-visualized and https://nlguillemot.wordpress.com/2016/12/07/reversed-z-in-opengl/)
+		const glm::mat4 viewTranslate			= glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, -7.0f, 25.0f));
+		const glm::mat4 worldSpaceToViewSpace	= glm::rotate(viewTranslate, mGlobalTimer, glm::vec3(0.0f, 1.0f, 0.0f));
+		const glm::mat4 objectSpaceToWorldSpace	= glm::scale(glm::mat4(1.0f), glm::vec3(0.5f));
+			  glm::mat4 objectSpaceToViewSpace	= worldSpaceToViewSpace * objectSpaceToWorldSpace;
+		const glm::mat4 objectSpaceToClipSpace	= viewSpaceToClipSpace * objectSpaceToViewSpace;
+
+		// Upload the uniform data
+		// -> Two versions: One using an uniform buffer and one setting an individual uniform
+		if (nullptr != mUniformBuffer)
+		{
+			// Using "Rhi::Command::CopyUniformBufferData::create()" in here would be more compact to write, but would also result in copying around things inside memory, hence we're using the command buffer auxiliary memory directly in here
+			struct UniformBlockDynamicVs final
+			{
+				float objectSpaceToClipSpaceMatrix[4 * 4];	// Object space to clip space matrix
+				float objectSpaceToViewSpaceMatrix[4 * 4];	// Object space to view space matrix
+			};
+			Rhi::Command::CopyUniformBufferData* copyUniformBufferData = commandBuffer.addCommand<Rhi::Command::CopyUniformBufferData>(sizeof(UniformBlockDynamicVs));
+			copyUniformBufferData->uniformBuffer = mUniformBuffer;
+			copyUniformBufferData->numberOfBytes = sizeof(UniformBlockDynamicVs);
+			UniformBlockDynamicVs* uniformBlockDynamicVS = reinterpret_cast<UniformBlockDynamicVs*>(Rhi::CommandPacketHelper::getAuxiliaryMemory(copyUniformBufferData));
+			memcpy(uniformBlockDynamicVS->objectSpaceToClipSpaceMatrix, glm::value_ptr(objectSpaceToClipSpace), sizeof(float) * 4 * 4);
+
+			// TODO(co) float3x3 (currently there are alignment issues when using Direct3D, have a look into possible solutions)
+			glm::mat3 objectSpaceToViewSpace3x3 = glm::mat3(objectSpaceToViewSpace);
+			objectSpaceToViewSpace = glm::mat4(objectSpaceToViewSpace3x3);
+			memcpy(uniformBlockDynamicVS->objectSpaceToViewSpaceMatrix, glm::value_ptr(objectSpaceToViewSpace), sizeof(float) * 4 * 4);
+		}
+		else
+		{
+			// Set legacy uniforms
+			Rhi::Command::SetUniform::createMatrix4fv(commandBuffer, *mGraphicsProgram, mObjectSpaceToClipSpaceMatrixUniformHandle, glm::value_ptr(objectSpaceToClipSpace));
+			Rhi::Command::SetUniform::createMatrix3fv(commandBuffer, *mGraphicsProgram, mObjectSpaceToViewSpaceMatrixUniformHandle, glm::value_ptr(glm::mat3(objectSpaceToViewSpace)));
+		}
+	}
+
+	// Dispatch pre-recorded command buffer, in case the referenced assets have already been loaded and the command buffer has been filled as a consequence
+	if (!mCommandBuffer.isEmpty())
+	{
+		Rhi::Command::DispatchCommandBuffer::create(commandBuffer, &mCommandBuffer);
 	}
 }
 
