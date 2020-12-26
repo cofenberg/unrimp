@@ -359,26 +359,13 @@ void CubeTexture::onDraw(Rhi::CommandBuffer& commandBuffer)
 			// -> Two versions: One using an uniform buffer and one setting an individual uniform
 			if (nullptr != mUniformBuffer)
 			{
-				struct UniformBlockDynamicVs final
-				{
-					float objectSpaceToClipSpaceMatrix[4 * 4];	// Object space to clip space matrix
-				};
-				UniformBlockDynamicVs uniformBlockDynamicVS;
-				memcpy(uniformBlockDynamicVS.objectSpaceToClipSpaceMatrix, glm::value_ptr(objectSpaceToClipSpace), sizeof(float) * 4 * 4);
-
-				// Copy data
-				Rhi::MappedSubresource mappedSubresource;
-				if (rhi->map(*mUniformBuffer, 0, Rhi::MapType::WRITE_DISCARD, 0, mappedSubresource))
-				{
-					memcpy(mappedSubresource.data, &uniformBlockDynamicVS, sizeof(UniformBlockDynamicVs));
-					rhi->unmap(*mUniformBuffer, 0);
-				}
+				// Copy data into the uniform buffer
+				Rhi::Command::CopyUniformBufferData::create(commandBuffer, *mUniformBuffer, glm::value_ptr(objectSpaceToClipSpace), sizeof(float) * 4 * 4);
 			}
 			else
 			{
-				// TODO(co) Not compatible with command buffer: This certainly is going to be removed, we need to implement internal uniform buffer emulation
-				// Set uniforms
-				mGraphicsProgram->setUniformMatrix4fv(mObjectSpaceToClipSpaceMatrixUniformHandle, glm::value_ptr(objectSpaceToClipSpace));
+				// Set legacy uniforms
+				Rhi::Command::SetUniform::createMatrix4fv(commandBuffer, *mGraphicsProgram, mObjectSpaceToClipSpaceMatrixUniformHandle, glm::value_ptr(objectSpaceToClipSpace));
 			}
 		}
 

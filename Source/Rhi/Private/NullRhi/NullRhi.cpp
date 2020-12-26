@@ -3177,6 +3177,17 @@ namespace NullRhi
 
 
 	//[-------------------------------------------------------]
+	//[ Public virtual Rhi::IGraphicsProgram methods          ]
+	//[-------------------------------------------------------]
+	public:
+		[[nodiscard]] virtual Rhi::handle getUniformHandle(const char*) override
+		{
+			RHI_ASSERT(getRhi().getContext(), false, "The null RHI graphics program implementation doesn't have legacy uniform support")
+			return NULL_HANDLE;
+		}
+
+
+	//[-------------------------------------------------------]
 	//[ Protected virtual Rhi::RefCount methods               ]
 	//[-------------------------------------------------------]
 	protected:
@@ -3766,6 +3777,22 @@ namespace
 				static_cast<NullRhi::NullRhi&>(rhi).generateMipmaps(*realData->resource);
 			}
 
+			void CopyUniformBufferData(const void* data, Rhi::IRhi& rhi)
+			{
+				const Rhi::Command::CopyUniformBufferData* realData = static_cast<const Rhi::Command::CopyUniformBufferData*>(data);
+				Rhi::MappedSubresource mappedSubresource;
+				if (rhi.map(*realData->uniformBuffer, 0, Rhi::MapType::WRITE_DISCARD, 0, mappedSubresource))
+				{
+					memcpy(mappedSubresource.data, Rhi::CommandPacketHelper::getAuxiliaryMemory(realData), realData->numberOfBytes);
+					rhi.unmap(*realData->uniformBuffer, 0);
+				}
+			}
+
+			void SetUniform(const void*, [[maybe_unused]] Rhi::IRhi& rhi)
+			{
+				RHI_ASSERT(rhi.getContext(), false, "The set uniform command isn't supported by the null RHI implementation")
+			}
+
 			//[-------------------------------------------------------]
 			//[ Query                                                 ]
 			//[-------------------------------------------------------]
@@ -3857,6 +3884,8 @@ namespace
 			&ImplementationDispatch::ResolveMultisampleFramebuffer,
 			&ImplementationDispatch::CopyResource,
 			&ImplementationDispatch::GenerateMipmaps,
+			&ImplementationDispatch::CopyUniformBufferData,
+			&ImplementationDispatch::SetUniform,
 			// Query
 			&ImplementationDispatch::ResetQueryPool,
 			&ImplementationDispatch::BeginQuery,

@@ -5680,32 +5680,7 @@ namespace Rhi
 
 	// Public virtual Rhi::IGraphicsProgram methods
 	public:
-		// TODO(co) Cleanup
-		[[nodiscard]] inline virtual handle getUniformHandle([[maybe_unused]] const char* uniformName)
-		{
-			return NULL_HANDLE;
-		}
-
-		inline virtual void setUniform1i([[maybe_unused]] handle uniformHandle, [[maybe_unused]] int value)
-		{}
-
-		inline virtual void setUniform1f([[maybe_unused]] handle uniformHandle, [[maybe_unused]] float value)
-		{}
-
-		inline virtual void setUniform2fv([[maybe_unused]] handle uniformHandle, [[maybe_unused]] const float* value)
-		{}
-
-		inline virtual void setUniform3fv([[maybe_unused]] handle uniformHandle, [[maybe_unused]] const float* value)
-		{}
-
-		inline virtual void setUniform4fv([[maybe_unused]] handle uniformHandle, [[maybe_unused]] const float* value)
-		{}
-
-		inline virtual void setUniformMatrix3fv([[maybe_unused]] handle uniformHandle, [[maybe_unused]] const float* value)
-		{}
-
-		inline virtual void setUniformMatrix4fv([[maybe_unused]] handle uniformHandle, [[maybe_unused]] const float* value)
-		{}
+		[[nodiscard]] inline virtual handle getUniformHandle([[maybe_unused]] const char* uniformName) = 0;
 
 	// Protected methods
 	protected:
@@ -8863,6 +8838,8 @@ namespace Rhi
 		RESOLVE_MULTISAMPLE_FRAMEBUFFER,
 		COPY_RESOURCE,
 		GENERATE_MIPMAPS,
+		COPY_UNIFORM_BUFFER_DATA,
+		SET_UNIFORM,
 		// Query
 		RESET_QUERY_POOL,
 		BEGIN_QUERY,
@@ -9987,6 +9964,116 @@ namespace Rhi
 			IResource* resource;
 			// Static data
 			static constexpr CommandDispatchFunctionIndex COMMAND_DISPATCH_FUNCTION_INDEX = CommandDispatchFunctionIndex::GENERATE_MIPMAPS;
+		};
+
+		/**
+		*  @brief
+		*    Copy uniform buffer data
+		*
+		*  @param[out] uniformBuffer
+		*    Destination uniform buffer to copy the data to
+		*  @param[in]  data
+		*    Data to copy into the destination uniform buffer
+		*  @param[in]  numberOfBytes
+		*    Number of bytes to copy
+		*/
+		struct CopyUniformBufferData final
+		{
+			// Static methods
+			static inline void create(CommandBuffer& commandBuffer, IUniformBuffer& uniformBuffer, const void* data, uint32_t numberOfBytes)
+			{
+				CopyUniformBufferData* copyUniformBufferData = commandBuffer.addCommand<CopyUniformBufferData>(numberOfBytes);
+				copyUniformBufferData->uniformBuffer = &uniformBuffer;
+				copyUniformBufferData->numberOfBytes = numberOfBytes;
+				memcpy(CommandPacketHelper::getAuxiliaryMemory(copyUniformBufferData), data, numberOfBytes);
+			}
+			// Data
+			IUniformBuffer* uniformBuffer;
+			uint32_t numberOfBytes;
+			// Static data
+			static constexpr CommandDispatchFunctionIndex COMMAND_DISPATCH_FUNCTION_INDEX = CommandDispatchFunctionIndex::COPY_UNIFORM_BUFFER_DATA;
+		};
+
+		/**
+		*  @brief
+		*    Set legacy uniform; command is primarily intended for Direct3D 9
+		*/
+		struct SetUniform final
+		{
+			// Definitions
+			enum class Type
+			{
+				UNIFORM_1I,
+				UNIFORM_1F,
+				UNIFORM_2FV,
+				UNIFORM_3FV,
+				UNIFORM_4FV,
+				UNIFORM_MATRIX_3FV,
+				UNIFORM_MATRIX_4FV
+			};
+			// Static methods
+			static inline void create1i(CommandBuffer& commandBuffer, IGraphicsProgram& graphicsProgram, handle uniformHandle, int value)
+			{
+				SetUniform* copyUniformBufferData = commandBuffer.addCommand<SetUniform>(sizeof(int));
+				copyUniformBufferData->graphicsProgram = &graphicsProgram;
+				copyUniformBufferData->uniformHandle = uniformHandle;
+				copyUniformBufferData->type = Type::UNIFORM_1I;
+				memcpy(CommandPacketHelper::getAuxiliaryMemory(copyUniformBufferData), &value, sizeof(int));
+			}
+			static inline void create1f(CommandBuffer& commandBuffer, IGraphicsProgram& graphicsProgram, handle uniformHandle, float value)
+			{
+				SetUniform* copyUniformBufferData = commandBuffer.addCommand<SetUniform>(sizeof(float));
+				copyUniformBufferData->graphicsProgram = &graphicsProgram;
+				copyUniformBufferData->uniformHandle = uniformHandle;
+				copyUniformBufferData->type = Type::UNIFORM_1F;
+				memcpy(CommandPacketHelper::getAuxiliaryMemory(copyUniformBufferData), &value, sizeof(float));
+			}
+			static inline void create2fv(CommandBuffer& commandBuffer, IGraphicsProgram& graphicsProgram, handle uniformHandle, const float* value)
+			{
+				SetUniform* copyUniformBufferData = commandBuffer.addCommand<SetUniform>(sizeof(float) * 2);
+				copyUniformBufferData->graphicsProgram = &graphicsProgram;
+				copyUniformBufferData->uniformHandle = uniformHandle;
+				copyUniformBufferData->type = Type::UNIFORM_2FV;
+				memcpy(CommandPacketHelper::getAuxiliaryMemory(copyUniformBufferData), value, sizeof(float) * 2);
+			}
+			static inline void create3fv(CommandBuffer& commandBuffer, IGraphicsProgram& graphicsProgram, handle uniformHandle, const float* value)
+			{
+				SetUniform* copyUniformBufferData = commandBuffer.addCommand<SetUniform>(sizeof(float) * 3);
+				copyUniformBufferData->graphicsProgram = &graphicsProgram;
+				copyUniformBufferData->uniformHandle = uniformHandle;
+				copyUniformBufferData->type = Type::UNIFORM_3FV;
+				memcpy(CommandPacketHelper::getAuxiliaryMemory(copyUniformBufferData), value, sizeof(float) * 3);
+			}
+			static inline void create4fv(CommandBuffer& commandBuffer, IGraphicsProgram& graphicsProgram, handle uniformHandle, const float* value)
+			{
+				SetUniform* copyUniformBufferData = commandBuffer.addCommand<SetUniform>(sizeof(float) * 4);
+				copyUniformBufferData->graphicsProgram = &graphicsProgram;
+				copyUniformBufferData->uniformHandle = uniformHandle;
+				copyUniformBufferData->type = Type::UNIFORM_4FV;
+				memcpy(CommandPacketHelper::getAuxiliaryMemory(copyUniformBufferData), value, sizeof(float) * 4);
+			}
+			static inline void createMatrix3fv(CommandBuffer& commandBuffer, IGraphicsProgram& graphicsProgram, handle uniformHandle, const float* value)
+			{
+				SetUniform* copyUniformBufferData = commandBuffer.addCommand<SetUniform>(sizeof(float) * 3 * 3);
+				copyUniformBufferData->graphicsProgram = &graphicsProgram;
+				copyUniformBufferData->uniformHandle = uniformHandle;
+				copyUniformBufferData->type = Type::UNIFORM_MATRIX_3FV;
+				memcpy(CommandPacketHelper::getAuxiliaryMemory(copyUniformBufferData), value, sizeof(float) * 3 * 3);
+			}
+			static inline void createMatrix4fv(CommandBuffer& commandBuffer, IGraphicsProgram& graphicsProgram, handle uniformHandle, const float* value)
+			{
+				SetUniform* copyUniformBufferData = commandBuffer.addCommand<SetUniform>(sizeof(float) * 4 * 4);
+				copyUniformBufferData->graphicsProgram = &graphicsProgram;
+				copyUniformBufferData->uniformHandle = uniformHandle;
+				copyUniformBufferData->type = Type::UNIFORM_MATRIX_4FV;
+				memcpy(CommandPacketHelper::getAuxiliaryMemory(copyUniformBufferData), value, sizeof(float) * 4 * 4);
+			}
+			// Data
+			IGraphicsProgram* graphicsProgram;
+			handle uniformHandle;
+			Type type;
+			// Static data
+			static constexpr CommandDispatchFunctionIndex COMMAND_DISPATCH_FUNCTION_INDEX = CommandDispatchFunctionIndex::SET_UNIFORM;
 		};
 
 		//[-------------------------------------------------------]

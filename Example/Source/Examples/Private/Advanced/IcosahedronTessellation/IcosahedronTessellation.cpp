@@ -245,30 +245,20 @@ void IcosahedronTessellation::onDeinitialization()
 
 void IcosahedronTessellation::onDraw(Rhi::CommandBuffer& commandBuffer)
 {
-	// Get and check the RHI instance
-	Rhi::IRhiPtr rhi(getRhi());
-	if (nullptr != rhi)
+	// Update the uniform buffer content
+	if (nullptr != mUniformBufferDynamicTcs)
 	{
-		// Update the uniform buffer content
-		if (nullptr != mUniformBufferDynamicTcs)
+		// Copy data into the uniform buffer
+		const float data[] =
 		{
-			// Copy data into the uniform buffer
-			Rhi::MappedSubresource mappedSubresource;
-			if (rhi->map(*mUniformBufferDynamicTcs, 0, Rhi::MapType::WRITE_DISCARD, 0, mappedSubresource))
-			{
-				const float data[] =
-				{
-					mTessellationLevelOuter,	// "TessellationLevelOuter"
-					mTessellationLevelInner		// "TessellationLevelInner"
-				};
-				memcpy(mappedSubresource.data, data, sizeof(data));
-				rhi->unmap(*mUniformBufferDynamicTcs, 0);
-			}
-		}
-
-		// Dispatch pre-recorded command buffer
-		Rhi::Command::DispatchCommandBuffer::create(commandBuffer, &mCommandBuffer);
+			mTessellationLevelOuter,	// "TessellationLevelOuter"
+			mTessellationLevelInner		// "TessellationLevelInner"
+		};
+		Rhi::Command::CopyUniformBufferData::create(commandBuffer, *mUniformBufferDynamicTcs, data, sizeof(data));
 	}
+
+	// Dispatch pre-recorded command buffer
+	Rhi::Command::DispatchCommandBuffer::create(commandBuffer, &mCommandBuffer);
 }
 
 

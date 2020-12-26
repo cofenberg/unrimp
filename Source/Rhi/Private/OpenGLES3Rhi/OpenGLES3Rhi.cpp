@@ -8421,17 +8421,10 @@ namespace OpenGLES3Rhi
 			return mDrawIdUniformLocation;
 		}
 
-
-	//[-------------------------------------------------------]
-	//[ Public virtual Rhi::IGraphicsProgram methods          ]
-	//[-------------------------------------------------------]
-	public:
-		[[nodiscard]] inline virtual Rhi::handle getUniformHandle(const char* uniformName) override
-		{
-			return static_cast<Rhi::handle>(glGetUniformLocation(mOpenGLES3Program, uniformName));
-		}
-
-		virtual void setUniform1i(Rhi::handle uniformHandle, int value) override
+		//[-------------------------------------------------------]
+		//[ Setters                                               ]
+		//[-------------------------------------------------------]
+		void setUniform1i(Rhi::handle uniformHandle, int value)
 		{
 			#ifdef RHI_OPENGLES3_STATE_CLEANUP
 				// Backup the currently used OpenGL ES 3 program
@@ -8458,7 +8451,7 @@ namespace OpenGLES3Rhi
 			#endif
 		}
 
-		virtual void setUniform1f(Rhi::handle uniformHandle, float value) override
+		void setUniform1f(Rhi::handle uniformHandle, float value)
 		{
 			#ifdef RHI_OPENGLES3_STATE_CLEANUP
 				// Backup the currently used OpenGL ES 3 program
@@ -8485,7 +8478,7 @@ namespace OpenGLES3Rhi
 			#endif
 		}
 
-		virtual void setUniform2fv(Rhi::handle uniformHandle, const float* value) override
+		void setUniform2fv(Rhi::handle uniformHandle, const float* value)
 		{
 			#ifdef RHI_OPENGLES3_STATE_CLEANUP
 				// Backup the currently used OpenGL ES 3 program
@@ -8512,7 +8505,7 @@ namespace OpenGLES3Rhi
 			#endif
 		}
 
-		virtual void setUniform3fv(Rhi::handle uniformHandle, const float* value) override
+		void setUniform3fv(Rhi::handle uniformHandle, const float* value)
 		{
 			#ifdef RHI_OPENGLES3_STATE_CLEANUP
 				// Backup the currently used OpenGL ES 3 program
@@ -8539,7 +8532,7 @@ namespace OpenGLES3Rhi
 			#endif
 		}
 
-		virtual void setUniform4fv(Rhi::handle uniformHandle, const float* value) override
+		void setUniform4fv(Rhi::handle uniformHandle, const float* value)
 		{
 			#ifdef RHI_OPENGLES3_STATE_CLEANUP
 				// Backup the currently used OpenGL ES 3 program
@@ -8566,7 +8559,7 @@ namespace OpenGLES3Rhi
 			#endif
 		}
 
-		virtual void setUniformMatrix3fv(Rhi::handle uniformHandle, const float* value) override
+		void setUniformMatrix3fv(Rhi::handle uniformHandle, const float* value)
 		{
 			#ifdef RHI_OPENGLES3_STATE_CLEANUP
 				// Backup the currently used OpenGL ES 3 program
@@ -8593,7 +8586,7 @@ namespace OpenGLES3Rhi
 			#endif
 		}
 
-		virtual void setUniformMatrix4fv(Rhi::handle uniformHandle, const float* value) override
+		void setUniformMatrix4fv(Rhi::handle uniformHandle, const float* value)
 		{
 			#ifdef RHI_OPENGLES3_STATE_CLEANUP
 				// Backup the currently used OpenGL ES 3 program
@@ -8618,6 +8611,16 @@ namespace OpenGLES3Rhi
 				glUseProgram(mOpenGLES3Program);
 				glUniformMatrix4fv(static_cast<GLint>(uniformHandle), 1, GL_FALSE, value);
 			#endif
+		}
+
+
+	//[-------------------------------------------------------]
+	//[ Public virtual Rhi::IGraphicsProgram methods          ]
+	//[-------------------------------------------------------]
+	public:
+		[[nodiscard]] inline virtual Rhi::handle getUniformHandle(const char* uniformName) override
+		{
+			return static_cast<Rhi::handle>(glGetUniformLocation(mOpenGLES3Program, uniformName));
 		}
 
 
@@ -9221,6 +9224,56 @@ namespace
 				static_cast<OpenGLES3Rhi::OpenGLES3Rhi&>(rhi).generateMipmaps(*realData->resource);
 			}
 
+			void CopyUniformBufferData(const void* data, Rhi::IRhi& rhi)
+			{
+				const Rhi::Command::CopyUniformBufferData* realData = static_cast<const Rhi::Command::CopyUniformBufferData*>(data);
+				Rhi::MappedSubresource mappedSubresource;
+				if (rhi.map(*realData->uniformBuffer, 0, Rhi::MapType::WRITE_DISCARD, 0, mappedSubresource))
+				{
+					memcpy(mappedSubresource.data, Rhi::CommandPacketHelper::getAuxiliaryMemory(realData), realData->numberOfBytes);
+					rhi.unmap(*realData->uniformBuffer, 0);
+				}
+			}
+
+			void SetUniform(const void* data, [[maybe_unused]] Rhi::IRhi& rhi)
+			{
+				const Rhi::Command::SetUniform* realData = static_cast<const Rhi::Command::SetUniform*>(data);
+				switch (realData->type)
+				{
+					case Rhi::Command::SetUniform::Type::UNIFORM_1I:
+						static_cast<OpenGLES3Rhi::GraphicsProgramGlsl*>(realData->graphicsProgram)->setUniform1i(realData->uniformHandle, *reinterpret_cast<const int*>(Rhi::CommandPacketHelper::getAuxiliaryMemory(realData)));
+						break;
+
+					case Rhi::Command::SetUniform::Type::UNIFORM_1F:
+						static_cast<OpenGLES3Rhi::GraphicsProgramGlsl*>(realData->graphicsProgram)->setUniform1f(realData->uniformHandle, *reinterpret_cast<const float*>(Rhi::CommandPacketHelper::getAuxiliaryMemory(realData)));
+						break;
+
+					case Rhi::Command::SetUniform::Type::UNIFORM_2FV:
+						static_cast<OpenGLES3Rhi::GraphicsProgramGlsl*>(realData->graphicsProgram)->setUniform2fv(realData->uniformHandle, reinterpret_cast<const float*>(Rhi::CommandPacketHelper::getAuxiliaryMemory(realData)));
+						break;
+
+					case Rhi::Command::SetUniform::Type::UNIFORM_3FV:
+						static_cast<OpenGLES3Rhi::GraphicsProgramGlsl*>(realData->graphicsProgram)->setUniform3fv(realData->uniformHandle, reinterpret_cast<const float*>(Rhi::CommandPacketHelper::getAuxiliaryMemory(realData)));
+						break;
+
+					case Rhi::Command::SetUniform::Type::UNIFORM_4FV:
+						static_cast<OpenGLES3Rhi::GraphicsProgramGlsl*>(realData->graphicsProgram)->setUniform4fv(realData->uniformHandle, reinterpret_cast<const float*>(Rhi::CommandPacketHelper::getAuxiliaryMemory(realData)));
+						break;
+
+					case Rhi::Command::SetUniform::Type::UNIFORM_MATRIX_3FV:
+						static_cast<OpenGLES3Rhi::GraphicsProgramGlsl*>(realData->graphicsProgram)->setUniformMatrix3fv(realData->uniformHandle, reinterpret_cast<const float*>(Rhi::CommandPacketHelper::getAuxiliaryMemory(realData)));
+						break;
+
+					case Rhi::Command::SetUniform::Type::UNIFORM_MATRIX_4FV:
+						static_cast<OpenGLES3Rhi::GraphicsProgramGlsl*>(realData->graphicsProgram)->setUniformMatrix4fv(realData->uniformHandle, reinterpret_cast<const float*>(Rhi::CommandPacketHelper::getAuxiliaryMemory(realData)));
+						break;
+
+					default:
+						RHI_ASSERT(rhi.getContext(), false, "Invalid set uniform type inside the OpenGLES 3 RHI implementation")
+						break;
+				}
+			}
+
 			//[-------------------------------------------------------]
 			//[ Query                                                 ]
 			//[-------------------------------------------------------]
@@ -9318,6 +9371,8 @@ namespace
 			&ImplementationDispatch::ResolveMultisampleFramebuffer,
 			&ImplementationDispatch::CopyResource,
 			&ImplementationDispatch::GenerateMipmaps,
+			&ImplementationDispatch::CopyUniformBufferData,
+			&ImplementationDispatch::SetUniform,
 			// Query
 			&ImplementationDispatch::ResetQueryPool,
 			&ImplementationDispatch::BeginQuery,

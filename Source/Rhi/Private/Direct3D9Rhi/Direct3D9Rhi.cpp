@@ -6753,6 +6753,62 @@ namespace Direct3D9Rhi
 			return mFragmentShaderHlsl;
 		}
 
+		//[-------------------------------------------------------]
+		//[ Setters                                               ]
+		//[-------------------------------------------------------]
+		inline void setUniform1i([[maybe_unused]] Rhi::handle uniformHandle, [[maybe_unused]] int value)
+		{
+			// TODO(co) Implement me
+		}
+
+		inline void setUniform1f(Rhi::handle uniformHandle, float value)
+		{
+			if (nullptr != mDirect3DDevice9)
+			{
+				FAILED_DEBUG_BREAK(mD3DXConstantTable->SetFloat(mDirect3DDevice9, reinterpret_cast<D3DXHANDLE>(uniformHandle), value))
+			}
+		}
+
+		inline void setUniform2fv(Rhi::handle uniformHandle, const float* value)
+		{
+			if (nullptr != mDirect3DDevice9)
+			{
+				FAILED_DEBUG_BREAK(mD3DXConstantTable->SetFloatArray(mDirect3DDevice9, reinterpret_cast<D3DXHANDLE>(uniformHandle), value, 2))
+			}
+		}
+
+		inline void setUniform3fv(Rhi::handle uniformHandle, const float* value)
+		{
+			if (nullptr != mDirect3DDevice9)
+			{
+				FAILED_DEBUG_BREAK(mD3DXConstantTable->SetFloatArray(mDirect3DDevice9, reinterpret_cast<D3DXHANDLE>(uniformHandle), value, 3))
+			}
+		}
+
+		inline void setUniform4fv(Rhi::handle uniformHandle, const float* value)
+		{
+			if (nullptr != mDirect3DDevice9)
+			{
+				FAILED_DEBUG_BREAK(mD3DXConstantTable->SetFloatArray(mDirect3DDevice9, reinterpret_cast<D3DXHANDLE>(uniformHandle), value, 4))
+			}
+		}
+
+		inline void setUniformMatrix3fv(Rhi::handle uniformHandle, const float* value)
+		{
+			if (nullptr != mDirect3DDevice9)
+			{
+				FAILED_DEBUG_BREAK(mD3DXConstantTable->SetFloatArray(mDirect3DDevice9, reinterpret_cast<D3DXHANDLE>(uniformHandle), value, 3 * 3))
+			}
+		}
+
+		inline void setUniformMatrix4fv(Rhi::handle uniformHandle, const float* value)
+		{
+			if (nullptr != mDirect3DDevice9)
+			{
+				FAILED_DEBUG_BREAK(mD3DXConstantTable->SetFloatArray(mDirect3DDevice9, reinterpret_cast<D3DXHANDLE>(uniformHandle), value, 4 * 4))
+			}
+		}
+
 
 	//[-------------------------------------------------------]
 	//[ Public virtual Rhi::IGraphicsProgram methods          ]
@@ -6782,59 +6838,6 @@ namespace Direct3D9Rhi
 
 			// Error!
 			return NULL_HANDLE;
-		}
-
-		inline virtual void setUniform1i([[maybe_unused]] Rhi::handle uniformHandle, [[maybe_unused]] int value) override
-		{
-			// TODO(co) Implement me
-		}
-
-		inline virtual void setUniform1f(Rhi::handle uniformHandle, float value) override
-		{
-			if (nullptr != mDirect3DDevice9)
-			{
-				FAILED_DEBUG_BREAK(mD3DXConstantTable->SetFloat(mDirect3DDevice9, reinterpret_cast<D3DXHANDLE>(uniformHandle), value))
-			}
-		}
-
-		inline virtual void setUniform2fv(Rhi::handle uniformHandle, const float* value) override
-		{
-			if (nullptr != mDirect3DDevice9)
-			{
-				FAILED_DEBUG_BREAK(mD3DXConstantTable->SetFloatArray(mDirect3DDevice9, reinterpret_cast<D3DXHANDLE>(uniformHandle), value, 2))
-			}
-		}
-
-		inline virtual void setUniform3fv(Rhi::handle uniformHandle, const float* value) override
-		{
-			if (nullptr != mDirect3DDevice9)
-			{
-				FAILED_DEBUG_BREAK(mD3DXConstantTable->SetFloatArray(mDirect3DDevice9, reinterpret_cast<D3DXHANDLE>(uniformHandle), value, 3))
-			}
-		}
-
-		inline virtual void setUniform4fv(Rhi::handle uniformHandle, const float* value) override
-		{
-			if (nullptr != mDirect3DDevice9)
-			{
-				FAILED_DEBUG_BREAK(mD3DXConstantTable->SetFloatArray(mDirect3DDevice9, reinterpret_cast<D3DXHANDLE>(uniformHandle), value, 4))
-			}
-		}
-
-		inline virtual void setUniformMatrix3fv(Rhi::handle uniformHandle, const float* value) override
-		{
-			if (nullptr != mDirect3DDevice9)
-			{
-				FAILED_DEBUG_BREAK(mD3DXConstantTable->SetFloatArray(mDirect3DDevice9, reinterpret_cast<D3DXHANDLE>(uniformHandle), value, 3 * 3))
-			}
-		}
-
-		inline virtual void setUniformMatrix4fv(Rhi::handle uniformHandle, const float* value) override
-		{
-			if (nullptr != mDirect3DDevice9)
-			{
-				FAILED_DEBUG_BREAK(mD3DXConstantTable->SetFloatArray(mDirect3DDevice9, reinterpret_cast<D3DXHANDLE>(uniformHandle), value, 4 * 4))
-			}
 		}
 
 
@@ -7440,6 +7443,50 @@ namespace
 				static_cast<Direct3D9Rhi::Direct3D9Rhi&>(rhi).generateMipmaps(*realData->resource);
 			}
 
+			void CopyUniformBufferData(const void*, [[maybe_unused]] Rhi::IRhi& rhi)
+			{
+				RHI_ASSERT(rhi.getContext(), false, "The copy uniform buffer data command isn't supported by the Direct3D 9 RHI implementation")
+			}
+
+			void SetUniform(const void* data, [[maybe_unused]] Rhi::IRhi& rhi)
+			{
+				const Rhi::Command::SetUniform* realData = static_cast<const Rhi::Command::SetUniform*>(data);
+				switch (realData->type)
+				{
+					case Rhi::Command::SetUniform::Type::UNIFORM_1I:
+						static_cast<Direct3D9Rhi::GraphicsProgramHlsl*>(realData->graphicsProgram)->setUniform1i(realData->uniformHandle, *reinterpret_cast<const int*>(Rhi::CommandPacketHelper::getAuxiliaryMemory(realData)));
+						break;
+
+					case Rhi::Command::SetUniform::Type::UNIFORM_1F:
+						static_cast<Direct3D9Rhi::GraphicsProgramHlsl*>(realData->graphicsProgram)->setUniform1f(realData->uniformHandle, *reinterpret_cast<const float*>(Rhi::CommandPacketHelper::getAuxiliaryMemory(realData)));
+						break;
+
+					case Rhi::Command::SetUniform::Type::UNIFORM_2FV:
+						static_cast<Direct3D9Rhi::GraphicsProgramHlsl*>(realData->graphicsProgram)->setUniform2fv(realData->uniformHandle, reinterpret_cast<const float*>(Rhi::CommandPacketHelper::getAuxiliaryMemory(realData)));
+						break;
+
+					case Rhi::Command::SetUniform::Type::UNIFORM_3FV:
+						static_cast<Direct3D9Rhi::GraphicsProgramHlsl*>(realData->graphicsProgram)->setUniform3fv(realData->uniformHandle, reinterpret_cast<const float*>(Rhi::CommandPacketHelper::getAuxiliaryMemory(realData)));
+						break;
+
+					case Rhi::Command::SetUniform::Type::UNIFORM_4FV:
+						static_cast<Direct3D9Rhi::GraphicsProgramHlsl*>(realData->graphicsProgram)->setUniform4fv(realData->uniformHandle, reinterpret_cast<const float*>(Rhi::CommandPacketHelper::getAuxiliaryMemory(realData)));
+						break;
+
+					case Rhi::Command::SetUniform::Type::UNIFORM_MATRIX_3FV:
+						static_cast<Direct3D9Rhi::GraphicsProgramHlsl*>(realData->graphicsProgram)->setUniformMatrix3fv(realData->uniformHandle, reinterpret_cast<const float*>(Rhi::CommandPacketHelper::getAuxiliaryMemory(realData)));
+						break;
+
+					case Rhi::Command::SetUniform::Type::UNIFORM_MATRIX_4FV:
+						static_cast<Direct3D9Rhi::GraphicsProgramHlsl*>(realData->graphicsProgram)->setUniformMatrix4fv(realData->uniformHandle, reinterpret_cast<const float*>(Rhi::CommandPacketHelper::getAuxiliaryMemory(realData)));
+						break;
+
+					default:
+						RHI_ASSERT(rhi.getContext(), false, "Invalid set uniform type inside the Direct3D 9 RHI implementation")
+						break;
+				}
+			}
+
 			//[-------------------------------------------------------]
 			//[ Query                                                 ]
 			//[-------------------------------------------------------]
@@ -7531,6 +7578,8 @@ namespace
 			&ImplementationDispatch::ResolveMultisampleFramebuffer,
 			&ImplementationDispatch::CopyResource,
 			&ImplementationDispatch::GenerateMipmaps,
+			&ImplementationDispatch::CopyUniformBufferData,
+			&ImplementationDispatch::SetUniform,
 			// Query
 			&ImplementationDispatch::ResetQueryPool,
 			&ImplementationDispatch::BeginQuery,

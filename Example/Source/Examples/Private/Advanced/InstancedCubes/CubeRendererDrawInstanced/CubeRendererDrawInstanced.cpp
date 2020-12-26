@@ -407,16 +407,10 @@ void CubeRendererDrawInstanced::fillCommandBuffer(float globalTimer, float globa
 		if (nullptr != mUniformBufferDynamicVs)
 		{
 			// Copy data into the uniform buffer
-			Rhi::MappedSubresource mappedSubresource;
-			if (mRhi->map(*mUniformBufferDynamicVs, 0, Rhi::MapType::WRITE_DISCARD, 0, mappedSubresource))
+			Rhi::Command::CopyUniformBufferData::create(commandBuffer, *mUniformBufferDynamicVs, timerAndGlobalScale, sizeof(timerAndGlobalScale));
+			if (nullptr != mUniformBufferDynamicFs)
 			{
-				memcpy(mappedSubresource.data, timerAndGlobalScale, sizeof(timerAndGlobalScale));
-				mRhi->unmap(*mUniformBufferDynamicVs, 0);
-			}
-			if (nullptr != mUniformBufferDynamicFs && mRhi->map(*mUniformBufferDynamicFs, 0, Rhi::MapType::WRITE_DISCARD, 0, mappedSubresource))
-			{
-				memcpy(mappedSubresource.data, lightPosition, sizeof(lightPosition));
-				mRhi->unmap(*mUniformBufferDynamicFs, 0);
+				Rhi::Command::CopyUniformBufferData::create(commandBuffer, *mUniformBufferDynamicFs, lightPosition, sizeof(lightPosition));
 			}
 		}
 		else
@@ -424,8 +418,8 @@ void CubeRendererDrawInstanced::fillCommandBuffer(float globalTimer, float globa
 			// Set individual graphics program uniforms
 			// -> Using uniform buffers (aka constant buffers in Direct3D) would be more efficient, but Direct3D 9 doesn't support it (neither does e.g. OpenGL ES 3.0)
 			// -> To keep it simple in here, I just use a less efficient string to identity the uniform (does not really hurt in here)
-			mGraphicsProgram->setUniform2fv(mGraphicsProgram->getUniformHandle("TimerAndGlobalScale"), timerAndGlobalScale);
-			mGraphicsProgram->setUniform3fv(mGraphicsProgram->getUniformHandle("LightPosition"), lightPosition);
+			Rhi::Command::SetUniform::create2fv(commandBuffer, *mGraphicsProgram, mGraphicsProgram->getUniformHandle("TimerAndGlobalScale"), timerAndGlobalScale);
+			Rhi::Command::SetUniform::create3fv(commandBuffer, *mGraphicsProgram, mGraphicsProgram->getUniformHandle("LightPosition"), lightPosition);
 		}
 	}
 
@@ -443,7 +437,7 @@ void CubeRendererDrawInstanced::fillCommandBuffer(float globalTimer, float globa
 		};
 
 		// There's no uniform buffer: We have to set individual uniforms
-		mGraphicsProgram->setUniform4fv(mGraphicsProgram->getUniformHandle("MVP"), MVP);
+		Rhi::Command::SetUniform::createMatrix4fv(commandBuffer, *mGraphicsProgram, mGraphicsProgram->getUniformHandle("MVP"), MVP);
 	}
 
 	// Dispatch pre-recorded command buffer

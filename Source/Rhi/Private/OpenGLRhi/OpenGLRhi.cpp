@@ -15369,191 +15369,10 @@ namespace OpenGLRhi
 	//[ Public virtual Rhi::IGraphicsProgram methods          ]
 	//[-------------------------------------------------------]
 	public:
-		[[nodiscard]] virtual Rhi::handle getUniformHandle(const char* uniformName) override
+		[[nodiscard]] virtual Rhi::handle getUniformHandle(const char*) override
 		{
-			return static_cast<Rhi::handle>(glGetUniformLocation(mOpenGLProgram, uniformName));
-		}
-
-		virtual void setUniform1i(Rhi::handle uniformHandle, int value) override
-		{
-			#ifdef RHI_OPENGL_STATE_CLEANUP
-				// Backup the currently used OpenGL program
-				const GLhandleARB openGLProgramBackup = glGetHandleARB(GL_PROGRAM_OBJECT_ARB);
-				if (openGLProgramBackup == mOpenGLProgram)
-				{
-					// Set uniform, please note that for this our program must be the currently used one
-					glUniform1i(static_cast<GLint>(uniformHandle), value);
-				}
-				else
-				{
-					// Set uniform, please note that for this our program must be the currently used one
-					glUseProgram(mOpenGLProgram);
-					glUniform1i(static_cast<GLint>(uniformHandle), value);
-
-					// Be polite and restore the previous used OpenGL program
-					glUseProgram(openGLProgramBackup);
-				}
-			#else
-				// Set uniform, please note that for this our program must be the currently used one
-				glUseProgram(mOpenGLProgram);
-				glUniform1i(static_cast<GLint>(uniformHandle), value);
-			#endif
-		}
-
-		virtual void setUniform1f(Rhi::handle uniformHandle, float value) override
-		{
-			#ifdef RHI_OPENGL_STATE_CLEANUP
-				// Backup the currently used OpenGL program
-				const GLhandleARB openGLProgramBackup = glGetHandleARB(GL_PROGRAM_OBJECT_ARB);
-				if (openGLProgramBackup == mOpenGLProgram)
-				{
-					// Set uniform, please note that for this our program must be the currently used one
-					glUniform1f(static_cast<GLint>(uniformHandle), value);
-				}
-				else
-				{
-					// Set uniform, please note that for this our program must be the currently used one
-					glUseProgram(mOpenGLProgram);
-					glUniform1f(static_cast<GLint>(uniformHandle), value);
-
-					// Be polite and restore the previous used OpenGL program
-					glUseProgram(openGLProgramBackup);
-				}
-			#else
-				// Set uniform, please note that for this our program must be the currently used one
-				glUseProgram(mOpenGLProgram);
-				glUniform1f(static_cast<GLint>(uniformHandle), value);
-			#endif
-		}
-
-		virtual void setUniform2fv(Rhi::handle uniformHandle, const float* value) override
-		{
-			#ifdef RHI_OPENGL_STATE_CLEANUP
-				// Backup the currently used OpenGL program
-				const GLhandleARB openGLProgramBackup = glGetHandleARB(GL_PROGRAM_OBJECT_ARB);
-				if (openGLProgramBackup == mOpenGLProgram)
-				{
-					// Set uniform, please note that for this our program must be the currently used one
-					glUniform2fv(static_cast<GLint>(uniformHandle), 1, value);
-				}
-				else
-				{
-					// Set uniform, please note that for this our program must be the currently used one
-					glUseProgram(mOpenGLProgram);
-					glUniform2fv(static_cast<GLint>(uniformHandle), 1, value);
-
-					// Be polite and restore the previous used OpenGL program
-					glUseProgram(openGLProgramBackup);
-				}
-			#else
-				// Set uniform, please note that for this our program must be the currently used one
-				glUseProgram(mOpenGLProgram);
-				glUniform2fv(static_cast<GLint>(uniformHandle), 1, value);
-			#endif
-		}
-
-		virtual void setUniform3fv(Rhi::handle uniformHandle, const float* value) override
-		{
-			#ifdef RHI_OPENGL_STATE_CLEANUP
-				// Backup the currently used OpenGL program
-				const GLhandleARB openGLProgramBackup = glGetHandleARB(GL_PROGRAM_OBJECT_ARB);
-				if (openGLProgramBackup == mOpenGLProgram)
-				{
-					// Set uniform, please note that for this our program must be the currently used one
-					glUniform3fv(static_cast<GLint>(uniformHandle), 1, value);
-				}
-				else
-				{
-					// Set uniform, please note that for this our program must be the currently used one
-					glUseProgram(mOpenGLProgram);
-					glUniform3fv(static_cast<GLint>(uniformHandle), 1, value);
-
-					// Be polite and restore the previous used OpenGL program
-					glUseProgram(openGLProgramBackup);
-				}
-			#else
-				// Set uniform, please note that for this our program must be the currently used one
-				glUseProgram(mOpenGLProgram);
-				glUniform3fv(static_cast<GLint>(uniformHandle), 1, value);
-			#endif
-		}
-
-		virtual void setUniform4fv(Rhi::handle uniformHandle, const float* value) override
-		{
-			#ifdef RHI_OPENGL_STATE_CLEANUP
-				// Backup the currently used OpenGL program
-				const GLhandleARB openGLProgramBackup = glGetHandleARB(GL_PROGRAM_OBJECT_ARB);
-				if (openGLProgramBackup == mOpenGLProgram)
-				{
-					// Set uniform, please note that for this our program must be the currently used one
-					glUniform4fv(static_cast<GLint>(uniformHandle), 1, value);
-				}
-				else
-				{
-					// Set uniform, please note that for this our program must be the currently used one
-					glUseProgram(mOpenGLProgram);
-					glUniform4fv(static_cast<GLint>(uniformHandle), 1, value);
-
-					// Be polite and restore the previous used OpenGL program
-					glUseProgram(openGLProgramBackup);
-				}
-			#else
-				// Set uniform, please note that for this our program must be the currently used one
-				glUseProgram(mOpenGLProgram);
-				glUniform4fv(static_cast<GLint>(uniformHandle), 1, value);
-			#endif
-		}
-
-		virtual void setUniformMatrix3fv(Rhi::handle uniformHandle, const float* value) override
-		{
-			#ifdef RHI_OPENGL_STATE_CLEANUP
-				// Backup the currently used OpenGL program
-				const GLhandleARB openGLProgramBackup = glGetHandleARB(GL_PROGRAM_OBJECT_ARB);
-				if (openGLProgramBackup == mOpenGLProgram)
-				{
-					// Set uniform, please note that for this our program must be the currently used one
-					glUniformMatrix3fv(static_cast<GLint>(uniformHandle), 1, GL_FALSE, value);
-				}
-				else
-				{
-					// Set uniform, please note that for this our program must be the currently used one
-					glUseProgram(mOpenGLProgram);
-					glUniformMatrix3fv(static_cast<GLint>(uniformHandle), 1, GL_FALSE, value);
-
-					// Be polite and restore the previous used OpenGL program
-					glUseProgram(openGLProgramBackup);
-				}
-			#else
-				// Set uniform, please note that for this our program must be the currently used one
-				glUseProgram(mOpenGLProgram);
-				glUniformMatrix3fv(static_cast<GLint>(uniformHandle), 1, GL_FALSE, value);
-			#endif
-		}
-
-		virtual void setUniformMatrix4fv(Rhi::handle uniformHandle, const float* value) override
-		{
-			#ifdef RHI_OPENGL_STATE_CLEANUP
-				// Backup the currently used OpenGL program
-				const GLhandleARB openGLProgramBackup = glGetHandleARB(GL_PROGRAM_OBJECT_ARB);
-				if (openGLProgramBackup == mOpenGLProgram)
-				{
-					// Set uniform, please note that for this our program must be the currently used one
-					glUniformMatrix4fv(static_cast<GLint>(uniformHandle), 1, GL_FALSE, value);
-				}
-				else
-				{
-					// Set uniform, please note that for this our program must be the currently used one
-					glUseProgram(mOpenGLProgram);
-					glUniformMatrix4fv(static_cast<GLint>(uniformHandle), 1, GL_FALSE, value);
-
-					// Be polite and restore the previous used OpenGL program
-					glUseProgram(openGLProgramBackup);
-				}
-			#else
-				// Set uniform, please note that for this our program must be the currently used one
-				glUseProgram(mOpenGLProgram);
-				glUniformMatrix4fv(static_cast<GLint>(uniformHandle), 1, GL_FALSE, value);
-			#endif
+			RHI_ASSERT(getRhi().getContext(), false, "The OpenGL RHI graphics program monolithic implementation doesn't have legacy uniform support")
+			return NULL_HANDLE;
 		}
 
 
@@ -15795,83 +15614,6 @@ namespace OpenGLRhi
 		*/
 		inline virtual ~GraphicsProgramMonolithicDsa() override
 		{}
-
-
-	//[-------------------------------------------------------]
-	//[ Public virtual Rhi::IGraphicsProgram methods          ]
-	//[-------------------------------------------------------]
-	public:
-		virtual void setUniform1f(Rhi::handle uniformHandle, float value) override
-		{
-			if (static_cast<OpenGLRhi&>(getRhi()).getExtensions().isGL_ARB_direct_state_access())
-			{
-				glProgramUniform1f(mOpenGLProgram, static_cast<GLint>(uniformHandle), value);
-			}
-			else
-			{
-				glProgramUniform1fEXT(mOpenGLProgram, static_cast<GLint>(uniformHandle), value);
-			}
-		}
-
-		virtual void setUniform2fv(Rhi::handle uniformHandle, const float* value) override
-		{
-			if (static_cast<OpenGLRhi&>(getRhi()).getExtensions().isGL_ARB_direct_state_access())
-			{
-				glProgramUniform2fv(mOpenGLProgram, static_cast<GLint>(uniformHandle), 1, value);
-			}
-			else
-			{
-				glProgramUniform2fvEXT(mOpenGLProgram, static_cast<GLint>(uniformHandle), 1, value);
-			}
-		}
-
-		virtual void setUniform3fv(Rhi::handle uniformHandle, const float* value) override
-		{
-			if (static_cast<OpenGLRhi&>(getRhi()).getExtensions().isGL_ARB_direct_state_access())
-			{
-				glProgramUniform3fv(mOpenGLProgram, static_cast<GLint>(uniformHandle), 1, value);
-			}
-			else
-			{
-				glProgramUniform3fvEXT(mOpenGLProgram, static_cast<GLint>(uniformHandle), 1, value);
-			}
-		}
-
-		virtual void setUniform4fv(Rhi::handle uniformHandle, const float* value) override
-		{
-			if (static_cast<OpenGLRhi&>(getRhi()).getExtensions().isGL_ARB_direct_state_access())
-			{
-				glProgramUniform4fv(mOpenGLProgram, static_cast<GLint>(uniformHandle), 1, value);
-			}
-			else
-			{
-				glProgramUniform4fvEXT(mOpenGLProgram, static_cast<GLint>(uniformHandle), 1, value);
-			}
-		}
-
-		virtual void setUniformMatrix3fv(Rhi::handle uniformHandle, const float* value) override
-		{
-			if (static_cast<OpenGLRhi&>(getRhi()).getExtensions().isGL_ARB_direct_state_access())
-			{
-				glProgramUniformMatrix3fv(mOpenGLProgram, static_cast<GLint>(uniformHandle), 1, GL_FALSE, value);
-			}
-			else
-			{
-				glProgramUniformMatrix3fvEXT(mOpenGLProgram, static_cast<GLint>(uniformHandle), 1, GL_FALSE, value);
-			}
-		}
-
-		virtual void setUniformMatrix4fv(Rhi::handle uniformHandle, const float* value) override
-		{
-			if (static_cast<OpenGLRhi&>(getRhi()).getExtensions().isGL_ARB_direct_state_access())
-			{
-				glProgramUniformMatrix4fv(mOpenGLProgram, static_cast<GLint>(uniformHandle), 1, GL_FALSE, value);
-			}
-			else
-			{
-				glProgramUniformMatrix4fvEXT(mOpenGLProgram, static_cast<GLint>(uniformHandle), 1, GL_FALSE, value);
-			}
-		}
 
 
 	//[-------------------------------------------------------]
@@ -18067,173 +17809,10 @@ namespace OpenGLRhi
 	//[ Public virtual Rhi::IGraphicsProgram methods          ]
 	//[-------------------------------------------------------]
 	public:
-		[[nodiscard]] virtual Rhi::handle getUniformHandle(const char* uniformName) override
+		[[nodiscard]] virtual Rhi::handle getUniformHandle(const char*) override
 		{
-			GLint uniformLocation = -1;
-			#define GET_UNIFORM_LOCATION(ShaderSeparate) if (uniformLocation < 0 && nullptr != ShaderSeparate) uniformLocation = glGetUniformLocation(ShaderSeparate->getOpenGLShaderProgram(), uniformName);
-			GET_UNIFORM_LOCATION(mVertexShaderSeparate)
-			GET_UNIFORM_LOCATION(mTessellationControlShaderSeparate)
-			GET_UNIFORM_LOCATION(mTessellationEvaluationShaderSeparate)
-			GET_UNIFORM_LOCATION(mGeometryShaderSeparate)
-			GET_UNIFORM_LOCATION(mFragmentShaderSeparate)
-			GET_UNIFORM_LOCATION(mTaskShaderSeparate)
-			GET_UNIFORM_LOCATION(mMeshShaderSeparate)
-			#undef GET_UNIFORM_LOCATION
-			return static_cast<Rhi::handle>(uniformLocation);
-		}
-
-		virtual void setUniform1i(Rhi::handle uniformHandle, int value) override
-		{
-			#ifdef RHI_OPENGL_STATE_CLEANUP
-				// Backup the currently used OpenGL program pipeline
-				GLint openGLProgramPipelineBackup = 0;
-				glGetIntegerv(GL_PROGRAM_PIPELINE_BINDING, &openGLProgramPipelineBackup);
-
-				// Set uniform, please note that for this our program must be the currently used one
-				glBindProgramPipeline(mOpenGLProgramPipeline);
-				glActiveShaderProgram(mOpenGLProgramPipeline, mVertexShaderSeparate->getOpenGLShaderProgram());
-				glUniform1i(static_cast<GLint>(uniformHandle), value);
-
-				// Be polite and restore the previous used OpenGL program pipeline
-				glBindProgramPipeline(static_cast<GLuint>(openGLProgramPipelineBackup));
-			#else
-				// Set uniform, please note that for this our program must be the currently used one
-				glBindProgramPipeline(mOpenGLProgramPipeline);
-				glActiveShaderProgram(mOpenGLProgramPipeline, mVertexShaderSeparate->getOpenGLShaderProgram());
-				glUniform1i(static_cast<GLint>(uniformHandle), value);
-			#endif
-		}
-
-		virtual void setUniform1f(Rhi::handle uniformHandle, float value) override
-		{
-			#ifdef RHI_OPENGL_STATE_CLEANUP
-				// Backup the currently used OpenGL program pipeline
-				GLint openGLProgramPipelineBackup = 0;
-				glGetIntegerv(GL_PROGRAM_PIPELINE_BINDING, &openGLProgramPipelineBackup);
-
-				// Set uniform, please note that for this our program must be the currently used one
-				glBindProgramPipeline(mOpenGLProgramPipeline);
-				glActiveShaderProgram(mOpenGLProgramPipeline, mVertexShaderSeparate->getOpenGLShaderProgram());
-				glUniform1f(static_cast<GLint>(uniformHandle), value);
-
-				// Be polite and restore the previous used OpenGL program pipeline
-				glBindProgramPipeline(static_cast<GLuint>(openGLProgramPipelineBackup));
-			#else
-				// Set uniform, please note that for this our program must be the currently used one
-				glBindProgramPipeline(mOpenGLProgramPipeline);
-				glActiveShaderProgram(mOpenGLProgramPipeline, mVertexShaderSeparate->getOpenGLShaderProgram());
-				glUniform1f(static_cast<GLint>(uniformHandle), value);
-			#endif
-		}
-
-		virtual void setUniform2fv(Rhi::handle uniformHandle, const float* value) override
-		{
-			#ifdef RHI_OPENGL_STATE_CLEANUP
-				// Backup the currently used OpenGL program pipeline
-				GLint openGLProgramPipelineBackup = 0;
-				glGetIntegerv(GL_PROGRAM_PIPELINE_BINDING, &openGLProgramPipelineBackup);
-
-				// Set uniform, please note that for this our program must be the currently used one
-				glBindProgramPipeline(mOpenGLProgramPipeline);
-				glActiveShaderProgram(mOpenGLProgramPipeline, mVertexShaderSeparate->getOpenGLShaderProgram());
-				glUniform2fv(static_cast<GLint>(uniformHandle), 1, value);
-
-				// Be polite and restore the previous used OpenGL program pipeline
-				glBindProgramPipeline(static_cast<GLuint>(openGLProgramPipelineBackup));
-			#else
-				// Set uniform, please note that for this our program must be the currently used one
-				glBindProgramPipeline(mOpenGLProgramPipeline);
-				glActiveShaderProgram(mOpenGLProgramPipeline, mVertexShaderSeparate->getOpenGLShaderProgram());
-				glUniform2fv(static_cast<GLint>(uniformHandle), 1, value);
-			#endif
-		}
-
-		virtual void setUniform3fv(Rhi::handle uniformHandle, const float* value) override
-		{
-			#ifdef RHI_OPENGL_STATE_CLEANUP
-				// Backup the currently used OpenGL program pipeline
-				GLint openGLProgramPipelineBackup = 0;
-				glGetIntegerv(GL_PROGRAM_PIPELINE_BINDING, &openGLProgramPipelineBackup);
-
-				// Set uniform, please note that for this our program must be the currently used one
-				glBindProgramPipeline(mOpenGLProgramPipeline);
-				glActiveShaderProgram(mOpenGLProgramPipeline, mVertexShaderSeparate->getOpenGLShaderProgram());
-				glUniform3fv(static_cast<GLint>(uniformHandle), 1, value);
-
-				// Be polite and restore the previous used OpenGL program pipeline
-				glBindProgramPipeline(static_cast<GLuint>(openGLProgramPipelineBackup));
-			#else
-				// Set uniform, please note that for this our program must be the currently used one
-				glBindProgramPipeline(mOpenGLProgramPipeline);
-				glActiveShaderProgram(mOpenGLProgramPipeline, mVertexShaderSeparate->getOpenGLShaderProgram());
-				glUniform3fv(static_cast<GLint>(uniformHandle), 1, value);
-			#endif
-		}
-
-		virtual void setUniform4fv(Rhi::handle uniformHandle, const float* value) override
-		{
-			#ifdef RHI_OPENGL_STATE_CLEANUP
-				// Backup the currently used OpenGL program pipeline
-				GLint openGLProgramPipelineBackup = 0;
-				glGetIntegerv(GL_PROGRAM_PIPELINE_BINDING, &openGLProgramPipelineBackup);
-
-				// Set uniform, please note that for this our program must be the currently used one
-				glBindProgramPipeline(mOpenGLProgramPipeline);
-				glActiveShaderProgram(mOpenGLProgramPipeline, mVertexShaderSeparate->getOpenGLShaderProgram());
-				glUniform4fv(static_cast<GLint>(uniformHandle), 1, value);
-
-				// Be polite and restore the previous used OpenGL program pipeline
-				glBindProgramPipeline(static_cast<GLuint>(openGLProgramPipelineBackup));
-			#else
-				// Set uniform, please note that for this our program must be the currently used one
-				glBindProgramPipeline(mOpenGLProgramPipeline);
-				glActiveShaderProgram(mOpenGLProgramPipeline, mVertexShaderSeparate->getOpenGLShaderProgram());
-				glUniform4fv(static_cast<GLint>(uniformHandle), 1, value);
-			#endif
-		}
-
-		virtual void setUniformMatrix3fv(Rhi::handle uniformHandle, const float* value) override
-		{
-			#ifdef RHI_OPENGL_STATE_CLEANUP
-				// Backup the currently used OpenGL program pipeline
-				GLint openGLProgramPipelineBackup = 0;
-				glGetIntegerv(GL_PROGRAM_PIPELINE_BINDING, &openGLProgramPipelineBackup);
-
-				// Set uniform, please note that for this our program must be the currently used one
-				glBindProgramPipeline(mOpenGLProgramPipeline);
-				glActiveShaderProgram(mOpenGLProgramPipeline, mVertexShaderSeparate->getOpenGLShaderProgram());
-				glUniformMatrix3fv(static_cast<GLint>(uniformHandle), 1, GL_FALSE, value);
-
-				// Be polite and restore the previous used OpenGL program pipeline
-				glBindProgramPipeline(static_cast<GLuint>(openGLProgramPipelineBackup));
-			#else
-				// Set uniform, please note that for this our program must be the currently used one
-				glBindProgramPipeline(mOpenGLProgramPipeline);
-				glActiveShaderProgram(mOpenGLProgramPipeline, mVertexShaderSeparate->getOpenGLShaderProgram());
-				glUniformMatrix3fv(static_cast<GLint>(uniformHandle), 1, GL_FALSE, value);
-			#endif
-		}
-
-		virtual void setUniformMatrix4fv(Rhi::handle uniformHandle, const float* value) override
-		{
-			#ifdef RHI_OPENGL_STATE_CLEANUP
-				// Backup the currently used OpenGL program pipeline
-				GLint openGLProgramPipelineBackup = 0;
-				glGetIntegerv(GL_PROGRAM_PIPELINE_BINDING, &openGLProgramPipelineBackup);
-
-				// Set uniform, please note that for this our program must be the currently used one
-				glBindProgramPipeline(mOpenGLProgramPipeline);
-				glActiveShaderProgram(mOpenGLProgramPipeline, mVertexShaderSeparate->getOpenGLShaderProgram());
-				glUniformMatrix4fv(static_cast<GLint>(uniformHandle), 1, GL_FALSE, value);
-
-				// Be polite and restore the previous used OpenGL program pipeline
-				glBindProgramPipeline(static_cast<GLuint>(openGLProgramPipelineBackup));
-			#else
-				// Set uniform, please note that for this our program must be the currently used one
-				glBindProgramPipeline(mOpenGLProgramPipeline);
-				glActiveShaderProgram(mOpenGLProgramPipeline, mVertexShaderSeparate->getOpenGLShaderProgram());
-				glUniformMatrix4fv(static_cast<GLint>(uniformHandle), 1, GL_FALSE, value);
-			#endif
+			RHI_ASSERT(getRhi().getContext(), false, "The OpenGL RHI graphics program separate implementation doesn't have legacy uniform support")
+			return NULL_HANDLE;
 		}
 
 
@@ -18346,83 +17925,6 @@ namespace OpenGLRhi
 		*/
 		inline virtual ~GraphicsProgramSeparateDsa() override
 		{}
-
-
-	//[-------------------------------------------------------]
-	//[ Public virtual Rhi::IGraphicsProgram methods          ]
-	//[-------------------------------------------------------]
-	public:
-		virtual void setUniform1f(Rhi::handle uniformHandle, float value) override
-		{
-			if (static_cast<OpenGLRhi&>(getRhi()).getExtensions().isGL_ARB_direct_state_access())
-			{
-				glProgramUniform1f(mVertexShaderSeparate->getOpenGLShaderProgram(), static_cast<GLint>(uniformHandle), value);
-			}
-			else
-			{
-				glProgramUniform1fEXT(mVertexShaderSeparate->getOpenGLShaderProgram(), static_cast<GLint>(uniformHandle), value);
-			}
-		}
-
-		virtual void setUniform2fv(Rhi::handle uniformHandle, const float* value) override
-		{
-			if (static_cast<OpenGLRhi&>(getRhi()).getExtensions().isGL_ARB_direct_state_access())
-			{
-				glProgramUniform2fv(mVertexShaderSeparate->getOpenGLShaderProgram(), static_cast<GLint>(uniformHandle), 1, value);
-			}
-			else
-			{
-				glProgramUniform2fvEXT(mVertexShaderSeparate->getOpenGLShaderProgram(), static_cast<GLint>(uniformHandle), 1, value);
-			}
-		}
-
-		virtual void setUniform3fv(Rhi::handle uniformHandle, const float* value) override
-		{
-			if (static_cast<OpenGLRhi&>(getRhi()).getExtensions().isGL_ARB_direct_state_access())
-			{
-				glProgramUniform3fv(mVertexShaderSeparate->getOpenGLShaderProgram(), static_cast<GLint>(uniformHandle), 1, value);
-			}
-			else
-			{
-				glProgramUniform3fvEXT(mVertexShaderSeparate->getOpenGLShaderProgram(), static_cast<GLint>(uniformHandle), 1, value);
-			}
-		}
-
-		virtual void setUniform4fv(Rhi::handle uniformHandle, const float* value) override
-		{
-			if (static_cast<OpenGLRhi&>(getRhi()).getExtensions().isGL_ARB_direct_state_access())
-			{
-				glProgramUniform4fv(mVertexShaderSeparate->getOpenGLShaderProgram(), static_cast<GLint>(uniformHandle), 1, value);
-			}
-			else
-			{
-				glProgramUniform4fvEXT(mVertexShaderSeparate->getOpenGLShaderProgram(), static_cast<GLint>(uniformHandle), 1, value);
-			}
-		}
-
-		virtual void setUniformMatrix3fv(Rhi::handle uniformHandle, const float* value) override
-		{
-			if (static_cast<OpenGLRhi&>(getRhi()).getExtensions().isGL_ARB_direct_state_access())
-			{
-				glProgramUniformMatrix3fv(mVertexShaderSeparate->getOpenGLShaderProgram(), static_cast<GLint>(uniformHandle), 1, GL_FALSE, value);
-			}
-			else
-			{
-				glProgramUniformMatrix3fvEXT(mVertexShaderSeparate->getOpenGLShaderProgram(), static_cast<GLint>(uniformHandle), 1, GL_FALSE, value);
-			}
-		}
-
-		virtual void setUniformMatrix4fv(Rhi::handle uniformHandle, const float* value) override
-		{
-			if (static_cast<OpenGLRhi&>(getRhi()).getExtensions().isGL_ARB_direct_state_access())
-			{
-				glProgramUniformMatrix4fv(mVertexShaderSeparate->getOpenGLShaderProgram(), static_cast<GLint>(uniformHandle), 1, GL_FALSE, value);
-			}
-			else
-			{
-				glProgramUniformMatrix4fvEXT(mVertexShaderSeparate->getOpenGLShaderProgram(), static_cast<GLint>(uniformHandle), 1, GL_FALSE, value);
-			}
-		}
 
 
 	//[-------------------------------------------------------]
@@ -19646,6 +19148,22 @@ namespace
 				static_cast<OpenGLRhi::OpenGLRhi&>(rhi).generateMipmaps(*realData->resource);
 			}
 
+			void CopyUniformBufferData(const void* data, Rhi::IRhi& rhi)
+			{
+				const Rhi::Command::CopyUniformBufferData* realData = static_cast<const Rhi::Command::CopyUniformBufferData*>(data);
+				Rhi::MappedSubresource mappedSubresource;
+				if (rhi.map(*realData->uniformBuffer, 0, Rhi::MapType::WRITE_DISCARD, 0, mappedSubresource))
+				{
+					memcpy(mappedSubresource.data, Rhi::CommandPacketHelper::getAuxiliaryMemory(realData), realData->numberOfBytes);
+					rhi.unmap(*realData->uniformBuffer, 0);
+				}
+			}
+
+			void SetUniform(const void*, [[maybe_unused]] Rhi::IRhi& rhi)
+			{
+				RHI_ASSERT(rhi.getContext(), false, "The set uniform command isn't supported by the OpenGL RHI implementation")
+			}
+
 			//[-------------------------------------------------------]
 			//[ Query                                                 ]
 			//[-------------------------------------------------------]
@@ -19743,6 +19261,8 @@ namespace
 			&ImplementationDispatch::ResolveMultisampleFramebuffer,
 			&ImplementationDispatch::CopyResource,
 			&ImplementationDispatch::GenerateMipmaps,
+			&ImplementationDispatch::CopyUniformBufferData,
+			&ImplementationDispatch::SetUniform,
 			// Query
 			&ImplementationDispatch::ResetQueryPool,
 			&ImplementationDispatch::BeginQuery,

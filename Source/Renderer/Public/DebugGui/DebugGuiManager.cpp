@@ -289,30 +289,22 @@ namespace Renderer
 
 			{ // Setup orthographic projection matrix into our vertex shader uniform buffer
 				const ImGuiIO& imGuiIo = ImGui::GetIO();
-				float objectSpaceToClipSpaceMatrix[4][4] =
+				const float objectSpaceToClipSpaceMatrix[4][4] =
 				{
 					{  2.0f / imGuiIo.DisplaySize.x, 0.0f,                          0.0f, 0.0f },
 					{  0.0f,                         2.0f / -imGuiIo.DisplaySize.y, 0.0f, 0.0f },
 					{  0.0f,                         0.0f,                          0.5f, 0.0f },
 					{ -1.0f,                         1.0f,                          0.5f, 1.0f }
 				};
-
-				// Copy data
-				// TODO(co) Since the data copy isn't performed via commands, we better manage it somehow to ensure no problems come up when the following is executed multiple times per frame (which usually isn't the case)
 				if (nullptr != mVertexShaderUniformBuffer)
 				{
-					Rhi::MappedSubresource mappedSubresource;
-					Rhi::IRhi& rhi = mRenderer.getRhi();
-					if (rhi.map(*mVertexShaderUniformBuffer, 0, Rhi::MapType::WRITE_DISCARD, 0, mappedSubresource))
-					{
-						memcpy(mappedSubresource.data, objectSpaceToClipSpaceMatrix, sizeof(objectSpaceToClipSpaceMatrix));
-						rhi.unmap(*mVertexShaderUniformBuffer, 0);
-					}
+					// Copy data into the uniform buffer
+					Rhi::Command::CopyUniformBufferData::create(commandBuffer, *mVertexShaderUniformBuffer, objectSpaceToClipSpaceMatrix, sizeof(objectSpaceToClipSpaceMatrix));
 				}
 				else
 				{
-					// TODO(co) Not compatible with command buffer: This certainly is going to be removed, we need to implement internal uniform buffer emulation
-					mGraphicsProgram->setUniformMatrix4fv(mObjectSpaceToClipSpaceMatrixUniformHandle, &objectSpaceToClipSpaceMatrix[0][0]);
+					// Set legacy uniforms
+					Rhi::Command::SetUniform::createMatrix4fv(commandBuffer, *mGraphicsProgram, mObjectSpaceToClipSpaceMatrixUniformHandle, &objectSpaceToClipSpaceMatrix[0][0]);
 				}
 			}
 

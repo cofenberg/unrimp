@@ -430,6 +430,8 @@ namespace Renderer
 						"ResolveMultisampleFramebuffer",
 						"CopyResource",
 						"GenerateMipmaps",
+						"CopyUniformBufferData",
+						"SetUniform",
 						// Query
 						"ResetQueryPool",
 						"BeginQuery",

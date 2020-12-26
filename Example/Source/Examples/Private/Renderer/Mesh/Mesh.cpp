@@ -273,33 +273,28 @@ void Mesh::onDraw(Rhi::CommandBuffer& commandBuffer)
 			// -> Two versions: One using an uniform buffer and one setting an individual uniform
 			if (nullptr != mUniformBuffer)
 			{
+				// Using "Rhi::Command::CopyUniformBufferData::create()" in here would be more compact to write, but would also result in copying around things inside memory, hence we're using the command buffer auxiliary memory directly in here
 				struct UniformBlockDynamicVs final
 				{
 					float objectSpaceToClipSpaceMatrix[4 * 4];	// Object space to clip space matrix
 					float objectSpaceToViewSpaceMatrix[4 * 4];	// Object space to view space matrix
 				};
-				UniformBlockDynamicVs uniformBlockDynamicVS;
-				memcpy(uniformBlockDynamicVS.objectSpaceToClipSpaceMatrix, glm::value_ptr(objectSpaceToClipSpace), sizeof(float) * 4 * 4);
+				Rhi::Command::CopyUniformBufferData* copyUniformBufferData = commandBuffer.addCommand<Rhi::Command::CopyUniformBufferData>(sizeof(UniformBlockDynamicVs));
+				copyUniformBufferData->uniformBuffer = mUniformBuffer;
+				copyUniformBufferData->numberOfBytes = sizeof(UniformBlockDynamicVs);
+				UniformBlockDynamicVs* uniformBlockDynamicVS = reinterpret_cast<UniformBlockDynamicVs*>(Rhi::CommandPacketHelper::getAuxiliaryMemory(copyUniformBufferData));
+				memcpy(uniformBlockDynamicVS->objectSpaceToClipSpaceMatrix, glm::value_ptr(objectSpaceToClipSpace), sizeof(float) * 4 * 4);
 
 				// TODO(co) float3x3 (currently there are alignment issues when using Direct3D, have a look into possible solutions)
 				glm::mat3 objectSpaceToViewSpace3x3 = glm::mat3(objectSpaceToViewSpace);
 				objectSpaceToViewSpace = glm::mat4(objectSpaceToViewSpace3x3);
-				memcpy(uniformBlockDynamicVS.objectSpaceToViewSpaceMatrix, glm::value_ptr(objectSpaceToViewSpace), sizeof(float) * 4 * 4);
-
-				// Copy data
-				Rhi::MappedSubresource mappedSubresource;
-				if (rhi->map(*mUniformBuffer, 0, Rhi::MapType::WRITE_DISCARD, 0, mappedSubresource))
-				{
-					memcpy(mappedSubresource.data, &uniformBlockDynamicVS, sizeof(UniformBlockDynamicVs));
-					rhi->unmap(*mUniformBuffer, 0);
-				}
+				memcpy(uniformBlockDynamicVS->objectSpaceToViewSpaceMatrix, glm::value_ptr(objectSpaceToViewSpace), sizeof(float) * 4 * 4);
 			}
 			else
 			{
-				// TODO(co) Not compatible with command buffer: This certainly is going to be removed, we need to implement internal uniform buffer emulation
-				// Set uniforms
-				mGraphicsProgram->setUniformMatrix4fv(mObjectSpaceToClipSpaceMatrixUniformHandle, glm::value_ptr(objectSpaceToClipSpace));
-				mGraphicsProgram->setUniformMatrix3fv(mObjectSpaceToViewSpaceMatrixUniformHandle, glm::value_ptr(glm::mat3(objectSpaceToViewSpace)));
+				// Set legacy uniforms
+				Rhi::Command::SetUniform::createMatrix4fv(commandBuffer, *mGraphicsProgram, mObjectSpaceToClipSpaceMatrixUniformHandle, glm::value_ptr(objectSpaceToClipSpace));
+				Rhi::Command::SetUniform::createMatrix3fv(commandBuffer, *mGraphicsProgram, mObjectSpaceToViewSpaceMatrixUniformHandle, glm::value_ptr(glm::mat3(objectSpaceToViewSpace)));
 			}
 		}
 
