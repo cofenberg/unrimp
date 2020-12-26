@@ -952,7 +952,7 @@ namespace
 			return false;
 		}
 
-		[[nodiscard]] VkPhysicalDevice selectPhysicalDevice(const Rhi::Context& context, const VkPhysicalDevices& vkPhysicalDevices, bool validationEnabled, bool& enableDebugMarker)
+		[[nodiscard]] VkPhysicalDevice selectPhysicalDevice(const Rhi::Context& context, const VkPhysicalDevices& vkPhysicalDevices, bool validationEnabled, bool& enableDebugMarker, bool& hasMeshShaderSupport)
 		{
 			// TODO(co) I'am sure this selection can be improved (rating etc.)
 			for (const VkPhysicalDevice& vkPhysicalDevice : vkPhysicalDevices)
@@ -977,7 +977,6 @@ namespace
 					{
 						VK_KHR_SWAPCHAIN_EXTENSION_NAME,
 						VK_KHR_MAINTENANCE1_EXTENSION_NAME	// We want to be able to specify a negative viewport height, this way we don't have to apply "<output position>.y = -<output position>.y" inside vertex shaders to compensate for the Vulkan coordinate system
-						// VK_NV_MESH_SHADER_EXTENSION_NAME	// TODO(co) Mesh shader support must be optional
 					};
 					bool rejectDevice = false;
 					for (const char* deviceExtension : deviceExtensions)
@@ -994,6 +993,7 @@ namespace
 						continue;
 					}
 				}
+				hasMeshShaderSupport = isExtensionAvailable(VK_NV_MESH_SHADER_EXTENSION_NAME, vkExtensionPropertiesVector);
 
 				{ // Reject physical Vulkan devices basing on supported API version and some basic limits
 					VkPhysicalDeviceProperties vkPhysicalDeviceProperties;
@@ -1058,21 +1058,27 @@ namespace
 			return VK_NULL_HANDLE;
 		}
 
-		[[nodiscard]] VkResult createVkDevice(const Rhi::Context& context, const VkAllocationCallbacks* vkAllocationCallbacks, VkPhysicalDevice vkPhysicalDevice, const VkDeviceQueueCreateInfo& vkDeviceQueueCreateInfo, bool enableValidation, bool enableDebugMarker, VkDevice& vkDevice)
+		[[nodiscard]] VkResult createVkDevice(const Rhi::Context& context, const VkAllocationCallbacks* vkAllocationCallbacks, VkPhysicalDevice vkPhysicalDevice, const VkDeviceQueueCreateInfo& vkDeviceQueueCreateInfo, bool enableValidation, bool hasMeshShaderSupport, bool enableDebugMarker, VkDevice& vkDevice)
 		{
 			// See http://vulkan.gpuinfo.org/listfeatures.php to check out GPU hardware capabilities
-			static constexpr std::array<const char*, 3> enabledExtensions =
+			std::vector<const char*> enabledExtensions =
 			{
 				VK_KHR_SWAPCHAIN_EXTENSION_NAME,
-				VK_KHR_MAINTENANCE1_EXTENSION_NAME,		// We want to be able to specify a negative viewport height, this way we don't have to apply "<output position>.y = -<output position>.y" inside vertex shaders to compensate for the Vulkan coordinate system
-				// VK_NV_MESH_SHADER_EXTENSION_NAME,	// TODO(co) Mesh shader support must be optional
-				VK_EXT_DEBUG_MARKER_EXTENSION_NAME
+				VK_KHR_MAINTENANCE1_EXTENSION_NAME		// We want to be able to specify a negative viewport height, this way we don't have to apply "<output position>.y = -<output position>.y" inside vertex shaders to compensate for the Vulkan coordinate system
 			};
+			if (enableValidation)
+			{
+				enabledExtensions.emplace_back(VK_EXT_DEBUG_MARKER_EXTENSION_NAME);
+			}
+			if (hasMeshShaderSupport)
+			{
+				enabledExtensions.emplace_back(VK_NV_MESH_SHADER_EXTENSION_NAME);
+			}
 
 			// This will only be used if meshShadingSupported=true (see below)
 			VkPhysicalDeviceMeshShaderFeaturesNV vkPhysicalDeviceMeshShaderFeaturesNV = { VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MESH_SHADER_FEATURES_NV };
-			vkPhysicalDeviceMeshShaderFeaturesNV.taskShader = false;	// TODO(co) Mesh shader support must be optional
-			vkPhysicalDeviceMeshShaderFeaturesNV.meshShader = false;	// TODO(co) Mesh shader support must be optional
+			vkPhysicalDeviceMeshShaderFeaturesNV.taskShader = true;
+			vkPhysicalDeviceMeshShaderFeaturesNV.meshShader = true;
 			static constexpr VkPhysicalDeviceFeatures vkPhysicalDeviceFeatures =
 			{
 				VK_FALSE,	// robustBufferAccess (VkBool32)
@@ -1133,16 +1139,16 @@ namespace
 			};
 			const VkDeviceCreateInfo vkDeviceCreateInfo =
 			{
-				VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO,							// sType (VkStructureType)
-				&vkPhysicalDeviceMeshShaderFeaturesNV,							// pNext (const void*)
-				0,																// flags (VkDeviceCreateFlags)
-				1,																// queueCreateInfoCount (uint32_t)
-				&vkDeviceQueueCreateInfo,										// pQueueCreateInfos (const VkDeviceQueueCreateInfo*)
-				enableValidation ? NUMBER_OF_VALIDATION_LAYERS : 0,				// enabledLayerCount (uint32_t)
-				enableValidation ? VALIDATION_LAYER_NAMES : nullptr,			// ppEnabledLayerNames (const char* const*)
-				enableDebugMarker ? 4u : 3u,									// enabledExtensionCount (uint32_t)
-				enabledExtensions.empty() ? nullptr : enabledExtensions.data(),	// ppEnabledExtensionNames (const char* const*)
-				&vkPhysicalDeviceFeatures										// pEnabledFeatures (const VkPhysicalDeviceFeatures*)
+				VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO,									// sType (VkStructureType)
+				hasMeshShaderSupport ? &vkPhysicalDeviceMeshShaderFeaturesNV : nullptr,	// pNext (const void*)
+				0,																		// flags (VkDeviceCreateFlags)
+				1,																		// queueCreateInfoCount (uint32_t)
+				&vkDeviceQueueCreateInfo,												// pQueueCreateInfos (const VkDeviceQueueCreateInfo*)
+				enableValidation ? NUMBER_OF_VALIDATION_LAYERS : 0,						// enabledLayerCount (uint32_t)
+				enableValidation ? VALIDATION_LAYER_NAMES : nullptr,					// ppEnabledLayerNames (const char* const*)
+				enabledExtensions.size(),												// enabledExtensionCount (uint32_t)
+				enabledExtensions.empty() ? nullptr : enabledExtensions.data(),			// ppEnabledExtensionNames (const char* const*)
+				&vkPhysicalDeviceFeatures												// pEnabledFeatures (const VkPhysicalDeviceFeatures*)
 			};
 			const VkResult vkResult = vkCreateDevice(vkPhysicalDevice, &vkDeviceCreateInfo, vkAllocationCallbacks, &vkDevice);
 			if (VK_SUCCESS == vkResult && enableDebugMarker)
@@ -1175,7 +1181,7 @@ namespace
 			return vkResult;
 		}
 
-		[[nodiscard]] VkDevice createVkDevice(const Rhi::Context& context, const VkAllocationCallbacks* vkAllocationCallbacks, VkPhysicalDevice vkPhysicalDevice, bool enableValidation, bool enableDebugMarker, uint32_t& graphicsQueueFamilyIndex, uint32_t& presentQueueFamilyIndex)
+		[[nodiscard]] VkDevice createVkDevice(const Rhi::Context& context, const VkAllocationCallbacks* vkAllocationCallbacks, VkPhysicalDevice vkPhysicalDevice, bool enableValidation, bool enableDebugMarker, bool hasMeshShaderSupport, uint32_t& graphicsQueueFamilyIndex, uint32_t& presentQueueFamilyIndex)
 		{
 			VkDevice vkDevice = VK_NULL_HANDLE;
 
@@ -1205,12 +1211,12 @@ namespace
 							1,											// queueCount (uint32_t)
 							queuePriorities.data()						// pQueuePriorities (const float*)
 						};
-						VkResult vkResult = createVkDevice(context, vkAllocationCallbacks, vkPhysicalDevice, vkDeviceQueueCreateInfo, enableValidation, enableDebugMarker, vkDevice);
+						VkResult vkResult = createVkDevice(context, vkAllocationCallbacks, vkPhysicalDevice, vkDeviceQueueCreateInfo, enableValidation, enableDebugMarker, hasMeshShaderSupport, vkDevice);
 						if (VK_ERROR_LAYER_NOT_PRESENT == vkResult && enableValidation)
 						{
 							// Error! Since the show must go on, try creating a Vulkan device instance without validation enabled...
 							RHI_LOG(context, WARNING, "Failed to create the Vulkan device instance with validation enabled, layer is not present")
-							vkResult = createVkDevice(context, vkAllocationCallbacks, vkPhysicalDevice, vkDeviceQueueCreateInfo, false, enableDebugMarker, vkDevice);
+							vkResult = createVkDevice(context, vkAllocationCallbacks, vkPhysicalDevice, vkDeviceQueueCreateInfo, false, enableDebugMarker, hasMeshShaderSupport, vkDevice);
 						}
 						// TODO(co) Error handling: Evaluate "vkResult"?
 						graphicsQueueFamilyIndex = graphicsQueueIndex;
@@ -2376,11 +2382,13 @@ namespace VulkanRhi
 		*
 		*  @param[in] vkDevice
 		*    Vulkan device instance to load the function entry pointers for
+		*  @param[in] hasMeshShaderSupport
+		*    Has mesh shader support?
 		*
 		*  @return
 		*    "true" if all went fine, else "false"
 		*/
-		[[nodiscard]] bool loadDeviceLevelVulkanEntryPoints(VkDevice vkDevice) const
+		[[nodiscard]] bool loadDeviceLevelVulkanEntryPoints(VkDevice vkDevice, bool hasMeshShaderSupport) const
 		{
 			bool result = true;	// Success by default
 
@@ -2494,7 +2502,10 @@ namespace VulkanRhi
 			IMPORT_FUNC(vkAcquireNextImageKHR)
 			IMPORT_FUNC(vkQueuePresentKHR)
 			// "VK_NV_mesh_shader"-extension
-			//IMPORT_FUNC(vkCmdDrawMeshTasksNV)	// TODO(co) Mesh shader support must be optional
+			if (hasMeshShaderSupport)
+			{
+				IMPORT_FUNC(vkCmdDrawMeshTasksNV)
+			}
 
 			// Undefine the helper macro
 			#undef IMPORT_FUNC
@@ -2888,23 +2899,24 @@ namespace VulkanRhi
 
 			// Get the physical Vulkan device this context should use
 			bool enableDebugMarker = true;	// TODO(co) Make it possible to setup from the outside whether or not the "VK_EXT_debug_marker"-extension should be used (e.g. retail shipped games might not want to have this enabled)
+			bool hasMeshShaderSupport = false;
 			{
 				detail::VkPhysicalDevices vkPhysicalDevices;
 				::detail::enumeratePhysicalDevices(vulkanRhi.getContext(), vulkanRuntimeLinking.getVkInstance(), vkPhysicalDevices);
 				if (!vkPhysicalDevices.empty())
 				{
-					mVkPhysicalDevice = ::detail::selectPhysicalDevice(vulkanRhi.getContext(), vkPhysicalDevices, vulkanRhi.getVulkanRuntimeLinking().isValidationEnabled(), enableDebugMarker);
+					mVkPhysicalDevice = ::detail::selectPhysicalDevice(vulkanRhi.getContext(), vkPhysicalDevices, vulkanRhi.getVulkanRuntimeLinking().isValidationEnabled(), enableDebugMarker, hasMeshShaderSupport);
 				}
 			}
 
 			// Create the logical Vulkan device instance
 			if (VK_NULL_HANDLE != mVkPhysicalDevice)
 			{
-				mVkDevice = ::detail::createVkDevice(mVulkanRhi.getContext(), mVulkanRhi.getVkAllocationCallbacks(), mVkPhysicalDevice, vulkanRuntimeLinking.isValidationEnabled(), enableDebugMarker, mGraphicsQueueFamilyIndex, mPresentQueueFamilyIndex);
+				mVkDevice = ::detail::createVkDevice(mVulkanRhi.getContext(), mVulkanRhi.getVkAllocationCallbacks(), mVkPhysicalDevice, vulkanRuntimeLinking.isValidationEnabled(), enableDebugMarker, hasMeshShaderSupport, mGraphicsQueueFamilyIndex, mPresentQueueFamilyIndex);
 				if (VK_NULL_HANDLE != mVkDevice)
 				{
 					// Load device based instance level Vulkan function pointers
-					if (mVulkanRhi.getVulkanRuntimeLinking().loadDeviceLevelVulkanEntryPoints(mVkDevice))
+					if (mVulkanRhi.getVulkanRuntimeLinking().loadDeviceLevelVulkanEntryPoints(mVkDevice, hasMeshShaderSupport))
 					{
 						// Get the Vulkan device graphics queue that command buffers are submitted to
 						vkGetDeviceQueue(mVkDevice, mGraphicsQueueFamilyIndex, 0, &mGraphicsVkQueue);
