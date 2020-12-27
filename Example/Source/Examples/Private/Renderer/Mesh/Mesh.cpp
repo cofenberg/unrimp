@@ -328,9 +328,8 @@ void Mesh::fillCommandBuffer()
 			mResourceGroup = mRootSignature->createResourceGroup(0, static_cast<uint32_t>(GLM_COUNTOF(resources)), resources, samplerStates);
 		}
 
-		// Get and check the RHI instance
-		Rhi::IRhiPtr rhi(getRhi());
-		if (nullptr != rhi && nullptr != mGraphicsPipelineState)
+		// Render frame
+		if (nullptr != mGraphicsPipelineState)
 		{
 			// Combined scoped profiler CPU and GPU sample as well as renderer debug event command
 			RENDERER_SCOPED_PROFILER_EVENT(renderer.getContext(), mCommandBuffer, "Mesh")

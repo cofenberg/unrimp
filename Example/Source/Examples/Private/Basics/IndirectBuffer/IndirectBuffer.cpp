@@ -33,25 +33,20 @@ void IndirectBuffer::onInitialization()
 	// Call the base implementation
 	Triangle::onInitialization();
 
-	// Get and check the RHI instance
-	Rhi::IRhiPtr rhi(getRhi());
-	if (nullptr != rhi)
-	{
-		{ // Create the indirect buffer
-			const Rhi::DrawArguments drawArguments =
-			{
-				3,	// vertexCountPerInstance (uint32_t)
-				1,	// instanceCount (uint32_t)
-				0,	// startVertexLocation (uint32_t)
-				0	// startInstanceLocation (uint32_t)
-			};
-			mIndirectBuffer = mBufferManager->createIndirectBuffer(sizeof(Rhi::DrawArguments), &drawArguments, Rhi::IndirectBufferFlag::DRAW_ARGUMENTS);
-		}
-
-		// Since we're always dispatching the same commands to the RHI, we can fill the command buffer once during initialization and then reuse it multiple times during runtime
-		mCommandBuffer.clear();	// Throw away "Triangle"-stuff
-		fillCommandBuffer();
+	{ // Create the indirect buffer
+		const Rhi::DrawArguments drawArguments =
+		{
+			3,	// vertexCountPerInstance (uint32_t)
+			1,	// instanceCount (uint32_t)
+			0,	// startVertexLocation (uint32_t)
+			0	// startInstanceLocation (uint32_t)
+		};
+		mIndirectBuffer = mBufferManager->createIndirectBuffer(sizeof(Rhi::DrawArguments), &drawArguments, Rhi::IndirectBufferFlag::DRAW_ARGUMENTS);
 	}
+
+	// Since we're always dispatching the same commands to the RHI, we can fill the command buffer once during initialization and then reuse it multiple times during runtime
+	mCommandBuffer.clear();	// Throw away "Triangle"-stuff
+	fillCommandBuffer();
 }
 
 void IndirectBuffer::onDeinitialization()
