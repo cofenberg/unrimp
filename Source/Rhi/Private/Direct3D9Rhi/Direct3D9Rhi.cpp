@@ -1051,6 +1051,23 @@ enum D3DBLEND
 };
 
 // "Microsoft Direct3D SDK (June 2010)" -> "d3d9types.h"
+enum D3DBLENDOP
+{
+	D3DBLENDOP_ADD			= 1,
+	D3DBLENDOP_SUBTRACT		= 2,
+	D3DBLENDOP_REVSUBTRACT	= 3,
+	D3DBLENDOP_MIN			= 4,
+	D3DBLENDOP_MAX			= 5,
+	D3DBLENDOP_FORCE_DWORD	= 0x7fffffff
+};
+
+// "Microsoft Direct3D SDK (June 2010)" -> "d3d9types.h"
+#define D3DCOLORWRITEENABLE_RED		(1L<<0)
+#define D3DCOLORWRITEENABLE_GREEN	(1L<<1)
+#define D3DCOLORWRITEENABLE_BLUE	(1L<<2)
+#define D3DCOLORWRITEENABLE_ALPHA	(1L<<3)
+
+// "Microsoft Direct3D SDK (June 2010)" -> "d3d9types.h"
 enum D3DRESOURCETYPE
 {
 	D3DRTYPE_SURFACE		=  1,
@@ -2957,6 +2974,77 @@ namespace Direct3D9Rhi
 				D3DPRESENT_INTERVAL_FOUR
 			};
 			return MAPPING[synchronizationInterval];
+		}
+
+		//[-------------------------------------------------------]
+		//[ Rhi::Blend                                            ]
+		//[-------------------------------------------------------]
+		/**
+		*  @brief
+		*    "Rhi::Blend" to Direct3D 9 type
+		*
+		*  @param[in] blend
+		*    "Rhi::Blend" to map
+		*
+		*  @return
+		*    Direct3D 9 type
+		*/
+		[[nodiscard]] static DWORD getDirect3D9BlendType(Rhi::Blend blend)
+		{
+			if (blend <= Rhi::Blend::SRC_ALPHA_SAT)
+			{
+				static constexpr DWORD MAPPING[] =
+				{
+					D3DBLEND_ZERO,				// Rhi::Blend::ZERO
+					D3DBLEND_ONE,				// Rhi::Blend::ONE
+					D3DBLEND_SRCCOLOR,			// Rhi::Blend::SRC_COLOR
+					D3DBLEND_INVSRCCOLOR,		// Rhi::Blend::INV_SRC_COLOR
+					D3DBLEND_SRCALPHA,			// Rhi::Blend::SRC_ALPHA
+					D3DBLEND_INVSRCALPHA,		// Rhi::Blend::INV_SRC_ALPHA
+					D3DBLEND_DESTALPHA,			// Rhi::Blend::DEST_ALPHA
+					D3DBLEND_INVDESTALPHA,		// Rhi::Blend::INV_DEST_ALPHA
+					D3DBLEND_DESTCOLOR,			// Rhi::Blend::DEST_COLOR
+					D3DBLEND_INVDESTCOLOR,		// Rhi::Blend::INV_DEST_COLOR
+					D3DBLEND_SRCALPHASAT		// Rhi::Blend::SRC_ALPHA_SAT
+				};
+				return MAPPING[static_cast<int>(blend) - static_cast<int>(Rhi::Blend::ZERO)];
+			}
+			else
+			{
+				static constexpr DWORD MAPPING[] =
+				{
+					D3DBLEND_SRCCOLOR,			// Rhi::Blend::BLEND_FACTOR		TODO(co) Mapping "Rhi::Blend::BLEND_FACTOR" to Direct3D 9 possible?
+					D3DBLEND_INVSRCCOLOR,		// Rhi::Blend::INV_BLEND_FACTOR	TODO(co) Mapping "Rhi::Blend::INV_BLEND_FACTOR" to Direct3D 9 possible?
+					D3DBLEND_SRCCOLOR2,			// Rhi::Blend::SRC_1_COLOR
+					D3DBLEND_INVSRCCOLOR2,		// Rhi::Blend::INV_SRC_1_COLOR
+					D3DBLEND_BLENDFACTOR,		// Rhi::Blend::SRC_1_ALPHA
+					D3DBLEND_INVBLENDFACTOR,	// Rhi::Blend::INV_SRC_1_ALPHA
+				};
+				return MAPPING[static_cast<int>(blend) - static_cast<int>(Rhi::Blend::BLEND_FACTOR)];
+			}
+		}
+
+		/**
+		*  @brief
+		*    "Rhi::BlendOp" to Direct3D 9 type
+		*
+		*  @param[in] blendOp
+		*    "Rhi::BlendOp" to map
+		*
+		*  @return
+		*    Direct3D 9 type
+		*/
+		[[nodiscard]] static DWORD getDirect3D9BlendOperation(Rhi::BlendOp blendOp)
+		{
+			static constexpr uint32_t MAPPING[] =
+			{
+				D3DBLENDOP_ADD,			// Rhi::BlendOp::ADD
+				D3DBLENDOP_SUBTRACT,	// Rhi::BlendOp::SUBTRACT
+				D3DBLENDOP_REVSUBTRACT,	// Rhi::BlendOp::REV_SUBTRACT
+				D3DBLENDOP_MIN,			// Rhi::BlendOp::MIN
+				D3DBLENDOP_MAX			// Rhi::BlendOp::MAX
+			};
+			return MAPPING[static_cast<int>(blendOp) - static_cast<int>(Rhi::BlendOp::ADD)];
 		}
 
 
@@ -5365,8 +5453,35 @@ namespace Direct3D9Rhi
 		*    Blend state to use
 		*/
 		inline explicit BlendState(const Rhi::BlendState& blendState) :
-			mBlendState(blendState)
-		{}
+			mBlendState(blendState),
+			mDirect3D9SeparateAlphaBlendEnabled(static_cast<DWORD>((mBlendState.renderTarget[0].srcBlend != mBlendState.renderTarget[0].srcBlendAlpha || mBlendState.renderTarget[0].destBlend != mBlendState.renderTarget[0].destBlendAlpha) ? TRUE : FALSE)),
+			mDirect3D9SrcBlend(Mapping::getDirect3D9BlendType(mBlendState.renderTarget[0].srcBlend)),				// Rhi::RenderTargetBlendDesc::srcBlend
+			mDirect3D9DestBlend(Mapping::getDirect3D9BlendType(mBlendState.renderTarget[0].destBlend)),				// Rhi::RenderTargetBlendDesc::destBlend
+			mDirect3D9BlendOp(Mapping::getDirect3D9BlendOperation(mBlendState.renderTarget[0].blendOp)),			// Rhi::RenderTargetBlendDesc::blendOp
+			mDirect3D9SrcBlendAlpha(Mapping::getDirect3D9BlendType(mBlendState.renderTarget[0].srcBlendAlpha)),		// Rhi::RenderTargetBlendDesc::srcBlendAlpha
+			mDirect3D9DestBlendAlpha(Mapping::getDirect3D9BlendType(mBlendState.renderTarget[0].destBlendAlpha)),	// Rhi::RenderTargetBlendDesc::destBlendAlpha
+			mDirect3D9BlendOpAlpha(Mapping::getDirect3D9BlendOperation(mBlendState.renderTarget[0].blendOpAlpha)),	// Rhi::RenderTargetBlendDesc::blendOpAlpha
+			mDirect3D9ColorWriteEnable(0)
+		{
+			// Rhi::RenderTargetBlendDesc::renderTargetWriteMask
+			const uint8_t renderTargetWriteMask = mBlendState.renderTarget[0].renderTargetWriteMask;
+			if ((renderTargetWriteMask & Rhi::ColorWriteEnableFlag::RED) != 0)
+			{
+				mDirect3D9ColorWriteEnable |= D3DCOLORWRITEENABLE_RED;
+			}
+			if ((renderTargetWriteMask & Rhi::ColorWriteEnableFlag::GREEN) != 0)
+			{
+				mDirect3D9ColorWriteEnable |= D3DCOLORWRITEENABLE_GREEN;
+			}
+			if ((renderTargetWriteMask & Rhi::ColorWriteEnableFlag::BLUE) != 0)
+			{
+				mDirect3D9ColorWriteEnable |= D3DCOLORWRITEENABLE_BLUE;
+			}
+			if ((renderTargetWriteMask & Rhi::ColorWriteEnableFlag::ALPHA) != 0)
+			{
+				mDirect3D9ColorWriteEnable |= D3DCOLORWRITEENABLE_ALPHA;
+			}
+		}
 
 		/**
 		*  @brief
@@ -5384,13 +5499,19 @@ namespace Direct3D9Rhi
 		*/
 		void setDirect3D9BlendStates(IDirect3DDevice9& direct3DDevice9) const
 		{
-			FAILED_DEBUG_BREAK(direct3DDevice9.SetRenderState(D3DRS_ALPHABLENDENABLE, static_cast<DWORD>(mBlendState.renderTarget[0].blendEnable)))
-
-			// TODO(co) Add more blend state options: Due to time limitations for now only fixed build in alpha blend setup in order to see a change
-			FAILED_DEBUG_BREAK(direct3DDevice9.SetRenderState(D3DRS_SRCBLEND,  D3DBLEND_SRCALPHA))
-			FAILED_DEBUG_BREAK(direct3DDevice9.SetRenderState(D3DRS_DESTBLEND, D3DBLEND_ONE))
-
-			// TODO(co) Map the rest of the blend states
+			FAILED_DEBUG_BREAK(direct3DDevice9.SetRenderState(D3DRS_SEPARATEALPHABLENDENABLE, mDirect3D9SeparateAlphaBlendEnabled))
+			FAILED_DEBUG_BREAK(direct3DDevice9.SetRenderState(D3DRS_SEPARATEALPHABLENDENABLE, TRUE))
+			FAILED_DEBUG_BREAK(direct3DDevice9.SetRenderState(D3DRS_ALPHABLENDENABLE,		  static_cast<DWORD>(mBlendState.renderTarget[0].blendEnable)))	// Rhi::RenderTargetBlendDesc::blendEnable
+			FAILED_DEBUG_BREAK(direct3DDevice9.SetRenderState(D3DRS_SRCBLEND,				  mDirect3D9SrcBlend))											// Rhi::RenderTargetBlendDesc::srcBlend
+			FAILED_DEBUG_BREAK(direct3DDevice9.SetRenderState(D3DRS_DESTBLEND,				  mDirect3D9DestBlend))											// Rhi::RenderTargetBlendDesc::destBlend
+			FAILED_DEBUG_BREAK(direct3DDevice9.SetRenderState(D3DRS_BLENDOP,				  mDirect3D9BlendOp))											// Rhi::RenderTargetBlendDesc::blendOp
+			if (TRUE == mDirect3D9SeparateAlphaBlendEnabled)
+			{
+				FAILED_DEBUG_BREAK(direct3DDevice9.SetRenderState(D3DRS_SRCBLENDALPHA,		  mDirect3D9SrcBlendAlpha))										// Rhi::RenderTargetBlendDesc::srcBlendAlpha
+				FAILED_DEBUG_BREAK(direct3DDevice9.SetRenderState(D3DRS_DESTBLENDALPHA,		  mDirect3D9DestBlendAlpha))									// Rhi::RenderTargetBlendDesc::destBlendAlpha
+			}
+			FAILED_DEBUG_BREAK(direct3DDevice9.SetRenderState(D3DRS_BLENDOPALPHA,			  mDirect3D9BlendOpAlpha))										// Rhi::RenderTargetBlendDesc::blendOpAlpha
+			FAILED_DEBUG_BREAK(direct3DDevice9.SetRenderState(D3DRS_COLORWRITEENABLE,		  mDirect3D9ColorWriteEnable))									// Rhi::RenderTargetBlendDesc::renderTargetWriteMask
 		}
 
 
@@ -5398,7 +5519,15 @@ namespace Direct3D9Rhi
 	//[ Private data                                          ]
 	//[-------------------------------------------------------]
 	private:
-		Rhi::BlendState mBlendState;	///< Blend state
+		Rhi::BlendState mBlendState;							///< Blend state
+		DWORD			mDirect3D9SeparateAlphaBlendEnabled;	///< See "D3DRS_SEPARATEALPHABLENDENABLE" documentation at "D3DRENDERSTATETYPE enumeration" https://docs.microsoft.com/en-us/windows/win32/direct3d9/d3drenderstatetype
+		DWORD			mDirect3D9SrcBlend;						///< Direct3D 9 source blend function
+		DWORD			mDirect3D9DestBlend;					///< Direct3D 9 destination blend function
+		DWORD			mDirect3D9BlendOp;						///< Direct3D 9 blend operation
+		DWORD			mDirect3D9SrcBlendAlpha;				///< Direct3D 9 source blend alpha function
+		DWORD			mDirect3D9DestBlendAlpha;				///< Direct3D 9 destination blend alpha function
+		DWORD			mDirect3D9BlendOpAlpha;					///< Direct3D 9 blend operation alpha
+		DWORD			mDirect3D9ColorWriteEnable;				///< Direct3D 9 color write enable
 
 
 	};

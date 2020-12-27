@@ -288,13 +288,25 @@ namespace Renderer
 			}
 
 			{ // Setup orthographic projection matrix into our vertex shader uniform buffer
-				const ImGuiIO& imGuiIo = ImGui::GetIO();
+				const ImVec2& displaySize = ImGui::GetIO().DisplaySize;
+				ImVec2 texelOffset(0.0f, 0.0f);
+				if (mRenderer.getRhi().getNameId() == Rhi::NameId::DIRECT3D9)
+				{
+					// Take care of the Direct3D 9 half-pixel/half-texel offset
+					// -> See "Directly Mapping Texels to Pixels (Direct3D 9)" at https://docs.microsoft.com/en-gb/windows/win32/direct3d9/directly-mapping-texels-to-pixels?redirectedfrom=MSDN
+					texelOffset.x += 0.5f;
+					texelOffset.y += 0.5f;
+				}
+				const float l = texelOffset.x;
+				const float r = displaySize.x + texelOffset.x;
+				const float t = texelOffset.y;
+				const float b = displaySize.y + texelOffset.y;
 				const float objectSpaceToClipSpaceMatrix[4][4] =
 				{
-					{  2.0f / imGuiIo.DisplaySize.x, 0.0f,                          0.0f, 0.0f },
-					{  0.0f,                         2.0f / -imGuiIo.DisplaySize.y, 0.0f, 0.0f },
-					{  0.0f,                         0.0f,                          0.5f, 0.0f },
-					{ -1.0f,                         1.0f,                          0.5f, 1.0f }
+					{ 2.0f / (r - l),	 0.0f,        0.0f, 0.0f },
+					{ 0.0f,				 2.0f/(t-b),  0.0f, 0.0f },
+					{ 0.0f,				 0.0f,        0.5f, 0.0f },
+					{ (r + l) / (l - r), (t+b)/(b-t), 0.5f, 1.0f }
 				};
 				if (nullptr != mVertexShaderUniformBuffer)
 				{

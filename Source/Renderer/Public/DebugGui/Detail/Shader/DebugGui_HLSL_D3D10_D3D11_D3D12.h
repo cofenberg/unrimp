@@ -81,7 +81,7 @@ Texture2D GlyphMap : register(t0);	// Glyph atlas texture map
 float4 main(float4 Position : SV_POSITION, float2 TexCoord : TEXCOORD0, float4 Color : COLOR0) : SV_TARGET
 {
 	// Fetch the texel at the given texture coordinate and return its color
-	return Color * GlyphMap.Sample(SamplerLinear, TexCoord).rrrr;
+	return Color * float4(1.0f, 1.0f, 1.0f, GlyphMap.Sample(SamplerLinear, TexCoord).r);
 }
 )";
 

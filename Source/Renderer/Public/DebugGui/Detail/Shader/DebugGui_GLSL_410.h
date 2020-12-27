@@ -82,7 +82,7 @@ uniform sampler2D GlyphMap;	// Glyph atlas texture map
 void main()
 {
 	// Fetch the texel at the given texture coordinate and return its color
-	OutputColor = ColorVs * texture2D(GlyphMap, TexCoordVs).rrrr;
+	OutputColor = ColorVs * vec4(1.0f, 1.0f, 1.0f, texture2D(GlyphMap, TexCoordVs).r);
 }
 )";
 
