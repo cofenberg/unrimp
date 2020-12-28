@@ -206,6 +206,7 @@ void ImGuiExampleSelector::createDebugGui()
 	{
 		// Selection of RHI
 		static int selectedRhiIndex = -1;
+		int previouslySelectedRhiIndex = selectedRhiIndex;
 		if (-1 == selectedRhiIndex && INI_NOT_FOUND != mSelectedRhiNameIndex)
 		{
 			// Restore the previously selected RHI from ini
@@ -237,6 +238,13 @@ void ImGuiExampleSelector::createDebugGui()
 
 			// Tell ImGui
 			ImGui::Combo("RHI", &selectedRhiIndex, itemsSeparatedByZeros.c_str());
+			if (previouslySelectedRhiIndex != selectedRhiIndex)
+			{
+				// Update the selected RHI name at once
+				ExampleRunner::AvailableRhis::const_iterator iterator = availableRhis.cbegin();
+				std::advance(iterator, selectedRhiIndex);
+				mSelectedRhiName = *iterator;
+			}
 		}
 
 		{ // Selection of example
@@ -245,6 +253,11 @@ void ImGuiExampleSelector::createDebugGui()
 			{
 				// Restore the previously selected example from ini
 				mSelectedExampleName = ini_property_value(mIni, INI_GLOBAL_SECTION, mSelectedExampleNameIndex);
+			}
+			else if (previouslySelectedRhiIndex != selectedRhiIndex)
+			{
+				// When changing the RHI the number of supported examples might change, try to keep the previously selected example selected
+				selectedExampleIndex = -1;
 			}
 
 			// Fill list of examples supported by the currently selected RHI
