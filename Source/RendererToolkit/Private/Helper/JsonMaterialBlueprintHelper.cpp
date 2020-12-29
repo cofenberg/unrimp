@@ -371,10 +371,14 @@ namespace RendererToolkit
 
 			case Rhi::PrimitiveTopology::LINE_LIST:
 			case Rhi::PrimitiveTopology::LINE_STRIP:
+			case Rhi::PrimitiveTopology::LINE_LIST_ADJ:
+			case Rhi::PrimitiveTopology::LINE_STRIP_ADJ:
 				return Rhi::PrimitiveTopologyType::LINE;
 
 			case Rhi::PrimitiveTopology::TRIANGLE_LIST:
 			case Rhi::PrimitiveTopology::TRIANGLE_STRIP:
+			case Rhi::PrimitiveTopology::TRIANGLE_LIST_ADJ:
+			case Rhi::PrimitiveTopology::TRIANGLE_STRIP_ADJ:
 				return Rhi::PrimitiveTopologyType::TRIANGLE;
 
 			case Rhi::PrimitiveTopology::PATCH_LIST_1:

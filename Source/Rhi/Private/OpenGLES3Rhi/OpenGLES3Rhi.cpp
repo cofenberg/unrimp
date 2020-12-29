@@ -3619,11 +3619,19 @@ namespace OpenGLES3Rhi
 		{
 			static constexpr GLenum MAPPING[] =
 			{
-				GL_POINTS,			// Rhi::PrimitiveTopology::POINT_LIST
-				GL_LINES,			// Rhi::PrimitiveTopology::LINE_LIST
-				GL_LINE_STRIP,		// Rhi::PrimitiveTopology::LINE_STRIP
-				GL_TRIANGLES,		// Rhi::PrimitiveTopology::TRIANGLE_LIST
-				GL_TRIANGLE_STRIP	// Rhi::PrimitiveTopology::TRIANGLE_STRIP
+				GL_POINTS,						// Rhi::PrimitiveTopology::POINT_LIST
+				GL_LINES,						// Rhi::PrimitiveTopology::LINE_LIST
+				GL_LINE_STRIP,					// Rhi::PrimitiveTopology::LINE_STRIP
+				GL_TRIANGLES,					// Rhi::PrimitiveTopology::TRIANGLE_LIST
+				GL_TRIANGLE_STRIP,				// Rhi::PrimitiveTopology::TRIANGLE_STRIP
+				0,								// Unused value 6
+				0,								// Unused value 7
+				0,								// Unused value 8
+				0,								// Unused value 9
+				GL_LINES_ADJACENCY_EXT,			// Rhi::PrimitiveTopology::LINE_LIST_ADJ - "GL_EXT_geometry_shader"-extension
+				GL_LINE_STRIP_ADJACENCY_EXT,	// Rhi::PrimitiveTopology::LINE_STRIP_ADJ - "GL_EXT_geometry_shader"-extension
+				GL_TRIANGLES_ADJACENCY_EXT,		// Rhi::PrimitiveTopology::TRIANGLE_LIST_ADJ - "GL_EXT_geometry_shader"-extension
+				GL_TRIANGLE_STRIP_ADJACENCY_EXT	// Rhi::PrimitiveTopology::TRIANGLE_STRIP_ADJ - "GL_EXT_geometry_shader"-extension
 			};
 			return MAPPING[static_cast<int>(primitiveTopology) - 1];	// Lookout! The "Rhi::PrimitiveTopology"-values start with 1, not 0
 		}

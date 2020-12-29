@@ -3607,11 +3607,19 @@ namespace VulkanRhi
 			{
 				static constexpr VkPrimitiveTopology MAPPING[] =
 				{
-					VK_PRIMITIVE_TOPOLOGY_POINT_LIST,		// Rhi::PrimitiveTopology::POINT_LIST
-					VK_PRIMITIVE_TOPOLOGY_LINE_LIST,		// Rhi::PrimitiveTopology::LINE_LIST
-					VK_PRIMITIVE_TOPOLOGY_LINE_STRIP,		// Rhi::PrimitiveTopology::LINE_STRIP
-					VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST,	// Rhi::PrimitiveTopology::TRIANGLE_LIST
-					VK_PRIMITIVE_TOPOLOGY_TRIANGLE_STRIP	// Rhi::PrimitiveTopology::TRIANGLE_STRIP
+					VK_PRIMITIVE_TOPOLOGY_POINT_LIST,					// Rhi::PrimitiveTopology::POINT_LIST
+					VK_PRIMITIVE_TOPOLOGY_LINE_LIST,					// Rhi::PrimitiveTopology::LINE_LIST
+					VK_PRIMITIVE_TOPOLOGY_LINE_STRIP,					// Rhi::PrimitiveTopology::LINE_STRIP
+					VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST,				// Rhi::PrimitiveTopology::TRIANGLE_LIST
+					VK_PRIMITIVE_TOPOLOGY_TRIANGLE_STRIP,				// Rhi::PrimitiveTopology::TRIANGLE_STRIP
+					VK_PRIMITIVE_TOPOLOGY_MAX_ENUM,						// Unused value 6
+					VK_PRIMITIVE_TOPOLOGY_MAX_ENUM,						// Unused value 7
+					VK_PRIMITIVE_TOPOLOGY_MAX_ENUM,						// Unused value 8
+					VK_PRIMITIVE_TOPOLOGY_MAX_ENUM,						// Unused value 9
+					VK_PRIMITIVE_TOPOLOGY_LINE_LIST_WITH_ADJACENCY,		// Rhi::PrimitiveTopology::LINE_LIST_ADJ
+					VK_PRIMITIVE_TOPOLOGY_LINE_STRIP_WITH_ADJACENCY,	// Rhi::PrimitiveTopology::LINE_STRIP_ADJ
+					VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST_WITH_ADJACENCY,	// Rhi::PrimitiveTopology::TRIANGLE_LIST_ADJ
+					VK_PRIMITIVE_TOPOLOGY_TRIANGLE_STRIP_WITH_ADJACENCY	// Rhi::PrimitiveTopology::TRIANGLE_STRIP_ADJ
 				};
 				return MAPPING[static_cast<int>(primitiveTopology) - 1];	// Lookout! The "Rhi::PrimitiveTopology"-values start with 1, not 0
 			}

@@ -8563,6 +8563,14 @@ namespace Direct3D9Rhi
 						primitiveCount = drawArguments.vertexCountPerInstance - 2;
 						break;
 
+					case Rhi::PrimitiveTopology::LINE_LIST_ADJ:
+					case Rhi::PrimitiveTopology::LINE_STRIP_ADJ:
+					case Rhi::PrimitiveTopology::TRIANGLE_LIST_ADJ:
+					case Rhi::PrimitiveTopology::TRIANGLE_STRIP_ADJ:
+						RHI_ASSERT(mContext, false, "Direct3D 9 has no geometry shader support")
+						primitiveCount = 0;
+						break;
+
 					case Rhi::PrimitiveTopology::UNKNOWN:
 					case Rhi::PrimitiveTopology::PATCH_LIST_1:
 					case Rhi::PrimitiveTopology::PATCH_LIST_2:
@@ -8667,6 +8675,14 @@ namespace Direct3D9Rhi
 
 						case Rhi::PrimitiveTopology::TRIANGLE_STRIP:
 							primitiveCount = drawIndexedArguments.indexCountPerInstance - 2;
+							break;
+
+						case Rhi::PrimitiveTopology::LINE_LIST_ADJ:
+						case Rhi::PrimitiveTopology::LINE_STRIP_ADJ:
+						case Rhi::PrimitiveTopology::TRIANGLE_LIST_ADJ:
+						case Rhi::PrimitiveTopology::TRIANGLE_STRIP_ADJ:
+							RHI_ASSERT(mContext, false, "Direct3D 9 has no geometry shader support")
+							primitiveCount = 0;
 							break;
 
 						case Rhi::PrimitiveTopology::UNKNOWN:
