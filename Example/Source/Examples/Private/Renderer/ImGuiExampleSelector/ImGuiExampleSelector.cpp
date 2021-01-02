@@ -182,7 +182,7 @@ void ImGuiExampleSelector::saveIni()
 			// Save ini
 			mIniFileContent.resize(static_cast<size_t>(ini_save(mIni, nullptr, 0)));
 			ini_save(mIni, mIniFileContent.data(), static_cast<int>(mIniFileContent.size()));
-			file->write(mIniFileContent.data(), mIniFileContent.size() - 1);
+			file->write(mIniFileContent.data(), mIniFileContent.size());
 			fileManager.closeFile(*file);
 		}
 	}
