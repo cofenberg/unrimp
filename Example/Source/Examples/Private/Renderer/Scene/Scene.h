@@ -49,6 +49,7 @@ namespace Renderer
 	class SceneNode;
 	class CameraSceneItem;
 	class SunlightSceneItem;
+	class DebugDrawSceneItem;
 	class SkeletonMeshSceneItem;
 	class CompositorWorkspaceInstance;
 }
@@ -188,10 +189,12 @@ private:
 	Renderer::MaterialResourceId		   mCloneMaterialResourceId;
 	bool								   mCustomMaterialResourceSet;
 	IController*						   mController;
+	bool								   mDebugDrawEnabled;
 	// Crazy raw-pointers to point-of-interest scene stuff
 	Renderer::CameraSceneItem*		 mCameraSceneItem;
 	Renderer::SunlightSceneItem*	 mSunlightSceneItem;
 	Renderer::SkeletonMeshSceneItem* mSkeletonMeshSceneItem;
+	Renderer::DebugDrawSceneItem*	 mDebugDrawSceneItem;
 	Renderer::SceneNode*			 mSceneNode;
 	// States for runtime-editing
 	Renderer::DebugGuiHelper::GizmoSettings mGizmoSettings;
@@ -242,6 +245,7 @@ private:
 	int				  mMainWindowPositionSizeIniProperty;
 	int				  mCameraPositionRotationIniProperty;
 	int				  mOpenMetricsWindowIniProperty;
+	int				  mDebugDrawEnabledIniProperty;
 
 
 };

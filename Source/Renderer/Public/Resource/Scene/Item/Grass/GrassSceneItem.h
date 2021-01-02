@@ -78,6 +78,8 @@ namespace Renderer
 			return TYPE_ID;
 		}
 
+		[[nodiscard]] virtual const RenderableManager* getRenderableManager() const override;
+
 
 	//[-------------------------------------------------------]
 	//[ Protected virtual Renderer::ISceneItem methods        ]

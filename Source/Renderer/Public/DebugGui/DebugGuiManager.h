@@ -180,11 +180,11 @@ namespace Renderer
 		Rhi::IResourceGroupPtr			mResourceGroup;		///< Resource group, can be a null pointer
 		Rhi::IResourceGroupPtr			mSamplerStateGroup;	///< Sampler state resource group, can be a null pointer
 		// Vertex and index buffer
-		Rhi::IVertexBufferPtr mVertexBufferPtr;
+		Rhi::IVertexBufferPtr mVertexBuffer;
 		uint32_t			  mNumberOfAllocatedVertices;
-		Rhi::IIndexBufferPtr  mIndexBufferPtr;
+		Rhi::IIndexBufferPtr  mIndexBuffer;
 		uint32_t			  mNumberOfAllocatedIndices;
-		Rhi::IVertexArrayPtr  mVertexArrayPtr;
+		Rhi::IVertexArrayPtr  mVertexArray;
 		// Helper
 		bool mOpenMetricsWindow;
 

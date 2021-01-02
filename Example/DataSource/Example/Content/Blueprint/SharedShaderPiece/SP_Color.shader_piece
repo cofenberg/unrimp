@@ -64,7 +64,7 @@
 	}
 @end
 
-// RGB color linear space to gamma space
+// RGB color linear space to gamma space (sRGB = standard RGB = gamma of 2.2)
 @piece(DefineLinearSpaceToGammaSpace3)
 	float3 LinearSpaceToGammaSpace3(float3 color)
 	{

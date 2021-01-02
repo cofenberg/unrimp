@@ -40,8 +40,8 @@ layout(location = 0) out gl_PerVertex
 };
 layout(location = 1) in  vec2 TexCoord;		// Normalized texture coordinate as input
 layout(location = 1) out vec2 TexCoordVs;	// Normalized texture coordinate as output
-layout(location = 2) in  vec4 Color;		// Color as input
-layout(location = 2) out vec4 ColorVs;		// Color as output
+layout(location = 2) in  vec4 Color;		// sRGB vertex color as input
+layout(location = 2) out vec4 ColorVs;		// sRGB vertex color as output
 
 // Uniforms
 layout(std140, set = 0, binding = 0) uniform UniformBlockDynamicVs
@@ -72,8 +72,8 @@ fragmentShaderSourceCode = R"(#version 450 core	// OpenGL 4.5
 
 // Attribute input/output
 layout(location = 1) in  vec2 TexCoordVs;	// Normalized texture coordinate as input
-layout(location = 2) in  vec4 ColorVs;
-layout(location = 0) out vec4 OutputColor;	// Output variable for fragment color
+layout(location = 2) in  vec4 ColorVs;		// sRGB vertex color
+layout(location = 0) out vec4 OutputColor;	// Output variable for sRGB fragment color
 
 // Uniforms
 layout(set = 0, binding = 1) uniform sampler2D GlyphMap;	// Glyph atlas texture map

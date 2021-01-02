@@ -12,7 +12,7 @@
 			{
 				"Usage": "STATIC",
 				"ValueType": "INTEGER",
-				"Value": "255",
+				"Value": "254",
 				"Description": "Fixed build in material property for the render queue index [0, 255]",
 				"MinimumIntegerValue": "0",
 				"MaximumIntegerValue": "255"

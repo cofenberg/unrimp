@@ -39,12 +39,15 @@ class Color4 final
 //[ Public static data                                    ]
 //[-------------------------------------------------------]
 public:
-	static const Color4 WHITE;	///< White (sRGB="1.0 1.0 1.0", Hex="#FFFFFF", alpha is one)
-	static const Color4 BLACK;	///< Black (sRGB="0.0 0.0 0.0", Hex="#000000", alpha is one)
-	static const Color4 RED;	///< Red   (sRGB="1.0 0.0 0.0", Hex="#FF0000", alpha is one)
-	static const Color4 GREEN;	///< Green (sRGB="0.0 1.0 0.0", Hex="#008000", alpha is one)
-	static const Color4 BLUE;	///< Blue  (sRGB="0.0 0.0 1.0", Hex="#0000FF", alpha is one)
-	static const Color4 GRAY;	///< Gray  (sRGB="0.5 0.5 0.5", Hex="#808080", alpha is one)
+	static const Color4 WHITE;	///< White  (sRGB="1.0 1.0      1.0", Hex="#FFFFFF", alpha is one)
+	static const Color4 BLACK;	///< Black  (sRGB="0.0 0.0      0.0", Hex="#000000", alpha is one)
+	static const Color4 RED;	///< Red    (sRGB="1.0 0.0      0.0", Hex="#FF0000", alpha is one)
+	static const Color4 GREEN;	///< Green  (sRGB="0.0 1.0      0.0", Hex="#008000", alpha is one)
+	static const Color4 BLUE;	///< Blue   (sRGB="0.0 0.0      1.0", Hex="#0000FF", alpha is one)
+	static const Color4 GRAY;	///< Gray   (sRGB="0.5 0.5      0.5", Hex="#808080", alpha is one)
+	static const Color4 CYAN;	///< Cyan   (sRGB="0.0 1.0      1.0", Hex="#00FFFF", alpha is one)
+	static const Color4 YELLOW;	///< Yellow (sRGB="1.0 1.0      0.0", Hex="#FFFF00", alpha is one)
+	static const Color4 ORANGE;	///< Orange (sRGB="1.0 0.647059 0.0", Hex="#FFA500", alpha is one)
 
 
 //[-------------------------------------------------------]

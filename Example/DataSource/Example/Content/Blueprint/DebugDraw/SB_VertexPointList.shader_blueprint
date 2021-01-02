@@ -1,0 +1,150 @@
+/*********************************************************\
+ * Copyright (c) 2012-2021 The Unrimp Team
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of this software
+ * and associated documentation files (the "Software"), to deal in the Software without
+ * restriction, including without limitation the rights to use, copy, modify, merge, publish,
+ * distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the
+ * Software is furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all copies or
+ * substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING
+ * BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+ * NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
+ * DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+ * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+\*********************************************************/
+
+
+//[-------------------------------------------------------]
+//[ Definitions                                           ]
+//[-------------------------------------------------------]
+@includepiece(../SharedShaderPiece/SP_Core.asset)
+	@insertpiece(SetCrossPlatformSettings)
+
+
+//[-------------------------------------------------------]
+//[ Input / output                                        ]
+//[-------------------------------------------------------]
+// Attribute input / output
+INPUT_BEGIN_VERTEX
+	INPUT_VERTEX_DRAW_ID(0)	// Draw ID
+	INPUT_VERTEX_ID
+	INPUT_INSTANCE_ID
+INPUT_END_VERTEX
+OUTPUT_BEGIN_VERTEX
+	OUTPUT_TEXTURE_COORDINATE(1, float4, ColorVS, 0)	// sRGB vertex color
+	@property(SmoothPoint)
+		OUTPUT_TEXTURE_COORDINATE(2, float3, TexCoordVS, 1)	// xy = normalized texture coordinate, z = point size
+	@end
+	OUTPUT_POSITION(0)	// Clip space vertex position as output, left/bottom is (-1,-1) and right/top is (1,1)
+OUTPUT_END_VERTEX
+
+// Uniform buffers
+struct PassDataStruct
+{
+	float4x4 WorldSpaceToClipSpaceMatrix[2];
+	float2 InverseViewportSize;
+};
+UNIFORM_BUFFER_BEGIN(0, 0, PassUniformBuffer, 0)
+	PassDataStruct PassData;
+UNIFORM_BUFFER_END
+struct InstanceDataStruct
+{
+	float3 WorldPosition;
+	uint   MaterialIndex;
+};
+UNIFORM_BUFFER_BEGIN(1, 0, InstanceUniformBuffer, 1)
+	InstanceDataStruct InstanceDataArray[FAST_SHADER_BUILD_HACK(4096)];	// 64 KiB
+UNIFORM_BUFFER_END
+
+// Structured buffers
+struct PointDataStruct
+{
+	float4 PositionSize;	// Object space point xyz-position, w = point screen size
+	float4 Color;			// Linear space RGB point color and opacity
+};
+STRUCTURED_BUFFER(2, 0, PointStructuredBuffer, 0, PointDataStruct, PointData)
+
+
+//[-------------------------------------------------------]
+//[ Functions                                             ]
+//[-------------------------------------------------------]
+@includepiece(../SharedShaderPiece/SP_Color.asset)
+	@insertpiece(DefineLinearSpaceToGammaSpace3)
+
+
+//[-------------------------------------------------------]
+//[ Main                                                  ]
+//[-------------------------------------------------------]
+MAIN_BEGIN_VERTEX
+	// Get the point data of the currently processed point instance
+	PointDataStruct pointDataStruct = STRUCTURED_BUFFER_GET(PointStructuredBuffer, PointData, MAIN_INPUT_INSTANCE_ID);
+
+	// Get object space to world space position
+	// -> Since the draw ID is automatically increased with each instance we need to compensate
+	float3 position = InstanceDataArray[MAIN_INPUT_DRAW_ID_VERTEX - MAIN_INPUT_INSTANCE_ID].WorldPosition;
+
+	// Transform the point position to clip-space
+	float4 clipSpacePosition = MATRIX_MUL(PassData.WorldSpaceToClipSpaceMatrix[MAIN_INPUT_STEREO_EYE_INDEX], float4(pointDataStruct.PositionSize.xyz + position, 1.0f));
+
+	// Perspective divide: Clip space position to normalized device coordinate (NDC)
+	clipSpacePosition.xyz /= clipSpacePosition.w;
+
+	// Frustum cull by checking of any of xyz are outside [0, w] (range of Vulkan, Direct3D, OpenGL with "GL_ARB_clip_control"-extension)
+	// -> Just here so the GPU primitive culling can figure out faster if triangles are not needed
+	@property(ZeroToOneClipZ)
+		float minW = 0.0f;
+	@else
+		float minW = -1.0f;
+	@end
+	if (clipSpacePosition.x < -1.0f || clipSpacePosition.y < -1.0f || clipSpacePosition.z < minW ||
+		clipSpacePosition.x >  1.0f || clipSpacePosition.y >  1.0f || clipSpacePosition.z > 1.0f)
+	{
+		// Discard triangle: Any triangle with a NaN vertex position will not be rendered, just like a degenerate triangle
+		// -> "Terrain Rendering in 'Far Cry 5'" by Jeremy Moore ( https://www.gdcvault.com/play/1025480/Terrain-Rendering-in-Far-Cry ) mentions this at page 74 as well
+		// -> Shader compilers are pretty smart nowadays, especially when using strict rules. The Direct3D 11 shader compiler e.g. will blame us with "error X4008: floating point division by zero" in case of a trivial obvious division through zero.
+		//    So, instead of using the evil NaN approach, we're ensuring that the triangle is always clipped, beside also beeing a degenerated triangle.
+		// -> We don't care that bigger points might get culling in a visible way as soon as the center is out of the frustum, the debug draw is for debugging and simple visualization only
+		MAIN_OUTPUT_POSITION = float4(10.0, 10.0, 10.0, 0.0f);
+		MAIN_OUTPUT(ColorVS) = float4(1.0f, 1.0f, 1.0f, 1.0f);
+		@property(SmoothPoint)
+			MAIN_OUTPUT(TexCoordVS) = float3(0.0f, 0.0f, 1.0f);
+		@end
+	}
+	else
+	{
+		{ // Get view space vertex position and scale the billboard
+			// Six vertices per point, point index = instance index
+			float2 size = float2(PassData.InverseViewportSize.x * pointDataStruct.PositionSize.w, PassData.InverseViewportSize.y * pointDataStruct.PositionSize.w);
+			float3 VERTICES[6];
+			VERTICES[0] = float3(-size.x, -size.y, 0.0f);	// 0
+			VERTICES[1] = float3( size.x, -size.y, 0.0f);	// 1
+			VERTICES[2] = float3(-size.x,  size.y, 0.0f);	// 2
+			VERTICES[3] = float3(-size.x,  size.y, 0.0f);	// 3
+			VERTICES[4] = float3( size.x, -size.y, 0.0f);	// 4
+			VERTICES[5] = float3( size.x,  size.y, 0.0f);	// 5
+			MAIN_OUTPUT_POSITION.xyz = clipSpacePosition.xyz + VERTICES[MAIN_INPUT_VERTEX_ID];
+			MAIN_OUTPUT_POSITION.w = 1.0f;
+		}
+
+		// Pass through the color and clip space position
+		MAIN_OUTPUT(ColorVS) = float4(LinearSpaceToGammaSpace3(pointDataStruct.Color.rgb), pointDataStruct.Color.a);
+
+		// Pass through the texture coordinate and point size for smooth point
+		@property(SmoothPoint)
+		{
+			float2 TEX_COORD[6];
+			TEX_COORD[0] = float2(1.0f, 1.0f);	// 0
+			TEX_COORD[1] = float2(0.0f, 1.0f);	// 1
+			TEX_COORD[2] = float2(1.0f, 0.0f);	// 2
+			TEX_COORD[3] = float2(1.0f, 0.0f);	// 3
+			TEX_COORD[4] = float2(0.0f, 1.0f);	// 4
+			TEX_COORD[5] = float2(0.0f, 0.0f);	// 5
+			MAIN_OUTPUT(TexCoordVS) = float3(TEX_COORD[MAIN_INPUT_VERTEX_ID], pointDataStruct.PositionSize.w);
+		}
+		@end
+	}
+MAIN_END_VERTEX(MAIN_OUTPUT_POSITION)

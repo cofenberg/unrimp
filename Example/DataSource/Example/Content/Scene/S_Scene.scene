@@ -28,7 +28,12 @@
 					{
 						"EastDirection": "25.0 DEGREE",
 						"TimeOfDay": "14.42 O_CLOCK"
-					},
+					}
+				}
+			},
+			{
+				"Items":
+				{
 					"SkySceneItem":
 					{
 						"Material": "${PROJECT_NAME}/Blueprint/Sky/M_Sky.asset",
@@ -58,6 +63,25 @@
 						"SetMaterialProperties":
 						{
 							"_argb_alpha": "${PROJECT_NAME}/Texture/T_Grass_argb_alpha.asset"
+						}
+					},
+					"DebugDrawSceneItem":
+					{
+						"PointList":
+						{
+							"Material": "${PROJECT_NAME}/Blueprint/DebugDraw/M_DebugDrawPointList.asset"
+						},
+						"LineList":
+						{
+							"Material": "${PROJECT_NAME}/Blueprint/DebugDraw/M_DebugDrawLineList.asset"
+						},
+						"GlyphList":
+						{
+							"Material": "${PROJECT_NAME}/Blueprint/DebugDraw/M_DebugDrawGlyphList.asset",
+							"SetMaterialProperties":
+							{
+								"GlyphMap": "Unrimp/Texture/DynamicByCode/DebugDrawGlyphMap2D"
+							}
 						}
 					}
 				}

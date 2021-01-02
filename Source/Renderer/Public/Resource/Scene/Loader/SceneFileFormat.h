@@ -120,7 +120,7 @@ namespace Renderer
 				AssetId skeletonAnimationAssetId;
 			};
 
-			struct MaterialItem
+			struct MaterialData final
 			{
 				AssetId				materialAssetId;												///< If material blueprint asset ID is set, material asset ID must be invalid
 				MaterialTechniqueId	materialTechniqueId		   = getInvalid<MaterialTechniqueId>();	///< Must always be valid
@@ -128,29 +128,36 @@ namespace Renderer
 				uint32_t			numberOfMaterialProperties = 0;
 			};
 
-			struct SkyItem final : public MaterialItem
+			struct DebugDrawItem final
 			{
-				// Nothing here
+				MaterialData pointListMaterialData;
+				MaterialData lineListMaterialData;
+				MaterialData glyphListMaterialData;
 			};
 
-			struct VolumeItem final : public MaterialItem
+			struct SkyItem final
 			{
-				// Nothing here
+				MaterialData materialData;
 			};
 
-			struct GrassItem final : public MaterialItem
+			struct VolumeItem final
 			{
-				// Nothing here
+				MaterialData materialData;
 			};
 
-			struct TerrainItem final : public MaterialItem
+			struct GrassItem final
 			{
-				// Nothing here
+				MaterialData materialData;
 			};
 
-			struct ParticlesItem final : public MaterialItem
+			struct TerrainItem final
 			{
-				// Nothing here
+				MaterialData materialData;
+			};
+
+			struct ParticlesItem final
+			{
+				MaterialData materialData;
 			};
 		#pragma pack(pop)
 

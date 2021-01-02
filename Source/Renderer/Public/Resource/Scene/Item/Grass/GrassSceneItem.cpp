@@ -35,6 +35,20 @@ namespace Renderer
 
 
 	//[-------------------------------------------------------]
+	//[ Public virtual Renderer::ISceneItem methods           ]
+	//[-------------------------------------------------------]
+	const RenderableManager* GrassSceneItem::getRenderableManager() const
+	{
+		// Sanity checks
+		RHI_ASSERT(getContext(), Math::QUAT_IDENTITY == mRenderableManager.getTransform().rotation, "No rotation is supported to keep things simple")
+		RHI_ASSERT(getContext(), Math::VEC3_ONE == mRenderableManager.getTransform().scale, "No scale is supported to keep things simple")
+
+		// Call the base implementation
+		return MaterialSceneItem::getRenderableManager();
+	}
+
+
+	//[-------------------------------------------------------]
 	//[ Protected virtual Renderer::ISceneItem methods        ]
 	//[-------------------------------------------------------]
 	void GrassSceneItem::onExecuteOnRendering([[maybe_unused]] const Rhi::IRenderTarget& renderTarget, [[maybe_unused]] const CompositorContextData& compositorContextData, [[maybe_unused]] Rhi::CommandBuffer& commandBuffer) const
@@ -71,7 +85,7 @@ namespace Renderer
 		// Tell the used material resource about our structured buffer
 		for (MaterialTechnique* materialTechnique : materialResourceManager.getById(materialResourceId).getSortedMaterialTechniqueVector())
 		{
-			materialTechnique->setStructuredBufferPtr(mStructuredBufferPtr);
+			materialTechnique->setStructuredBufferPtr(2, mStructuredBufferPtr);
 		}
 
 		// We need "Renderer::ISceneItem::onExecuteOnRendering()" calls during runtime

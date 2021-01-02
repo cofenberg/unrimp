@@ -53,6 +53,8 @@ namespace
 		//[-------------------------------------------------------]
 		//[ Global definitions                                    ]
 		//[-------------------------------------------------------]
+		static const Renderer::AssetId IMGUI_GLYPH_MAP_2D(ASSET_ID("Unrimp/Texture/DynamicByCode/ImGuiGlyphMap2D"));
+
 		// Vertex input layout
 		static constexpr Rhi::VertexAttribute VertexAttributesLayout[] =
 		{
@@ -134,14 +136,7 @@ namespace Renderer
 
 	void DebugGuiManager::getDefaultTextureAssetIds(AssetIds& assetIds)
 	{
-		// Define helper macro
-		#define ADD_ASSET_ID(name) assetIds.push_back(ASSET_ID(name));
-
-		// Add asset IDs
-		ADD_ASSET_ID("Unrimp/Texture/DynamicByCode/ImGuiGlyphMap2D")
-
-		// Undefine helper macro
-		#undef ADD_ASSET_ID
+		assetIds.push_back(::detail::IMGUI_GLYPH_MAP_2D);
 	}
 
 
@@ -182,34 +177,34 @@ namespace Renderer
 
 			{ // Vertex and index buffers
 				// Create and grow vertex/index buffers if needed
-				if (nullptr == mVertexBufferPtr || mNumberOfAllocatedVertices < static_cast<uint32_t>(imDrawData->TotalVtxCount))
+				if (nullptr == mVertexBuffer || mNumberOfAllocatedVertices < static_cast<uint32_t>(imDrawData->TotalVtxCount))
 				{
 					mNumberOfAllocatedVertices = static_cast<uint32_t>(imDrawData->TotalVtxCount + 5000);	// Add some reserve to reduce reallocations
-					mVertexBufferPtr = bufferManager.createVertexBuffer(mNumberOfAllocatedVertices * sizeof(ImDrawVert), nullptr, 0, Rhi::BufferUsage::DYNAMIC_DRAW RHI_RESOURCE_DEBUG_NAME("Debug GUI"));
-					mVertexArrayPtr = nullptr;
+					mVertexBuffer = bufferManager.createVertexBuffer(mNumberOfAllocatedVertices * sizeof(ImDrawVert), nullptr, 0, Rhi::BufferUsage::DYNAMIC_DRAW RHI_RESOURCE_DEBUG_NAME("Debug GUI"));
+					mVertexArray = nullptr;
 				}
-				if (nullptr == mIndexBufferPtr || mNumberOfAllocatedIndices < static_cast<uint32_t>(imDrawData->TotalIdxCount))
+				if (nullptr == mIndexBuffer || mNumberOfAllocatedIndices < static_cast<uint32_t>(imDrawData->TotalIdxCount))
 				{
 					mNumberOfAllocatedIndices = static_cast<uint32_t>(imDrawData->TotalIdxCount + 10000);	// Add some reserve to reduce reallocations
-					mIndexBufferPtr = bufferManager.createIndexBuffer(mNumberOfAllocatedIndices * sizeof(ImDrawIdx), nullptr, 0, Rhi::BufferUsage::DYNAMIC_DRAW, Rhi::IndexBufferFormat::UNSIGNED_SHORT RHI_RESOURCE_DEBUG_NAME("Debug GUI"));
-					mVertexArrayPtr = nullptr;
+					mIndexBuffer = bufferManager.createIndexBuffer(mNumberOfAllocatedIndices * sizeof(ImDrawIdx), nullptr, 0, Rhi::BufferUsage::DYNAMIC_DRAW, Rhi::IndexBufferFormat::UNSIGNED_SHORT RHI_RESOURCE_DEBUG_NAME("Debug GUI"));
+					mVertexArray = nullptr;
 				}
-				if (nullptr == mVertexArrayPtr)
+				if (nullptr == mVertexArray)
 				{
-					RHI_ASSERT(mRenderer.getContext(), nullptr != mVertexBufferPtr, "Invalid vertex buffer")
-					RHI_ASSERT(mRenderer.getContext(), nullptr != mIndexBufferPtr, "Invalid index buffer")
+					RHI_ASSERT(mRenderer.getContext(), nullptr != mVertexBuffer, "Invalid vertex buffer")
+					RHI_ASSERT(mRenderer.getContext(), nullptr != mIndexBuffer, "Invalid index buffer")
 
 					// Create vertex array object (VAO)
-					const Rhi::VertexArrayVertexBuffer vertexArrayVertexBuffers[] = { mVertexBufferPtr };
-					mVertexArrayPtr = bufferManager.createVertexArray(::detail::VertexAttributes, static_cast<uint32_t>(GLM_COUNTOF(vertexArrayVertexBuffers)), vertexArrayVertexBuffers, mIndexBufferPtr RHI_RESOURCE_DEBUG_NAME("Debug GUI"));
+					const Rhi::VertexArrayVertexBuffer vertexArrayVertexBuffers[] = { mVertexBuffer };
+					mVertexArray = bufferManager.createVertexArray(::detail::VertexAttributes, static_cast<uint32_t>(GLM_COUNTOF(vertexArrayVertexBuffers)), vertexArrayVertexBuffers, mIndexBuffer RHI_RESOURCE_DEBUG_NAME("Debug GUI"));
 				}
 
 				{ // Copy and convert all vertices and indices into a single contiguous buffer
 					Rhi::MappedSubresource vertexBufferMappedSubresource;
-					if (rhi.map(*mVertexBufferPtr, 0, Rhi::MapType::WRITE_DISCARD, 0, vertexBufferMappedSubresource))
+					if (rhi.map(*mVertexBuffer, 0, Rhi::MapType::WRITE_DISCARD, 0, vertexBufferMappedSubresource))
 					{
 						Rhi::MappedSubresource indexBufferMappedSubresource;
-						if (rhi.map(*mIndexBufferPtr, 0, Rhi::MapType::WRITE_DISCARD, 0, indexBufferMappedSubresource))
+						if (rhi.map(*mIndexBuffer, 0, Rhi::MapType::WRITE_DISCARD, 0, indexBufferMappedSubresource))
 						{
 							ImDrawVert* imDrawVert = static_cast<ImDrawVert*>(vertexBufferMappedSubresource.data);
 							ImDrawIdx* imDrawIdx = static_cast<ImDrawIdx*>(indexBufferMappedSubresource.data);
@@ -223,18 +218,18 @@ namespace Renderer
 							}
 
 							// Unmap the index buffer
-							rhi.unmap(*mIndexBufferPtr, 0);
+							rhi.unmap(*mIndexBuffer, 0);
 						}
 
 						// Unmap the vertex buffer
-						rhi.unmap(*mVertexBufferPtr, 0);
+						rhi.unmap(*mVertexBuffer, 0);
 					}
 				}
 			}
 		}
 
 		// Done
-		return mVertexArrayPtr;
+		return mVertexArray;
 	}
 
 	void DebugGuiManager::fillGraphicsCommandBuffer(Rhi::CommandBuffer& commandBuffer)
@@ -358,8 +353,8 @@ namespace Renderer
 			// Upload texture to RHI
 			mTexture2D = mRenderer.getTextureManager().createTexture2D(static_cast<uint32_t>(width), static_cast<uint32_t>(height), Rhi::TextureFormat::R8, pixels, Rhi::TextureFlag::GENERATE_MIPMAPS | Rhi::TextureFlag::SHADER_RESOURCE, Rhi::TextureUsage::DEFAULT, 1, nullptr RHI_RESOURCE_DEBUG_NAME("Debug 2D GUI glyph texture atlas"));
 
-			// Tell the texture resource manager about our render target texture so it can be referenced inside e.g. compositor nodes
-			mRenderer.getTextureResourceManager().createTextureResourceByAssetId(ASSET_ID("Unrimp/Texture/DynamicByCode/ImGuiGlyphMap2D"), *mTexture2D);
+			// Tell the texture resource manager about our glyph texture so it can be referenced inside e.g. compositor nodes
+			mRenderer.getTextureResourceManager().createTextureResourceByAssetId(::detail::IMGUI_GLYPH_MAP_2D, *mTexture2D);
 		}
 	}
 
@@ -460,14 +455,13 @@ namespace Renderer
 				Rhi::IRenderPass* renderPass = rhi.createRenderPass(1, &rhi.getCapabilities().preferredSwapChainColorTextureFormat, rhi.getCapabilities().preferredSwapChainDepthStencilTextureFormat, 1 RHI_RESOURCE_DEBUG_NAME("Debug GUI"));
 
 				Rhi::GraphicsPipelineState graphicsPipelineState = Rhi::GraphicsPipelineStateBuilder(mRootSignature, mGraphicsProgram, ::detail::VertexAttributes, *renderPass);
-				graphicsPipelineState.rasterizerState.cullMode				   = Rhi::CullMode::NONE;
-				graphicsPipelineState.rasterizerState.scissorEnable			   = 1;
-				graphicsPipelineState.depthStencilState.depthEnable			   = false;
-				graphicsPipelineState.depthStencilState.depthWriteMask		   = Rhi::DepthWriteMask::ZERO;
-				graphicsPipelineState.blendState.renderTarget[0].blendEnable   = true;
-				graphicsPipelineState.blendState.renderTarget[0].srcBlend	   = Rhi::Blend::SRC_ALPHA;
-				graphicsPipelineState.blendState.renderTarget[0].destBlend	   = Rhi::Blend::INV_SRC_ALPHA;
-				graphicsPipelineState.blendState.renderTarget[0].srcBlendAlpha = Rhi::Blend::INV_SRC_ALPHA;
+				graphicsPipelineState.rasterizerState.cullMode				 = Rhi::CullMode::NONE;
+				graphicsPipelineState.rasterizerState.scissorEnable			 = 1;
+				graphicsPipelineState.depthStencilState.depthEnable			 = false;
+				graphicsPipelineState.depthStencilState.depthWriteMask		 = Rhi::DepthWriteMask::ZERO;
+				graphicsPipelineState.blendState.renderTarget[0].blendEnable = true;
+				graphicsPipelineState.blendState.renderTarget[0].srcBlend	 = Rhi::Blend::SRC_ALPHA;
+				graphicsPipelineState.blendState.renderTarget[0].destBlend	 = Rhi::Blend::INV_SRC_ALPHA;
 				mGraphicsPipelineState = rhi.createGraphicsPipelineState(graphicsPipelineState RHI_RESOURCE_DEBUG_NAME("Debug GUI"));
 			}
 		}

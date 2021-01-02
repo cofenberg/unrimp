@@ -53,6 +53,7 @@
 #include <Renderer/Public/Resource/Scene/Item/Camera/CameraSceneItem.h>
 #include <Renderer/Public/Resource/Scene/Item/Light/SunlightSceneItem.h>
 #include <Renderer/Public/Resource/Scene/Item/Mesh/SkeletonMeshSceneItem.h>
+#include <Renderer/Public/Resource/Scene/Item/Debug/DebugDrawSceneItem.h>
 #include <Renderer/Public/Resource/Mesh/MeshResourceManager.h>
 #include <Renderer/Public/Resource/CompositorNode/CompositorNodeInstance.h>
 #include <Renderer/Public/Resource/CompositorNode/Pass/DebugGui/CompositorResourcePassDebugGui.h>
@@ -113,6 +114,142 @@ namespace
 		static constexpr uint32_t IMROD_MATERIAL_ASSET_ID	= ASSET_ID("Example/Mesh/Imrod/M_Imrod");
 
 
+		//[-------------------------------------------------------]
+		//[ Global functions                                      ]
+		//[-------------------------------------------------------]
+		void drawLabel(const Rhi::IRenderTarget& mainRenderTarget, const Renderer::CameraSceneItem& cameraSceneItem, Renderer::DebugDrawSceneItem& debugDrawSceneItem, const glm::vec3& position, const char* text)
+		{
+			uint32_t width = 1;
+			uint32_t height = 1;
+			mainRenderTarget.getWidthAndHeight(width, height);
+			const glm::mat4 worldSpaceToClipSpaceMatrix = cameraSceneItem.getViewSpaceToClipSpaceMatrix(static_cast<float>(width) / static_cast<float>(height)) * cameraSceneItem.getCameraRelativeWorldSpaceToViewSpaceMatrix();
+
+			// Take camera relative rendering into account
+			debugDrawSceneItem.drawProjectedText(text, glm::dvec3(position) - cameraSceneItem.getWorldSpaceCameraPosition(), Color4::WHITE, worldSpaceToClipSpaceMatrix, glm::ivec2(0, 0), glm::ivec2(width, height), 0.5f);
+		}
+
+		void debugDrawExample(const Rhi::IRenderTarget& mainRenderTarget, const Renderer::CameraSceneItem& cameraSceneItem, Renderer::DebugDrawSceneItem& debugDrawSceneItem)
+		{
+			// Start a row of objects at this position
+			glm::vec3 origin(-15.0f, 0.0f, 0.0f);
+
+			// Draw line
+			debugDrawSceneItem.drawLine(Renderer::Math::VEC3_ZERO, origin, Color4::WHITE);
+
+			// Box with a point at its center
+			drawLabel(mainRenderTarget, cameraSceneItem, debugDrawSceneItem, origin, "box");
+			debugDrawSceneItem.drawBox(origin, glm::vec3(1.5f, 1.5f, 1.5f), Color4::BLUE);
+			debugDrawSceneItem.drawPoint(origin, Color4::BLUE, 15.0f);
+			origin.x += 3.0f;
+
+			// Sphere with a point at its center
+			drawLabel(mainRenderTarget, cameraSceneItem, debugDrawSceneItem, origin, "sphere");
+			debugDrawSceneItem.drawSphere(origin, Color4::RED, 1.0f);
+			debugDrawSceneItem.drawPoint(origin, Color4::RED, 15.0f);
+			origin.x += 4.0f;
+
+			{ // Two cones, one open and one closed
+				const glm::vec3 coneDirection(0.0f, 2.5f, 0.0f);
+				origin.y -= 1.0f;
+
+				drawLabel(mainRenderTarget, cameraSceneItem, debugDrawSceneItem, origin, "cone (open)");
+				debugDrawSceneItem.drawCone(origin, coneDirection, Color4::YELLOW, 1.0f, 2.0f);
+				debugDrawSceneItem.drawPoint(origin, Color4::WHITE, 15.0f);
+				origin[0] += 4.0f;
+
+				drawLabel(mainRenderTarget, cameraSceneItem, debugDrawSceneItem, origin, "cone (closed)");
+				debugDrawSceneItem.drawCone(origin, coneDirection, Color4::CYAN, 0.0f, 1.0f);
+				debugDrawSceneItem.drawPoint(origin, Color4::WHITE, 15.0f);
+				origin[0] += 4.0f;
+			}
+
+			{ // Axis-aligned bounding box
+				const glm::vec3 aabbMinimum(-1.0f, -0.9f, -1.0f);
+				const glm::vec3 aabbMaximum( 1.0f,  2.2f,  1.0f);
+				const glm::vec3 aabbCenter((aabbMinimum[0] + aabbMaximum[0]) * 0.5f, (aabbMinimum[1] + aabbMaximum[1]) * 0.5f, (aabbMinimum[2] + aabbMaximum[2]) * 0.5f);
+				drawLabel(mainRenderTarget, cameraSceneItem, debugDrawSceneItem, origin, "AABB");
+				debugDrawSceneItem.drawAabb(aabbMinimum, aabbMaximum, Color4::ORANGE);
+				debugDrawSceneItem.drawPoint(aabbCenter, Color4::WHITE, 15.0f);
+			}
+
+			// Move along the Z for another row
+			origin[0] = -15.0f;
+			origin[2] += 5.0f;
+
+			{ // A big arrow pointing up
+				const glm::vec3 arrowFrom(origin[0], origin[1], origin[2]);
+				const glm::vec3 arrowTo(origin[0], origin[1] + 5.0f, origin[2]);
+				drawLabel(mainRenderTarget, cameraSceneItem, debugDrawSceneItem, arrowFrom, "arrow");
+				debugDrawSceneItem.drawArrow(arrowFrom, arrowTo, Color4::CYAN, 1.0f);
+				debugDrawSceneItem.drawPoint(arrowFrom, Color4::WHITE, 15.0f);
+				debugDrawSceneItem.drawPoint(arrowTo, Color4::WHITE, 15.0f);
+				origin[0] += 4.0f;
+			}
+
+			{
+				// Plane with normal vector
+				const glm::vec3 planeNormal(0.0f, 1.0f, 0.0f);
+				drawLabel(mainRenderTarget, cameraSceneItem, debugDrawSceneItem, origin, "plane");
+				debugDrawSceneItem.drawPlane(origin, planeNormal, Color4::YELLOW, Color4::BLUE, 1.5f, 1.0f);
+				debugDrawSceneItem.drawPoint(origin, Color4::WHITE, 15.0f);
+				origin[0] += 4.0f;
+
+				// Circle on the Y plane
+				drawLabel(mainRenderTarget, cameraSceneItem, debugDrawSceneItem, origin, "circle");
+				debugDrawSceneItem.drawCircle(origin, planeNormal, Color4::ORANGE, 1.5f, 15.0f);
+				debugDrawSceneItem.drawPoint(origin, Color4::WHITE, 15.0f);
+				origin[0] += 3.2f;
+			}
+
+			{ // Tangent basis vectors
+				const glm::vec3 normal   (0.0f, 1.0f, 0.0f);
+				const glm::vec3 tangent  (1.0f, 0.0f, 0.0f);
+				const glm::vec3 bitangent(0.0f, 0.0f, 1.0f);
+				origin[1] += 0.1f;
+				drawLabel(mainRenderTarget, cameraSceneItem, debugDrawSceneItem, origin, "tangent basis");
+				debugDrawSceneItem.drawTangentBasis(origin, normal, tangent, bitangent, 2.5f);
+				debugDrawSceneItem.drawPoint(origin, Color4::WHITE, 15.0f);
+			}
+
+			// And a set of intersecting axes
+			origin[0] += 4.0f;
+			origin[1] += 1.0f;
+			drawLabel(mainRenderTarget, cameraSceneItem, debugDrawSceneItem, origin, "cross");
+			debugDrawSceneItem.drawCross(origin, 2.0f);
+			debugDrawSceneItem.drawPoint(origin, Color4::WHITE, 15.0f);
+
+			// Grid from -50 to +50 in both X & Z
+			debugDrawSceneItem.drawXzSquareGrid(-50.0f, 50.0f, -1.0f, 1.7f, Color4::GREEN);
+
+			{ // Draw frustum
+				const glm::vec3 frustumOrigin(-8.0f, 0.5f, 14.0f);
+				drawLabel(mainRenderTarget, cameraSceneItem, debugDrawSceneItem, frustumOrigin, "frustum + axes");
+
+				// The frustum will depict a fake camera
+				uint32_t width  = 1;
+				uint32_t height = 1;
+				mainRenderTarget.getWidthAndHeight(width, height);
+				const float aspectRatio = static_cast<float>(width) / static_cast<float>(height);
+				const glm::vec3 position(-8.0f, 0.5f, 14.0f);
+				const glm::mat4 viewSpaceToClipSpace = glm::perspective(45.0f, aspectRatio, 0.5f, 4.0f);
+				const glm::mat4 objectSpaceToViewSpace = glm::lookAt(position, glm::vec3(-8.0f, 0.5f, -14.0f), Renderer::Math::VEC3_UNIT_Y);
+				const glm::mat4 clipSpaceToObjectSpace = glm::inverse(viewSpaceToClipSpace * objectSpaceToViewSpace);
+				debugDrawSceneItem.drawFrustum(clipSpaceToObjectSpace, Color4::WHITE);
+
+				// A white dot at the eye position
+				debugDrawSceneItem.drawPoint(frustumOrigin, Color4::WHITE, 15.0f);
+
+				// A set of arrows at the cameras origin/eye
+				debugDrawSceneItem.drawAxisTriad(glm::translate(glm::mat4(1.0f), position), 0.3f, 2.0f);
+			}
+
+			// Draw HUD text
+			debugDrawSceneItem.drawScreenText("Press F1 for more debug draw boxes", glm::vec3(10.0f, 15.0f, 0.0f), Color4::WHITE, 0.55f);
+
+			debugDrawSceneItem.flush();
+		}
+
+
 //[-------------------------------------------------------]
 //[ Anonymous detail namespace                            ]
 //[-------------------------------------------------------]
@@ -133,10 +270,12 @@ Scene::Scene() :
 	mCloneMaterialResourceId(Renderer::getInvalid<Renderer::MaterialResourceId>()),
 	mCustomMaterialResourceSet(false),
 	mController(nullptr),
+	mDebugDrawEnabled(false),
 	// Crazy raw-pointers to point-of-interest scene stuff
 	mCameraSceneItem(nullptr),
 	mSunlightSceneItem(nullptr),
 	mSkeletonMeshSceneItem(nullptr),
+	mDebugDrawSceneItem(nullptr),
 	mSceneNode(nullptr),
 	// Video
 	mFullscreen(false),
@@ -182,7 +321,8 @@ Scene::Scene() :
 	mIni(nullptr),
 	mMainWindowPositionSizeIniProperty(INI_NOT_FOUND),
 	mCameraPositionRotationIniProperty(INI_NOT_FOUND),
-	mOpenMetricsWindowIniProperty(INI_NOT_FOUND)
+	mOpenMetricsWindowIniProperty(INI_NOT_FOUND),
+	mDebugDrawEnabledIniProperty(INI_NOT_FOUND)
 {
 	#ifdef RENDERER_IMGUI
 		Renderer::DebugGuiManager::setImGuiAllocatorFunctions(g_DefaultAllocator);
@@ -387,6 +527,29 @@ void Scene::onUpdate()
 	// Update the input system
 	mInputManager->Update();
 
+	// Debug draw example
+	if (mDebugDrawEnabled && nullptr != mCameraSceneItem && nullptr != mDebugDrawSceneItem)
+	{
+		const Rhi::IRenderTarget* mainRenderTarget = getMainRenderTarget();
+		if (nullptr != mainRenderTarget)
+		{
+			if (mInputManager->GetKeyboard()->F1.checkHitAndReset())
+			{
+				glm::vec3 origin(1.0f, 0.0f, 0.0f);
+				for (int i = 0; i < 10; ++i)
+				{
+					mDebugDrawSceneItem->drawBox(origin, glm::vec3(1.0f, 1.0f, 1.0f), Color4::WHITE, 1.0f + static_cast<float>(i) * 0.2f);
+					origin.x += 1.2f;
+				}
+			}
+			::SceneDetail::debugDrawExample(*mainRenderTarget, *mCameraSceneItem, *mDebugDrawSceneItem);
+		}
+	}
+	else if (nullptr != mDebugDrawSceneItem)
+	{
+		mDebugDrawSceneItem->clear();
+	}
+
 	// Usability: Backup the position and size of the main window so we can restore it in the next session
 	#if defined(_WIN32) && defined(RENDERER_IMGUI)
 	{
@@ -446,6 +609,7 @@ void Scene::onLoadingStateChange(const Renderer::IResource& resource)
 			RHI_ASSERT(getRendererSafe().getContext(), nullptr == mCameraSceneItem, "Invalid camera scene item")
 			RHI_ASSERT(getRendererSafe().getContext(), nullptr == mSunlightSceneItem, "Invalid sunlight scene item")
 			RHI_ASSERT(getRendererSafe().getContext(), nullptr == mSkeletonMeshSceneItem, "Invalid skeleton mesh scene item")
+			RHI_ASSERT(getRendererSafe().getContext(), nullptr == mDebugDrawSceneItem, "Invalid debug draw scene item")
 
 			// Loop through all scene nodes and grab the first found camera, directional light and mesh
 			const Renderer::SceneResource& sceneResource = static_cast<const Renderer::SceneResource&>(resource);
@@ -493,6 +657,14 @@ void Scene::onLoadingStateChange(const Renderer::IResource& resource)
 								mSkeletonMeshSceneItem = static_cast<Renderer::SkeletonMeshSceneItem*>(sceneItem);
 							}
 							break;
+
+						case Renderer::DebugDrawSceneItem::TYPE_ID:
+							// Grab the first found debug draw scene item
+							if (nullptr == mDebugDrawSceneItem)
+							{
+								mDebugDrawSceneItem = static_cast<Renderer::DebugDrawSceneItem*>(sceneItem);
+							}
+							break;
 					}
 				}
 			}
@@ -535,6 +707,7 @@ void Scene::onLoadingStateChange(const Renderer::IResource& resource)
 			mCameraSceneItem = nullptr;
 			mSunlightSceneItem = nullptr;
 			mSkeletonMeshSceneItem = nullptr;
+			mDebugDrawSceneItem = nullptr;
 			if (nullptr != mController)
 			{
 				delete mController;
@@ -575,6 +748,16 @@ void Scene::loadIni()
 			mMainWindowPositionSizeIniProperty = ini_find_property(mIni, INI_GLOBAL_SECTION, "MainWindowPositionSize", 0);
 			mCameraPositionRotationIniProperty = ini_find_property(mIni, INI_GLOBAL_SECTION, "CameraPositionRotation", 0);
 			mOpenMetricsWindowIniProperty = ini_find_property(mIni, INI_GLOBAL_SECTION, "OpenMetricsWindow", 0);
+			{ // Debug draw enabled
+				mDebugDrawEnabledIniProperty = ini_find_property(mIni, INI_GLOBAL_SECTION, "DebugDrawEnabled", 0);
+				const char* propertyValue = ini_property_value(mIni, INI_GLOBAL_SECTION, mDebugDrawEnabledIniProperty);
+				if (nullptr != propertyValue)
+				{
+					int value = 0;
+					sscanf(propertyValue, "%d", &value);
+					mDebugDrawEnabled = (0 != value);
+				}
+			}
 		}
 	}
 	if (nullptr == mIni)
@@ -623,6 +806,17 @@ void Scene::saveIni()
 				ini_property_value_set(mIni, INI_GLOBAL_SECTION, mOpenMetricsWindowIniProperty, temp, 0);
 			}
 
+			// Debug draw enabled
+			sprintf_s(temp, GLM_COUNTOF(temp), "%d", mDebugDrawEnabled);
+			if (INI_NOT_FOUND == mDebugDrawEnabledIniProperty)
+			{
+				mDebugDrawEnabledIniProperty = ini_property_add(mIni, INI_GLOBAL_SECTION, "DebugDrawEnabled", 0, temp, 0);
+			}
+			else
+			{
+				ini_property_value_set(mIni, INI_GLOBAL_SECTION, mDebugDrawEnabledIniProperty, temp, 0);
+			}
+
 			// Save ini
 			mIniFileContent.resize(static_cast<size_t>(ini_save(mIni, nullptr, 0)));
 			ini_save(mIni, mIniFileContent.data(), static_cast<int>(mIniFileContent.size()));
@@ -641,6 +835,7 @@ void Scene::destroyIni()
 		mMainWindowPositionSizeIniProperty = INI_NOT_FOUND;
 		mCameraPositionRotationIniProperty = INI_NOT_FOUND;
 		mOpenMetricsWindowIniProperty = INI_NOT_FOUND;
+		mDebugDrawEnabledIniProperty = INI_NOT_FOUND;
 	}
 }
 
@@ -886,6 +1081,8 @@ void Scene::createDebugGui([[maybe_unused]] Rhi::IRenderTarget& mainRenderTarget
 					{
 						debugGuiManager.openMetricsWindow();
 					}
+					ImGui::SameLine();
+					ImGui::Checkbox("Debug Draw", &mDebugDrawEnabled);
 					#ifdef RENDERER_GRAPHICS_DEBUGGER
 					{
 						Renderer::IGraphicsDebugger& graphicsDebugger = renderer.getContext().getGraphicsDebugger();

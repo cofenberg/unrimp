@@ -1,0 +1,107 @@
+{
+	"Format":
+	{
+		"Type": "MaterialBlueprintAsset",
+		"Version": "2"
+	},
+	"MaterialBlueprintAsset":
+	{
+		"Properties":
+		{
+			"RenderQueueIndex":
+			{
+				"Usage": "STATIC",
+				"ValueType": "INTEGER",
+				"Value": "255",
+				"Description": "Fixed build in material property for the render queue index [0, 255]",
+				"MinimumIntegerValue": "0",
+				"MaximumIntegerValue": "255"
+			},
+			"GlyphMap":
+			{
+				"Usage": "TEXTURE_REFERENCE",
+				"ValueType": "TEXTURE_ASSET_ID",
+				"Value": "Unrimp/Texture/DynamicByCode/DebugDrawGlyphMap2D",
+				"Description": "2D glyph map"
+			}
+		},
+		"GraphicsPipelineState":
+		{
+			"VertexAttributes": "./VA_DebugDrawGlyphList.asset",
+			"ShaderBlueprints":
+			{
+				"VertexShaderBlueprint": "./SB_VertexGlyphList.asset",
+				"FragmentShaderBlueprint": "./SB_FragmentGlyphList.asset"
+			},
+			"RasterizerState":
+			{
+				"CullMode": "NONE"
+			},
+			"DepthStencilState":
+			{
+				"DepthEnable": "FALSE",
+				"DepthWriteMask": "ZERO"
+			},
+			"BlendState":
+			{
+				"RenderTarget[0]":
+				{
+					"BlendEnable": "TRUE",
+					"SrcBlend": "SRC_ALPHA",
+					"DestBlend": "INV_SRC_ALPHA"
+				}
+			}
+		},
+		"ResourceGroups":
+		{
+			"0":
+			{
+				"0":
+				{
+					"ResourceType": "UNIFORM_BUFFER",
+					"BaseShaderRegisterName": "PassUniformBuffer",
+					"BaseShaderRegister": "0",
+					"ShaderVisibility": "VERTEX",
+					"BufferUsage": "PASS",
+					"NumberOfElements": "1",
+					"ElementProperties":
+					{
+						"InverseViewportSize":
+						{
+							"Usage": "PASS_REFERENCE",
+							"ValueType": "FLOAT_2",
+							"Value": "@INVERSE_VIEWPORT_SIZE"
+						}
+					}
+				}
+			},
+			"1":
+			{
+				"0":
+				{
+					"ResourceType": "TEXTURE_2D",
+					"BaseShaderRegisterName": "GlyphMap",
+					"BaseShaderRegister": "0",
+					"ShaderVisibility": "FRAGMENT",
+					"Usage": "MATERIAL_REFERENCE",
+					"ValueType": "TEXTURE_ASSET_ID",
+					"Value": "@GlyphMap",
+					"FallbackTexture": "Unrimp/Texture/DynamicByCode/IdentityAlphaMap2D",
+					"SamplerStateBaseShaderRegisterName": "GlyphSampler"
+				}
+			},
+			"2":
+			{
+				"0":
+				{
+					"ResourceType": "SAMPLER_STATE",
+					"BaseShaderRegisterName": "GlyphSampler",
+					"BaseShaderRegister": "0",
+					"ShaderVisibility": "FRAGMENT",
+					"Filter": "MIN_MAG_MIP_LINEAR",
+					"MaxAnisotropy": "1"
+				}
+			}
+		}
+	}
+}

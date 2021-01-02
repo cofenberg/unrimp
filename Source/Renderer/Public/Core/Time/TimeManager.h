@@ -30,12 +30,6 @@
 #include "Renderer/Public/Core/Manager.h"
 #include "Renderer/Public/Core/Time/Stopwatch.h"
 
-// Disable warnings in external headers, we can't fix them
-PRAGMA_WARNING_PUSH
-	PRAGMA_WARNING_DISABLE_MSVC(4668)	// warning C4668: '_M_HYBRID_X86_ARM64' is not defined as a preprocessor macro, replacing with '0' for '#if/#elif'
-	#include <limits>	// For "std::numeric_limits()"
-PRAGMA_WARNING_POP
-
 
 //[-------------------------------------------------------]
 //[ Namespace                                             ]
@@ -59,21 +53,15 @@ namespace Renderer
 	//[ Public methods                                        ]
 	//[-------------------------------------------------------]
 	public:
-		inline TimeManager() :
-			mPastSecondsSinceLastFrame(std::numeric_limits<float>::min()),	// Don't initialize with zero or time advancing enforcement asserts will get more complicated
-			mGlobalTimeInSeconds(0.0f),
-			mNumberOfRenderedFrames(0),
-			mFramesPerSecond(std::numeric_limits<float>::max()),	// Not zero to avoid division through zero border case
-			mFramerateSecondsPerFrame{},
-			mFramerateSecondsPerFrameIndex(0),
-			mFramerateSecondsPerFrameAccumulated(0.0f)
+		TimeManager();
+		inline ~TimeManager()
 		{
 			// Nothing here
 		}
 
-		inline ~TimeManager()
+		[[nodiscard]] inline const Stopwatch& getSinceStartStopwatch() const
 		{
-			// Nothing here
+			return mSinceStartStopwatch;
 		}
 
 		[[nodiscard]] inline float getPastSecondsSinceLastFrame() const
@@ -118,7 +106,8 @@ namespace Renderer
 	//[ Private data                                          ]
 	//[-------------------------------------------------------]
 	private:
-		Stopwatch mStopwatch;
+		Stopwatch mSinceStartStopwatch;
+		Stopwatch mPerUpdateStopwatch;
 		float	  mPastSecondsSinceLastFrame;
 		float	  mGlobalTimeInSeconds;
 		uint64_t  mNumberOfRenderedFrames;

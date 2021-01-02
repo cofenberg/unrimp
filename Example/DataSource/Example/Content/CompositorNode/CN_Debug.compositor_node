@@ -25,14 +25,14 @@
 				{
 					"Name": "Solid objects",
 					"MinimumRenderQueueIndex": "0",
-					"MaximumRenderQueueIndex": "253",
+					"MaximumRenderQueueIndex": "252",
 					"MaterialTechnique": "Debug"
 				},
 				"Scene":
 				{
 					"Name": "Terrain",
-					"MinimumRenderQueueIndex": "253",
-					"MaximumRenderQueueIndex": "253",
+					"MinimumRenderQueueIndex": "252",
+					"MaximumRenderQueueIndex": "252",
 					"MaterialTechnique": "Debug"
 				},
 				"Scene":
@@ -40,8 +40,15 @@
 					"Name": "Sky",
 					"Description": "Maximum depth is 0 instead of 1 due to the usage of Reversed-Z (see e.g. https://developer.nvidia.com/content/depth-precision-visualized and https://nlguillemot.wordpress.com/2016/12/07/reversed-z-in-opengl/)",
 					"MaximumDepth": "0.0",
-					"MinimumRenderQueueIndex": "254",
-					"MaximumRenderQueueIndex": "254",
+					"MinimumRenderQueueIndex": "253",
+					"MaximumRenderQueueIndex": "253",
+					"MaterialTechnique": "Debug"
+				}, 
+				"Scene":
+				{
+					"Name": "Debug objects",
+					"MinimumRenderQueueIndex": "255",
+					"MaximumRenderQueueIndex": "255",
 					"MaterialTechnique": "Debug"
 				},
 				"DebugGui":

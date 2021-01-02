@@ -1,0 +1,92 @@
+{
+	"Format":
+	{
+		"Type": "MaterialBlueprintAsset",
+		"Version": "2"
+	},
+	"MaterialBlueprintAsset":
+	{
+		"Properties":
+		{
+			"RenderQueueIndex":
+			{
+				"Usage": "STATIC",
+				"ValueType": "INTEGER",
+				"Value": "255",
+				"Description": "Fixed build in material property for the render queue index [0, 255]",
+				"MinimumIntegerValue": "0",
+				"MaximumIntegerValue": "255"
+			}
+		},
+		"GraphicsPipelineState":
+		{
+			"VertexAttributes": "./VA_DebugDrawLineList.asset",
+			"ShaderBlueprints":
+			{
+				"VertexShaderBlueprint": "./SB_VertexLineList.asset",
+				"FragmentShaderBlueprint": "./SB_FragmentLineList.asset"
+			},
+			"PrimitiveTopology": "LINE_LIST",
+			"RasterizerState":
+			{
+				"CullMode": "NONE"
+			},
+			"DepthStencilState":
+			{
+				"DepthEnable": "FALSE",
+				"DepthWriteMask": "ZERO"
+			}
+		},
+		"ResourceGroups":
+		{
+			"0":
+			{
+				"0":
+				{
+					"ResourceType": "UNIFORM_BUFFER",
+					"BaseShaderRegisterName": "PassUniformBuffer",
+					"BaseShaderRegister": "0",
+					"ShaderVisibility": "VERTEX",
+					"BufferUsage": "PASS",
+					"NumberOfElements": "1",
+					"ElementProperties":
+					{
+						"WorldSpaceToClipSpaceMatrix":
+						{
+							"Usage": "PASS_REFERENCE",
+							"ValueType": "FLOAT_4_4",
+							"Value": "@WORLD_SPACE_TO_CLIP_SPACE_MATRIX"
+						},
+						"WorldSpaceToClipSpaceMatrix2":
+						{
+							"Usage": "PASS_REFERENCE",
+							"ValueType": "FLOAT_4_4",
+							"Value": "@WORLD_SPACE_TO_CLIP_SPACE_MATRIX_2"
+						}
+					}
+				}
+			},
+			"1":
+			{
+				"0":
+				{
+					"ResourceType": "UNIFORM_BUFFER",
+					"BaseShaderRegisterName": "InstanceUniformBuffer",
+					"BaseShaderRegister": "1",
+					"ShaderVisibility": "VERTEX",
+					"BufferUsage": "INSTANCE",
+					"NumberOfElements": "1",
+					"ElementProperties":
+					{
+						"InstanceDataArray":
+						{
+							"Usage": "INSTANCE_REFERENCE",
+							"ValueType": "INTEGER_4",
+							"Value": "@WORLD_POSITION_MATERIAL_INDEX"
+						}
+					}
+				}
+			}
+		}
+	}
+}

@@ -113,6 +113,21 @@ namespace Renderer
 
 
 	//[-------------------------------------------------------]
+	//[ Public virtual Renderer::ISceneItem methods           ]
+	//[-------------------------------------------------------]
+	const RenderableManager* SkySceneItem::getRenderableManager() const
+	{
+		// Sanity checks
+		RHI_ASSERT(getContext(), Math::DVEC3_ZERO == mRenderableManager.getTransform().position, "No position is supported to keep things simple")
+		RHI_ASSERT(getContext(), Math::QUAT_IDENTITY == mRenderableManager.getTransform().rotation, "No rotation is supported to keep things simple")
+		RHI_ASSERT(getContext(), Math::VEC3_ONE == mRenderableManager.getTransform().scale, "No scale is supported to keep things simple")
+
+		// Call the base implementation
+		return MaterialSceneItem::getRenderableManager();
+	}
+
+
+	//[-------------------------------------------------------]
 	//[ Protected virtual Renderer::MaterialSceneItem methods ]
 	//[-------------------------------------------------------]
 	void SkySceneItem::onMaterialResourceCreated()

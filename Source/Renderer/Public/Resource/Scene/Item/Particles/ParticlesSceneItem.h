@@ -65,7 +65,7 @@ namespace Renderer
 		struct ParticleDataStruct final
 		{
 			float PositionSize[4];	// Object space particle xyz-position, w = particle size
-			float Color[4];			// Linear RGBA particle color and opacity
+			float Color[4];			// Linear space RGB particle color and opacity
 		};
 
 
@@ -77,6 +77,8 @@ namespace Renderer
 		{
 			return TYPE_ID;
 		}
+
+		[[nodiscard]] virtual const RenderableManager* getRenderableManager() const override;
 
 
 	//[-------------------------------------------------------]

@@ -43,20 +43,20 @@ namespace Renderer
 	void MaterialSceneItem::deserialize([[maybe_unused]] uint32_t numberOfBytes, const uint8_t* data)
 	{
 		// Sanity check
-		RHI_ASSERT(getContext(), sizeof(v1Scene::MaterialItem) <= numberOfBytes, "Invalid number of bytes")
+		RHI_ASSERT(getContext(), sizeof(v1Scene::MaterialData) <= numberOfBytes, "Invalid number of bytes")
 
 		// Read data
-		const v1Scene::MaterialItem* materialItem = reinterpret_cast<const v1Scene::MaterialItem*>(data);
-		RHI_ASSERT(getContext(), sizeof(v1Scene::MaterialItem) + sizeof(MaterialProperty) * materialItem->numberOfMaterialProperties == numberOfBytes, "Invalid number of bytes")
-		mMaterialAssetId = materialItem->materialAssetId;
-		mMaterialTechniqueId = materialItem->materialTechniqueId;
-		mMaterialBlueprintAssetId = materialItem->materialBlueprintAssetId;
+		const v1Scene::MaterialData* materialData = reinterpret_cast<const v1Scene::MaterialData*>(data);
+		RHI_ASSERT(getContext(), sizeof(v1Scene::MaterialData) + sizeof(MaterialProperty) * materialData->numberOfMaterialProperties == numberOfBytes, "Invalid number of bytes")
+		mMaterialAssetId = materialData->materialAssetId;
+		mMaterialTechniqueId = materialData->materialTechniqueId;
+		mMaterialBlueprintAssetId = materialData->materialBlueprintAssetId;
 
 		{ // Read material properties
 			// TODO(co) Get rid of the evil const-cast
 			MaterialProperties::SortedPropertyVector& sortedPropertyVector = const_cast<MaterialProperties::SortedPropertyVector&>(mMaterialProperties.getSortedPropertyVector());
-			sortedPropertyVector.resize(materialItem->numberOfMaterialProperties);
-			memcpy(reinterpret_cast<char*>(sortedPropertyVector.data()), data + sizeof(v1Scene::MaterialItem), sizeof(MaterialProperty) * materialItem->numberOfMaterialProperties);
+			sortedPropertyVector.resize(materialData->numberOfMaterialProperties);
+			memcpy(reinterpret_cast<char*>(sortedPropertyVector.data()), data + sizeof(v1Scene::MaterialData), sizeof(MaterialProperty) * materialData->numberOfMaterialProperties);
 		}
 
 		// Sanity checks

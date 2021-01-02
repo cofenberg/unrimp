@@ -12,7 +12,7 @@
 			{
 				"Usage": "TEXTURE_REFERENCE",
 				"ValueType": "TEXTURE_ASSET_ID",
-				"Value": "Unrimp/Texture/DynamicByCode/IdentityAlphaMap2D",
+				"Value": "Unrimp/Texture/DynamicByCode/ImGuiGlyphMap2D",
 				"Description": "2D glyph map"
 			},
 			"BackgroundMap":
@@ -47,8 +47,7 @@
 				{
 					"BlendEnable": "TRUE",
 					"SrcBlend": "SRC_ALPHA",
-					"DestBlend": "INV_SRC_ALPHA",
-					"SrcBlendAlpha": "INV_SRC_ALPHA"
+					"DestBlend": "INV_SRC_ALPHA"
 				}
 			}
 		},
@@ -86,7 +85,7 @@
 					"Usage": "MATERIAL_REFERENCE",
 					"ValueType": "TEXTURE_ASSET_ID",
 					"Value": "@GlyphMap",
-					"FallbackTexture": "Unrimp/Texture/DynamicByCode/WhiteMap2D",
+					"FallbackTexture": "Unrimp/Texture/DynamicByCode/IdentityAlphaMap2D",
 					"SamplerStateBaseShaderRegisterName": "GlyphSampler"
 				},
 				"1":

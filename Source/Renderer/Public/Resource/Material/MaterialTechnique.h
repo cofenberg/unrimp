@@ -134,11 +134,14 @@ namespace Renderer
 		*  @brief
 		*    Set structured buffer pointer
 		*
+		*  @param[in] structuredBufferRootParameterIndex
+		*    Structured buffer root parameter index
 		*  @param[in] structuredBufferPtr
 		*    RHI structured buffer pointer
 		*/
-		inline void setStructuredBufferPtr(Rhi::IStructuredBufferPtr& structuredBufferPtr)
+		inline void setStructuredBufferPtr(uint32_t structuredBufferRootParameterIndex, Rhi::IStructuredBufferPtr& structuredBufferPtr)
 		{
+			mStructuredBufferRootParameterIndex = structuredBufferRootParameterIndex;
 			mStructuredBufferPtr = structuredBufferPtr;
 		}
 
@@ -270,6 +273,7 @@ namespace Renderer
 	private:
 		MaterialTechniqueId			mMaterialTechniqueId;					///< Material technique ID
 		MaterialBlueprintResourceId	mMaterialBlueprintResourceId;			///< Material blueprint resource ID, can be set to invalid value
+		uint32_t					mStructuredBufferRootParameterIndex;
 		Rhi::IStructuredBufferPtr	mStructuredBufferPtr;
 		Textures					mTextures;
 		uint32_t					mSerializedGraphicsPipelineStateHash;	///< FNV1a hash of "Rhi::SerializedGraphicsPipelineState"

@@ -30,11 +30,11 @@
 //[-------------------------------------------------------]
 // Attribute input / output
 INPUT_BEGIN
-	INPUT_TEXTURE_COORDINATE(1, float4, TexCoordVS, 0)	// xy = glyph texture coordinate, zw = background texture coordinate
-	INPUT_TEXTURE_COORDINATE(2, float4, ColorVS, 1)		// Vertex color
+	INPUT_TEXTURE_COORDINATE(1, float4, TexCoordVS, 0)	// xy = normalized glyph texture coordinate, zw = normalized background texture coordinate
+	INPUT_TEXTURE_COORDINATE(2, float4, ColorVS,    1)	// sRGB vertex color
 INPUT_END
 OUTPUT_BEGIN
-	OUTPUT_COLOR(0)
+	OUTPUT_COLOR(0)	// sRGB output color
 OUTPUT_END
 
 // Textures
@@ -51,10 +51,10 @@ SAMPLER_STATE(2, 1, BackgroundSampler, 1)
 //[-------------------------------------------------------]
 MAIN_BEGIN
 	// Get source and destination color
-	float glyphMapValue = SAMPLE_2D(GlyphMap, GlyphSampler, MAIN_INPUT(TexCoordVS).xy).r;
-	float4 sourceColor = MAIN_INPUT(ColorVS) * glyphMapValue;
+	float4 sourceColor = MAIN_INPUT(ColorVS);
 	float4 destinationColor = SAMPLE_2D_LOD(BackgroundMap, BackgroundSampler, float4(MAIN_INPUT(TexCoordVS).zw, 0.0f, 0.0f));
 
 	// Blend
+	float glyphMapValue = SAMPLE_2D(GlyphMap, GlyphSampler, MAIN_INPUT(TexCoordVS).xy).r;
 	MAIN_OUTPUT_COLOR(0) = float4(sourceColor.rgb * sourceColor.a + destinationColor.rgb * (1.0f - sourceColor.a), glyphMapValue);
 MAIN_END

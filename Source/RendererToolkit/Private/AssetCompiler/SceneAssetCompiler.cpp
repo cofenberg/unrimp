@@ -33,14 +33,15 @@
 #include <Renderer/Public/Core/Math/Math.h>
 #include <Renderer/Public/Core/File/MemoryFile.h>
 #include <Renderer/Public/Core/File/FileSystemHelper.h>
-#include <Renderer/Public/Resource/Scene/Item/Sky/SkySceneItem.h>
-#include <Renderer/Public/Resource/Scene/Item/Volume/VolumeSceneItem.h>
-#include <Renderer/Public/Resource/Scene/Item/Grass/GrassSceneItem.h>
-#include <Renderer/Public/Resource/Scene/Item/Terrain/TerrainSceneItem.h>
 #include <Renderer/Public/Resource/Scene/Item/Camera/CameraSceneItem.h>
+#include <Renderer/Public/Resource/Scene/Item/Debug/DebugDrawSceneItem.h>
+#include <Renderer/Public/Resource/Scene/Item/Grass/GrassSceneItem.h>
 #include <Renderer/Public/Resource/Scene/Item/Light/SunlightSceneItem.h>
-#include <Renderer/Public/Resource/Scene/Item/Particles/ParticlesSceneItem.h>
 #include <Renderer/Public/Resource/Scene/Item/Mesh/SkeletonMeshSceneItem.h>
+#include <Renderer/Public/Resource/Scene/Item/Particles/ParticlesSceneItem.h>
+#include <Renderer/Public/Resource/Scene/Item/Sky/SkySceneItem.h>
+#include <Renderer/Public/Resource/Scene/Item/Terrain/TerrainSceneItem.h>
+#include <Renderer/Public/Resource/Scene/Item/Volume/VolumeSceneItem.h>
 #include <Renderer/Public/Resource/Scene/Loader/SceneFileFormat.h>
 #include <Renderer/Public/Resource/Material/MaterialProperties.h>
 #include <Renderer/Public/Resource/Material/MaterialResourceManager.h>
@@ -139,30 +140,53 @@ namespace
 			}
 		}
 
-		void readMaterialSceneItem(const RendererToolkit::IAssetCompiler::Input& input, const Renderer::MaterialProperties::SortedPropertyVector& sortedMaterialPropertyVector, const rapidjson::Value& rapidJsonValueSceneItem, Renderer::v1Scene::MaterialItem& materialItem)
+		void readMaterialSceneData(const RendererToolkit::IAssetCompiler::Input& input, const Renderer::MaterialProperties::SortedPropertyVector& sortedMaterialPropertyVector, const rapidjson::Value& rapidJsonValueSceneItem, Renderer::v1Scene::MaterialData& materialData)
 		{
 			// Set data
 			Renderer::AssetId materialAssetId;
 			Renderer::AssetId materialBlueprintAssetId;
 			RendererToolkit::JsonHelper::optionalCompiledAssetId(input, rapidJsonValueSceneItem, "Material", materialAssetId);
-			RendererToolkit::JsonHelper::optionalStringIdProperty(rapidJsonValueSceneItem, "MaterialTechnique", materialItem.materialTechniqueId);
+			RendererToolkit::JsonHelper::optionalStringIdProperty(rapidJsonValueSceneItem, "MaterialTechnique", materialData.materialTechniqueId);
 			RendererToolkit::JsonHelper::optionalCompiledAssetId(input, rapidJsonValueSceneItem, "MaterialBlueprint", materialBlueprintAssetId);
-			materialItem.materialAssetId = materialAssetId;
-			materialItem.materialBlueprintAssetId = materialBlueprintAssetId;
-			materialItem.numberOfMaterialProperties = static_cast<uint32_t>(sortedMaterialPropertyVector.size());
+			materialData.materialAssetId = materialAssetId;
+			materialData.materialBlueprintAssetId = materialBlueprintAssetId;
+			materialData.numberOfMaterialProperties = static_cast<uint32_t>(sortedMaterialPropertyVector.size());
 
 			// Sanity checks
-			if (Renderer::isInvalid(materialItem.materialAssetId) && Renderer::isInvalid(materialItem.materialBlueprintAssetId))
+			if (Renderer::isInvalid(materialData.materialAssetId) && Renderer::isInvalid(materialData.materialBlueprintAssetId))
 			{
 				throw std::runtime_error("Material asset ID or material blueprint asset ID must be defined");
 			}
-			if (Renderer::isValid(materialItem.materialAssetId) && Renderer::isValid(materialItem.materialBlueprintAssetId))
+			if (Renderer::isValid(materialData.materialAssetId) && Renderer::isValid(materialData.materialBlueprintAssetId))
 			{
 				throw std::runtime_error("Material asset ID is defined, but material blueprint asset ID is defined as well. Only one asset ID is allowed.");
 			}
-			if (Renderer::isInvalid(materialItem.materialTechniqueId))
+			if (Renderer::isInvalid(materialData.materialTechniqueId))
 			{
-				materialItem.materialTechniqueId = Renderer::MaterialResourceManager::DEFAULT_MATERIAL_TECHNIQUE_ID;
+				materialData.materialTechniqueId = Renderer::MaterialResourceManager::DEFAULT_MATERIAL_TECHNIQUE_ID;
+			}
+		}
+
+		void writeItemHeader(Renderer::IFile& file, Renderer::SceneItemTypeId typeId, uint32_t numberOfBytes)
+		{
+			Renderer::v1Scene::ItemHeader itemHeader;
+			itemHeader.typeId		 = typeId;
+			itemHeader.numberOfBytes = numberOfBytes;
+			file.write(&itemHeader, sizeof(Renderer::v1Scene::ItemHeader));
+		}
+
+		void writeMaterialData(Renderer::IFile& file, const RendererToolkit::IAssetCompiler::Input& input, const rapidjson::Value& rapidJsonValueItem, const Renderer::MaterialProperties::SortedPropertyVector& sortedMaterialPropertyVector)
+		{
+			// Gather data
+			Renderer::v1Scene::MaterialData materialData;
+			::detail::readMaterialSceneData(input, sortedMaterialPropertyVector, rapidJsonValueItem, materialData);
+
+			// Write down
+			file.write(&materialData, sizeof(Renderer::v1Scene::MaterialData));
+			if (!sortedMaterialPropertyVector.empty())
+			{
+				// Write down all material properties
+				file.write(sortedMaterialPropertyVector.data(), sizeof(Renderer::MaterialProperty) * sortedMaterialPropertyVector.size());
 			}
 		}
 
@@ -268,32 +292,178 @@ namespace RendererToolkit
 								const rapidjson::Value& rapidJsonValueItem = rapidJsonMemberIteratorItems->value;
 								const Renderer::SceneItemTypeId typeId = Renderer::StringId(rapidJsonMemberIteratorItems->name.GetString());
 
-								// Get the scene item type specific data number of bytes
 								// TODO(co) Make this more generic via scene factory
-								uint32_t numberOfBytes = 0;
-								Renderer::MaterialProperties::SortedPropertyVector sortedMaterialPropertyVector;
 								switch (typeId)
 								{
 									case Renderer::CameraSceneItem::TYPE_ID:
-										// Nothing here
+									{
+										// Write down the scene item header
+										::detail::writeItemHeader(memoryFile, typeId, 0);
 										break;
+									}
 
 									case Renderer::LightSceneItem::TYPE_ID:
-										numberOfBytes = sizeof(Renderer::v1Scene::LightItem);
+									{
+										// Write down the scene item header
+										::detail::writeItemHeader(memoryFile, typeId, sizeof(Renderer::v1Scene::LightItem));
+
+										// Read properties
+										Renderer::v1Scene::LightItem lightItem;
+										::detail::optionalLightTypeProperty(rapidJsonValueItem, "LightType", lightItem.lightType);
+										JsonHelper::optionalRgbColorProperty(rapidJsonValueItem, "Color", lightItem.color);
+										JsonHelper::optionalUnitNProperty(rapidJsonValueItem, "Radius", &lightItem.radius, 1);
+										JsonHelper::optionalAngleProperty(rapidJsonValueItem, "InnerAngle", lightItem.innerAngle);
+										JsonHelper::optionalAngleProperty(rapidJsonValueItem, "OuterAngle", lightItem.outerAngle);
+										JsonHelper::optionalUnitNProperty(rapidJsonValueItem, "NearClipDistance", &lightItem.nearClipDistance, 1);
+										JsonHelper::optionalIntegerNProperty(rapidJsonValueItem, "IesLightProfileIndex", &lightItem.iesLightProfileIndex, 1);
+
+										// Sanity checks
+										if (lightItem.color[0] < 0.0f || lightItem.color[1] < 0.0f || lightItem.color[2] < 0.0f)
+										{
+											throw std::runtime_error("All light item color components must be positive");
+										}
+										if (Renderer::LightSceneItem::LightType::DIRECTIONAL != lightItem.lightType && lightItem.radius <= 0.0f)
+										{
+											throw std::runtime_error("For point or spot light items the radius must be greater as zero");
+										}
+										if (Renderer::LightSceneItem::LightType::DIRECTIONAL == lightItem.lightType && 0.0f != lightItem.radius)
+										{
+											throw std::runtime_error("For directional light items the radius must be zero");
+										}
+										if (lightItem.innerAngle < 0.0f)
+										{
+											throw std::runtime_error("The inner spot light angle must be >= 0 degrees");
+										}
+										if (lightItem.outerAngle >= glm::radians(90.0f))
+										{
+											throw std::runtime_error("The outer spot light angle must be < 90 degrees");
+										}
+										if (lightItem.innerAngle >= lightItem.outerAngle)
+										{
+											throw std::runtime_error("The inner spot light angle must be smaller as the outer spot light angle");
+										}
+										if (lightItem.nearClipDistance < 0.0f)
+										{
+											throw std::runtime_error("The spot light near clip distance must be greater as zero");
+										}
+										if (lightItem.iesLightProfileIndex >= 0 && (rapidJsonValueItem.HasMember("InnerAngle") || rapidJsonValueItem.HasMember("OuterAngle")))
+										{
+											throw std::runtime_error("\"InnerAngle\" and \"OuterAngle\" are unused if \"IesLightProfileIndex\" is used");
+										}
+
+										// Write down
+										memoryFile.write(&lightItem, sizeof(Renderer::v1Scene::LightItem));
 										break;
+									}
 
 									case Renderer::SunlightSceneItem::TYPE_ID:
-										numberOfBytes = sizeof(Renderer::v1Scene::SunlightItem);
+									{
+										// Write down the scene item header
+										::detail::writeItemHeader(memoryFile, typeId, sizeof(Renderer::v1Scene::SunlightItem));
+
+										// Read properties
+										Renderer::v1Scene::SunlightItem sunlightItem;
+										JsonHelper::optionalTimeOfDayProperty(rapidJsonValueItem, "SunriseTime", sunlightItem.sunriseTime);
+										JsonHelper::optionalTimeOfDayProperty(rapidJsonValueItem, "SunsetTime", sunlightItem.sunsetTime);
+										JsonHelper::optionalAngleProperty(rapidJsonValueItem, "EastDirection", sunlightItem.eastDirection);
+										JsonHelper::optionalAngleProperty(rapidJsonValueItem, "AngleOfIncidence", sunlightItem.angleOfIncidence);
+										JsonHelper::optionalTimeOfDayProperty(rapidJsonValueItem, "TimeOfDay", sunlightItem.timeOfDay);
+
+										// Write down
+										memoryFile.write(&sunlightItem, sizeof(Renderer::v1Scene::SunlightItem));
 										break;
+									}
 
 									case Renderer::MeshSceneItem::TYPE_ID:
 									case Renderer::SkeletonMeshSceneItem::TYPE_ID:
 									{
-										const uint32_t numberOfSubMeshMaterialAssetIds = rapidJsonValueItem.HasMember("SubMeshMaterials") ? rapidJsonValueItem["SubMeshMaterials"].Size() : 0;
-										numberOfBytes = sizeof(Renderer::v1Scene::MeshItem) + sizeof(Renderer::AssetId) * numberOfSubMeshMaterialAssetIds;
+										// Get the number of scene item bytes
+										uint32_t numberOfBytes = sizeof(Renderer::v1Scene::MeshItem) + sizeof(Renderer::AssetId) * (rapidJsonValueItem.HasMember("SubMeshMaterials") ? rapidJsonValueItem["SubMeshMaterials"].Size() : 0);
 										if (Renderer::SkeletonMeshSceneItem::TYPE_ID == typeId)
 										{
 											numberOfBytes += sizeof(Renderer::v1Scene::SkeletonMeshItem);
+										}
+
+										// Write down the scene item header
+										::detail::writeItemHeader(memoryFile, typeId, numberOfBytes);
+
+										// Skeleton mesh scene item
+										if (Renderer::SkeletonMeshSceneItem::TYPE_ID == typeId)
+										{
+											Renderer::v1Scene::SkeletonMeshItem skeletonMeshItem;
+
+											// Optional skeleton animation: Map the source asset ID to the compiled asset ID
+											skeletonMeshItem.skeletonAnimationAssetId = Renderer::getInvalid<Renderer::AssetId>();
+											JsonHelper::optionalCompiledAssetId(input, rapidJsonValueItem, "SkeletonAnimation", skeletonMeshItem.skeletonAnimationAssetId);
+
+											// Write down
+											memoryFile.write(&skeletonMeshItem, sizeof(Renderer::v1Scene::SkeletonMeshItem));
+										}
+
+										// Mesh scene item
+										Renderer::v1Scene::MeshItem meshItem;
+
+										// Map the source asset ID to the compiled asset ID
+										meshItem.meshAssetId = JsonHelper::getCompiledAssetId(input, rapidJsonValueItem, "Mesh");
+
+										// Optional sub-mesh material asset IDs to be able to overwrite the original material asset ID of sub-meshes
+										std::vector<Renderer::AssetId> subMeshMaterialAssetIds;
+										if (rapidJsonValueItem.HasMember("SubMeshMaterials"))
+										{
+											const rapidjson::Value& rapidJsonValueSubMeshMaterialAssetIds = rapidJsonValueItem["SubMeshMaterials"];
+											const uint32_t numberOfSubMeshMaterialAssetIds = rapidJsonValueSubMeshMaterialAssetIds.Size();
+											subMeshMaterialAssetIds.resize(numberOfSubMeshMaterialAssetIds);
+											for (uint32_t i = 0; i < numberOfSubMeshMaterialAssetIds; ++i)
+											{
+												// Empty string means "Don't overwrite the original material asset ID of the sub-mesh"
+												const std::string valueAsString = rapidJsonValueSubMeshMaterialAssetIds[i].GetString();
+												subMeshMaterialAssetIds[i] = valueAsString.empty() ? Renderer::getInvalid<Renderer::AssetId>() : StringHelper::getAssetIdByString(valueAsString, input);
+											}
+										}
+										meshItem.numberOfSubMeshMaterialAssetIds = static_cast<uint32_t>(subMeshMaterialAssetIds.size());
+
+										// Write down
+										memoryFile.write(&meshItem, sizeof(Renderer::v1Scene::MeshItem));
+										if (!subMeshMaterialAssetIds.empty())
+										{
+											// Write down all sub-mesh material asset IDs
+											memoryFile.write(subMeshMaterialAssetIds.data(), sizeof(Renderer::AssetId) * subMeshMaterialAssetIds.size());
+										}
+										break;
+									}
+
+									case Renderer::DebugDrawSceneItem::TYPE_ID:
+									{
+										static constexpr uint32_t NUMBER_OF_TYPES = 3;
+										static constexpr char* TYPE_NAME[NUMBER_OF_TYPES] = { "PointList", "LineList", "GlyphList" };
+
+										// Get mandatory JSON values of the types
+										rapidjson::Value* rapidJsonValuePerType[NUMBER_OF_TYPES];
+										for (uint32_t i = 0; i < NUMBER_OF_TYPES; ++i)
+										{
+											rapidJsonValuePerType[i] = const_cast<rapidjson::Value*>(&rapidJsonValueItem[TYPE_NAME[i]]);	// Evil const-cast
+										}
+
+										// Get material properties
+										Renderer::MaterialProperties::SortedPropertyVector sortedMaterialPropertyVectors[NUMBER_OF_TYPES];
+										for (uint32_t i = 0; i < NUMBER_OF_TYPES; ++i)
+										{
+											::detail::fillSortedMaterialPropertyVector(input, *rapidJsonValuePerType[i], sortedMaterialPropertyVectors[i]);
+										}
+
+										{ // Write down the scene item header
+											uint32_t numberOfBytes = static_cast<uint32_t>(sizeof(Renderer::v1Scene::MaterialData)) * NUMBER_OF_TYPES;
+											for (uint32_t i = 0; i < NUMBER_OF_TYPES; ++i)
+											{
+												numberOfBytes += static_cast<uint32_t>(sizeof(Renderer::MaterialProperty) * sortedMaterialPropertyVectors[i].size());
+											}
+											::detail::writeItemHeader(memoryFile, typeId, numberOfBytes);
+										}
+
+										// Write material data
+										for (uint32_t i = 0; i < NUMBER_OF_TYPES; ++i)
+										{
+											detail::writeMaterialData(memoryFile, input, *rapidJsonValuePerType[i], sortedMaterialPropertyVectors[i]);
 										}
 										break;
 									}
@@ -303,221 +473,23 @@ namespace RendererToolkit
 									case Renderer::GrassSceneItem::TYPE_ID:
 									case Renderer::TerrainSceneItem::TYPE_ID:
 									case Renderer::ParticlesSceneItem::TYPE_ID:
+									{
+										// Get material properties
+										Renderer::MaterialProperties::SortedPropertyVector sortedMaterialPropertyVector;
 										::detail::fillSortedMaterialPropertyVector(input, rapidJsonValueItem, sortedMaterialPropertyVector);
-										numberOfBytes = static_cast<uint32_t>(sizeof(Renderer::v1Scene::MaterialItem) + sizeof(Renderer::MaterialProperty) * sortedMaterialPropertyVector.size());
+
+										// Write down the scene item header
+										::detail::writeItemHeader(memoryFile, typeId, static_cast<uint32_t>(sizeof(Renderer::v1Scene::MaterialData) + sizeof(Renderer::MaterialProperty) * sortedMaterialPropertyVector.size()));
+
+										// Write material data
+										detail::writeMaterialData(memoryFile, input, rapidJsonValueItem, sortedMaterialPropertyVector);
 										break;
+									}
 
 									default:
+									{
 										// Error!
 										throw std::runtime_error("Scene item type \"" + std::string(rapidJsonMemberIteratorItems->name.GetString()) + "\" is unknown");
-								}
-
-								{ // Write down the scene item header
-									Renderer::v1Scene::ItemHeader itemHeader;
-									itemHeader.typeId		 = typeId;
-									itemHeader.numberOfBytes = numberOfBytes;
-									memoryFile.write(&itemHeader, sizeof(Renderer::v1Scene::ItemHeader));
-								}
-
-								// Write down the scene item type specific data, if there is any
-								if (0 != numberOfBytes)
-								{
-									switch (typeId)
-									{
-										case Renderer::CameraSceneItem::TYPE_ID:
-											// Nothing here
-											break;
-
-										case Renderer::LightSceneItem::TYPE_ID:
-										{
-											Renderer::v1Scene::LightItem lightItem;
-
-											// Read properties
-											::detail::optionalLightTypeProperty(rapidJsonValueItem, "LightType", lightItem.lightType);
-											JsonHelper::optionalRgbColorProperty(rapidJsonValueItem, "Color", lightItem.color);
-											JsonHelper::optionalUnitNProperty(rapidJsonValueItem, "Radius", &lightItem.radius, 1);
-											JsonHelper::optionalAngleProperty(rapidJsonValueItem, "InnerAngle", lightItem.innerAngle);
-											JsonHelper::optionalAngleProperty(rapidJsonValueItem, "OuterAngle", lightItem.outerAngle);
-											JsonHelper::optionalUnitNProperty(rapidJsonValueItem, "NearClipDistance", &lightItem.nearClipDistance, 1);
-											JsonHelper::optionalIntegerNProperty(rapidJsonValueItem, "IesLightProfileIndex", &lightItem.iesLightProfileIndex, 1);
-
-											// Sanity checks
-											if (lightItem.color[0] < 0.0f || lightItem.color[1] < 0.0f || lightItem.color[2] < 0.0f)
-											{
-												throw std::runtime_error("All light item color components must be positive");
-											}
-											if (lightItem.lightType != Renderer::LightSceneItem::LightType::DIRECTIONAL && lightItem.radius <= 0.0f)
-											{
-												throw std::runtime_error("For point or spot light items the radius must be greater as zero");
-											}
-											if (lightItem.lightType == Renderer::LightSceneItem::LightType::DIRECTIONAL && lightItem.radius != 0.0f)
-											{
-												throw std::runtime_error("For directional light items the radius must be zero");
-											}
-											if (lightItem.innerAngle < 0.0f)
-											{
-												throw std::runtime_error("The inner spot light angle must be >= 0 degrees");
-											}
-											if (lightItem.outerAngle >= glm::radians(90.0f))
-											{
-												throw std::runtime_error("The outer spot light angle must be < 90 degrees");
-											}
-											if (lightItem.innerAngle >= lightItem.outerAngle)
-											{
-												throw std::runtime_error("The inner spot light angle must be smaller as the outer spot light angle");
-											}
-											if (lightItem.nearClipDistance < 0.0f)
-											{
-												throw std::runtime_error("The spot light near clip distance must be greater as zero");
-											}
-											if (lightItem.iesLightProfileIndex >= 0 && (rapidJsonValueItem.HasMember("InnerAngle") || rapidJsonValueItem.HasMember("OuterAngle")))
-											{
-												throw std::runtime_error("\"InnerAngle\" and \"OuterAngle\" are unused if \"IesLightProfileIndex\" is used");
-											}
-
-											// Write down
-											memoryFile.write(&lightItem, sizeof(Renderer::v1Scene::LightItem));
-											break;
-										}
-
-										case Renderer::SunlightSceneItem::TYPE_ID:
-										{
-											Renderer::v1Scene::SunlightItem sunlightItem;
-
-											// Read properties
-											JsonHelper::optionalTimeOfDayProperty(rapidJsonValueItem, "SunriseTime", sunlightItem.sunriseTime);
-											JsonHelper::optionalTimeOfDayProperty(rapidJsonValueItem, "SunsetTime", sunlightItem.sunsetTime);
-											JsonHelper::optionalAngleProperty(rapidJsonValueItem, "EastDirection", sunlightItem.eastDirection);
-											JsonHelper::optionalAngleProperty(rapidJsonValueItem, "AngleOfIncidence", sunlightItem.angleOfIncidence);
-											JsonHelper::optionalTimeOfDayProperty(rapidJsonValueItem, "TimeOfDay", sunlightItem.timeOfDay);
-
-											// Write down
-											memoryFile.write(&sunlightItem, sizeof(Renderer::v1Scene::SunlightItem));
-											break;
-										}
-
-										case Renderer::MeshSceneItem::TYPE_ID:
-										case Renderer::SkeletonMeshSceneItem::TYPE_ID:
-										{
-											// Skeleton mesh scene item
-											if (Renderer::SkeletonMeshSceneItem::TYPE_ID == typeId)
-											{
-												Renderer::v1Scene::SkeletonMeshItem skeletonMeshItem;
-
-												// Optional skeleton animation: Map the source asset ID to the compiled asset ID
-												skeletonMeshItem.skeletonAnimationAssetId = Renderer::getInvalid<Renderer::AssetId>();
-												JsonHelper::optionalCompiledAssetId(input, rapidJsonValueItem, "SkeletonAnimation", skeletonMeshItem.skeletonAnimationAssetId);
-
-												// Write down
-												memoryFile.write(&skeletonMeshItem, sizeof(Renderer::v1Scene::SkeletonMeshItem));
-											}
-
-											// Mesh scene item
-											Renderer::v1Scene::MeshItem meshItem;
-
-											// Map the source asset ID to the compiled asset ID
-											meshItem.meshAssetId = JsonHelper::getCompiledAssetId(input, rapidJsonValueItem, "Mesh");
-
-											// Optional sub-mesh material asset IDs to be able to overwrite the original material asset ID of sub-meshes
-											std::vector<Renderer::AssetId> subMeshMaterialAssetIds;
-											if (rapidJsonValueItem.HasMember("SubMeshMaterials"))
-											{
-												const rapidjson::Value& rapidJsonValueSubMeshMaterialAssetIds = rapidJsonValueItem["SubMeshMaterials"];
-												const uint32_t numberOfSubMeshMaterialAssetIds = rapidJsonValueSubMeshMaterialAssetIds.Size();
-												subMeshMaterialAssetIds.resize(numberOfSubMeshMaterialAssetIds);
-												for (uint32_t i = 0; i < numberOfSubMeshMaterialAssetIds; ++i)
-												{
-													// Empty string means "Don't overwrite the original material asset ID of the sub-mesh"
-													const std::string valueAsString = rapidJsonValueSubMeshMaterialAssetIds[i].GetString();
-													subMeshMaterialAssetIds[i] = valueAsString.empty() ? Renderer::getInvalid<Renderer::AssetId>() : StringHelper::getAssetIdByString(valueAsString, input);
-												}
-											}
-											meshItem.numberOfSubMeshMaterialAssetIds = static_cast<uint32_t>(subMeshMaterialAssetIds.size());
-
-											// Write down
-											memoryFile.write(&meshItem, sizeof(Renderer::v1Scene::MeshItem));
-											if (!subMeshMaterialAssetIds.empty())
-											{
-												// Write down all sub-mesh material asset IDs
-												memoryFile.write(subMeshMaterialAssetIds.data(), sizeof(Renderer::AssetId) * subMeshMaterialAssetIds.size());
-											}
-											break;
-										}
-
-										case Renderer::SkySceneItem::TYPE_ID:
-										{
-											Renderer::v1Scene::SkyItem skyItem;
-											::detail::readMaterialSceneItem(input, sortedMaterialPropertyVector, rapidJsonValueItem, skyItem);
-
-											// Write down
-											memoryFile.write(&skyItem, sizeof(Renderer::v1Scene::SkyItem));
-											if (!sortedMaterialPropertyVector.empty())
-											{
-												// Write down all material properties
-												memoryFile.write(sortedMaterialPropertyVector.data(), sizeof(Renderer::MaterialProperty) * sortedMaterialPropertyVector.size());
-											}
-											break;
-										}
-
-										case Renderer::VolumeSceneItem::TYPE_ID:
-										{
-											Renderer::v1Scene::VolumeItem volumeItem;
-											::detail::readMaterialSceneItem(input, sortedMaterialPropertyVector, rapidJsonValueItem, volumeItem);
-
-											// Write down
-											memoryFile.write(&volumeItem, sizeof(Renderer::v1Scene::VolumeItem));
-											if (!sortedMaterialPropertyVector.empty())
-											{
-												// Write down all material properties
-												memoryFile.write(sortedMaterialPropertyVector.data(), sizeof(Renderer::MaterialProperty) * sortedMaterialPropertyVector.size());
-											}
-											break;
-										}
-
-										case Renderer::GrassSceneItem::TYPE_ID:
-										{
-											Renderer::v1Scene::GrassItem grassItem;
-											::detail::readMaterialSceneItem(input, sortedMaterialPropertyVector, rapidJsonValueItem, grassItem);
-
-											// Write down
-											memoryFile.write(&grassItem, sizeof(Renderer::v1Scene::GrassItem));
-											if (!sortedMaterialPropertyVector.empty())
-											{
-												// Write down all material properties
-												memoryFile.write(sortedMaterialPropertyVector.data(), sizeof(Renderer::MaterialProperty) * sortedMaterialPropertyVector.size());
-											}
-											break;
-										}
-
-										case Renderer::TerrainSceneItem::TYPE_ID:
-										{
-											Renderer::v1Scene::TerrainItem terrainItem;
-											::detail::readMaterialSceneItem(input, sortedMaterialPropertyVector, rapidJsonValueItem, terrainItem);
-
-											// Write down
-											memoryFile.write(&terrainItem, sizeof(Renderer::v1Scene::TerrainItem));
-											if (!sortedMaterialPropertyVector.empty())
-											{
-												// Write down all material properties
-												memoryFile.write(sortedMaterialPropertyVector.data(), sizeof(Renderer::MaterialProperty) * sortedMaterialPropertyVector.size());
-											}
-											break;
-										}
-
-										case Renderer::ParticlesSceneItem::TYPE_ID:
-										{
-											Renderer::v1Scene::ParticlesItem particlesItem;
-											::detail::readMaterialSceneItem(input, sortedMaterialPropertyVector, rapidJsonValueItem, particlesItem);
-
-											// Write down
-											memoryFile.write(&particlesItem, sizeof(Renderer::v1Scene::ParticlesItem));
-											if (!sortedMaterialPropertyVector.empty())
-											{
-												// Write down all material properties
-												memoryFile.write(sortedMaterialPropertyVector.data(), sizeof(Renderer::MaterialProperty) * sortedMaterialPropertyVector.size());
-											}
-											break;
-										}
 									}
 								}
 							}

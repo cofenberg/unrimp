@@ -22,14 +22,15 @@
 //[ Includes                                              ]
 //[-------------------------------------------------------]
 #include "Renderer/Public/Resource/Scene/Factory/SceneFactory.h"
-#include "Renderer/Public/Resource/Scene/Item/Sky/SkySceneItem.h"
-#include "Renderer/Public/Resource/Scene/Item/Volume/VolumeSceneItem.h"
-#include "Renderer/Public/Resource/Scene/Item/Grass/GrassSceneItem.h"
-#include "Renderer/Public/Resource/Scene/Item/Terrain/TerrainSceneItem.h"
 #include "Renderer/Public/Resource/Scene/Item/Camera/CameraSceneItem.h"
+#include "Renderer/Public/Resource/Scene/Item/Debug/DebugDrawSceneItem.h"
+#include "Renderer/Public/Resource/Scene/Item/Grass/GrassSceneItem.h"
 #include "Renderer/Public/Resource/Scene/Item/Light/SunlightSceneItem.h"
-#include "Renderer/Public/Resource/Scene/Item/Particles/ParticlesSceneItem.h"
 #include "Renderer/Public/Resource/Scene/Item/Mesh/SkeletonMeshSceneItem.h"
+#include "Renderer/Public/Resource/Scene/Item/Particles/ParticlesSceneItem.h"
+#include "Renderer/Public/Resource/Scene/Item/Sky/SkySceneItem.h"
+#include "Renderer/Public/Resource/Scene/Item/Terrain/TerrainSceneItem.h"
+#include "Renderer/Public/Resource/Scene/Item/Volume/VolumeSceneItem.h"
 
 
 //[-------------------------------------------------------]
@@ -52,16 +53,17 @@ namespace Renderer
 		// Evaluate the scene item type, sorted by usual frequency
 		switch (sceneItemTypeId)
 		{
-			CASE_VALUE(MeshSceneItem)
+			CASE_VALUE(CameraSceneItem)
+			CASE_VALUE(DebugDrawSceneItem)
+			CASE_VALUE(GrassSceneItem)
 			CASE_VALUE(LightSceneItem)
+			CASE_VALUE(SunlightSceneItem)
+			CASE_VALUE(MeshSceneItem)
 			CASE_VALUE(SkeletonMeshSceneItem)
 			CASE_VALUE(ParticlesSceneItem)
-			CASE_VALUE(CameraSceneItem)
-			CASE_VALUE(SunlightSceneItem)
 			CASE_VALUE(SkySceneItem)
-			CASE_VALUE(VolumeSceneItem)
-			CASE_VALUE(GrassSceneItem)
 			CASE_VALUE(TerrainSceneItem)
+			CASE_VALUE(VolumeSceneItem)
 		}
 
 		// Undefine helper macro

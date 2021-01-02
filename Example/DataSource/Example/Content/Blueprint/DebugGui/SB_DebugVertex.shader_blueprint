@@ -31,12 +31,12 @@
 // Attribute input / output
 INPUT_BEGIN
 	INPUT_VERTEX_POSITION	(0, float2, Position)		// GUI space vertex position as input
-	INPUT_TEXTURE_COORDINATE(1, float2, TexCoord, 0)	// 32 bit texture coordinate
-	INPUT_VERTEX_COLOR	 	(2, float4, Color)			// Vertex color
+	INPUT_TEXTURE_COORDINATE(1, float2, TexCoord, 0)	// Normalized 32 bit texture coordinate
+	INPUT_VERTEX_COLOR	 	(2, float4, Color)			// sRGB vertex color
 INPUT_END
 OUTPUT_BEGIN
-	OUTPUT_TEXTURE_COORDINATE(1, float4, TexCoordVS, 0)	// xy = glyph texture coordinate, zw = background texture coordinate
-	OUTPUT_TEXTURE_COORDINATE(2, float4, ColorVS, 1)	// Vertex color
+	OUTPUT_TEXTURE_COORDINATE(1, float4, TexCoordVS, 0)	// xy = normalized glyph texture coordinate, zw = normalized background texture coordinate
+	OUTPUT_TEXTURE_COORDINATE(2, float4, ColorVS, 1)	// sRGB vertex color
 	OUTPUT_POSITION			 (0)						// Clip space vertex position as output, left/bottom is (-1,-1) and right/top is (1,1)
 OUTPUT_END
 

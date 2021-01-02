@@ -31,6 +31,7 @@
 #include "Renderer/Public/Resource/RendererResourceManager.h"
 #include "Renderer/Public/Resource/Mesh/MeshResourceManager.h"
 #include "Renderer/Public/Resource/Scene/SceneResourceManager.h"
+#include "Renderer/Public/Resource/Scene/Item/Debug/DebugDrawSceneItem.h"
 #include "Renderer/Public/Resource/ShaderPiece/ShaderPieceResourceManager.h"
 #include "Renderer/Public/Resource/ShaderBlueprint/ShaderBlueprintResourceManager.h"
 #include "Renderer/Public/Resource/VertexAttributes/VertexAttributesResourceManager.h"
@@ -156,6 +157,7 @@ namespace Renderer
 		#ifdef RENDERER_IMGUI
 			DebugGuiManager::getDefaultTextureAssetIds(assetIds);
 		#endif
+		DebugDrawSceneItem::getDefaultTextureAssetIds(assetIds);
 	}
 
 

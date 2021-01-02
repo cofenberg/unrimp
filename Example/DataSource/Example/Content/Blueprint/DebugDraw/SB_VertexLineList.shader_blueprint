@@ -1,0 +1,84 @@
+/*********************************************************\
+ * Copyright (c) 2012-2021 The Unrimp Team
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of this software
+ * and associated documentation files (the "Software"), to deal in the Software without
+ * restriction, including without limitation the rights to use, copy, modify, merge, publish,
+ * distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the
+ * Software is furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all copies or
+ * substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING
+ * BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+ * NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
+ * DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+ * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+\*********************************************************/
+
+
+//[-------------------------------------------------------]
+//[ Definitions                                           ]
+//[-------------------------------------------------------]
+@includepiece(../SharedShaderPiece/SP_Core.asset)
+	@insertpiece(SetCrossPlatformSettings)
+
+
+//[-------------------------------------------------------]
+//[ Input / output                                        ]
+//[-------------------------------------------------------]
+// Attribute input / output
+INPUT_BEGIN_VERTEX
+	INPUT_VERTEX_POSITION(0, float3, Position)	// Object space vertex position
+	INPUT_VERTEX_COLOR	 (1, float3, Color)		// Linear space vertex color
+INPUT_END_VERTEX
+OUTPUT_BEGIN_VERTEX
+	OUTPUT_TEXTURE_COORDINATE(1, float4, ColorVS, 0)	// sRGB vertex color
+	OUTPUT_POSITION(0)									// Clip space vertex position as output, left/bottom is (-1,-1) and right/top is (1,1)
+OUTPUT_END_VERTEX
+
+// Uniform buffers
+struct PassDataStruct
+{
+	float4x4 WorldSpaceToClipSpaceMatrix[2];
+};
+UNIFORM_BUFFER_BEGIN(0, 0, PassUniformBuffer, 0)
+	PassDataStruct PassData;
+UNIFORM_BUFFER_END
+struct InstanceDataStruct
+{
+	float3 WorldPosition;
+	uint   MaterialIndex;
+};
+UNIFORM_BUFFER_BEGIN(1, 0, InstanceUniformBuffer, 1)
+	InstanceDataStruct InstanceDataArray[FAST_SHADER_BUILD_HACK(4096)];	// 64 KiB
+UNIFORM_BUFFER_END
+
+
+//[-------------------------------------------------------]
+//[ Functions                                             ]
+//[-------------------------------------------------------]
+@includepiece(../SharedShaderPiece/SP_Color.asset)
+	@insertpiece(DefineLinearSpaceToGammaSpace3)
+
+
+//[-------------------------------------------------------]
+//[ Main                                                  ]
+//[-------------------------------------------------------]
+MAIN_BEGIN_VERTEX
+	// Get object space to world space position
+	float3 worldPosition = InstanceDataArray[0].WorldPosition;
+
+	// Get the object space position
+	float3 objectSpacePosition = MAIN_INPUT(Position);
+
+	// Calculate the world space vertex position
+	float3 worldSpacePosition = objectSpacePosition + worldPosition;
+
+	// Calculate the clip space vertex position, left/bottom is (-1,-1) and right/top is (1,1)
+	MAIN_OUTPUT_POSITION = MATRIX_MUL(PassData.WorldSpaceToClipSpaceMatrix[MAIN_INPUT_STEREO_EYE_INDEX], float4(worldSpacePosition, 1.0f));
+
+	// Pass through the vertex color
+	MAIN_OUTPUT(ColorVS) = float4(LinearSpaceToGammaSpace3(MAIN_INPUT(Color)), 1.0f);
+MAIN_END_VERTEX(MAIN_OUTPUT_POSITION)

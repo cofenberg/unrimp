@@ -65,7 +65,7 @@ UNIFORM_BUFFER_END
 struct ParticleDataStruct
 {
 	float4 PositionSize;	// Object space particle xyz-position, w = particle size
-	float4 Color;			// Linear RGBA particle color and opacity
+	float4 Color;			// Linear space RGB particle color and opacity
 };
 STRUCTURED_BUFFER(2, 0, ParticleStructuredBuffer, 0, ParticleDataStruct, ParticleData)
 

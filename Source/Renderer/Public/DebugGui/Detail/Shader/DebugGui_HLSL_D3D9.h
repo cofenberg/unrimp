@@ -36,7 +36,7 @@ struct VS_OUTPUT
 {
 	float4 Position : SV_POSITION;	// Clip space vertex position as output, left/bottom is (-1,-1) and right/top is (1,1)
 	float2 TexCoord : TEXCOORD0;	// Normalized texture coordinate as output
-	float4 Color    : COLOR0;
+	float4 Color    : COLOR0;		// sRGB vertex color
 };
 
 // Uniforms
@@ -45,7 +45,7 @@ uniform float4x4 ObjectSpaceToClipSpaceMatrix;
 // Programs
 VS_OUTPUT main(float2 Position : POSITION,	// Clip space vertex position as input, left/bottom is (-1,-1) and right/top is (1,1)
 			   float2 TexCoord : TEXCOORD0,	// Normalized texture coordinate as input
-			   float4 Color    : COLOR0)
+			   float4 Color    : COLOR0)	// sRGB vertex color
 {
 	VS_OUTPUT output;
 
@@ -74,6 +74,7 @@ fragmentShaderSourceCode = R"(
 uniform sampler2D GlyphMap : register(s0);	// Glyph atlas texture map
 
 // Programs
+// -> Input vertex color is in sRGB, so is the fragment color output
 float4 main(float4 Position : SV_POSITION, float2 TexCoord : TEXCOORD0, float4 Color : COLOR0) : SV_TARGET
 {
 	// Fetch the texel at the given texture coordinate and return its color

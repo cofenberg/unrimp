@@ -73,6 +73,7 @@ namespace Renderer
 		MaterialBufferSlot(materialResource),
 		mMaterialTechniqueId(materialTechniqueId),
 		mMaterialBlueprintResourceId(materialBlueprintResourceId),
+		mStructuredBufferRootParameterIndex(~0u),
 		mSerializedGraphicsPipelineStateHash(getInvalid<uint32_t>())
 	{
 		MaterialBufferManager* materialBufferManager = getMaterialBufferManager();
@@ -286,8 +287,34 @@ namespace Renderer
 		const Textures& textures = getTextures(renderer);
 		if (textures.empty())
 		{
-			setInvalid(resourceGroupRootParameterIndex);
-			*resourceGroup = nullptr;
+			if (nullptr != mStructuredBufferPtr)
+			{
+				// Create resource group, if needed
+				if (nullptr == mResourceGroup)
+				{
+					// Get material blueprint resource
+					const MaterialBlueprintResource* materialBlueprintResource = getMaterialResourceManager().getRenderer().getMaterialBlueprintResourceManager().tryGetById(mMaterialBlueprintResourceId);
+					RHI_ASSERT(renderer.getContext(), nullptr != materialBlueprintResource, "Invalid material blueprint resource")
+
+					// Create texture resource group: First entry is the structured buffer
+					std::vector<Rhi::IResource*> resources;
+					std::vector<Rhi::ISamplerState*> samplerStates;
+					resources.resize(1);
+					samplerStates.resize(1);
+					resources[0] = mStructuredBufferPtr;
+					samplerStates[0] = nullptr;
+					mResourceGroup = renderer.getRendererResourceManager().createResourceGroup(*materialBlueprintResource->getRootSignaturePtr(), mStructuredBufferRootParameterIndex, static_cast<uint32_t>(resources.size()), resources.data(), samplerStates.data() RHI_RESOURCE_DEBUG_NAME("Material technique"));
+				}
+
+				// Tell the caller about the resource group
+				resourceGroupRootParameterIndex = mStructuredBufferRootParameterIndex;
+				*resourceGroup = mResourceGroup;
+			}
+			else
+			{
+				setInvalid(resourceGroupRootParameterIndex);
+				*resourceGroup = nullptr;
+			}
 		}
 		else
 		{
@@ -330,6 +357,10 @@ namespace Renderer
 				uint32_t textureStartIndex = 0;
 				if (nullptr != mStructuredBufferPtr)
 				{
+					// Sanity check
+					// TODO(co) All resources need to be inside the same resource group, this needs to be guaranteed by design
+					RHI_ASSERT(renderer.getContext(), mStructuredBufferRootParameterIndex == textures[0].rootParameterIndex, "Invalid structured buffer root parameter index")
+
 					// First entry is the structured buffer
 					resources.resize(numberOfTextures + 1);
 					samplerStates.resize(numberOfTextures + 1);

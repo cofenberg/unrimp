@@ -1,0 +1,14 @@
+{
+	"Format":
+	{
+		"Type": "MaterialAsset",
+		"Version": "1"
+	},
+	"MaterialAsset":
+	{
+		"Techniques":
+		{
+			"Debug": "./MB_DebugDrawPointList.asset"
+		}
+	}
+}

@@ -36,8 +36,8 @@ vertexShaderSourceCode = R"(#version 300 es	// OpenGL ES 3.0
 in  highp vec2 Position;	// Object space vertex position as input, left/bottom is (0,0) and right/top is (1,1)
 in  highp vec2 TexCoord;	// Normalized texture coordinate as input
 out highp vec2 TexCoordVs;	// Normalized texture coordinate as output
-in  highp vec4 Color;		// Color as input
-out highp vec4 ColorVs;		// Color as output
+in  highp vec4 Color;		// sRGB vertex color as input
+out highp vec4 ColorVs;		// sRGB vertex color as output
 
 // Uniforms
 layout(std140) uniform UniformBlockDynamicVs
@@ -68,8 +68,8 @@ fragmentShaderSourceCode = R"(#version 300 es	// OpenGL ES 3.0
 
 // Attribute input/output
 in  mediump vec2 TexCoordVs;	// Normalized texture coordinate as input
-in  mediump vec4 ColorVs;
-out highp   vec4 OutputColor;	// Output variable for fragment color
+in  mediump vec4 ColorVs;		// sRGB vertex color
+out highp   vec4 OutputColor;	// Output variable for sRGB fragment color
 
 // Uniforms
 uniform mediump sampler2D GlyphMap;	// Glyph atlas texture map

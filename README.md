@@ -171,6 +171,7 @@ Renderer (e.g. "The Game")
 		- Distance clouds
 		- Sun
 - Volume rendering
+- [Debug draw](https://github.com/glampert/debug-draw) functionality
 
 
 Renderer Toolkit (e.g. "The Editor")
