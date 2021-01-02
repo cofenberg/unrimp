@@ -35,7 +35,7 @@ unrimp_add_conditional_rhi_definitions()
 ## Includes
 ##################################################
 include_directories(${CMAKE_SOURCE_DIR}/Source)
-include_directories(${CMAKE_SOURCE_DIR}/External/Renderer)	# For "glm", "mikktspace" and "acl"
+include_directories(${CMAKE_SOURCE_DIR}/External/Renderer)	# For "glm", "MikkTSpace" and "acl"
 include_directories(${CMAKE_SOURCE_DIR}/External/Renderer/crunch/inc)
 include_directories(${CMAKE_SOURCE_DIR}/External/Renderer/acl)
 include_directories(${CMAKE_SOURCE_DIR}/External/RendererToolkit)	# For "SimpleFileWatcher" and "ies"
@@ -56,8 +56,8 @@ set(EXTERNAL_SOURCE_CODES
 	# crunch external library
 	${CMAKE_SOURCE_DIR}/External/Renderer/crunch/crunchUnityBuild1.cpp
 	${CMAKE_SOURCE_DIR}/External/Renderer/crunch/crunchUnityBuild2.cpp
-	# mikktspace external library
-	${CMAKE_SOURCE_DIR}/External/Renderer/mikktspace/mikktspace.c
+	# MikkTSpace external library
+	${CMAKE_SOURCE_DIR}/External/Renderer/MikkTSpace/mikktspace.c
 	# Assimp external library
 	${CMAKE_SOURCE_DIR}/External/RendererToolkit/Assimp/AssimpUnityBuild1.cpp
 	${CMAKE_SOURCE_DIR}/External/RendererToolkit/Assimp/AssimpUnityBuild2.cpp

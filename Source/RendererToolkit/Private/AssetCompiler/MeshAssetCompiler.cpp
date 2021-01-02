@@ -54,7 +54,7 @@ PRAGMA_WARNING_PUSH
 	#include <meshoptimizer/meshoptimizer.h>
 PRAGMA_WARNING_POP
 
-#include <mikktspace/mikktspace.h>
+#include <MikkTSpace/mikktspace.h>
 
 // Disable warnings in external headers, we can't fix them
 PRAGMA_WARNING_PUSH
@@ -77,7 +77,7 @@ PRAGMA_WARNING_POP
 namespace
 {
 
-	namespace mikktspace
+	namespace MikkTSpace
 	{
 
 
@@ -149,7 +149,7 @@ namespace
 		}
 
 
-	} // mikktspace
+	} // MikkTSpace
 
 	namespace meshoptimizer
 	{
@@ -478,13 +478,13 @@ namespace
 				// Get the used mesh
 				aiMesh& assimpMesh = *assimpScene.mMeshes[assimpNode.mMeshes[i]];
 
-				// Use "mikktspace" by Morten S. Mikkelsen for semi-standard tangent space generation and overwrite what Assimp calculated (see e.g. https://wiki.blender.org/index.php/Dev:Shading/Tangent_Space_Normal_Maps for background information)
+				// Use "MikkTSpace" by Morten S. Mikkelsen ( http://mmikkelsen3d.blogspot.com/ ) for semi-standard tangent space generation and overwrite what Assimp calculated (see http://www.mikktspace.com/ for background information)
 				if (0 != assimpMesh.mNumUVComponents[0] && nullptr != assimpMesh.mTangents && nullptr != assimpMesh.mBitangents)
 				{
-					mikktspace::g_MikkTSpaceContext.m_pUserData = reinterpret_cast<void*>(&assimpMesh);
-					if (genTangSpaceDefault(&mikktspace::g_MikkTSpaceContext) == 0)
+					MikkTSpace::g_MikkTSpaceContext.m_pUserData = reinterpret_cast<void*>(&assimpMesh);
+					if (genTangSpaceDefault(&MikkTSpace::g_MikkTSpaceContext) == 0)
 					{
-						throw std::runtime_error("mikktspace for semi-standard tangent space generation failed");
+						throw std::runtime_error("MikkTSpace for semi-standard tangent space generation failed");
 					}
 				}
 
@@ -741,17 +741,17 @@ namespace RendererToolkit
 		{
 			Renderer::MemoryFile memoryFile(0, 42 * 1024);
 
-			// Setup "mikktspace" by Morten S. Mikkelsen for semi-standard tangent space generation (see e.g. https://wiki.blender.org/index.php/Dev:Shading/Tangent_Space_Normal_Maps for background information)
+			// Setup "MikkTSpace" by Morten S. Mikkelsen ( http://mmikkelsen3d.blogspot.com/ ) for semi-standard tangent space generation (see http://www.mikktspace.com/ for background information)
 			SMikkTSpaceInterface mikkTSpaceInterface;
-			mikkTSpaceInterface.m_getNumFaces		   = mikktspace::getNumFaces;
-			mikkTSpaceInterface.m_getNumVerticesOfFace = mikktspace::getNumVerticesOfFace;
-			mikkTSpaceInterface.m_getPosition		   = mikktspace::getPosition;
-			mikkTSpaceInterface.m_getNormal			   = mikktspace::getNormal;
-			mikkTSpaceInterface.m_getTexCoord		   = mikktspace::getTexCoord;
+			mikkTSpaceInterface.m_getNumFaces		   = MikkTSpace::getNumFaces;
+			mikkTSpaceInterface.m_getNumVerticesOfFace = MikkTSpace::getNumVerticesOfFace;
+			mikkTSpaceInterface.m_getPosition		   = MikkTSpace::getPosition;
+			mikkTSpaceInterface.m_getNormal			   = MikkTSpace::getNormal;
+			mikkTSpaceInterface.m_getTexCoord		   = MikkTSpace::getTexCoord;
 			mikkTSpaceInterface.m_setTSpaceBasic	   = nullptr;
-			mikkTSpaceInterface.m_setTSpace			   = mikktspace::setTSpace;
-			mikktspace::g_MikkTSpaceContext.m_pInterface = &mikkTSpaceInterface;
-			mikktspace::g_MikkTSpaceContext.m_pUserData  = nullptr;
+			mikkTSpaceInterface.m_setTSpace			   = MikkTSpace::setTSpace;
+			MikkTSpace::g_MikkTSpaceContext.m_pInterface = &mikkTSpaceInterface;
+			MikkTSpace::g_MikkTSpaceContext.m_pUserData  = nullptr;
 
 			// Create an instance of the Assimp importer class
 			AssimpLogStream assimpLogStream;
@@ -760,7 +760,7 @@ namespace RendererToolkit
 			// assimpImporter.SetPropertyInteger(AI_CONFIG_PP_LBW_MAX_WEIGHTS, 4);	// We're using the "aiProcess_LimitBoneWeights"-flag, 4 is already the default value (don't delete this reminder comment)
 
 			// Load the given mesh
-			// -> We're using "mikktspace" by Morten S. Mikkelsen for semi-standard tangent space generation (see e.g. https://wiki.blender.org/index.php/Dev:Shading/Tangent_Space_Normal_Maps for background information)
+			// -> We're using "MikkTSpace" by Morten S. Mikkelsen ( http://mmikkelsen3d.blogspot.com/ ) for semi-standard tangent space generation (see http://www.mikktspace.com/ for background information)
 			// -> "aiProcess_CalcTangentSpace" from Assimp is still used to allocate internal memory and enable Assimp to perform work regarding e.g. shared vertices
 			assimpImporter.SetPropertyInteger(AI_CONFIG_PP_SBP_REMOVE, aiPrimitiveType_LINE | aiPrimitiveType_POINT);	// Tell ASSIMP that we don't support lines nor points
 			const aiScene* assimpScene = assimpImporter.ReadFile(virtualInputFilename.c_str(), AssimpHelper::getAssimpFlagsByRapidJsonValue(rapidJsonValueMeshAssetCompiler, "ImportFlags"));

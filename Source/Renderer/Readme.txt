@@ -29,7 +29,7 @@ Renderer.
 - ImGui (directly compiled and linked in)
 - ImGuizmo (directly compiled and linked in)
 - lz4 (directly compiled and linked in)
-- mikktspace (directly compiled and linked in)
+- MikkTSpace (directly compiled and linked in)
 - MojoShader (directly compiled and linked in)
 - OpenVR (header with dynamic runtime linking)
 - PhysicsFS (dependency of projects using the provided interface implementation, directly compiled and linked in)

@@ -1,4 +1,4 @@
-mikktspace - result of master's thesis "Simulation of Wrinkled Surfaces Revisited" by Morten S. Mikkelsen ( http://mmikkelsen3d.blogspot.com/ )
+MikkTSpace - result of master's thesis "Simulation of Wrinkled Surfaces Revisited" by Morten S. Mikkelsen ( http://mmikkelsen3d.blogspot.com/ )
 	Semi-standard for tangent space generation
 	http://image.diku.dk/projects/media/morten.mikkelsen.08.pdf
 - License
@@ -21,4 +21,4 @@ mikktspace - result of master's thesis "Simulation of Wrinkled Surfaces Revisite
 	 *     misrepresented as being the original software.
 	 *  3. This notice may not be removed or altered from any source distribution.
 	 */
-- Background: https://wiki.blender.org/index.php/Dev:Shading/Tangent_Space_Normal_Maps
+- Background: http://www.mikktspace.com/

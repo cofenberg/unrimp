@@ -39,7 +39,7 @@ PRAGMA_WARNING_PUSH
 	#include <OpenVR/openvr.h>
 PRAGMA_WARNING_POP
 
-#include <mikktspace/mikktspace.h>
+#include <MikkTSpace/mikktspace.h>
 
 // Disable warnings in external headers, we can't fix them
 PRAGMA_WARNING_PUSH
@@ -60,7 +60,7 @@ PRAGMA_WARNING_POP
 namespace
 {
 
-	namespace mikktspace
+	namespace MikkTSpace
 	{
 
 
@@ -140,7 +140,7 @@ namespace
 		}
 
 
-	} // mikktspace
+	} // MikkTSpace
 
 	namespace detail
 	{
@@ -234,17 +234,17 @@ namespace Renderer
 			return;
 		}
 
-		// Setup "mikktspace" by Morten S. Mikkelsen for semi-standard tangent space generation (see e.g. https://wiki.blender.org/index.php/Dev:Shading/Tangent_Space_Normal_Maps for background information)
+		// Setup "MikkTSpace" by Morten S. Mikkelsen ( http://mmikkelsen3d.blogspot.com/ ) for semi-standard tangent space generation (see http://www.mikktspace.com/ for background information)
 		SMikkTSpaceInterface mikkTSpaceInterface;
-		mikkTSpaceInterface.m_getNumFaces		   = mikktspace::getNumFaces;
-		mikkTSpaceInterface.m_getNumVerticesOfFace = mikktspace::getNumVerticesOfFace;
-		mikkTSpaceInterface.m_getPosition		   = mikktspace::getPosition;
-		mikkTSpaceInterface.m_getNormal			   = mikktspace::getNormal;
-		mikkTSpaceInterface.m_getTexCoord		   = mikktspace::getTexCoord;
+		mikkTSpaceInterface.m_getNumFaces		   = MikkTSpace::getNumFaces;
+		mikkTSpaceInterface.m_getNumVerticesOfFace = MikkTSpace::getNumVerticesOfFace;
+		mikkTSpaceInterface.m_getPosition		   = MikkTSpace::getPosition;
+		mikkTSpaceInterface.m_getNormal			   = MikkTSpace::getNormal;
+		mikkTSpaceInterface.m_getTexCoord		   = MikkTSpace::getTexCoord;
 		mikkTSpaceInterface.m_setTSpaceBasic	   = nullptr;
-		mikkTSpaceInterface.m_setTSpace			   = mikktspace::setTSpace;
-		mikktspace::g_MikkTSpaceContext.m_pInterface = &mikkTSpaceInterface;
-		mikktspace::g_MikkTSpaceContext.m_pUserData  = this;
+		mikkTSpaceInterface.m_setTSpace			   = MikkTSpace::setTSpace;
+		MikkTSpace::g_MikkTSpaceContext.m_pInterface = &mikkTSpaceInterface;
+		MikkTSpace::g_MikkTSpaceContext.m_pUserData  = this;
 
 		{ // Get the vertex buffer and index buffer data
 			mMinimumBoundingBoxPosition = glm::vec3(std::numeric_limits<float>::max());
@@ -263,10 +263,10 @@ namespace Renderer
 				const vr::RenderModel_Vertex_t* currentVrRenderModelVertex = mVrRenderModel->rVertexData;
 				mTangentsData.resize(mVrRenderModel->unVertexCount);
 				mBinormalsData.resize(mVrRenderModel->unVertexCount);
-				if (genTangSpaceDefault(&mikktspace::g_MikkTSpaceContext) == 0)
+				if (genTangSpaceDefault(&MikkTSpace::g_MikkTSpaceContext) == 0)
 				{
 					// TODO(co) Error handling
-					RHI_ASSERT(mRenderer.getContext(), false, "mikktspace for semi-standard tangent space generation failed")
+					RHI_ASSERT(mRenderer.getContext(), false, "MikkTSpace for semi-standard tangent space generation failed")
 				}
 				for (uint32_t i = 0; i < numberOfVertices; ++i, ++currentVrRenderModelVertex)
 				{

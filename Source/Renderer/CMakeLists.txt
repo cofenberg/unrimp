@@ -55,7 +55,7 @@ endif()
 ## Includes
 ##################################################
 include_directories(${CMAKE_SOURCE_DIR}/Source)
-include_directories(${CMAKE_SOURCE_DIR}/External/Renderer)	# For "glm", "lz4", "xsimd", "MojoShader", "mikktspace", "acl", "ImGui", "ImGuizmo" and "OpenVR"
+include_directories(${CMAKE_SOURCE_DIR}/External/Renderer)	# For "glm", "lz4", "xsimd", "MojoShader", "MikkTSpace", "acl", "ImGui", "ImGuizmo" and "OpenVR"
 include_directories(${CMAKE_SOURCE_DIR}/External/Renderer/crunch/inc)
 include_directories(${CMAKE_SOURCE_DIR}/External/Renderer/acl)
 
@@ -71,7 +71,7 @@ set(EXTERNAL_SOURCE_CODES
 	${CMAKE_SOURCE_DIR}/External/Renderer/MojoShader/mojoshader_common.cpp
 	${CMAKE_SOURCE_DIR}/External/Renderer/MojoShader/mojoshader_lexer.cpp
 	${CMAKE_SOURCE_DIR}/External/Renderer/MojoShader/mojoshader_preprocessor.cpp
-	${CMAKE_SOURCE_DIR}/External/Renderer/mikktspace/mikktspace.c
+	${CMAKE_SOURCE_DIR}/External/Renderer/MikkTSpace/mikktspace.c
 )
 if(RENDERER_IMGUI)
 	set(EXTERNAL_SOURCE_CODES

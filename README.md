@@ -184,7 +184,7 @@ Renderer Toolkit (e.g. "The Editor")
 	- Checks the material blueprint resources for valid uniform buffer packing rules
 - Mesh compiler
 	- Using [Assimp](http://www.assimp.org/) (Open Asset Import Library) for mesh import and post processing like joining identical vertices
-	- Using [mikktspace](https://wiki.blender.org/index.php/Dev:Shading/Tangent_Space_Normal_Maps) by Morten S. Mikkelsen for semi-standard mesh tangent space generation
+	- Using [MikkTSpace](http://www.mikktspace.com/) by [Morten S. Mikkelsen](http://mmikkelsen3d.blogspot.com/) for semi-standard mesh tangent space generation
 	- Using [meshoptimizer](https://github.com/zeux/meshoptimizer) for mesh optimization and LOD generation
 - Texture compiler
 	- Using enhanced [Unity Crunch](https://github.com/Unity-Technologies/crunch/tree/unity) (better encoder performance and ETC2 support) version of [Crunch](https://github.com/BinomialLLC/crunch) for mipmap generation and compression
