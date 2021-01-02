@@ -156,8 +156,9 @@ namespace Renderer
 
 	void CompositorWorkspaceInstance::execute(Rhi::IRenderTarget& renderTarget, const CameraSceneItem* cameraSceneItem, const LightSceneItem* lightSceneItem, bool singlePassStereoInstancing)
 	{
-		// Sanity check
-		RHI_ASSERT(mRenderer.getContext(), mCommandBuffer.isEmpty(), "The command buffer isn't empty")
+		// Clear the command buffer from the previous frame
+		// -> We didn't request a clear together with the dispatch so e.g. "Renderer::DebugGuiHelper::drawMetricsWindow()" can show some command buffer statistics
+		mCommandBuffer.clear();
 
 		// We could directly clear the render queue index ranges renderable managers as soon as the frame rendering has been finished to avoid evil dangling pointers,
 		// but on the other hand a responsible user might be interested in the potentially on-screen renderable managers to perform work which should only be performed
@@ -269,7 +270,7 @@ namespace Renderer
 							Rhi::Command::EndQuery::create(mCommandBuffer, *mPipelineStatisticsQueryPoolPtr, mCurrentPipelineStatisticsQueryIndex);
 						}
 					#endif
-					mCommandBuffer.dispatchToRhiAndClear(rhi);
+					mCommandBuffer.dispatchToRhi(rhi);
 
 					// The command buffer has been dispatched, inform everyone who cares about this
 					for (const CompositorNodeInstance* compositorNodeInstance : mSequentialCompositorNodeInstances)
