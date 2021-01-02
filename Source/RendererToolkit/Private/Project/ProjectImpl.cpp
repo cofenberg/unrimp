@@ -1,5 +1,5 @@
 /*********************************************************\
- * Copyright (c) 2012-2020 The Unrimp Team
+ * Copyright (c) 2012-2021 The Unrimp Team
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of this software
  * and associated documentation files (the "Software"), to deal in the Software without
@@ -854,7 +854,7 @@ namespace RendererToolkit
 				{
 					"Metadata":
 					{
-						"Copyright": "Copyright (c) 2012-2020 The Unrimp Team"
+						"Copyright": "Copyright (c) 2012-2021 The Unrimp Team"
 					},
 					"Compiler":
 					{

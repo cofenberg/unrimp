@@ -8,7 +8,7 @@
 	{
 		"ProjectMetadata":
 		{
-			"Copyright": "Copyright (c) 2012-2020 The Unrimp Team"
+			"Copyright": "Copyright (c) 2012-2021 The Unrimp Team"
 		},
 		"AssetPackages": ["Content"],
 		"TargetsFilename": "Example.targets",
