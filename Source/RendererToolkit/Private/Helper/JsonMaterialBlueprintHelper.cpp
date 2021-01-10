@@ -1725,7 +1725,8 @@ namespace RendererToolkit
 								if (sourceAssetIdAsString.length() > 0 && sourceAssetIdAsString[0] == '@')
 								{
 									// Reference a material property value
-									const Renderer::MaterialPropertyId materialPropertyId(sourceAssetIdAsString.substr(1).c_str());
+									const std::string materialPropertyName = sourceAssetIdAsString.substr(1);
+									const Renderer::MaterialPropertyId materialPropertyId(materialPropertyName.c_str());
 
 									// Figure out the material property value
 									Renderer::MaterialProperties::SortedPropertyVector::const_iterator iterator = std::lower_bound(sortedMaterialPropertyVector.cbegin(), sortedMaterialPropertyVector.cend(), materialPropertyId, Renderer::detail::OrderByMaterialPropertyId());
@@ -1740,6 +1741,14 @@ namespace RendererToolkit
 											const Renderer::v1MaterialBlueprint::Texture materialBlueprintTexture(rootParameterIndex, Renderer::MaterialProperty(materialPropertyId, usage, materialProperty), fallbackTextureAssetId, rgbHardwareGammaCorrection, samplerStateIndex);
 											file.write(&materialBlueprintTexture, sizeof(Renderer::v1MaterialBlueprint::Texture));
 										}
+										else
+										{
+											throw std::runtime_error("Failed to locate the material property \"" + materialPropertyName + "\" referenced by a texture with \"MATERIAL_REFERENCE\"-usage and the value type \"TEXTURE_ASSET_ID\"");
+										}
+									}
+									else
+									{
+										throw std::runtime_error("Failed to locate the material property \"" + materialPropertyName + "\" referenced by a texture with \"MATERIAL_REFERENCE\"-usage and the value type \"TEXTURE_ASSET_ID\"");
 									}
 								}
 								else
