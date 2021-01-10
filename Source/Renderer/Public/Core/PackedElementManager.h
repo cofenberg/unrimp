@@ -116,6 +116,7 @@ namespace Renderer
 
 		[[nodiscard]] inline ELEMENT_TYPE& addElement()
 		{
+			ASSERT((mNumberOfElements + 1) < MAXIMUM_NUMBER_OF_ELEMENTS, "Fixed build in packed element manager capacity exceeded")
 			Index& index = mIndices[mFreeListDequeue];
 			mFreeListDequeue = index.next;
 			index.id += NEW_OBJECT_ID_ADD;
