@@ -103,7 +103,7 @@ namespace Renderer
 		mRenderer(renderer),
 		mShaderCacheManager(*this)
 	{
-		mInternalResourceManager = new ResourceManagerTemplate<ShaderBlueprintResource, ShaderBlueprintResourceLoader, ShaderBlueprintResourceId, 64>(renderer, *this);
+		mInternalResourceManager = new ResourceManagerTemplate<ShaderBlueprintResource, ShaderBlueprintResourceLoader, ShaderBlueprintResourceId, 128>(renderer, *this);
 
 		// Gather RHI shader properties
 		// -> Write the RHI name as well as the shader language name into the shader properties so shaders can perform RHI specific handling if required

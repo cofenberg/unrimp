@@ -181,7 +181,7 @@ namespace Renderer
 		ShaderCacheManager mShaderCacheManager;
 
 		// Internal resource manager implementation
-		ResourceManagerTemplate<ShaderBlueprintResource, ShaderBlueprintResourceLoader, ShaderBlueprintResourceId, 64>* mInternalResourceManager;
+		ResourceManagerTemplate<ShaderBlueprintResource, ShaderBlueprintResourceLoader, ShaderBlueprintResourceId, 128>* mInternalResourceManager;
 
 
 	};
