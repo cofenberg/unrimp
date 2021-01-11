@@ -16,6 +16,20 @@
 				"Description": "Fixed build in material property for the render queue index [0, 255]",
 				"MinimumIntegerValue": "0",
 				"MaximumIntegerValue": "255"
+			},
+			"DepthEnable":
+			{
+				"Usage": "DEPTH_STENCIL_STATE",
+				"ValueType": "BOOLEAN",
+				"Value": "FALSE",
+				"Description": "'true' to enable depth test, else 'false'"
+			},
+			"DepthWriteMask":
+			{
+				"Usage": "DEPTH_STENCIL_STATE",
+				"ValueType": "DEPTH_WRITE_MASK",
+				"Value": "ZERO",
+				"Description": "Depth write mask"
 			}
 		},
 		"GraphicsPipelineState":
@@ -33,8 +47,8 @@
 			},
 			"DepthStencilState":
 			{
-				"DepthEnable": "FALSE",
-				"DepthWriteMask": "ZERO"
+				"DepthEnable": "@DepthEnable",
+				"DepthWriteMask": "@DepthWriteMask"
 			}
 		},
 		"ResourceGroups":

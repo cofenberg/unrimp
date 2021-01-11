@@ -38,8 +38,15 @@ OUTPUT_END
 
 
 //[-------------------------------------------------------]
+//[ Functions                                             ]
+//[-------------------------------------------------------]
+@includepiece(../SharedShaderPiece/SP_Color.asset)
+	@insertpiece(DefineGammaSpaceToLinearSpace3)
+
+
+//[-------------------------------------------------------]
 //[ Main                                                  ]
 //[-------------------------------------------------------]
 MAIN_BEGIN
-	MAIN_OUTPUT_COLOR(0) = MAIN_INPUT(ColorVS);
+	MAIN_OUTPUT_COLOR(0) = float4(GammaSpaceToLinearSpace3(MAIN_INPUT(ColorVS).rgb), MAIN_INPUT(ColorVS).a);
 MAIN_END

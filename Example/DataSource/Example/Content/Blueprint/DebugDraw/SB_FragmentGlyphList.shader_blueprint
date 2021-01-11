@@ -34,7 +34,7 @@ INPUT_BEGIN
 	INPUT_TEXTURE_COORDINATE(2, float3, ColorVS,    1)	// sRGB vertex color
 INPUT_END
 OUTPUT_BEGIN
-	OUTPUT_COLOR(0)	// sRGB output color
+	OUTPUT_COLOR(0)	// Linear output color
 OUTPUT_END
 
 // Textures
@@ -45,9 +45,16 @@ SAMPLER_STATE(2, 0, GlyphSampler, 0)
 
 
 //[-------------------------------------------------------]
+//[ Functions                                             ]
+//[-------------------------------------------------------]
+@includepiece(../SharedShaderPiece/SP_Color.asset)
+	@insertpiece(DefineGammaSpaceToLinearSpace3)
+
+
+//[-------------------------------------------------------]
 //[ Main                                                  ]
 //[-------------------------------------------------------]
 MAIN_BEGIN
 	float glyphMapValue = SAMPLE_2D(GlyphMap, GlyphSampler, MAIN_INPUT(TexCoordVS)).r;
-	MAIN_OUTPUT_COLOR(0) = float4(MAIN_INPUT(ColorVS), glyphMapValue);
+	MAIN_OUTPUT_COLOR(0) = float4(GammaSpaceToLinearSpace3(MAIN_INPUT(ColorVS)), glyphMapValue);
 MAIN_END

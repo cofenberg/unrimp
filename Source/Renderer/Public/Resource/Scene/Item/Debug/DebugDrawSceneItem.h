@@ -75,8 +75,10 @@ namespace Renderer
 		static constexpr uint32_t TYPE_ID = STRING_ID("DebugDrawSceneItem");
 		enum RenderableIndex : uint8_t
 		{
-			POINT_LIST,
-			LINE_LIST,
+			POINT_LIST_DEPTH_DISABLED,
+			POINT_LIST_DEPTH_ENABLED,
+			LINE_LIST_DEPTH_DISABLED,
+			LINE_LIST_DEPTH_ENABLED,
 			GLYPH_LIST,
 			NUMBER_OF_INDICES
 		};

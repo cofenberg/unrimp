@@ -24,6 +24,20 @@
 				"Value": "TRUE",
 				"Description": "'true' to render smooth point, else 'false'",
 				"VisualImportance": "100"
+			},
+			"DepthEnable":
+			{
+				"Usage": "DEPTH_STENCIL_STATE",
+				"ValueType": "BOOLEAN",
+				"Value": "FALSE",
+				"Description": "'true' to enable depth test, else 'false'"
+			},
+			"DepthWriteMask":
+			{
+				"Usage": "DEPTH_STENCIL_STATE",
+				"ValueType": "DEPTH_WRITE_MASK",
+				"Value": "ZERO",
+				"Description": "Depth write mask"
 			}
 		},
 		"GraphicsPipelineState":
@@ -40,8 +54,8 @@
 			},
 			"DepthStencilState":
 			{
-				"DepthEnable": "FALSE",
-				"DepthWriteMask": "ZERO"
+				"DepthEnable": "@DepthEnable",
+				"DepthWriteMask": "@DepthWriteMask"
 			},
 			"BlendState":
 			{

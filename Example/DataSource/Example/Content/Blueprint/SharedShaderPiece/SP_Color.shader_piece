@@ -72,6 +72,14 @@
 	}
 @end
 
+// Gamma space (sRGB = standard RGB = gamma of 2.2) to RGB color linear space
+@piece(DefineGammaSpaceToLinearSpace3)
+	float3 GammaSpaceToLinearSpace3(float3 color)
+	{
+		return pow(abs(color), float3(2.2f, 2.2f, 2.2f));
+	}
+@end
+
 @piece(DefineFilmGrain)
 	// The implementation is basing on https://github.com/thefranke/dirtchamber/blob/master/shader/pp_film_grain.hlsl
 	float3 ApplyFilmGrain(float3 color, float2 uv, float intensity, float globalTimeInSeconds)

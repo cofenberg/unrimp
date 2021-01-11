@@ -47,7 +47,12 @@ namespace
 		//[ Global definitions                                    ]
 		//[-------------------------------------------------------]
 		#define DEFINE_CONSTANT(name) static constexpr uint32_t name = STRING_ID(#name);
+			// Rasterizer state
 			DEFINE_CONSTANT(CullMode)
+			// Depth stencil state
+			DEFINE_CONSTANT(DepthEnable)
+			DEFINE_CONSTANT(DepthWriteMask)
+			// Blend state
 			DEFINE_CONSTANT(AlphaToCoverageEnable)
 		#undef DEFINE_CONSTANT
 
@@ -232,10 +237,28 @@ namespace Renderer
 							{
 								serializedGraphicsPipelineState.rasterizerState.cullMode = materialProperty.getCullModeValue();
 							}
+							else
+							{
+								RHI_ASSERT(getMaterialResourceManager().getRenderer().getContext(), false, "TODO(co) Rasterizer state not implemented, yet")
+							}
 							break;
 
 						case MaterialProperty::Usage::DEPTH_STENCIL_STATE:
 							// TODO(co) Implement all depth stencil state properties
+							switch (materialProperty.getMaterialPropertyId())
+							{
+								case ::detail::DepthEnable:
+									serializedGraphicsPipelineState.depthStencilState.depthEnable = materialProperty.getBooleanValue();
+									break;
+
+								case ::detail::DepthWriteMask:
+									serializedGraphicsPipelineState.depthStencilState.depthWriteMask = materialProperty.getDepthWriteMaskValue();
+									break;
+
+								default:
+									RHI_ASSERT(getMaterialResourceManager().getRenderer().getContext(), false, "TODO(co) Depth stencil state not implemented, yet")
+									break;
+							}
 							break;
 
 						case MaterialProperty::Usage::BLEND_STATE:
@@ -243,6 +266,10 @@ namespace Renderer
 							if (materialProperty.getMaterialPropertyId() == ::detail::AlphaToCoverageEnable)
 							{
 								serializedGraphicsPipelineState.blendState.alphaToCoverageEnable = materialProperty.getBooleanValue();
+							}
+							else
+							{
+								RHI_ASSERT(getMaterialResourceManager().getRenderer().getContext(), false, "TODO(co) Blend state not implemented, yet")
 							}
 							break;
 

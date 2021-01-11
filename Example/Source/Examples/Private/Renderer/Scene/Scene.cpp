@@ -131,7 +131,7 @@ namespace
 		void debugDrawExample(const Rhi::IRenderTarget& mainRenderTarget, const Renderer::CameraSceneItem& cameraSceneItem, Renderer::DebugDrawSceneItem& debugDrawSceneItem)
 		{
 			// Start a row of objects at this position
-			glm::vec3 origin(-15.0f, 0.0f, 0.0f);
+			glm::vec3 origin(-10.0f, 1.0f, 0.0f);
 
 			// Draw line
 			debugDrawSceneItem.drawLine(Renderer::Math::VEC3_ZERO, origin, Color4::WHITE);
@@ -168,17 +168,17 @@ namespace
 				const glm::vec3 aabbMaximum( 1.0f,  2.2f,  1.0f);
 				const glm::vec3 aabbCenter((aabbMinimum[0] + aabbMaximum[0]) * 0.5f, (aabbMinimum[1] + aabbMaximum[1]) * 0.5f, (aabbMinimum[2] + aabbMaximum[2]) * 0.5f);
 				drawLabel(mainRenderTarget, cameraSceneItem, debugDrawSceneItem, origin, "AABB");
-				debugDrawSceneItem.drawAabb(aabbMinimum, aabbMaximum, Color4::ORANGE);
-				debugDrawSceneItem.drawPoint(aabbCenter, Color4::WHITE, 15.0f);
+				debugDrawSceneItem.drawAabb(origin + aabbMinimum, origin + aabbMaximum, Color4::ORANGE);
+				debugDrawSceneItem.drawPoint(origin + aabbCenter, Color4::WHITE, 15.0f);
 			}
 
 			// Move along the Z for another row
-			origin[0] = -15.0f;
-			origin[2] += 5.0f;
+			origin[0] = -10.0f;
+			origin[2] += 4.5f;
 
 			{ // A big arrow pointing up
 				const glm::vec3 arrowFrom(origin[0], origin[1], origin[2]);
-				const glm::vec3 arrowTo(origin[0], origin[1] + 5.0f, origin[2]);
+				const glm::vec3 arrowTo(origin[0], origin[1] + 3.0f, origin[2]);
 				drawLabel(mainRenderTarget, cameraSceneItem, debugDrawSceneItem, arrowFrom, "arrow");
 				debugDrawSceneItem.drawArrow(arrowFrom, arrowTo, Color4::CYAN, 1.0f);
 				debugDrawSceneItem.drawPoint(arrowFrom, Color4::WHITE, 15.0f);
@@ -207,7 +207,7 @@ namespace
 				const glm::vec3 bitangent(0.0f, 0.0f, 1.0f);
 				origin[1] += 0.1f;
 				drawLabel(mainRenderTarget, cameraSceneItem, debugDrawSceneItem, origin, "tangent basis");
-				debugDrawSceneItem.drawTangentBasis(origin, normal, tangent, bitangent, 2.5f);
+				debugDrawSceneItem.drawTangentBasis(origin, normal, tangent, bitangent, 1.5f);
 				debugDrawSceneItem.drawPoint(origin, Color4::WHITE, 15.0f);
 			}
 
@@ -234,13 +234,13 @@ namespace
 				const glm::mat4 viewSpaceToClipSpace = glm::perspective(45.0f, aspectRatio, 0.5f, 4.0f);
 				const glm::mat4 objectSpaceToViewSpace = glm::lookAt(position, glm::vec3(-8.0f, 0.5f, -14.0f), Renderer::Math::VEC3_UNIT_Y);
 				const glm::mat4 clipSpaceToObjectSpace = glm::inverse(viewSpaceToClipSpace * objectSpaceToViewSpace);
-				debugDrawSceneItem.drawFrustum(clipSpaceToObjectSpace, Color4::WHITE);
+				debugDrawSceneItem.drawFrustum(clipSpaceToObjectSpace, Color4::WHITE, 0.0f, false);	// Disable depth
 
 				// A white dot at the eye position
-				debugDrawSceneItem.drawPoint(frustumOrigin, Color4::WHITE, 15.0f);
+				debugDrawSceneItem.drawPoint(frustumOrigin, Color4::WHITE, 15.0f, 0.0f, false);	// Disable depth
 
 				// A set of arrows at the cameras origin/eye
-				debugDrawSceneItem.drawAxisTriad(glm::translate(glm::mat4(1.0f), position), 0.3f, 2.0f);
+				debugDrawSceneItem.drawAxisTriad(glm::translate(glm::mat4(1.0f), position), 0.3f, 2.0f, 0.0f, false);	// Disable depth
 			}
 
 			// Draw HUD text

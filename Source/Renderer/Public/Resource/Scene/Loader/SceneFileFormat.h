@@ -30,6 +30,7 @@
 #include "Renderer/Public/Core/StringId.h"
 #include "Renderer/Public/Core/Math/Transform.h"
 #include "Renderer/Public/Resource/Scene/Item/Light/LightSceneItem.h"
+#include "Renderer/Public/Resource/Scene/Item/Debug/DebugDrawSceneItem.h"
 
 
 //[-------------------------------------------------------]
@@ -130,9 +131,7 @@ namespace Renderer
 
 			struct DebugDrawItem final
 			{
-				MaterialData pointListMaterialData;
-				MaterialData lineListMaterialData;
-				MaterialData glyphListMaterialData;
+				MaterialData materialData[Renderer::DebugDrawSceneItem::RenderableIndex::NUMBER_OF_INDICES];
 			};
 
 			struct SkyItem final

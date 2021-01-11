@@ -1,0 +1,16 @@
+{
+	"Format":
+	{
+		"Type": "MaterialAsset",
+		"Version": "1"
+	},
+	"MaterialAsset":
+	{
+		"BaseMaterial": "./M_DebugDrawLineListDepthDisabled.asset",
+		"Properties":
+		{
+			"DepthEnable": "TRUE",
+			"DepthWriteMask": "ALL"
+		}
+	}
+}

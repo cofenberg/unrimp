@@ -67,13 +67,21 @@
 					},
 					"DebugDrawSceneItem":
 					{
-						"PointList":
+						"PointListDepthDisabled":
 						{
-							"Material": "${PROJECT_NAME}/Blueprint/DebugDraw/M_DebugDrawPointList.asset"
+							"Material": "${PROJECT_NAME}/Blueprint/DebugDraw/M_DebugDrawPointListDepthDisabled.asset"
 						},
-						"LineList":
+						"PointListDepthEnabled":
 						{
-							"Material": "${PROJECT_NAME}/Blueprint/DebugDraw/M_DebugDrawLineList.asset"
+							"Material": "${PROJECT_NAME}/Blueprint/DebugDraw/M_DebugDrawPointListDepthEnabled.asset"
+						},
+						"LineListDepthDisabled":
+						{
+							"Material": "${PROJECT_NAME}/Blueprint/DebugDraw/M_DebugDrawLineListDepthDisabled.asset"
+						},
+						"LineListDepthEnabled":
+						{
+							"Material": "${PROJECT_NAME}/Blueprint/DebugDraw/M_DebugDrawLineListDepthEnabled.asset"
 						},
 						"GlyphList":
 						{

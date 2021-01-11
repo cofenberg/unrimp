@@ -1284,7 +1284,7 @@ namespace RendererToolkit
 			Rhi::DepthStencilState& depthStencilState = graphicsPipelineState.depthStencilState;
 
 			// The optional properties
-			JsonHelper::optionalBooleanProperty(rapidJsonValueDepthStencilState, "DepthEnable", depthStencilState.depthEnable);
+			JsonHelper::optionalBooleanProperty(rapidJsonValueDepthStencilState, "DepthEnable", depthStencilState.depthEnable, Renderer::MaterialProperty::Usage::DEPTH_STENCIL_STATE, &sortedMaterialPropertyVector);
 			JsonMaterialHelper::optionalDepthWriteMaskProperty(rapidJsonValueDepthStencilState, "DepthWriteMask", depthStencilState.depthWriteMask, &sortedMaterialPropertyVector);
 			JsonMaterialHelper::optionalComparisonFuncProperty(rapidJsonValueDepthStencilState, "DepthFunc", depthStencilState.depthFunc, &sortedMaterialPropertyVector);
 

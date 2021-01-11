@@ -88,7 +88,10 @@ namespace
 				if (renderer.getRhi().getCapabilities().maximumStructuredBufferSize > 0)
 				{
 					// Create the structured buffer
-					mPointListStructuredBuffer = renderer.getBufferManager().createStructuredBuffer(sizeof(PointDataStruct) * DEBUG_DRAW_VERTEX_BUFFER_SIZE, nullptr, Rhi::BufferFlag::SHADER_RESOURCE, Rhi::BufferUsage::DYNAMIC_DRAW, sizeof(PointDataStruct) RHI_RESOURCE_DEBUG_NAME("DebugDrawPointList"));
+					for (int depthIndex = 0; depthIndex < 2; ++depthIndex)
+					{
+						mPointListStructuredBuffer[depthIndex] = bufferManager.createStructuredBuffer(sizeof(PointDataStruct) * DEBUG_DRAW_VERTEX_BUFFER_SIZE, nullptr, Rhi::BufferFlag::SHADER_RESOURCE, Rhi::BufferUsage::DYNAMIC_DRAW, sizeof(PointDataStruct) RHI_RESOURCE_DEBUG_NAME("DebugDrawPointList"));
+					}
 				}
 				else
 				{
@@ -127,9 +130,12 @@ namespace
 					const Rhi::VertexAttributes vertexAttributes(static_cast<uint32_t>(GLM_COUNTOF(vertexAttributesLayoutLineList)), vertexAttributesLayoutLineList);
 
 					// Create line list vertex array object (VAO)
-					mLineListVertexBuffer = bufferManager.createVertexBuffer(sizeof(LineListVertex) * DEBUG_DRAW_VERTEX_BUFFER_SIZE, nullptr, 0, Rhi::BufferUsage::DYNAMIC_DRAW RHI_RESOURCE_DEBUG_NAME("DebugDrawLineList"));
-					const Rhi::VertexArrayVertexBuffer vertexArrayVertexBuffers[] = { mLineListVertexBuffer };
-					mLineListVertexArray = bufferManager.createVertexArray(vertexAttributes, static_cast<uint32_t>(GLM_COUNTOF(vertexArrayVertexBuffers)), vertexArrayVertexBuffers, nullptr RHI_RESOURCE_DEBUG_NAME("DebugDrawLineList"));
+					for (int depthIndex = 0; depthIndex < 2; ++depthIndex)
+					{
+						mLineListVertexBuffer[depthIndex] = bufferManager.createVertexBuffer(sizeof(LineListVertex) * DEBUG_DRAW_VERTEX_BUFFER_SIZE, nullptr, 0, Rhi::BufferUsage::DYNAMIC_DRAW RHI_RESOURCE_DEBUG_NAME("DebugDrawLineList"));
+						const Rhi::VertexArrayVertexBuffer vertexArrayVertexBuffers[] = { mLineListVertexBuffer[depthIndex] };
+						mLineListVertexArray[depthIndex] = bufferManager.createVertexArray(vertexAttributes, static_cast<uint32_t>(GLM_COUNTOF(vertexArrayVertexBuffers)), vertexArrayVertexBuffers, nullptr RHI_RESOURCE_DEBUG_NAME("DebugDrawLineList"));
+					}
 				}
 
 				{ // Create glyph list vertex array object (VAO)
@@ -188,9 +194,11 @@ namespace
 				#endif
 				const Renderer::MaterialResourceManager& materialResourceManager = renderer.getMaterialResourceManager();
 				Renderer::RenderableManager::Renderables& renderables = mRenderableManager.getRenderables();
-				renderables.reserve(3);
-				renderables.emplace_back(mRenderableManager, renderer.getMeshResourceManager().getDrawIdVertexArrayPtr(), materialResourceManager, Renderer::getInvalid<Renderer::MaterialResourceId>(), Renderer::getInvalid<Renderer::SkeletonResourceId>(), false, 0, 6, 0 RHI_RESOURCE_DEBUG_NAME(debugName));	// Renderer::DebugDrawSceneItem::RenderableIndex::POINT_LIST
-				renderables.emplace_back(mRenderableManager, mLineListVertexArray,										  materialResourceManager, Renderer::getInvalid<Renderer::MaterialResourceId>(), Renderer::getInvalid<Renderer::SkeletonResourceId>(), false, 0, 0, 1 RHI_RESOURCE_DEBUG_NAME(debugName));	// Renderer::DebugDrawSceneItem::RenderableIndex::LINE_LIST
+				renderables.reserve(Renderer::DebugDrawSceneItem::RenderableIndex::NUMBER_OF_INDICES);
+				renderables.emplace_back(mRenderableManager, renderer.getMeshResourceManager().getDrawIdVertexArrayPtr(), materialResourceManager, Renderer::getInvalid<Renderer::MaterialResourceId>(), Renderer::getInvalid<Renderer::SkeletonResourceId>(), false, 0, 6, 0 RHI_RESOURCE_DEBUG_NAME(debugName));	// Renderer::DebugDrawSceneItem::RenderableIndex::POINT_LIST_DEPTH_DISABLED
+				renderables.emplace_back(mRenderableManager, renderer.getMeshResourceManager().getDrawIdVertexArrayPtr(), materialResourceManager, Renderer::getInvalid<Renderer::MaterialResourceId>(), Renderer::getInvalid<Renderer::SkeletonResourceId>(), false, 0, 6, 0 RHI_RESOURCE_DEBUG_NAME(debugName));	// Renderer::DebugDrawSceneItem::RenderableIndex::POINT_LIST_DEPTH_ENABLED
+				renderables.emplace_back(mRenderableManager, mLineListVertexArray[0],									  materialResourceManager, Renderer::getInvalid<Renderer::MaterialResourceId>(), Renderer::getInvalid<Renderer::SkeletonResourceId>(), false, 0, 0, 1 RHI_RESOURCE_DEBUG_NAME(debugName));	// Renderer::DebugDrawSceneItem::RenderableIndex::LINE_LIST_DEPTH_DISABLED
+				renderables.emplace_back(mRenderableManager, mLineListVertexArray[1],									  materialResourceManager, Renderer::getInvalid<Renderer::MaterialResourceId>(), Renderer::getInvalid<Renderer::SkeletonResourceId>(), false, 0, 0, 1 RHI_RESOURCE_DEBUG_NAME(debugName));	// Renderer::DebugDrawSceneItem::RenderableIndex::LINE_LIST_DEPTH_ENABLED
 				renderables.emplace_back(mRenderableManager, mGlyphListVertexArray,										  materialResourceManager, Renderer::getInvalid<Renderer::MaterialResourceId>(), Renderer::getInvalid<Renderer::SkeletonResourceId>(), false, 0, 0, 1 RHI_RESOURCE_DEBUG_NAME(debugName));	// Renderer::DebugDrawSceneItem::RenderableIndex::GLYPH_LIST
 				mRenderableManager.updateCachedRenderablesData();
 			}
@@ -198,8 +206,9 @@ namespace
 			void clear()
 			{
 				Renderer::RenderableManager::Renderables& renderables = mRenderableManager.getRenderables();
-				renderables[Renderer::DebugDrawSceneItem::RenderableIndex::POINT_LIST].setInstanceCount(0);
-				for (uint32_t i = 1; i < Renderer::DebugDrawSceneItem::RenderableIndex::NUMBER_OF_INDICES; ++i)
+				renderables[Renderer::DebugDrawSceneItem::RenderableIndex::POINT_LIST_DEPTH_DISABLED].setInstanceCount(0);
+				renderables[Renderer::DebugDrawSceneItem::RenderableIndex::POINT_LIST_DEPTH_ENABLED].setInstanceCount(0);
+				for (uint32_t i = 2; i < Renderer::DebugDrawSceneItem::RenderableIndex::NUMBER_OF_INDICES; ++i)
 				{
 					renderables[i].setNumberOfIndices(0);
 				}
@@ -211,11 +220,18 @@ namespace
 				mRenderableManager.updateCachedRenderablesData();
 
 				// Tell the used material resource about our structured buffer
-				if (Renderer::DebugDrawSceneItem::RenderableIndex::POINT_LIST == renderableIndex && nullptr != mPointListStructuredBuffer)
+				if (Renderer::DebugDrawSceneItem::RenderableIndex::POINT_LIST_DEPTH_DISABLED == renderableIndex && nullptr != mPointListStructuredBuffer[0])
 				{
 					for (Renderer::MaterialTechnique* materialTechnique : materialResourceManager.getById(materialResourceId).getSortedMaterialTechniqueVector())
 					{
-						materialTechnique->setStructuredBufferPtr(2, mPointListStructuredBuffer);
+						materialTechnique->setStructuredBufferPtr(2, mPointListStructuredBuffer[0]);
+					}
+				}
+				else if (Renderer::DebugDrawSceneItem::RenderableIndex::POINT_LIST_DEPTH_ENABLED == renderableIndex && nullptr != mPointListStructuredBuffer[1])
+				{
+					for (Renderer::MaterialTechnique* materialTechnique : materialResourceManager.getById(materialResourceId).getSortedMaterialTechniqueVector())
+					{
+						materialTechnique->setStructuredBufferPtr(2, mPointListStructuredBuffer[1]);
 					}
 				}
 			}
@@ -268,19 +284,18 @@ namespace
 
 			virtual void drawPointList(const dd::DrawVertex* points, int count, bool depthEnabled) override
 			{
-				(void)depthEnabled; // TODO(co) Not implemented yet
-
 				// Sanity checks
 				RHI_ASSERT(mRhi.getContext(), nullptr != points, "Invalid points pointer")
 				RHI_ASSERT(mRhi.getContext(), count > 0 && count <= DEBUG_DRAW_VERTEX_BUFFER_SIZE, "Invalid count")
 				RHI_ASSERT(mRhi.getContext(), !mRenderableManager.getRenderables().empty(), "Invalid renderables")
 
 				// Structured buffer might not be supported by the used RHI, so we need to check for it
-				if (nullptr != mPointListStructuredBuffer)
+				const uint32_t depthIndex = (depthEnabled ? 1u : 0u);
+				if (nullptr != mPointListStructuredBuffer[depthIndex])
 				{
 					{ // Copy and convert all points into a single contiguous buffer
 						Rhi::MappedSubresource structuredBufferMappedSubresource;
-						if (mRhi.map(*mPointListStructuredBuffer, 0, Rhi::MapType::WRITE_DISCARD, 0, structuredBufferMappedSubresource))
+						if (mRhi.map(*mPointListStructuredBuffer[depthIndex], 0, Rhi::MapType::WRITE_DISCARD, 0, structuredBufferMappedSubresource))
 						{
 							PointDataStruct* pointListPoint = static_cast<PointDataStruct*>(structuredBufferMappedSubresource.data);
 							for (int v = 0; v < count; ++v)
@@ -302,27 +317,26 @@ namespace
 							}
 
 							// Unmap the structured buffer
-							mRhi.unmap(*mPointListStructuredBuffer, 0);
+							mRhi.unmap(*mPointListStructuredBuffer[depthIndex], 0);
 						}
 					}
 
 					// Update the instance count of the point list renderable
-					mRenderableManager.getRenderables()[Renderer::DebugDrawSceneItem::RenderableIndex::POINT_LIST].setInstanceCount(static_cast<uint32_t>(count));
+					mRenderableManager.getRenderables()[Renderer::DebugDrawSceneItem::RenderableIndex::POINT_LIST_DEPTH_DISABLED + depthIndex].setInstanceCount(static_cast<uint32_t>(count));
 				}
 			}
 
 			virtual void drawLineList(const dd::DrawVertex* lines, int count, bool depthEnabled) override
 			{
-				(void)depthEnabled; // TODO(co) Not implemented yet
-
 				// Sanity checks
 				RHI_ASSERT(mRhi.getContext(), nullptr != lines, "Invalid lines pointer")
 				RHI_ASSERT(mRhi.getContext(), count > 0 && count <= DEBUG_DRAW_VERTEX_BUFFER_SIZE, "Invalid count")
 				RHI_ASSERT(mRhi.getContext(), !mRenderableManager.getRenderables().empty(), "Invalid renderables")
 
+				const uint32_t depthIndex = (depthEnabled ? 1u : 0u);
 				{ // Copy and convert all vertices into a single contiguous buffer
 					Rhi::MappedSubresource vertexBufferMappedSubresource;
-					if (mRhi.map(*mLineListVertexBuffer, 0, Rhi::MapType::WRITE_DISCARD, 0, vertexBufferMappedSubresource))
+					if (mRhi.map(*mLineListVertexBuffer[depthIndex], 0, Rhi::MapType::WRITE_DISCARD, 0, vertexBufferMappedSubresource))
 					{
 						LineListVertex* lineListVertex = static_cast<LineListVertex*>(vertexBufferMappedSubresource.data);
 						for (int v = 0; v < count; ++v)
@@ -342,12 +356,12 @@ namespace
 						}
 
 						// Unmap the vertex buffer
-						mRhi.unmap(*mLineListVertexBuffer, 0);
+						mRhi.unmap(*mLineListVertexBuffer[depthIndex], 0);
 					}
 				}
 
 				// Update the number of indices of the line list renderable
-				mRenderableManager.getRenderables()[Renderer::DebugDrawSceneItem::RenderableIndex::LINE_LIST].setNumberOfIndices(static_cast<uint32_t>(count));
+				mRenderableManager.getRenderables()[Renderer::DebugDrawSceneItem::RenderableIndex::LINE_LIST_DEPTH_DISABLED + depthIndex].setNumberOfIndices(static_cast<uint32_t>(count));
 			}
 
 			virtual void drawGlyphList(const dd::DrawVertex* glyphs, int count, dd::GlyphTextureHandle) override
@@ -430,9 +444,9 @@ namespace
 			Rhi::IRhi&					 mRhi;
 			const Renderer::IRenderer&   mRenderer;
 			Renderer::RenderableManager& mRenderableManager;
-			Rhi::IStructuredBufferPtr	 mPointListStructuredBuffer;	///< Structured buffer the data of the individual points ("::DebugDrawRenderInterface::PointDataStruct")
-			Rhi::IVertexBufferPtr		 mLineListVertexBuffer;			///< Line list vertex buffer object (VBO), can be a null pointer, "Renderer::DebugDrawSceneItem::RenderableIndex::LINE_LIST"
-			Rhi::IVertexArrayPtr		 mLineListVertexArray;			///< Line list vertex array object (VAO), can be a null pointer, "Renderer::DebugDrawSceneItem::RenderableIndex::LINE_LIST"
+			Rhi::IStructuredBufferPtr	 mPointListStructuredBuffer[2];	///< Structured buffer the data of the individual points ("::DebugDrawRenderInterface::PointDataStruct")
+			Rhi::IVertexBufferPtr		 mLineListVertexBuffer[2];		///< Line list vertex buffer object (VBO), can be a null pointer, "Renderer::DebugDrawSceneItem::RenderableIndex::LINE_LIST"
+			Rhi::IVertexArrayPtr		 mLineListVertexArray[2];		///< Line list vertex array object (VAO), can be a null pointer, "Renderer::DebugDrawSceneItem::RenderableIndex::LINE_LIST"
 			Rhi::IVertexBufferPtr		 mGlyphListVertexBuffer;		///< Glyph list vertex buffer object (VBO), can be a null pointer, "Renderer::DebugDrawSceneItem::RenderableIndex::GLYPH_LIST"
 			Rhi::IVertexArrayPtr		 mGlyphListVertexArray;			///< Glyph list vertex array object (VAO), can be a null pointer, "Renderer::DebugDrawSceneItem::RenderableIndex::GLYPH_LIST"
 
@@ -757,7 +771,7 @@ namespace Renderer
 				{
 					if (materialProperty.isOverwritten())
 					{
-						materialResource.setPropertyById(materialProperty.getMaterialPropertyId(), materialProperty);
+						materialResource.setPropertyById(materialProperty.getMaterialPropertyId(), materialProperty, materialProperty.getUsage());
 					}
 				}
 			}

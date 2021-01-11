@@ -41,11 +41,18 @@ OUTPUT_END
 
 
 //[-------------------------------------------------------]
+//[ Functions                                             ]
+//[-------------------------------------------------------]
+@includepiece(../SharedShaderPiece/SP_Color.asset)
+	@insertpiece(DefineGammaSpaceToLinearSpace3)
+
+
+//[-------------------------------------------------------]
 //[ Main                                                  ]
 //[-------------------------------------------------------]
 MAIN_BEGIN
 	// Fragment color
-	MAIN_OUTPUT_COLOR(0) = MAIN_INPUT(ColorVS);
+	MAIN_OUTPUT_COLOR(0) = float4(GammaSpaceToLinearSpace3(MAIN_INPUT(ColorVS).rgb), MAIN_INPUT(ColorVS).a);
 
 	// Smooth point
 	// -> Basing on "Im3d" ( https://github.com/john-chapman/im3d ) DirectX11 example: "https://github.com/john-chapman/im3d/blob/master/examples/DirectX11/im3d.hlsl"

@@ -459,6 +459,13 @@
 					"MaximumRenderQueueIndex": "254",
 					"TransparentPass": "TRUE",
 					"MaterialTechnique": "Transparent"
+				},
+				"Scene":
+				{
+					"Name": "Debug objects",
+					"MinimumRenderQueueIndex": "255",
+					"MaximumRenderQueueIndex": "255",
+					"MaterialTechnique": "Debug"
 				}
 			},
 			"":
@@ -799,13 +806,6 @@
 					{
 						"ColorMap": "Example/Texture/Dynamic/LdrColorRenderTarget0"
 					}
-				},
-				"Scene":
-				{
-					"Name": "Debug objects",
-					"MinimumRenderQueueIndex": "255",
-					"MaximumRenderQueueIndex": "255",
-					"MaterialTechnique": "Debug"
 				},
 				"DebugGui":
 				{

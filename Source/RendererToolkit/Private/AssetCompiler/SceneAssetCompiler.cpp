@@ -434,26 +434,25 @@ namespace RendererToolkit
 
 									case Renderer::DebugDrawSceneItem::TYPE_ID:
 									{
-										static constexpr uint32_t NUMBER_OF_TYPES = 3;
-										static constexpr char* TYPE_NAME[NUMBER_OF_TYPES] = { "PointList", "LineList", "GlyphList" };
+										static constexpr char* TYPE_NAME[Renderer::DebugDrawSceneItem::RenderableIndex::NUMBER_OF_INDICES] = { "PointListDepthDisabled", "PointListDepthEnabled", "LineListDepthDisabled", "LineListDepthEnabled", "GlyphList" };
 
 										// Get mandatory JSON values of the types
-										rapidjson::Value* rapidJsonValuePerType[NUMBER_OF_TYPES];
-										for (uint32_t i = 0; i < NUMBER_OF_TYPES; ++i)
+										rapidjson::Value* rapidJsonValuePerType[Renderer::DebugDrawSceneItem::RenderableIndex::NUMBER_OF_INDICES];
+										for (uint32_t i = 0; i < Renderer::DebugDrawSceneItem::RenderableIndex::NUMBER_OF_INDICES; ++i)
 										{
 											rapidJsonValuePerType[i] = const_cast<rapidjson::Value*>(&rapidJsonValueItem[TYPE_NAME[i]]);	// Evil const-cast
 										}
 
 										// Get material properties
-										Renderer::MaterialProperties::SortedPropertyVector sortedMaterialPropertyVectors[NUMBER_OF_TYPES];
-										for (uint32_t i = 0; i < NUMBER_OF_TYPES; ++i)
+										Renderer::MaterialProperties::SortedPropertyVector sortedMaterialPropertyVectors[Renderer::DebugDrawSceneItem::RenderableIndex::NUMBER_OF_INDICES];
+										for (uint32_t i = 0; i < Renderer::DebugDrawSceneItem::RenderableIndex::NUMBER_OF_INDICES; ++i)
 										{
 											::detail::fillSortedMaterialPropertyVector(input, *rapidJsonValuePerType[i], sortedMaterialPropertyVectors[i]);
 										}
 
 										{ // Write down the scene item header
-											uint32_t numberOfBytes = static_cast<uint32_t>(sizeof(Renderer::v1Scene::MaterialData)) * NUMBER_OF_TYPES;
-											for (uint32_t i = 0; i < NUMBER_OF_TYPES; ++i)
+											uint32_t numberOfBytes = static_cast<uint32_t>(sizeof(Renderer::v1Scene::MaterialData)) * Renderer::DebugDrawSceneItem::RenderableIndex::NUMBER_OF_INDICES;
+											for (uint32_t i = 0; i < Renderer::DebugDrawSceneItem::RenderableIndex::NUMBER_OF_INDICES; ++i)
 											{
 												numberOfBytes += static_cast<uint32_t>(sizeof(Renderer::MaterialProperty) * sortedMaterialPropertyVectors[i].size());
 											}
@@ -461,7 +460,7 @@ namespace RendererToolkit
 										}
 
 										// Write material data
-										for (uint32_t i = 0; i < NUMBER_OF_TYPES; ++i)
+										for (uint32_t i = 0; i < Renderer::DebugDrawSceneItem::RenderableIndex::NUMBER_OF_INDICES; ++i)
 										{
 											detail::writeMaterialData(memoryFile, input, *rapidJsonValuePerType[i], sortedMaterialPropertyVectors[i]);
 										}
