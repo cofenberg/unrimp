@@ -926,9 +926,6 @@ FNDEF_EX(glBindAttribLocation,	PFNGLBINDATTRIBLOCATIONPROC);	// glBindAttribLoca
 // GL_ARB_tessellation_shader
 FNDEF_EX(glPatchParameteri,	PFNGLPATCHPARAMETERIPROC);
 
-// GL_ARB_geometry_shader4
-FNDEF_EX(glProgramParameteriARB,	PFNGLPROGRAMPARAMETERIARBPROC);
-
 // GL_ARB_compute_shader
 FNDEF_EX(glDispatchCompute,	PFNGLDISPATCHCOMPUTEPROC);
 
@@ -3329,13 +3326,6 @@ namespace OpenGLRhi
 			// TODO(sw) This extension was promoted to core feature but heavily modified source: https://www.khronos.org/opengl/wiki/History_of_OpenGL#OpenGL_3.2_.282009.29
 			// TODO(sw) But this extension doesn't show up with mesa 3D either with an old OpenGL context (max OpenGL 3.3) or with an profile context (with OpenGL 4.3)
 			mGL_ARB_geometry_shader4 = isSupported("GL_ARB_geometry_shader4");
-			if (mGL_ARB_geometry_shader4)
-			{
-				// Load the entry points
-				bool result = true;	// Success by default
-				IMPORT_FUNC(glProgramParameteriARB)
-				mGL_ARB_geometry_shader4 = result;
-			}
 
 			// GL_ARB_fragment_shader - Is core since OpenGL 2.0
 			mGL_ARB_fragment_shader = isCoreProfile ? true : isSupported("GL_ARB_fragment_shader");
@@ -14631,19 +14621,10 @@ namespace OpenGLRhi
 		*    Owner OpenGL RHI instance
 		*  @param[in] sourceCode
 		*    Shader ASCII source code, must be valid
-		*  @param[in] gsInputPrimitiveTopology
-		*    Geometry shader input primitive topology
-		*  @param[in] gsOutputPrimitiveTopology
-		*    Geometry shader output primitive topology
-		*  @param[in] numberOfOutputVertices
-		*    Number of output vertices
 		*/
-		inline GeometryShaderMonolithic(OpenGLRhi& openGLRhi, const char* sourceCode, Rhi::GsInputPrimitiveTopology gsInputPrimitiveTopology, Rhi::GsOutputPrimitiveTopology gsOutputPrimitiveTopology, uint32_t numberOfOutputVertices RHI_RESOURCE_DEBUG_NAME_PARAMETER) :
+		inline GeometryShaderMonolithic(OpenGLRhi& openGLRhi, const char* sourceCode RHI_RESOURCE_DEBUG_NAME_PARAMETER) :
 			IGeometryShader(openGLRhi RHI_RESOURCE_DEBUG_PASS_PARAMETER),
-			mOpenGLShader(::detail::loadShaderFromSourcecode(openGLRhi.getContext(), GL_GEOMETRY_SHADER_ARB, sourceCode)),
-			mOpenGLGsInputPrimitiveTopology(static_cast<int>(gsInputPrimitiveTopology)),	// The "Rhi::GsInputPrimitiveTopology" values directly map to OpenGL constants, do not change them
-			mOpenGLGsOutputPrimitiveTopology(static_cast<int>(gsOutputPrimitiveTopology)),	// The "Rhi::GsOutputPrimitiveTopology" values directly map to OpenGL constants, do not change them
-			mNumberOfOutputVertices(numberOfOutputVertices)
+			mOpenGLShader(::detail::loadShaderFromSourcecode(openGLRhi.getContext(), GL_GEOMETRY_SHADER_ARB, sourceCode))
 		{
 			// Assign a default name to the resource for debugging purposes
 			#ifdef RHI_DEBUG
@@ -14676,42 +14657,6 @@ namespace OpenGLRhi
 		[[nodiscard]] inline GLuint getOpenGLShader() const
 		{
 			return mOpenGLShader;
-		}
-
-		/**
-		*  @brief
-		*    Return the OpenGL geometry shader input primitive topology
-		*
-		*  @return
-		*    The OpenGL geometry shader input primitive topology
-		*/
-		[[nodiscard]] inline GLint getOpenGLGsInputPrimitiveTopology() const
-		{
-			return mOpenGLGsInputPrimitiveTopology;
-		}
-
-		/**
-		*  @brief
-		*    Return the OpenGL geometry shader output primitive topology
-		*
-		*  @return
-		*    The OpenGL geometry shader output primitive topology
-		*/
-		[[nodiscard]] inline GLint getOpenGLGsOutputPrimitiveTopology() const
-		{
-			return mOpenGLGsOutputPrimitiveTopology;
-		}
-
-		/**
-		*  @brief
-		*    Return the number of output vertices
-		*
-		*  @return
-		*    The number of output vertices
-		*/
-		[[nodiscard]] inline uint32_t getNumberOfOutputVertices() const
-		{
-			return mNumberOfOutputVertices;
 		}
 
 
@@ -14747,10 +14692,7 @@ namespace OpenGLRhi
 	//[ Private data                                          ]
 	//[-------------------------------------------------------]
 	private:
-		GLuint	 mOpenGLShader;						///< OpenGL shader, can be zero if no resource is allocated
-		GLint	 mOpenGLGsInputPrimitiveTopology;	///< OpenGL geometry shader input primitive topology
-		GLint	 mOpenGLGsOutputPrimitiveTopology;	///< OpenGL geometry shader output primitive topology
-		uint32_t mNumberOfOutputVertices;			///< Number of output vertices
+		GLuint mOpenGLShader;	///< OpenGL shader, can be zero if no resource is allocated
 
 
 	};
@@ -15237,20 +15179,6 @@ namespace OpenGLRhi
 
 				// Attach the monolithic shader to the monolithic program
 				glAttachShader(mOpenGLProgram, geometryShaderMonolithic->getOpenGLShader());
-
-				// In modern GLSL, "geometry shader input primitive topology" & "geometry shader output primitive topology" & "number of output vertices" can be directly set within GLSL by writing e.g.
-				//   "layout(triangles) in;"
-				//   "layout(triangle_strip, max_vertices = 3) out;"
-				// -> To be able to support older GLSL versions, we have to provide this information also via OpenGL API functions
-
-				// Set the OpenGL geometry shader input primitive topology
-				glProgramParameteriARB(mOpenGLProgram, GL_GEOMETRY_INPUT_TYPE_ARB, geometryShaderMonolithic->getOpenGLGsInputPrimitiveTopology());
-
-				// Set the OpenGL geometry shader output primitive topology
-				glProgramParameteriARB(mOpenGLProgram, GL_GEOMETRY_OUTPUT_TYPE_ARB, geometryShaderMonolithic->getOpenGLGsOutputPrimitiveTopology());
-
-				// Set the number of output vertices
-				glProgramParameteriARB(mOpenGLProgram, GL_GEOMETRY_VERTICES_OUT_ARB, static_cast<GLint>(geometryShaderMonolithic->getNumberOfOutputVertices()));
 
 				// Release the shader
 				geometryShaderMonolithic->releaseReference();
@@ -16027,25 +15955,21 @@ namespace OpenGLRhi
 			}
 		}
 
-		[[nodiscard]] inline virtual Rhi::IGeometryShader* createGeometryShaderFromBytecode(const Rhi::ShaderBytecode&, Rhi::GsInputPrimitiveTopology, Rhi::GsOutputPrimitiveTopology, uint32_t RHI_RESOURCE_DEBUG_NAME_MAYBE_UNUSED_PARAMETER) override
+		[[nodiscard]] inline virtual Rhi::IGeometryShader* createGeometryShaderFromBytecode(const Rhi::ShaderBytecode& RHI_RESOURCE_DEBUG_NAME_MAYBE_UNUSED_PARAMETER) override
 		{
 			// Error!
 			RHI_ASSERT(getRhi().getContext(), false, "OpenGL monolithic shaders have no shader bytecode, only a monolithic program bytecode")
 			return nullptr;
 		}
 
-		[[nodiscard]] virtual Rhi::IGeometryShader* createGeometryShaderFromSourceCode(const Rhi::ShaderSourceCode& shaderSourceCode, Rhi::GsInputPrimitiveTopology gsInputPrimitiveTopology, Rhi::GsOutputPrimitiveTopology gsOutputPrimitiveTopology, uint32_t numberOfOutputVertices, [[maybe_unused]] Rhi::ShaderBytecode* shaderBytecode = nullptr RHI_RESOURCE_DEBUG_NAME_PARAMETER) override
+		[[nodiscard]] virtual Rhi::IGeometryShader* createGeometryShaderFromSourceCode(const Rhi::ShaderSourceCode& shaderSourceCode, [[maybe_unused]] Rhi::ShaderBytecode* shaderBytecode = nullptr RHI_RESOURCE_DEBUG_NAME_PARAMETER) override
 		{
 			// Check whether or not there's geometry shader support
 			// -> Monolithic shaders have no shader bytecode, only a monolithic program bytecode
 			OpenGLRhi& openGLRhi = static_cast<OpenGLRhi&>(getRhi());
 			if (openGLRhi.getExtensions().isGL_ARB_geometry_shader4())
 			{
-				// In modern GLSL, "geometry shader input primitive topology" & "geometry shader output primitive topology" & "number of output vertices" can be directly set within GLSL by writing e.g.
-				//   "layout(triangles) in;"
-				//   "layout(triangle_strip, max_vertices = 3) out;"
-				// -> To be able to support older GLSL versions, we have to provide this information also via OpenGL API functions
-				return RHI_NEW(openGLRhi.getContext(), GeometryShaderMonolithic)(openGLRhi, shaderSourceCode.sourceCode, gsInputPrimitiveTopology, gsOutputPrimitiveTopology, numberOfOutputVertices RHI_RESOURCE_DEBUG_PASS_PARAMETER);
+				return RHI_NEW(openGLRhi.getContext(), GeometryShaderMonolithic)(openGLRhi, shaderSourceCode.sourceCode RHI_RESOURCE_DEBUG_PASS_PARAMETER);
 			}
 			else
 			{
@@ -16659,14 +16583,8 @@ namespace OpenGLRhi
 		*    Owner OpenGL RHI instance
 		*  @param[in] shaderBytecode
 		*    Shader bytecode
-		*  @param[in] gsInputPrimitiveTopology
-		*    Geometry shader input primitive topology
-		*  @param[in] gsOutputPrimitiveTopology
-		*    Geometry shader output primitive topology
-		*  @param[in] numberOfOutputVertices
-		*    Number of output vertices
 		*/
-		inline GeometryShaderSeparate(OpenGLRhi& openGLRhi, const Rhi::ShaderBytecode& shaderBytecode, [[maybe_unused]] Rhi::GsInputPrimitiveTopology gsInputPrimitiveTopology, [[maybe_unused]] Rhi::GsOutputPrimitiveTopology gsOutputPrimitiveTopology, [[maybe_unused]] uint32_t numberOfOutputVertices RHI_RESOURCE_DEBUG_NAME_PARAMETER) :
+		inline GeometryShaderSeparate(OpenGLRhi& openGLRhi, const Rhi::ShaderBytecode& shaderBytecode RHI_RESOURCE_DEBUG_NAME_PARAMETER) :
 			IGeometryShader(openGLRhi RHI_RESOURCE_DEBUG_PASS_PARAMETER),
 			mOpenGLShaderProgram(::detail::loadShaderProgramFromBytecode(openGLRhi.getContext(), GL_GEOMETRY_SHADER_ARB, shaderBytecode))
 		{
@@ -16688,25 +16606,11 @@ namespace OpenGLRhi
 		*    Owner OpenGL RHI instance
 		*  @param[in] sourceCode
 		*    Shader ASCII source code, must be valid
-		*  @param[in] gsInputPrimitiveTopology
-		*    Geometry shader input primitive topology
-		*  @param[in] gsOutputPrimitiveTopology
-		*    Geometry shader output primitive topology
-		*  @param[in] numberOfOutputVertices
-		*    Number of output vertices
 		*/
-		inline GeometryShaderSeparate(OpenGLRhi& openGLRhi, const char* sourceCode, Rhi::GsInputPrimitiveTopology gsInputPrimitiveTopology, Rhi::GsOutputPrimitiveTopology gsOutputPrimitiveTopology, uint32_t numberOfOutputVertices, Rhi::ShaderBytecode* shaderBytecode RHI_RESOURCE_DEBUG_NAME_PARAMETER) :
+		inline GeometryShaderSeparate(OpenGLRhi& openGLRhi, const char* sourceCode, Rhi::ShaderBytecode* shaderBytecode RHI_RESOURCE_DEBUG_NAME_PARAMETER) :
 			IGeometryShader(openGLRhi RHI_RESOURCE_DEBUG_PASS_PARAMETER),
 			mOpenGLShaderProgram(::detail::loadShaderProgramFromSourceCode(openGLRhi.getContext(), GL_GEOMETRY_SHADER_ARB, sourceCode))
 		{
-			// In modern GLSL, "geometry shader input primitive topology" & "geometry shader output primitive topology" & "number of output vertices" can be directly set within GLSL by writing e.g.
-			//   "layout(triangles) in;"
-			//   "layout(triangle_strip, max_vertices = 3) out;"
-			// -> To be able to support older GLSL versions, we have to provide this information also via OpenGL API functions
-			glProgramParameteriARB(mOpenGLShaderProgram, GL_GEOMETRY_INPUT_TYPE_ARB, static_cast<int>(gsInputPrimitiveTopology));	// The "Rhi::GsInputPrimitiveTopology" values directly map to OpenGL constants, do not change them
-			glProgramParameteriARB(mOpenGLShaderProgram, GL_GEOMETRY_OUTPUT_TYPE_ARB, static_cast<int>(gsOutputPrimitiveTopology));	// The "Rhi::GsOutputPrimitiveTopology" values directly map to OpenGL constants, do not change them
-			glProgramParameteriARB(mOpenGLShaderProgram, GL_GEOMETRY_VERTICES_OUT_ARB, static_cast<GLint>(numberOfOutputVertices));
-
 			// Return shader bytecode, if requested do to so
 			if (nullptr != shaderBytecode)
 			{
@@ -18345,7 +18249,7 @@ namespace OpenGLRhi
 			}
 		}
 
-		[[nodiscard]] virtual Rhi::IGeometryShader* createGeometryShaderFromBytecode(const Rhi::ShaderBytecode& shaderBytecode, Rhi::GsInputPrimitiveTopology gsInputPrimitiveTopology, Rhi::GsOutputPrimitiveTopology gsOutputPrimitiveTopology, uint32_t numberOfOutputVertices RHI_RESOURCE_DEBUG_NAME_PARAMETER) override
+		[[nodiscard]] virtual Rhi::IGeometryShader* createGeometryShaderFromBytecode(const Rhi::ShaderBytecode& shaderBytecode RHI_RESOURCE_DEBUG_NAME_PARAMETER) override
 		{
 			OpenGLRhi& openGLRhi = static_cast<OpenGLRhi&>(getRhi());
 
@@ -18356,11 +18260,7 @@ namespace OpenGLRhi
 			const Extensions& extensions = openGLRhi.getExtensions();
 			if (extensions.isGL_ARB_geometry_shader4() && extensions.isGL_ARB_gl_spirv())
 			{
-				// In modern GLSL, "geometry shader input primitive topology" & "geometry shader output primitive topology" & "number of output vertices" can be directly set within GLSL by writing e.g.
-				//   "layout(triangles) in;"
-				//   "layout(triangle_strip, max_vertices = 3) out;"
-				// -> To be able to support older GLSL versions, we have to provide this information also via OpenGL API functions
-				return RHI_NEW(openGLRhi.getContext(), GeometryShaderSeparate)(openGLRhi, shaderBytecode, gsInputPrimitiveTopology, gsOutputPrimitiveTopology, numberOfOutputVertices RHI_RESOURCE_DEBUG_PASS_PARAMETER);
+				return RHI_NEW(openGLRhi.getContext(), GeometryShaderSeparate)(openGLRhi, shaderBytecode RHI_RESOURCE_DEBUG_PASS_PARAMETER);
 			}
 			else
 			{
@@ -18369,18 +18269,14 @@ namespace OpenGLRhi
 			}
 		}
 
-		[[nodiscard]] virtual Rhi::IGeometryShader* createGeometryShaderFromSourceCode(const Rhi::ShaderSourceCode& shaderSourceCode, Rhi::GsInputPrimitiveTopology gsInputPrimitiveTopology, Rhi::GsOutputPrimitiveTopology gsOutputPrimitiveTopology, uint32_t numberOfOutputVertices, Rhi::ShaderBytecode* shaderBytecode = nullptr RHI_RESOURCE_DEBUG_NAME_PARAMETER) override
+		[[nodiscard]] virtual Rhi::IGeometryShader* createGeometryShaderFromSourceCode(const Rhi::ShaderSourceCode& shaderSourceCode, Rhi::ShaderBytecode* shaderBytecode = nullptr RHI_RESOURCE_DEBUG_NAME_PARAMETER) override
 		{
 			// Check whether or not there's geometry shader support
 			OpenGLRhi& openGLRhi = static_cast<OpenGLRhi&>(getRhi());
 			const Extensions& extensions = openGLRhi.getExtensions();
 			if (extensions.isGL_ARB_geometry_shader4())
 			{
-				// In modern GLSL, "geometry shader input primitive topology" & "geometry shader output primitive topology" & "number of output vertices" can be directly set within GLSL by writing e.g.
-				//   "layout(triangles) in;"
-				//   "layout(triangle_strip, max_vertices = 3) out;"
-				// -> To be able to support older GLSL versions, we have to provide this information also via OpenGL API functions
-				return RHI_NEW(openGLRhi.getContext(), GeometryShaderSeparate)(openGLRhi, shaderSourceCode.sourceCode, gsInputPrimitiveTopology, gsOutputPrimitiveTopology, numberOfOutputVertices, (extensions.isGL_ARB_gl_spirv() ? shaderBytecode : nullptr) RHI_RESOURCE_DEBUG_PASS_PARAMETER);
+				return RHI_NEW(openGLRhi.getContext(), GeometryShaderSeparate)(openGLRhi, shaderSourceCode.sourceCode, (extensions.isGL_ARB_gl_spirv() ? shaderBytecode : nullptr) RHI_RESOURCE_DEBUG_PASS_PARAMETER);
 			}
 			else
 			{

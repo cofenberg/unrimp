@@ -209,7 +209,7 @@ void IcosahedronTessellation::onInitialization()
 					shaderLanguage.createVertexShaderFromSourceCode(vertexAttributes, vertexShaderSourceCode),
 					shaderLanguage.createTessellationControlShaderFromSourceCode(tessellationControlShaderSourceCode),
 					shaderLanguage.createTessellationEvaluationShaderFromSourceCode(tessellationEvaluationShaderSourceCode),
-					shaderLanguage.createGeometryShaderFromSourceCode(geometryShaderSourceCode, Rhi::GsInputPrimitiveTopology::TRIANGLES, Rhi::GsOutputPrimitiveTopology::TRIANGLES_STRIP, 3),
+					shaderLanguage.createGeometryShaderFromSourceCode(geometryShaderSourceCode),
 					shaderLanguage.createFragmentShaderFromSourceCode(fragmentShaderSourceCode));
 			}
 

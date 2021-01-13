@@ -69,7 +69,7 @@ void GeometryShader::onInitialization()
 					*mRootSignature,
 					vertexAttributes,
 					shaderLanguage.createVertexShaderFromSourceCode(vertexAttributes, vertexShaderSourceCode),
-					shaderLanguage.createGeometryShaderFromSourceCode(geometryShaderSourceCode, Rhi::GsInputPrimitiveTopology::POINTS, Rhi::GsOutputPrimitiveTopology::TRIANGLES_STRIP, 3),
+					shaderLanguage.createGeometryShaderFromSourceCode(geometryShaderSourceCode),
 					shaderLanguage.createFragmentShaderFromSourceCode(fragmentShaderSourceCode));
 			}
 

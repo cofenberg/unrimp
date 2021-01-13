@@ -3254,36 +3254,6 @@ namespace Rhi
 	//[-------------------------------------------------------]
 	/**
 	*  @brief
-	*    Geometry shader (GS) input primitive topology
-	*
-	*  @note
-	*    - These constants directly map to OpenGL constants, do not change them
-	*/
-	enum class GsInputPrimitiveTopology
-	{
-		POINTS			    = 0x0000,	///< List of point primitives
-		LINES			    = 0x0001,	///< List of line or line strip primitives
-		LINES_ADJACENCY	    = 0x000A,	///< List of line with adjacency or line strip with adjacency primitives
-		TRIANGLES		    = 0x0004,	///< List of triangle or triangle strip primitives
-		TRIANGLES_ADJACENCY = 0x000C	///< List of triangle with adjacency or triangle strip with adjacency primitives
-	};
-
-	/**
-	*  @brief
-	*    Geometry shader (GS) primitive topology
-	*
-	*  @note
-	*    - These constants directly map to OpenGL constants, do not change them
-	*/
-	enum class GsOutputPrimitiveTopology
-	{
-		POINTS			=  0x0000,	///< A list of point primitives
-		LINES			=  0x0001,	///< A list of line primitives
-		TRIANGLES_STRIP	=  0x0005	///< A triangle strip primitives
-	};
-
-	/**
-	*  @brief
 	*    Shader bytecode (aka shader microcode, binary large object (BLOB))
 	*/
 	class ShaderBytecode final
@@ -5075,12 +5045,6 @@ namespace Rhi
 		*
 		*  @param[in] shaderBytecode
 		*    Shader bytecode
-		*  @param[in] gsInputPrimitiveTopology
-		*    Geometry shader input primitive topology
-		*  @param[in] gsOutputPrimitiveTopology
-		*    Geometry shader output primitive topology
-		*  @param[in] numberOfOutputVertices
-		*    Number of output vertices, maximum is "Rhi::Capabilities::maximumNumberOfGsOutputVertices"
 		*
 		*  @return
 		*    The created geometry shader, a null pointer on error. Release the returned instance if you no longer need it.
@@ -5088,11 +5052,8 @@ namespace Rhi
 		*  @note
 		*    - Only supported if "Rhi::Capabilities::maximumNumberOfGsOutputVertices" is not 0
 		*    - The data the given pointers are pointing to is internally copied and you have to free your memory if you no longer need it
-		*    - Please note that not each internal implementation may actually need information like "gsInputPrimitiveTopology", but it's
-		*      highly recommended to provide this information anyway to be able to switch the internal implementation (e.g. using
-		*      OpenGL instead of Direct3D)
 		*/
-		[[nodiscard]] virtual IGeometryShader* createGeometryShaderFromBytecode(const ShaderBytecode& shaderBytecode, GsInputPrimitiveTopology gsInputPrimitiveTopology, GsOutputPrimitiveTopology gsOutputPrimitiveTopology, uint32_t numberOfOutputVertices RHI_RESOURCE_DEBUG_NAME_PARAMETER) = 0;
+		[[nodiscard]] virtual IGeometryShader* createGeometryShaderFromBytecode(const ShaderBytecode& shaderBytecode RHI_RESOURCE_DEBUG_NAME_PARAMETER) = 0;
 
 		/**
 		*  @brief
@@ -5100,12 +5061,6 @@ namespace Rhi
 		*
 		*  @param[in] shaderSourceCode
 		*    Shader source code
-		*  @param[in] gsInputPrimitiveTopology
-		*    Geometry shader input primitive topology
-		*  @param[in] gsOutputPrimitiveTopology
-		*    Geometry shader output primitive topology
-		*  @param[in] numberOfOutputVertices
-		*    Number of output vertices, maximum is "Rhi::Capabilities::maximumNumberOfGsOutputVertices"
 		*  @param[out] shaderBytecode
 		*    If not a null pointer, receives the shader bytecode in case the used RHI implementation supports this feature
 		*
@@ -5115,14 +5070,11 @@ namespace Rhi
 		*  @note
 		*    - Only supported if "Rhi::Capabilities::maximumNumberOfGsOutputVertices" is not 0
 		*    - The data the given pointers are pointing to is internally copied and you have to free your memory if you no longer need it
-		*    - Please note that not each internal implementation may actually need information like "gsInputPrimitiveTopology", but it's
-		*      highly recommended to provide this information anyway to be able to switch the internal implementation (e.g. using
-		*      OpenGL instead of Direct3D)
 		*
 		*  @see
 		*    - "Rhi::IShaderLanguage::createVertexShader()" for more information
 		*/
-		[[nodiscard]] virtual IGeometryShader* createGeometryShaderFromSourceCode(const ShaderSourceCode& shaderSourceCode, GsInputPrimitiveTopology gsInputPrimitiveTopology, GsOutputPrimitiveTopology gsOutputPrimitiveTopology, uint32_t numberOfOutputVertices, ShaderBytecode* shaderBytecode = nullptr RHI_RESOURCE_DEBUG_NAME_PARAMETER) = 0;
+		[[nodiscard]] virtual IGeometryShader* createGeometryShaderFromSourceCode(const ShaderSourceCode& shaderSourceCode, ShaderBytecode* shaderBytecode = nullptr RHI_RESOURCE_DEBUG_NAME_PARAMETER) = 0;
 
 		/**
 		*  @brief

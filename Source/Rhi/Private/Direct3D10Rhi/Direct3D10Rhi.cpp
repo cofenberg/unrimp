@@ -8946,7 +8946,7 @@ namespace Direct3D10Rhi
 			return nullptr;
 		}
 
-		[[nodiscard]] inline virtual Rhi::IGeometryShader* createGeometryShaderFromBytecode(const Rhi::ShaderBytecode& shaderBytecode, [[maybe_unused]] Rhi::GsInputPrimitiveTopology gsInputPrimitiveTopology, [[maybe_unused]] Rhi::GsOutputPrimitiveTopology gsOutputPrimitiveTopology, [[maybe_unused]] uint32_t numberOfOutputVertices RHI_RESOURCE_DEBUG_NAME_PARAMETER) override
+		[[nodiscard]] inline virtual Rhi::IGeometryShader* createGeometryShaderFromBytecode(const Rhi::ShaderBytecode& shaderBytecode RHI_RESOURCE_DEBUG_NAME_PARAMETER) override
 		{
 			Direct3D10Rhi& direct3D10Rhi = static_cast<Direct3D10Rhi&>(getRhi());
 
@@ -8954,18 +8954,12 @@ namespace Direct3D10Rhi
 			RHI_ASSERT(direct3D10Rhi.getContext(), shaderBytecode.getNumberOfBytes() > 0 && nullptr != shaderBytecode.getBytecode(), "Direct3D 10 geometry shader bytecode is invalid")
 
 			// There's no need to check for "Rhi::Capabilities::maximumNumberOfGsOutputVertices", we know there's geometry shader support
-			// Ignore "gsInputPrimitiveTopology", it's directly set within HLSL
-			// Ignore "gsOutputPrimitiveTopology", it's directly set within HLSL
-			// Ignore "numberOfOutputVertices", it's directly set within HLSL
 			return RHI_NEW(direct3D10Rhi.getContext(), GeometryShaderHlsl)(direct3D10Rhi, shaderBytecode RHI_RESOURCE_DEBUG_PASS_PARAMETER);
 		}
 
-		[[nodiscard]] inline virtual Rhi::IGeometryShader* createGeometryShaderFromSourceCode(const Rhi::ShaderSourceCode& shaderSourceCode, [[maybe_unused]] Rhi::GsInputPrimitiveTopology gsInputPrimitiveTopology, [[maybe_unused]] Rhi::GsOutputPrimitiveTopology gsOutputPrimitiveTopology, [[maybe_unused]] uint32_t numberOfOutputVertices, Rhi::ShaderBytecode* shaderBytecode = nullptr RHI_RESOURCE_DEBUG_NAME_PARAMETER) override
+		[[nodiscard]] inline virtual Rhi::IGeometryShader* createGeometryShaderFromSourceCode(const Rhi::ShaderSourceCode& shaderSourceCode, Rhi::ShaderBytecode* shaderBytecode = nullptr RHI_RESOURCE_DEBUG_NAME_PARAMETER) override
 		{
 			// There's no need to check for "Rhi::Capabilities::maximumNumberOfGsOutputVertices", we know there's geometry shader support
-			// Ignore "gsInputPrimitiveTopology", it's directly set within HLSL
-			// Ignore "gsOutputPrimitiveTopology", it's directly set within HLSL
-			// Ignore "numberOfOutputVertices", it's directly set within HLSL
 			Direct3D10Rhi& direct3D10Rhi = static_cast<Direct3D10Rhi&>(getRhi());
 			return RHI_NEW(direct3D10Rhi.getContext(), GeometryShaderHlsl)(direct3D10Rhi, shaderSourceCode.sourceCode, getOptimizationLevel(), shaderBytecode RHI_RESOURCE_DEBUG_PASS_PARAMETER);
 		}
