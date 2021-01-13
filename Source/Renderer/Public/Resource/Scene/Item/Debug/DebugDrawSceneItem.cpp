@@ -104,7 +104,7 @@ namespace
 					{
 						{ // Attribute 0
 							// Data destination
-							Rhi::VertexAttributeFormat::FLOAT_3,	// vertexAttributeFormat (Rhi::VertexAttributeFormat)
+							Rhi::VertexAttributeFormat::FLOAT_4,	// vertexAttributeFormat (Rhi::VertexAttributeFormat)
 							"Position",								// name[32] (char)
 							"POSITION",								// semanticName[32] (char)
 							0,										// semanticIndex (uint32_t)
@@ -122,7 +122,7 @@ namespace
 							0,										// semanticIndex (uint32_t)
 							// Data source
 							0,										// inputSlot (uint32_t)
-							sizeof(float) * 3,						// alignedByteOffset (uint32_t)
+							sizeof(float) * 4,						// alignedByteOffset (uint32_t)
 							sizeof(LineListVertex),					// strideInBytes (uint32_t)
 							0										// instancesPerElement (uint32_t)
 						}
@@ -344,10 +344,11 @@ namespace
 							const dd::DrawVertex& line = lines[v];
 							LineListVertex& vertex = lineListVertex[v];
 
-							// Position
-							vertex.position[0] = line.line.x;
-							vertex.position[1] = line.line.y;
-							vertex.position[2] = line.line.z;
+							// Position and width
+							vertex.positionWidth[0] = line.line.x;
+							vertex.positionWidth[1] = line.line.y;
+							vertex.positionWidth[2] = line.line.z;
+							vertex.positionWidth[3] = line.line.width;
 
 							// Color
 							vertex.color[0] = line.line.r;
@@ -426,8 +427,8 @@ namespace
 			};
 			struct LineListVertex final
 			{
-				float position[3];	// Object space line vertex xyz-position
-				float color[3];		// Linear space RGB line vertex color
+				float positionWidth[4];	// Object space line vertex xyz-position, w = line width
+				float color[3];			// Linear space RGB line vertex color
 			};
 			struct GlyphListVertex final
 			{
@@ -496,9 +497,9 @@ namespace Renderer
 		dd::point(static_cast<dd::ContextHandle>(mContextHandle), glm::value_ptr(worldSpacePosition), sRgbColor, size, ::DebugDrawSceneItemDetail::secondsToMilliseconds(durationInSeconds), depthEnabled);
 	}
 
-	void DebugDrawSceneItem::drawLine(const glm::vec3& fromWorldSpacePosition, const glm::vec3& toWorldSpacePosition, const float sRgbColor[3], float durationInSeconds, bool depthEnabled)
+	void DebugDrawSceneItem::drawLine(const glm::vec3& fromWorldSpacePosition, const glm::vec3& toWorldSpacePosition, const float sRgbColor[3], float lineWidth, float durationInSeconds, bool depthEnabled)
 	{
-		dd::line(static_cast<dd::ContextHandle>(mContextHandle), glm::value_ptr(fromWorldSpacePosition), glm::value_ptr(toWorldSpacePosition), sRgbColor, ::DebugDrawSceneItemDetail::secondsToMilliseconds(durationInSeconds), depthEnabled);
+		dd::line(static_cast<dd::ContextHandle>(mContextHandle), glm::value_ptr(fromWorldSpacePosition), glm::value_ptr(toWorldSpacePosition), sRgbColor, lineWidth, ::DebugDrawSceneItemDetail::secondsToMilliseconds(durationInSeconds), depthEnabled);
 	}
 
 	void DebugDrawSceneItem::drawScreenText(const char* text, const glm::vec2& screenSpacePixelPosition, const float sRgbColor[3], float scaling, float durationInSeconds)
@@ -512,42 +513,42 @@ namespace Renderer
 		dd::projectedText(static_cast<dd::ContextHandle>(mContextHandle), text, glm::value_ptr(worldSpacePosition), sRgbColor, glm::value_ptr(worldSpaceToClipSpaceMatrix), viewportPixelPosition.x, viewportPixelPosition.y, viewportPixelSize.x, viewportPixelSize.y, scaling, ::DebugDrawSceneItemDetail::secondsToMilliseconds(durationInSeconds));
 	}
 
-	void DebugDrawSceneItem::drawAxisTriad(const glm::mat4& objectSpaceToWorldSpaceMatrix, float arrowHeadSize, float arrowLength, float durationInSeconds, bool depthEnabled)
+	void DebugDrawSceneItem::drawAxisTriad(const glm::mat4& objectSpaceToWorldSpaceMatrix, float arrowHeadSize, float arrowLength, float lineWidth, float durationInSeconds, bool depthEnabled)
 	{
-		dd::axisTriad(static_cast<dd::ContextHandle>(mContextHandle), glm::value_ptr(objectSpaceToWorldSpaceMatrix), arrowHeadSize, arrowLength, ::DebugDrawSceneItemDetail::secondsToMilliseconds(durationInSeconds), depthEnabled);
+		dd::axisTriad(static_cast<dd::ContextHandle>(mContextHandle), glm::value_ptr(objectSpaceToWorldSpaceMatrix), arrowHeadSize, arrowLength, lineWidth, ::DebugDrawSceneItemDetail::secondsToMilliseconds(durationInSeconds), depthEnabled);
 	}
 
-	void DebugDrawSceneItem::drawArrow(const glm::vec3& fromWorldSpacePosition, const glm::vec3& toWorldSpacePosition, const float sRgbColor[3], float arrowHeadSize, float durationInSeconds, bool depthEnabled)
+	void DebugDrawSceneItem::drawArrow(const glm::vec3& fromWorldSpacePosition, const glm::vec3& toWorldSpacePosition, const float sRgbColor[3], float arrowHeadSize, float lineWidth, float durationInSeconds, bool depthEnabled)
 	{
-		dd::arrow(static_cast<dd::ContextHandle>(mContextHandle), glm::value_ptr(fromWorldSpacePosition), glm::value_ptr(toWorldSpacePosition), sRgbColor, arrowHeadSize, ::DebugDrawSceneItemDetail::secondsToMilliseconds(durationInSeconds), depthEnabled);
+		dd::arrow(static_cast<dd::ContextHandle>(mContextHandle), glm::value_ptr(fromWorldSpacePosition), glm::value_ptr(toWorldSpacePosition), sRgbColor, arrowHeadSize, lineWidth, ::DebugDrawSceneItemDetail::secondsToMilliseconds(durationInSeconds), depthEnabled);
 	}
 
-	void DebugDrawSceneItem::drawCross(const glm::vec3& worldSpaceCenter, float length, float durationInSeconds, bool depthEnabled)
+	void DebugDrawSceneItem::drawCross(const glm::vec3& worldSpaceCenter, float length, float lineWidth, float durationInSeconds, bool depthEnabled)
 	{
-		dd::cross(static_cast<dd::ContextHandle>(mContextHandle), glm::value_ptr(worldSpaceCenter), length, ::DebugDrawSceneItemDetail::secondsToMilliseconds(durationInSeconds), depthEnabled);
+		dd::cross(static_cast<dd::ContextHandle>(mContextHandle), glm::value_ptr(worldSpaceCenter), length, lineWidth, ::DebugDrawSceneItemDetail::secondsToMilliseconds(durationInSeconds), depthEnabled);
 	}
 
-	void DebugDrawSceneItem::drawCircle(const glm::vec3& worldSpaceCenter, const glm::vec3& normalizedWorldSpacePlaneNormal, const float sRgbColor[3], float radius, float numberOfSteps, float durationInSeconds, bool depthEnabled)
+	void DebugDrawSceneItem::drawCircle(const glm::vec3& worldSpaceCenter, const glm::vec3& normalizedWorldSpacePlaneNormal, const float sRgbColor[3], float radius, float numberOfSteps, float lineWidth, float durationInSeconds, bool depthEnabled)
 	{
-		dd::circle(static_cast<dd::ContextHandle>(mContextHandle), glm::value_ptr(worldSpaceCenter), glm::value_ptr(normalizedWorldSpacePlaneNormal), sRgbColor, radius, numberOfSteps, ::DebugDrawSceneItemDetail::secondsToMilliseconds(durationInSeconds), depthEnabled);
+		dd::circle(static_cast<dd::ContextHandle>(mContextHandle), glm::value_ptr(worldSpaceCenter), glm::value_ptr(normalizedWorldSpacePlaneNormal), sRgbColor, radius, numberOfSteps, lineWidth, ::DebugDrawSceneItemDetail::secondsToMilliseconds(durationInSeconds), depthEnabled);
 	}
 
-	void DebugDrawSceneItem::drawPlane(const glm::vec3& worldSpaceCenter, const glm::vec3& normalizedWorldSpacePlaneNormal, const float planeColor[3], const float normalColor[3], float planeScale, float normalScale, float durationInSeconds, bool depthEnabled)
+	void DebugDrawSceneItem::drawPlane(const glm::vec3& worldSpaceCenter, const glm::vec3& normalizedWorldSpacePlaneNormal, const float planeColor[3], const float normalColor[3], float planeScale, float normalScale, float lineWidth, float durationInSeconds, bool depthEnabled)
 	{
-		dd::plane(static_cast<dd::ContextHandle>(mContextHandle), glm::value_ptr(worldSpaceCenter), glm::value_ptr(normalizedWorldSpacePlaneNormal), planeColor, normalColor, planeScale, normalScale, ::DebugDrawSceneItemDetail::secondsToMilliseconds(durationInSeconds), depthEnabled);
+		dd::plane(static_cast<dd::ContextHandle>(mContextHandle), glm::value_ptr(worldSpaceCenter), glm::value_ptr(normalizedWorldSpacePlaneNormal), planeColor, normalColor, planeScale, normalScale, lineWidth, ::DebugDrawSceneItemDetail::secondsToMilliseconds(durationInSeconds), depthEnabled);
 	}
 
-	void DebugDrawSceneItem::drawSphere(const glm::vec3& worldSpaceCenter, const float sRgbColor[3], float radius, float durationInSeconds, bool depthEnabled)
+	void DebugDrawSceneItem::drawSphere(const glm::vec3& worldSpaceCenter, const float sRgbColor[3], float radius, float lineWidth, float durationInSeconds, bool depthEnabled)
 	{
-		dd::sphere(static_cast<dd::ContextHandle>(mContextHandle), glm::value_ptr(worldSpaceCenter), sRgbColor, radius, ::DebugDrawSceneItemDetail::secondsToMilliseconds(durationInSeconds), depthEnabled);
+		dd::sphere(static_cast<dd::ContextHandle>(mContextHandle), glm::value_ptr(worldSpaceCenter), sRgbColor, radius, lineWidth, ::DebugDrawSceneItemDetail::secondsToMilliseconds(durationInSeconds), depthEnabled);
 	}
 
-	void DebugDrawSceneItem::drawCone(const glm::vec3& worldSpaceApex, const glm::vec3& worldSpaceDirectionAndLength, const float sRgbColor[3], float baseRadius, float apexRadius, float durationInSeconds, bool depthEnabled)
+	void DebugDrawSceneItem::drawCone(const glm::vec3& worldSpaceApex, const glm::vec3& worldSpaceDirectionAndLength, const float sRgbColor[3], float baseRadius, float apexRadius, float lineWidth, float durationInSeconds, bool depthEnabled)
 	{
-		dd::cone(static_cast<dd::ContextHandle>(mContextHandle), glm::value_ptr(worldSpaceApex), glm::value_ptr(worldSpaceDirectionAndLength), sRgbColor, baseRadius, apexRadius, ::DebugDrawSceneItemDetail::secondsToMilliseconds(durationInSeconds), depthEnabled);
+		dd::cone(static_cast<dd::ContextHandle>(mContextHandle), glm::value_ptr(worldSpaceApex), glm::value_ptr(worldSpaceDirectionAndLength), sRgbColor, baseRadius, apexRadius, lineWidth, ::DebugDrawSceneItemDetail::secondsToMilliseconds(durationInSeconds), depthEnabled);
 	}
 
-	void DebugDrawSceneItem::drawBox(const glm::vec3 worldSpacePoints[8], const float sRgbColor[3], float durationInSeconds, bool depthEnabled)
+	void DebugDrawSceneItem::drawBox(const glm::vec3 worldSpacePoints[8], const float sRgbColor[3], float lineWidth, float durationInSeconds, bool depthEnabled)
 	{
 		// Copied from "dd::box()" implementation
 		const int durationInMilliseconds = ::DebugDrawSceneItemDetail::secondsToMilliseconds(durationInSeconds);
@@ -556,40 +557,40 @@ namespace Renderer
 		// (& 3 is a fancy way of doing % 4, but avoids the expensive modulo operation)
 		for (int i = 0; i < 4; ++i)
 		{
-			dd::line(static_cast<dd::ContextHandle>(mContextHandle), glm::value_ptr(worldSpacePoints[i]), glm::value_ptr(worldSpacePoints[(i + 1) & 3]), sRgbColor, durationInMilliseconds, depthEnabled);
-			dd::line(static_cast<dd::ContextHandle>(mContextHandle), glm::value_ptr(worldSpacePoints[4 + i]), glm::value_ptr(worldSpacePoints[4 + ((i + 1) & 3)]), sRgbColor, durationInMilliseconds, depthEnabled);
-			dd::line(static_cast<dd::ContextHandle>(mContextHandle), glm::value_ptr(worldSpacePoints[i]), glm::value_ptr(worldSpacePoints[4 + i]), sRgbColor, durationInMilliseconds, depthEnabled);
+			dd::line(static_cast<dd::ContextHandle>(mContextHandle), glm::value_ptr(worldSpacePoints[i]), glm::value_ptr(worldSpacePoints[(i + 1) & 3]), sRgbColor, lineWidth, durationInMilliseconds, depthEnabled);
+			dd::line(static_cast<dd::ContextHandle>(mContextHandle), glm::value_ptr(worldSpacePoints[4 + i]), glm::value_ptr(worldSpacePoints[4 + ((i + 1) & 3)]), sRgbColor, lineWidth, durationInMilliseconds, depthEnabled);
+			dd::line(static_cast<dd::ContextHandle>(mContextHandle), glm::value_ptr(worldSpacePoints[i]), glm::value_ptr(worldSpacePoints[4 + i]), sRgbColor, lineWidth, durationInMilliseconds, depthEnabled);
 		}
 	}
 
-	void DebugDrawSceneItem::drawBox(const glm::vec3& worldSpaceCenter, const glm::vec3& size, const float sRgbColor[3], float durationInSeconds, bool depthEnabled)
+	void DebugDrawSceneItem::drawBox(const glm::vec3& worldSpaceCenter, const glm::vec3& size, const float sRgbColor[3], float lineWidth, float durationInSeconds, bool depthEnabled)
 	{
-		dd::box(static_cast<dd::ContextHandle>(mContextHandle), glm::value_ptr(worldSpaceCenter), sRgbColor, size.x, size.y, size.z, ::DebugDrawSceneItemDetail::secondsToMilliseconds(durationInSeconds), depthEnabled);
+		dd::box(static_cast<dd::ContextHandle>(mContextHandle), glm::value_ptr(worldSpaceCenter), sRgbColor, size.x, size.y, size.z, lineWidth, ::DebugDrawSceneItemDetail::secondsToMilliseconds(durationInSeconds), depthEnabled);
 	}
 
-	void DebugDrawSceneItem::drawAabb(const glm::vec3& worldSpaceMinimumPosition, const glm::vec3& worldSpaceMaximumPosition, const float sRgbColor[3], float durationInSeconds, bool depthEnabled)
+	void DebugDrawSceneItem::drawAabb(const glm::vec3& worldSpaceMinimumPosition, const glm::vec3& worldSpaceMaximumPosition, const float sRgbColor[3], float lineWidth, float durationInSeconds, bool depthEnabled)
 	{
-		dd::aabb(static_cast<dd::ContextHandle>(mContextHandle), glm::value_ptr(worldSpaceMinimumPosition), glm::value_ptr(worldSpaceMaximumPosition), sRgbColor, ::DebugDrawSceneItemDetail::secondsToMilliseconds(durationInSeconds), depthEnabled);
+		dd::aabb(static_cast<dd::ContextHandle>(mContextHandle), glm::value_ptr(worldSpaceMinimumPosition), glm::value_ptr(worldSpaceMaximumPosition), sRgbColor, lineWidth, ::DebugDrawSceneItemDetail::secondsToMilliseconds(durationInSeconds), depthEnabled);
 	}
 
-	void DebugDrawSceneItem::drawFrustum(const glm::mat4& clipSpaceToObjectSpace, const float sRgbColor[3], float durationInSeconds, bool depthEnabled)
+	void DebugDrawSceneItem::drawFrustum(const glm::mat4& clipSpaceToObjectSpace, const float sRgbColor[3], float lineWidth, float durationInSeconds, bool depthEnabled)
 	{
-		dd::frustum(static_cast<dd::ContextHandle>(mContextHandle), glm::value_ptr(clipSpaceToObjectSpace), sRgbColor, ::DebugDrawSceneItemDetail::secondsToMilliseconds(durationInSeconds), depthEnabled);
+		dd::frustum(static_cast<dd::ContextHandle>(mContextHandle), glm::value_ptr(clipSpaceToObjectSpace), sRgbColor, lineWidth, ::DebugDrawSceneItemDetail::secondsToMilliseconds(durationInSeconds), depthEnabled);
 	}
 
-	void DebugDrawSceneItem::drawVertexNormal(const glm::vec3& worldSpaceOrigin, const glm::vec3& normalizedWorldSpaceNormal, float length, float durationInSeconds, bool depthEnabled)
+	void DebugDrawSceneItem::drawVertexNormal(const glm::vec3& worldSpaceOrigin, const glm::vec3& normalizedWorldSpaceNormal, float length, float lineWidth, float durationInSeconds, bool depthEnabled)
 	{
-		dd::vertexNormal(static_cast<dd::ContextHandle>(mContextHandle), glm::value_ptr(worldSpaceOrigin), glm::value_ptr(normalizedWorldSpaceNormal), length, ::DebugDrawSceneItemDetail::secondsToMilliseconds(durationInSeconds), depthEnabled);
+		dd::vertexNormal(static_cast<dd::ContextHandle>(mContextHandle), glm::value_ptr(worldSpaceOrigin), glm::value_ptr(normalizedWorldSpaceNormal), length, lineWidth, ::DebugDrawSceneItemDetail::secondsToMilliseconds(durationInSeconds), depthEnabled);
 	}
 
-	void DebugDrawSceneItem::drawTangentBasis(const glm::vec3& worldSpaceOrigin, const glm::vec3& normalizedWorldSpaceNormal, const glm::vec3& normalizedWorldSpaceTangent, const glm::vec3& normalizedWorldSpaceBitangent, float lengths, float durationInSeconds, bool depthEnabled)
+	void DebugDrawSceneItem::drawTangentBasis(const glm::vec3& worldSpaceOrigin, const glm::vec3& normalizedWorldSpaceNormal, const glm::vec3& normalizedWorldSpaceTangent, const glm::vec3& normalizedWorldSpaceBitangent, float lengths, float lineWidth, float durationInSeconds, bool depthEnabled)
 	{
-		dd::tangentBasis(static_cast<dd::ContextHandle>(mContextHandle), glm::value_ptr(worldSpaceOrigin), glm::value_ptr(normalizedWorldSpaceNormal), glm::value_ptr(normalizedWorldSpaceTangent), glm::value_ptr(normalizedWorldSpaceBitangent), lengths, ::DebugDrawSceneItemDetail::secondsToMilliseconds(durationInSeconds), depthEnabled);
+		dd::tangentBasis(static_cast<dd::ContextHandle>(mContextHandle), glm::value_ptr(worldSpaceOrigin), glm::value_ptr(normalizedWorldSpaceNormal), glm::value_ptr(normalizedWorldSpaceTangent), glm::value_ptr(normalizedWorldSpaceBitangent), lengths, lineWidth, ::DebugDrawSceneItemDetail::secondsToMilliseconds(durationInSeconds), depthEnabled);
 	}
 
-	void DebugDrawSceneItem::drawXzSquareGrid(float worldSpaceMinimumXZPosition, float worldSpaceMaximumXZPosition, float worldSpaceYPosition, float stepSize, const float sRgbColor[3], float durationInSeconds, bool depthEnabled)
+	void DebugDrawSceneItem::drawXzSquareGrid(float worldSpaceMinimumXZPosition, float worldSpaceMaximumXZPosition, float worldSpaceYPosition, float stepSize, const float sRgbColor[3], float lineWidth, float durationInSeconds, bool depthEnabled)
 	{
-		dd::xzSquareGrid(static_cast<dd::ContextHandle>(mContextHandle), worldSpaceMinimumXZPosition, worldSpaceMaximumXZPosition, worldSpaceYPosition, stepSize, sRgbColor, ::DebugDrawSceneItemDetail::secondsToMilliseconds(durationInSeconds), depthEnabled);
+		dd::xzSquareGrid(static_cast<dd::ContextHandle>(mContextHandle), worldSpaceMinimumXZPosition, worldSpaceMaximumXZPosition, worldSpaceYPosition, stepSize, sRgbColor, lineWidth, ::DebugDrawSceneItemDetail::secondsToMilliseconds(durationInSeconds), depthEnabled);
 	}
 
 

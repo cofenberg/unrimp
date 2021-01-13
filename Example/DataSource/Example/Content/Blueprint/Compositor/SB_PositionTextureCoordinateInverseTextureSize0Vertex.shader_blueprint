@@ -33,9 +33,9 @@ INPUT_BEGIN
 	INPUT_VERTEX_ID
 INPUT_END
 OUTPUT_BEGIN
-	OUTPUT_TEXTURE_COORDINATE				 (1, float2, TexCoordVS, 0)				// Texture coordinate
-	OUTPUT_TEXTURE_COORDINATE_NOINTERPOLATION(2, float2, InverseTextureSize0VS, 1)	// Inverse texture size 0
-	OUTPUT_POSITION							 (0)									// Clip space vertex position as output, left/bottom is (-1,-1) and right/top is (1,1)
+										   OUTPUT_TEXTURE_COORDINATE(1, float2, TexCoordVS, 0)				// Texture coordinate
+	NOINTERPOLATION_INTERPOLATION_MODIFIER OUTPUT_TEXTURE_COORDINATE(2, float2, InverseTextureSize0VS, 1)	// Inverse texture size 0
+										   OUTPUT_POSITION			(0)										// Clip space vertex position as output, left/bottom is (-1,-1) and right/top is (1,1)
 OUTPUT_END
 
 // Textures

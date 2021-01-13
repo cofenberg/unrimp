@@ -234,13 +234,13 @@ namespace
 				const glm::mat4 viewSpaceToClipSpace = glm::perspective(45.0f, aspectRatio, 0.5f, 4.0f);
 				const glm::mat4 objectSpaceToViewSpace = glm::lookAt(position, glm::vec3(-8.0f, 0.5f, -14.0f), Renderer::Math::VEC3_UNIT_Y);
 				const glm::mat4 clipSpaceToObjectSpace = glm::inverse(viewSpaceToClipSpace * objectSpaceToViewSpace);
-				debugDrawSceneItem.drawFrustum(clipSpaceToObjectSpace, Color4::WHITE, 0.0f, false);	// Disable depth
+				debugDrawSceneItem.drawFrustum(clipSpaceToObjectSpace, Color4::WHITE, 2.0f, 0.0f, false);	// Disable depth
 
 				// A white dot at the eye position
 				debugDrawSceneItem.drawPoint(frustumOrigin, Color4::WHITE, 15.0f, 0.0f, false);	// Disable depth
 
 				// A set of arrows at the cameras origin/eye
-				debugDrawSceneItem.drawAxisTriad(glm::translate(glm::mat4(1.0f), position), 0.3f, 2.0f, 0.0f, false);	// Disable depth
+				debugDrawSceneItem.drawAxisTriad(glm::translate(glm::mat4(1.0f), position), 0.3f, 2.0f, 2.0f, 0.0f, false);	// Disable depth
 			}
 
 			// Draw HUD text

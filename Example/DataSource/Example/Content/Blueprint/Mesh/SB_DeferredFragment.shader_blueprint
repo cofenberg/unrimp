@@ -39,18 +39,18 @@
 //[-------------------------------------------------------]
 // Attribute input / output
 INPUT_BEGIN
-	INPUT_TEXTURE_COORDINATE_NOINTERPOLATION(1, uint,   MaterialSlotVS,				 0)	// The assigned material slot inside the material uniform buffer
-	INPUT_TEXTURE_COORDINATE				(2, float2, TexCoordVS,					 1)	// Texture coordinate
-	INPUT_TEXTURE_COORDINATE				(3, float3, TangentFrame0VS,			 2)	// Tangent frame
-	INPUT_TEXTURE_COORDINATE				(4, float3, TangentFrame1VS,			 3)	// Tangent frame
-	INPUT_TEXTURE_COORDINATE				(5, float3, TangentFrame2VS,			 4)	// Tangent frame
-	INPUT_TEXTURE_COORDINATE				(6, float3, PreviousClipSpacePositionVS, 5)	// Previous clip space position
-	@property(UseParallaxOcclusionMapping)
-		INPUT_TEXTURE_COORDINATE			(7, float3, WorldSpacePositionVS,		 6)	// World space position
-	@end
-	DECLARE_FRAGMENT_POSITION
-	DECLARE_COVERAGE_MASK
-	DECLARE_IS_FRONT_FACE
+	NOINTERPOLATION_INTERPOLATION_MODIFIER INPUT_TEXTURE_COORDINATE(1, uint,   MaterialSlotVS,				0)	// The assigned material slot inside the material uniform buffer
+										   INPUT_TEXTURE_COORDINATE(2, float2, TexCoordVS,					1)	// Texture coordinate
+										   INPUT_TEXTURE_COORDINATE(3, float3, TangentFrame0VS,			 	2)	// Tangent frame
+										   INPUT_TEXTURE_COORDINATE(4, float3, TangentFrame1VS,			 	3)	// Tangent frame
+										   INPUT_TEXTURE_COORDINATE(5, float3, TangentFrame2VS,			 	4)	// Tangent frame
+										   INPUT_TEXTURE_COORDINATE(6, float3, PreviousClipSpacePositionVS, 5)	// Previous clip space position
+										@property(UseParallaxOcclusionMapping)
+										   INPUT_TEXTURE_COORDINATE(7, float3, WorldSpacePositionVS,		6)	// World space position
+										@end
+										   DECLARE_FRAGMENT_POSITION
+										   DECLARE_COVERAGE_MASK
+										   DECLARE_IS_FRONT_FACE
 INPUT_END
 OUTPUT_BEGIN
 	OUTPUT_COLOR(0)	// GBuffer 0: rgb = albedo color, a = edge pixel

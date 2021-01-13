@@ -52,10 +52,10 @@
 //[-------------------------------------------------------]
 // Attribute input / output
 INPUT_BEGIN
-	INPUT_TEXTURE_COORDINATE_NOINTERPOLATION(1, float4, CameraVolumeSpacePosition, 				  0)	// Volume space camera position, w-component = The assigned material slot inside the material uniform buffer
-	INPUT_TEXTURE_COORDINATE				(2, float4, VolumeSpacePositionVS,   	  			  1)	// Volume space ray end position, w-component = Uniform world space to object space scale, only uniform scale is supported to keep things simple
-	INPUT_TEXTURE_COORDINATE_NOINTERPOLATION(3, float4, ViewSpaceToObjectSpaceRotationQuaternion, 2)	// View space to object space rotation quaternion
-	DECLARE_FRAGMENT_POSITION
+	NOINTERPOLATION_INTERPOLATION_MODIFIER INPUT_TEXTURE_COORDINATE(1, float4, CameraVolumeSpacePosition,				 0)	// Volume space camera position, w-component = The assigned material slot inside the material uniform buffer
+										   INPUT_TEXTURE_COORDINATE(2, float4, VolumeSpacePositionVS,					 1)	// Volume space ray end position, w-component = Uniform world space to object space scale, only uniform scale is supported to keep things simple
+	NOINTERPOLATION_INTERPOLATION_MODIFIER INPUT_TEXTURE_COORDINATE(3, float4, ViewSpaceToObjectSpaceRotationQuaternion, 2)	// View space to object space rotation quaternion
+										   DECLARE_FRAGMENT_POSITION
 INPUT_END
 OUTPUT_BEGIN
 	OUTPUT_COLOR(0)

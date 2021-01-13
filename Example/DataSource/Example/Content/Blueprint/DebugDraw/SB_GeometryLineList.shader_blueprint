@@ -1,0 +1,107 @@
+/*********************************************************\
+ * Copyright (c) 2012-2021 The Unrimp Team
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of this software
+ * and associated documentation files (the "Software"), to deal in the Software without
+ * restriction, including without limitation the rights to use, copy, modify, merge, publish,
+ * distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the
+ * Software is furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all copies or
+ * substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING
+ * BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+ * NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
+ * DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+ * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+\*********************************************************/
+
+
+//[-------------------------------------------------------]
+//[ Definitions                                           ]
+//[-------------------------------------------------------]
+@includepiece(../SharedShaderPiece/SP_Core.asset)
+	@insertpiece(SetCrossPlatformSettings)
+
+
+//[-------------------------------------------------------]
+//[ Input / output                                        ]
+//[-------------------------------------------------------]
+// Attribute input / output
+INPUT_BEGIN
+	INPUT_TEXTURE_COORDINATE(0, float4, INPUT_ARRAY(PositionVS), 0)	// Clip space vertex position as output, left/bottom is (-1,-1) and right/top is (1,1)
+	INPUT_TEXTURE_COORDINATE(1, float4, INPUT_ARRAY(ColorVS),    1)	// sRGB vertex color, a = line width
+INPUT_END
+OUTPUT_BEGIN
+										 OUTPUT_TEXTURE_COORDINATE(1, float3, ColorGS, 				   0)	// sRGB vertex color
+	NOPERSPECTIVE_INTERPOLATION_MODIFIER OUTPUT_TEXTURE_COORDINATE(2, float2, LineWidthEdgeDistanceGS, 1)	// x = line width, y = edge distance
+	OUTPUT_POSITION(0)																						// Clip space vertex position as output, left/bottom is (-1,-1) and right/top is (1,1)
+OUTPUT_END
+
+// Uniform buffers
+struct PassDataStruct
+{
+	float4x4 WorldSpaceToClipSpaceMatrix[2];
+	float2 ViewportSize;
+};
+UNIFORM_BUFFER_BEGIN(0, 0, PassUniformBuffer, 0)
+	PassDataStruct PassData;
+UNIFORM_BUFFER_END
+
+
+//[-------------------------------------------------------]
+//[ Main                                                  ]
+//[-------------------------------------------------------]
+MAIN_BEGIN_GEOMETRY(GS_INPUT_PRIMITIVE_TYPE_LINE_LIST, 2, GS_OUTPUT_PRIMITIVE_TYPE_TRIANGLE_STRIP, 4)
+	float4 colorVS0 = MAIN_INPUT_ARRAY(ColorVS, 0);
+	float4 colorVS1 = MAIN_INPUT_ARRAY(ColorVS, 1);
+	float lineWidth0 = colorVS0.a;
+	float lineWidth1 = colorVS1.a;
+
+	// The line-extrusion is basing on "Im3d" ( https://github.com/john-chapman/im3d ) DirectX11 example: "https://github.com/john-chapman/im3d/blob/master/examples/DirectX11/im3d.hlsl"
+	// -> The solution looks similiar to "Motion-Blurred Billboards" from "The Little Grasshopper - Graphics Programming Tips" -> "Tron, Volumetric Lines, and Meshless Tubes" written by Philip Rideout,
+	//    December 31st, 2010 at 4:28 am at https://web.archive.org/web/20150915082542/http://prideout.net/blog/?p=61 - which in turn was basing on an idea of Sébastien Hillaire ( https://sebh.github.io/ )
+	//    "Volumetric lines 2" (last updated on Tuesday, 06 September 2011 19:17, https://web.archive.org/web/20150930205745/http://sebastien.hillaire.free.fr/index.php?option=com_content&view=article&id=54&Itemid=56 )
+	//    and "Volumetric lines" (last updated on Sunday, 01 May 2011 20:01 https://web.archive.org/web/20111202022753/http://sebastien.hillaire.free.fr/index.php?option=com_content&view=article&id=57&Itemid=74 ).
+	// -> Another earlier approach with just a vertex & fragment shader was published at NVIDIA SDK 9.51 code samples "Cg Volume Lines" ( http://download.nvidia.com/developer/SDK/Individual_Samples/samples.html )
+	//    by Tristan Lorach, technical report "Fake Volumetric lines" http://download.nvidia.com/developer/SDK/Individual_Samples/DEMOS/OpenGL/src/cg_VolumeLine/docs/VolumeLine.pdf
+	float2 position0 = MAIN_INPUT_ARRAY(PositionVS, 0).xy / MAIN_INPUT_ARRAY(PositionVS, 0).w;
+	float2 position1 = MAIN_INPUT_ARRAY(PositionVS, 1).xy / MAIN_INPUT_ARRAY(PositionVS, 1).w;
+	float2 direction = position0 - position1;
+	direction = normalize(float2(direction.x, direction.y * PassData.ViewportSize.y / PassData.ViewportSize.x));	// Correct for aspect ratio
+	float2 tangent0 = float2(-direction.y, direction.x);
+	float2 tangent1 = tangent0 * lineWidth1 / PassData.ViewportSize;
+	tangent0 = tangent0 * lineWidth0 / PassData.ViewportSize;
+
+	// Line start
+	{ // Vertex 0
+		MAIN_OUTPUT_POSITION = float4((position0 - tangent0) * MAIN_INPUT_ARRAY(PositionVS, 0).w, MAIN_INPUT_ARRAY(PositionVS, 0).zw);
+		MAIN_OUTPUT(ColorGS) = colorVS0.rgb;
+		MAIN_OUTPUT(LineWidthEdgeDistanceGS) = float2(lineWidth0, -lineWidth0);
+		EMIT_VERTEX
+	}
+	{ // Vertex 1
+		MAIN_OUTPUT_POSITION = float4((position0 + tangent0) * MAIN_INPUT_ARRAY(PositionVS, 0).w, MAIN_INPUT_ARRAY(PositionVS, 0).zw);
+		MAIN_OUTPUT(ColorGS) = colorVS0.rgb;
+		MAIN_OUTPUT(LineWidthEdgeDistanceGS) = float2(lineWidth0, lineWidth0);
+		EMIT_VERTEX
+	}
+
+	// Line end
+	{ // Vertex 2
+		MAIN_OUTPUT_POSITION = float4((position1 - tangent1) * MAIN_INPUT_ARRAY(PositionVS, 1).w, MAIN_INPUT_ARRAY(PositionVS, 1).zw);
+		MAIN_OUTPUT(ColorGS) = colorVS1.rgb;
+		MAIN_OUTPUT(LineWidthEdgeDistanceGS) = float2(lineWidth1, -lineWidth1);
+		EMIT_VERTEX
+	}
+	{ // Vertex 3
+		MAIN_OUTPUT_POSITION = float4((position1 + tangent1) * MAIN_INPUT_ARRAY(PositionVS, 1).w, MAIN_INPUT_ARRAY(PositionVS, 1).zw);
+		MAIN_OUTPUT(ColorGS) = colorVS1.rgb;
+		MAIN_OUTPUT(LineWidthEdgeDistanceGS) = float2(lineWidth1, lineWidth1);
+		EMIT_VERTEX
+	}
+
+	// Done
+	END_PRIMITIVE
+MAIN_END_NO_OUTPUT

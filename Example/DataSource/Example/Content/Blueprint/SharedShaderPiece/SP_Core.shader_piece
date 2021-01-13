@@ -56,7 +56,6 @@
 			#define INPUT_VERTEX_NORMAL(attributeIndex, type, name) type name : NORMAL;
 			#define INPUT_VERTEX_TANGENT(attributeIndex, type, name) type name : TANGENT;
 			#define INPUT_TEXTURE_COORDINATE(attributeIndex, type, name, semanticIndex) type name : TEXCOORD##semanticIndex;
-			#define INPUT_TEXTURE_COORDINATE_NOINTERPOLATION(attributeIndex, type, name, semanticIndex) nointerpolation type name : TEXCOORD##semanticIndex;
 			#define INPUT_VERTEX_BLEND_INDICES(attributeIndex, type, name) type name : BLENDINDICES;
 			#define INPUT_VERTEX_BLEND_WEIGHTS(attributeIndex, type, name) type name : BLENDWEIGHT;
 			#define INPUT_TESS_LEVEL_INNER(numberOfComponents) float TessLevelInner[numberOfComponents] : SV_INSIDETESSFACTOR;
@@ -72,7 +71,6 @@
 			#define OUTPUT_POSITION(attributeIndex) float4 OutputPosition : SV_POSITION;
 			#define OUTPUT_POSITION_NAMED(attributeIndex, type, name) type name : SV_POSITION;
 			#define OUTPUT_TEXTURE_COORDINATE(attributeIndex, type, name, semanticIndex) type name : TEXCOORD##semanticIndex;
-			#define OUTPUT_TEXTURE_COORDINATE_NOINTERPOLATION(attributeIndex, type, name, semanticIndex) nointerpolation type name : TEXCOORD##semanticIndex;
 			#define OUTPUT_COLOR(semanticIndex) float4 OutputColor##semanticIndex : SV_TARGET##semanticIndex;
 			#define OUTPUT_DEPTH float OutputDepth : SV_DEPTH;
 			#define OUTPUT_TESS_LEVEL_INNER(numberOfComponents)	float TessLevelInner[numberOfComponents] : SV_INSIDETESSFACTOR;
@@ -80,12 +78,18 @@
 		#define OUTPUT_END };
 		#define OUTPUT_END_PATCH };
 
+		// Shader attribute output interpolation nodifiers, see https://docs.microsoft.com/en-gb/windows/win32/direct3dhlsl/dx-graphics-hlsl-struct?redirectedfrom=MSDN
+		// #define LINEAR_INTERPOLATION_MODIFIER linear	// Not defined by intent, this is the default value
+		#define NOINTERPOLATION_INTERPOLATION_MODIFIER nointerpolation
+		#define NOPERSPECTIVE_INTERPOLATION_MODIFIER noperspective
+
 		// Main
 		#define MAIN_BEGIN SHADER_OUTPUT main(SHADER_INPUT ShaderInput) { SHADER_OUTPUT shaderOutput;
 		#define MAIN_BEGIN_NO_OUTPUT void main(SHADER_INPUT ShaderInput) {
 		#define MAIN_BEGIN_TESSELLATION_CONTROL_PATCH(numberOfInputControlPoints) SHADER_OUTPUT_PATCH mainPerPatchInvocation(SHADER_INPUT_PATCH ShaderInputPatch, InputPatch<SHADER_INPUT, numberOfInputControlPoints> ShaderInput) { SHADER_OUTPUT_PATCH shaderOutputPatch;
 		#define MAIN_BEGIN_TESSELLATION_CONTROL(numberOfInputControlPoints, numberOfOutputControlPoints) [outputcontrolpoints(numberOfOutputControlPoints)] [patchconstantfunc("mainPerPatchInvocation")] SHADER_OUTPUT main(SHADER_INPUT_CONTROL_POINT ShaderInputControlPoint, InputPatch<SHADER_INPUT, numberOfInputControlPoints> ShaderInput) { SHADER_OUTPUT shaderOutput;
 		#define MAIN_BEGIN_TESSELLATION_EVALUATION(numberOfInputControlPoints) SHADER_OUTPUT main(SHADER_INPUT_PATCH ShaderInputPatch, const OutputPatch<SHADER_INPUT, numberOfInputControlPoints> ShaderInput) { SHADER_OUTPUT shaderOutput;
+		#define MAIN_BEGIN_GEOMETRY(inputPrimitiveType, numberOfInputVertices, outputPrimitiveType, numberOfOutputVertices) [maxvertexcount(numberOfOutputVertices)] void main(inputPrimitiveType SHADER_INPUT ShaderInput[numberOfInputVertices], inout outputPrimitiveType<SHADER_OUTPUT> OutputStream) { SHADER_OUTPUT shaderOutput;
 		#define MAIN_BEGIN_COMPUTE(localSizeX, localSizeY, localSizeZ) [numthreads(localSizeX, localSizeY, localSizeZ)] void main(SHADER_INPUT ShaderInput) {
 			#define MAIN_INPUT(name) ShaderInput.name
 			#define MAIN_INPUT_ARRAY(name, index) ShaderInput[index].name
@@ -217,6 +221,18 @@
 		#define TEXTURE_FETCH_3D(name, texelIndex) name.Load(texelIndex)
 		#define IMAGE_STORE(name, texelIndex, data) name[texelIndex] = data
 
+		// Geometry shader only
+		#define GS_INPUT_PRIMITIVE_TYPE_POINT_LIST point
+		#define GS_INPUT_PRIMITIVE_TYPE_LINE_LIST line
+		#define GS_INPUT_PRIMITIVE_TYPE_LINE_LIST_ADJ lineadj
+		#define GS_INPUT_PRIMITIVE_TYPE_TRIANGLE_LIST triangle
+		#define GS_INPUT_PRIMITIVE_TYPE_TRIANGLE_LIST_ADJ triangleadj
+		#define GS_OUTPUT_PRIMITIVE_TYPE_POINT_LIST PointStream
+		#define GS_OUTPUT_PRIMITIVE_TYPE_LINE_STRIP LineStream
+		#define GS_OUTPUT_PRIMITIVE_TYPE_TRIANGLE_STRIP TriangleStream
+		#define EMIT_VERTEX OutputStream.Append(shaderOutput);
+		#define END_PRIMITIVE OutputStream.RestartStrip();
+
 		// Fragment shader only
 		#define DECLARE_FRAGMENT_POSITION float4 FragmentPosition : SV_POSITION;	// Fragment position in screen space (e.g. 0x0 ... 1920x1080), includes half-texel offset so first pixel isn't (0, 0) but (0.5, 0.5), see "Half-Pixel Offset in DirectX 11" by Adam Sawicki published 9 November 2012 at http://www.asawicki.info/news_1516_half-pixel_offset_in_directx_11.html
 		#define FRAGMENT_POSITION ShaderInput.FragmentPosition
@@ -297,7 +313,6 @@
 			#define INPUT_VERTEX_NORMAL(attributeIndex, type, name) layout(location = attributeIndex) in type name;
 			#define INPUT_VERTEX_TANGENT(attributeIndex, type, name) layout(location = attributeIndex) in type name;
 			#define INPUT_TEXTURE_COORDINATE(attributeIndex, type, name, semanticIndex) layout(location = attributeIndex) in type name;
-			#define INPUT_TEXTURE_COORDINATE_NOINTERPOLATION(attributeIndex, type, name, semanticIndex) layout(location = attributeIndex) flat in type name;
 			#define INPUT_VERTEX_BLEND_INDICES(attributeIndex, type, name) layout(location = attributeIndex) in type name;
 			#define INPUT_VERTEX_BLEND_WEIGHTS(attributeIndex, type, name) layout(location = attributeIndex) in type name;
 			#define INPUT_TESS_LEVEL_INNER(numberOfComponents)
@@ -313,7 +328,6 @@
 			#define OUTPUT_POSITION(attributeIndex) layout(location = attributeIndex) out gl_PerVertex { vec4 gl_Position; };
 			#define OUTPUT_POSITION_NAMED(attributeIndex, type, name) layout(location = attributeIndex) out type name;
 			#define OUTPUT_TEXTURE_COORDINATE(attributeIndex, type, name, semanticIndex) layout(location = attributeIndex) out type name;
-			#define OUTPUT_TEXTURE_COORDINATE_NOINTERPOLATION(attributeIndex, type, name, semanticIndex) layout(location = attributeIndex) flat out type name;
 			#define OUTPUT_COLOR(semanticIndex) layout(location = ##semanticIndex) out vec4 OutputColor##semanticIndex;
 			#define OUTPUT_DEPTH
 			#define OUTPUT_TESS_LEVEL_INNER(numberOfComponents)
@@ -321,12 +335,18 @@
 		#define OUTPUT_END
 		#define OUTPUT_END_PATCH
 
+		// Shader attribute output interpolation nodifiers, see https://www.khronos.org/opengl/wiki/Type_Qualifier_(GLSL)#Interpolation_qualifiers
+		// #define LINEAR_INTERPOLATION_MODIFIER smooth	// Not defined by intent, this is the default value
+		#define NOINTERPOLATION_INTERPOLATION_MODIFIER flat
+		#define NOPERSPECTIVE_INTERPOLATION_MODIFIER noperspective
+
 		// Main
 		#define MAIN_BEGIN void main() {
 		#define MAIN_BEGIN_NO_OUTPUT void mainPerPatchInvocation() {
 		#define MAIN_BEGIN_TESSELLATION_CONTROL_PATCH(numberOfInputControlPoints) void mainPerPatchInvocation() {
 		#define MAIN_BEGIN_TESSELLATION_CONTROL(numberOfInputControlPoints, numberOfOutputControlPoints) layout(vertices = numberOfOutputControlPoints) out; void main() { if (0 == gl_InvocationID) { mainPerPatchInvocation(); }
 		#define MAIN_BEGIN_TESSELLATION_EVALUATION(numberOfInputControlPoints) void main() {
+		#define MAIN_BEGIN_GEOMETRY(inputPrimitiveType, numberOfInputVertices, outputPrimitiveType, numberOfOutputVertices) layout(inputPrimitiveType) in; layout(outputPrimitiveType, max_vertices = numberOfOutputVertices) out; void main() {
 		#define MAIN_BEGIN_COMPUTE(localSizeX, localSizeY, localSizeZ) layout (local_size_x = localSizeX, local_size_y = localSizeY, local_size_z = localSizeZ) in; void main() {
 			#define MAIN_INPUT(name) name
 			#define MAIN_INPUT_ARRAY(name, index) name[index]
@@ -428,6 +448,18 @@
 		#define SAMPLE_CUBE_LOD(textureObject, samplerObject, coordinate) textureLod(textureObject, (coordinate).xyz, (coordinate).w)
 		#define SAMPLE_DEPTH_2D_LOD(textureObject, samplerObject, coordinate) REVERSED_Z(textureLod(textureObject, (coordinate).xy, (coordinate).w).r)
 		#define SAMPLE_DEPTH_2D_MS(textureObject, coordinate, sampleIndex) REVERSED_Z(texelFetch(textureObject, coordinate, sampleIndex).r)
+
+		// Geometry shader only
+		#define GS_INPUT_PRIMITIVE_TYPE_POINT_LIST points
+		#define GS_INPUT_PRIMITIVE_TYPE_LINE_LIST lines
+		#define GS_INPUT_PRIMITIVE_TYPE_LINE_LIST_ADJ lines_adjacency
+		#define GS_INPUT_PRIMITIVE_TYPE_TRIANGLE_LIST triangles
+		#define GS_INPUT_PRIMITIVE_TYPE_TRIANGLE_LIST_ADJ triangles_adjacenc
+		#define GS_OUTPUT_PRIMITIVE_TYPE_POINT_LIST points
+		#define GS_OUTPUT_PRIMITIVE_TYPE_LINE_STRIP line_strip
+		#define GS_OUTPUT_PRIMITIVE_TYPE_TRIANGLE_STRIP triangle_strip
+		#define EMIT_VERTEX EmitVertex();
+		#define END_PRIMITIVE EndPrimitive();
 
 		// Fragment shader only
 		#define DECLARE_FRAGMENT_POSITION
@@ -534,7 +566,6 @@
 			#define INPUT_VERTEX_NORMAL(attributeIndex, type, name) in type name;
 			#define INPUT_VERTEX_TANGENT(attributeIndex, type, name) in type name;
 			#define INPUT_TEXTURE_COORDINATE(attributeIndex, type, name, semanticIndex) in type name;
-			#define INPUT_TEXTURE_COORDINATE_NOINTERPOLATION(attributeIndex, type, name, semanticIndex) flat in type name;
 			#define INPUT_VERTEX_BLEND_INDICES(attributeIndex, type, name) in type name;
 			#define INPUT_VERTEX_BLEND_WEIGHTS(attributeIndex, type, name) in type name;
 			#define INPUT_TESS_LEVEL_INNER(numberOfComponents)
@@ -550,7 +581,6 @@
 			#define OUTPUT_POSITION(attributeIndex) out gl_PerVertex { vec4 gl_Position; };
 			#define OUTPUT_POSITION_NAMED(attributeIndex, type, name) layout(location = attributeIndex) out type name;
 			#define OUTPUT_TEXTURE_COORDINATE(attributeIndex, type, name, semanticIndex) out type name;
-			#define OUTPUT_TEXTURE_COORDINATE_NOINTERPOLATION(attributeIndex, type, name, semanticIndex) flat out type name;
 			#define OUTPUT_COLOR(semanticIndex) layout(location = ##semanticIndex) out vec4 OutputColor##semanticIndex;
 			#define OUTPUT_DEPTH
 			#define OUTPUT_TESS_LEVEL_INNER(numberOfComponents)
@@ -558,12 +588,18 @@
 		#define OUTPUT_END
 		#define OUTPUT_END_PATCH
 
+		// Shader attribute output interpolation nodifiers, see https://www.khronos.org/opengl/wiki/Type_Qualifier_(GLSL)#Interpolation_qualifiers
+		// #define LINEAR_INTERPOLATION_MODIFIER smooth	// Not defined by intent, this is the default value
+		#define NOINTERPOLATION_INTERPOLATION_MODIFIER flat
+		#define NOPERSPECTIVE_INTERPOLATION_MODIFIER noperspective
+
 		// Main
 		#define MAIN_BEGIN void main() {
 		#define MAIN_BEGIN_NO_OUTPUT void main() {
 		#define MAIN_BEGIN_TESSELLATION_CONTROL_PATCH(numberOfInputControlPoints) void mainPerPatchInvocation() {
 		#define MAIN_BEGIN_TESSELLATION_CONTROL(numberOfInputControlPoints, numberOfOutputControlPoints) layout(vertices = numberOfOutputControlPoints) out; void main() { if (0 == gl_InvocationID) { mainPerPatchInvocation(); }
 		#define MAIN_BEGIN_TESSELLATION_EVALUATION(numberOfInputControlPoints) void main() {
+		#define MAIN_BEGIN_GEOMETRY(inputPrimitiveType, numberOfInputVertices, outputPrimitiveType, numberOfOutputVertices) layout(inputPrimitiveType) in; layout(outputPrimitiveType, max_vertices = numberOfOutputVertices) out; void main() {
 		#define MAIN_BEGIN_COMPUTE(localSizeX, localSizeY, localSizeZ) layout (local_size_x = localSizeX, local_size_y = localSizeY, local_size_z = localSizeZ) in; void main() {
 			#define MAIN_INPUT(name) name
 			#define MAIN_INPUT_ARRAY(name, index) name[index]
@@ -675,6 +711,18 @@
 			#define SAMPLE_DEPTH_2D_MS(textureObject, coordinate, sampleIndex) (REVERSED_Z(texelFetch(textureObject, coordinate, sampleIndex).r) * 2.0f - 1.0f)	// 0..1 -> -1..1
 		@end
 
+		// Geometry shader only
+		#define GS_INPUT_PRIMITIVE_TYPE_POINT_LIST points
+		#define GS_INPUT_PRIMITIVE_TYPE_LINE_LIST lines
+		#define GS_INPUT_PRIMITIVE_TYPE_LINE_LIST_ADJ lines_adjacency
+		#define GS_INPUT_PRIMITIVE_TYPE_TRIANGLE_LIST triangles
+		#define GS_INPUT_PRIMITIVE_TYPE_TRIANGLE_LIST_ADJ triangles_adjacenc
+		#define GS_OUTPUT_PRIMITIVE_TYPE_POINT_LIST points
+		#define GS_OUTPUT_PRIMITIVE_TYPE_LINE_STRIP line_strip
+		#define GS_OUTPUT_PRIMITIVE_TYPE_TRIANGLE_STRIP triangle_strip
+		#define EMIT_VERTEX EmitVertex();
+		#define END_PRIMITIVE EndPrimitive();
+
 		// Fragment shader only
 		#define DECLARE_FRAGMENT_POSITION
 		#define FRAGMENT_POSITION gl_FragCoord
@@ -762,7 +810,7 @@
 		*/
 		#define REVERSED_Z(z) (1.0f - z)
 
-		// Shader attribute input// Shader attribute input
+		// Shader attribute input
 		#define INPUT_BEGIN
 		#define INPUT_BEGIN_PATCH
 		#define INPUT_BEGIN_CONTROL_POINT
@@ -776,7 +824,6 @@
 			#define INPUT_VERTEX_NORMAL(attributeIndex, type, name) in highp type name;
 			#define INPUT_VERTEX_TANGENT(attributeIndex, type, name) in highp type name;
 			#define INPUT_TEXTURE_COORDINATE(attributeIndex, type, name, semanticIndex) in highp type name;
-			#define INPUT_TEXTURE_COORDINATE_NOINTERPOLATION(attributeIndex, type, name, semanticIndex) flat in highp type name;
 			#define INPUT_VERTEX_BLEND_INDICES(attributeIndex, type, name) in highp type name;
 			#define INPUT_VERTEX_BLEND_WEIGHTS(attributeIndex, type, name) in highp type name;
 			#define INPUT_TESS_LEVEL_INNER(numberOfComponents)
@@ -792,7 +839,6 @@
 			#define OUTPUT_POSITION(attributeIndex) // gl_Position is still defined in OpenGL ES 300 GLSL
 			#define OUTPUT_POSITION_NAMED(attributeIndex, type, name) layout(location = attributeIndex) out type name;
 			#define OUTPUT_TEXTURE_COORDINATE(attributeIndex, type, name, semanticIndex) out highp type name;
-			#define OUTPUT_TEXTURE_COORDINATE_NOINTERPOLATION(attributeIndex, type, name, semanticIndex) flat out highp type name;
 			#define OUTPUT_COLOR(semanticIndex) layout(location = ##semanticIndex) out highp vec4 OutputColor##semanticIndex;
 			#define OUTPUT_DEPTH
 			#define OUTPUT_TESS_LEVEL_INNER(numberOfComponents)
@@ -800,12 +846,18 @@
 		#define OUTPUT_END
 		#define OUTPUT_END_PATCH
 
+		// Shader attribute output interpolation nodifiers, see https://www.khronos.org/opengl/wiki/Type_Qualifier_(GLSL)#Interpolation_qualifiers
+		// #define LINEAR_INTERPOLATION_MODIFIER smooth	// Not defined by intent, this is the default value
+		#define NOINTERPOLATION_INTERPOLATION_MODIFIER flat
+		#define NOPERSPECTIVE_INTERPOLATION_MODIFIER noperspective
+
 		// Main
 		#define MAIN_BEGIN void main() {
 		#define MAIN_BEGIN_NO_OUTPUT void main() {
 		#define MAIN_BEGIN_TESSELLATION_CONTROL_PATCH(numberOfInputControlPoints) void mainPerPatchInvocation() {
 		#define MAIN_BEGIN_TESSELLATION_CONTROL(numberOfInputControlPoints, numberOfOutputControlPoints) layout(vertices = numberOfOutputControlPoints) out; void main() { if (0 == gl_InvocationID) { mainPerPatchInvocation(); }
 		#define MAIN_BEGIN_TESSELLATION_EVALUATION(numberOfInputControlPoints) void main() {
+		#define MAIN_BEGIN_GEOMETRY(inputPrimitiveType, numberOfInputVertices, outputPrimitiveType, numberOfOutputVertices) layout(inputPrimitiveType) in; layout(outputPrimitiveType, max_vertices = numberOfOutputVertices) out; void main() {
 		#define MAIN_BEGIN_COMPUTE(localSizeX, localSizeY, localSizeZ) layout (local_size_x = localSizeX, local_size_y = localSizeY, local_size_z = localSizeZ) in; void main() {
 			#define MAIN_INPUT(name) name
 			#define MAIN_INPUT_ARRAY(name, index) name[index]
@@ -911,6 +963,18 @@
 			#define SAMPLE_DEPTH_2D_LOD(textureObject, samplerObject, coordinate) (REVERSED_Z(textureLod(textureObject, (coordinate).xy, (coordinate).w).r) * 2.0f - 1.0f)	// 0..1 -> -1..1
 			#define SAMPLE_DEPTH_2D_MS(textureObject, coordinate, sampleIndex) (REVERSED_Z(texelFetch(textureObject, coordinate, sampleIndex).r) * 2.0f - 1.0f)	// 0..1 -> -1..1
 		@end
+
+		// Geometry shader only
+		#define GS_INPUT_PRIMITIVE_TYPE_POINT_LIST points
+		#define GS_INPUT_PRIMITIVE_TYPE_LINE_LIST lines
+		#define GS_INPUT_PRIMITIVE_TYPE_LINE_LIST_ADJ lines_adjacency
+		#define GS_INPUT_PRIMITIVE_TYPE_TRIANGLE_LIST triangles
+		#define GS_INPUT_PRIMITIVE_TYPE_TRIANGLE_LIST_ADJ triangles_adjacenc
+		#define GS_OUTPUT_PRIMITIVE_TYPE_POINT_LIST points
+		#define GS_OUTPUT_PRIMITIVE_TYPE_LINE_STRIP line_strip
+		#define GS_OUTPUT_PRIMITIVE_TYPE_TRIANGLE_STRIP triangle_strip
+		#define EMIT_VERTEX EmitVertex();
+		#define END_PRIMITIVE EndPrimitive();
 
 		// Fragment shader only
 		#define DECLARE_FRAGMENT_POSITION

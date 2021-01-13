@@ -30,7 +30,8 @@
 //[-------------------------------------------------------]
 // Attribute input / output
 INPUT_BEGIN
-	INPUT_TEXTURE_COORDINATE(1, float4, ColorVS, 0)	// sRGB vertex color
+										 INPUT_TEXTURE_COORDINATE(1, float3, ColorGS,				  0)	// sRGB vertex color
+	NOPERSPECTIVE_INTERPOLATION_MODIFIER INPUT_TEXTURE_COORDINATE(2, float2, LineWidthEdgeDistanceGS, 1)	// x = line width, y = edge distance
 INPUT_END
 OUTPUT_BEGIN
 	OUTPUT_COLOR(0)	// sRGB output color
@@ -48,5 +49,12 @@ OUTPUT_END
 //[ Main                                                  ]
 //[-------------------------------------------------------]
 MAIN_BEGIN
-	MAIN_OUTPUT_COLOR(0) = float4(GammaSpaceToLinearSpace3(MAIN_INPUT(ColorVS).rgb), MAIN_INPUT(ColorVS).a);
+	// Smooth anti-aliased line
+	// -> Basing on "Im3d" ( https://github.com/john-chapman/im3d ) DirectX11 example: "https://github.com/john-chapman/im3d/blob/master/examples/DirectX11/im3d.hlsl"
+	const float ANTIALIASING = 2.0f;
+	float d = abs(MAIN_INPUT(LineWidthEdgeDistanceGS).y) / MAIN_INPUT(LineWidthEdgeDistanceGS).x;
+	d = smoothstep(1.0, 1.0 - (ANTIALIASING / MAIN_INPUT(LineWidthEdgeDistanceGS).x), d);
+
+	// Done
+	MAIN_OUTPUT_COLOR(0) = float4(GammaSpaceToLinearSpace3(MAIN_INPUT(ColorGS)), d);
 MAIN_END

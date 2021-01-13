@@ -37,8 +37,8 @@
 //[-------------------------------------------------------]
 // Attribute input / output
 INPUT_BEGIN
-	INPUT_TEXTURE_COORDINATE_NOINTERPOLATION(1, uint,   MaterialSlotVS, 0)	// The assigned material slot inside the material uniform buffer
-	INPUT_TEXTURE_COORDINATE				(2, float2, TexCoordVS,		1)	// Texture coordinate
+	NOINTERPOLATION_INTERPOLATION_MODIFIER INPUT_TEXTURE_COORDINATE(1, uint,   MaterialSlotVS, 0)	// The assigned material slot inside the material uniform buffer
+										   INPUT_TEXTURE_COORDINATE(2, float2, TexCoordVS,	   1)	// Texture coordinate
 INPUT_END
 OUTPUT_BEGIN
 	OUTPUT_COLOR(0)

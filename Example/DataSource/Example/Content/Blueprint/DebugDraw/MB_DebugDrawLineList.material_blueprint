@@ -38,6 +38,7 @@
 			"ShaderBlueprints":
 			{
 				"VertexShaderBlueprint": "./SB_VertexLineList.asset",
+				"GeometryShaderBlueprint": "./SB_GeometryLineList.asset",
 				"FragmentShaderBlueprint": "./SB_FragmentLineList.asset"
 			},
 			"PrimitiveTopology": "LINE_LIST",
@@ -49,6 +50,15 @@
 			{
 				"DepthEnable": "@DepthEnable",
 				"DepthWriteMask": "@DepthWriteMask"
+			},
+			"BlendState":
+			{
+				"RenderTarget[0]":
+				{
+					"BlendEnable": "TRUE",
+					"SrcBlend": "SRC_ALPHA",
+					"DestBlend": "INV_SRC_ALPHA"
+				}
 			}
 		},
 		"ResourceGroups":
@@ -60,7 +70,7 @@
 					"ResourceType": "UNIFORM_BUFFER",
 					"BaseShaderRegisterName": "PassUniformBuffer",
 					"BaseShaderRegister": "0",
-					"ShaderVisibility": "VERTEX",
+					"ShaderVisibility": "ALL_GRAPHICS",
 					"BufferUsage": "PASS",
 					"NumberOfElements": "1",
 					"ElementProperties":
@@ -76,6 +86,12 @@
 							"Usage": "PASS_REFERENCE",
 							"ValueType": "FLOAT_4_4",
 							"Value": "@WORLD_SPACE_TO_CLIP_SPACE_MATRIX_2"
+						},
+						"ViewportSize":
+						{
+							"Usage": "PASS_REFERENCE",
+							"ValueType": "FLOAT_2",
+							"Value": "@VIEWPORT_SIZE"
 						}
 					}
 				}

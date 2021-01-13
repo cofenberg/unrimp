@@ -498,6 +498,7 @@ void line(DD_EXPLICIT_CONTEXT_ONLY(ContextHandle ctx,)
           ddVec3_In from,
           ddVec3_In to,
           ddVec3_In color,
+          float lineWidth = 1.0f,
           int durationMillis = 0,
           bool depthEnabled = true);
 
@@ -532,6 +533,7 @@ void axisTriad(DD_EXPLICIT_CONTEXT_ONLY(ContextHandle ctx,)
                ddMat4x4_In transform,
                float size,
                float length,
+               float lineWidth = 1.0f,
                int durationMillis = 0,
                bool depthEnabled = true);
 
@@ -542,6 +544,7 @@ void arrow(DD_EXPLICIT_CONTEXT_ONLY(ContextHandle ctx,)
            ddVec3_In to,
            ddVec3_In color,
            float size,
+           float lineWidth = 1.0f,
            int durationMillis = 0,
            bool depthEnabled = true);
 
@@ -551,6 +554,7 @@ void arrow(DD_EXPLICIT_CONTEXT_ONLY(ContextHandle ctx,)
 void cross(DD_EXPLICIT_CONTEXT_ONLY(ContextHandle ctx,)
            ddVec3_In center,
            float length,
+           float lineWidth = 1.0f,
            int durationMillis = 0,
            bool depthEnabled = true);
 
@@ -561,6 +565,7 @@ void circle(DD_EXPLICIT_CONTEXT_ONLY(ContextHandle ctx,)
             ddVec3_In color,
             float radius,
             float numSteps,
+            float lineWidth = 1.0f,
             int durationMillis = 0,
             bool depthEnabled = true);
 
@@ -573,6 +578,7 @@ void plane(DD_EXPLICIT_CONTEXT_ONLY(ContextHandle ctx,)
            ddVec3_In normalVecColor,
            float planeScale,
            float normalVecScale,
+           float lineWidth = 1.0f,
            int durationMillis = 0,
            bool depthEnabled = true);
 
@@ -581,6 +587,7 @@ void sphere(DD_EXPLICIT_CONTEXT_ONLY(ContextHandle ctx,)
             ddVec3_In center,
             ddVec3_In color,
             float radius,
+            float lineWidth = 1.0f,
             int durationMillis = 0,
             bool depthEnabled = true);
 
@@ -594,6 +601,7 @@ void cone(DD_EXPLICIT_CONTEXT_ONLY(ContextHandle ctx,)
           ddVec3_In color,
           float baseRadius,
           float apexRadius,
+          float lineWidth = 1.0f,
           int durationMillis = 0,
           bool depthEnabled = true);
 
@@ -601,6 +609,7 @@ void cone(DD_EXPLICIT_CONTEXT_ONLY(ContextHandle ctx,)
 void box(DD_EXPLICIT_CONTEXT_ONLY(ContextHandle ctx,)
          const ddVec3 points[8],
          ddVec3_In color,
+         float lineWidth = 1.0f,
          int durationMillis = 0,
          bool depthEnabled = true);
 
@@ -611,6 +620,7 @@ void box(DD_EXPLICIT_CONTEXT_ONLY(ContextHandle ctx,)
          float width,
          float height,
          float depth,
+         float lineWidth = 1.0f,
          int durationMillis = 0,
          bool depthEnabled = true);
 
@@ -619,6 +629,7 @@ void aabb(DD_EXPLICIT_CONTEXT_ONLY(ContextHandle ctx,)
           ddVec3_In mins,
           ddVec3_In maxs,
           ddVec3_In color,
+          float lineWidth = 1.0f,
           int durationMillis = 0,
           bool depthEnabled = true);
 
@@ -629,6 +640,7 @@ void aabb(DD_EXPLICIT_CONTEXT_ONLY(ContextHandle ctx,)
 void frustum(DD_EXPLICIT_CONTEXT_ONLY(ContextHandle ctx,)
              ddMat4x4_In invClipMatrix,
              ddVec3_In color,
+             float lineWidth = 1.0f,
              int durationMillis = 0,
              bool depthEnabled = true);
 
@@ -638,6 +650,7 @@ void vertexNormal(DD_EXPLICIT_CONTEXT_ONLY(ContextHandle ctx,)
                   ddVec3_In origin,
                   ddVec3_In normal,
                   float length,
+                  float lineWidth = 1.0f,
                   int durationMillis = 0,
                   bool depthEnabled = true);
 
@@ -650,6 +663,7 @@ void tangentBasis(DD_EXPLICIT_CONTEXT_ONLY(ContextHandle ctx,)
                   ddVec3_In tangent,
                   ddVec3_In bitangent,
                   float lengths,
+                  float lineWidth = 1.0f,
                   int durationMillis = 0,
                   bool depthEnabled = true);
 
@@ -663,6 +677,7 @@ void xzSquareGrid(DD_EXPLICIT_CONTEXT_ONLY(ContextHandle ctx,)
                   float y,
                   float step,
                   ddVec3_In color,
+                  float lineWidth = 1.0f,
                   int durationMillis = 0,
                   bool depthEnabled = true);
 
@@ -684,6 +699,7 @@ union DrawVertex
     {
         float x, y, z;
         float r, g, b;
+        float width;
     } line;
 
     struct
@@ -1836,6 +1852,7 @@ struct DebugLine
     ddVec3       posFrom;
     ddVec3       posTo;
     ddVec3       color;
+    float        width;
     bool         depthEnabled;
 };
 
@@ -2211,6 +2228,7 @@ static void pushLineVert(DD_EXPLICIT_CONTEXT_ONLY(ContextHandle ctx,) const Debu
     v0.line.r = line.color[X];
     v0.line.g = line.color[Y];
     v0.line.b = line.color[Z];
+    v0.line.width = line.width;
 
     v1.line.x = line.posTo[X];
     v1.line.y = line.posTo[Y];
@@ -2218,6 +2236,7 @@ static void pushLineVert(DD_EXPLICIT_CONTEXT_ONLY(ContextHandle ctx,) const Debu
     v1.line.r = line.color[X];
     v1.line.g = line.color[Y];
     v1.line.b = line.color[Z];
+    v1.line.width = line.width;
 }
 
 static void pushGlyphVerts(DD_EXPLICIT_CONTEXT_ONLY(ContextHandle ctx,) const DrawVertex verts[4])
@@ -2657,7 +2676,7 @@ void point(DD_EXPLICIT_CONTEXT_ONLY(ContextHandle ctx,) ddVec3_In pos, ddVec3_In
 }
 
 void line(DD_EXPLICIT_CONTEXT_ONLY(ContextHandle ctx,) ddVec3_In from, ddVec3_In to,
-          ddVec3_In color, const int durationMillis, const bool depthEnabled)
+          ddVec3_In color, const float lineWidth, const int durationMillis, const bool depthEnabled)
 {
     if (!isInitialized(DD_EXPLICIT_CONTEXT_ONLY(ctx)))
     {
@@ -2672,6 +2691,7 @@ void line(DD_EXPLICIT_CONTEXT_ONLY(ContextHandle ctx,) ddVec3_In from, ddVec3_In
 
     DebugLine & line      = DD_CONTEXT->debugLines[DD_CONTEXT->debugLinesCount++];
     line.expiryDateMillis = DD_CONTEXT->currentTimeMillis + durationMillis;
+    line.width            = lineWidth;
     line.depthEnabled     = depthEnabled;
 
     vecCopy(line.posFrom, from);
@@ -2760,7 +2780,7 @@ void projectedText(DD_EXPLICIT_CONTEXT_ONLY(ContextHandle ctx,) const char * con
 }
 
 void axisTriad(DD_EXPLICIT_CONTEXT_ONLY(ContextHandle ctx,) ddMat4x4_In transform, const float size,
-               const float length, const int durationMillis, const bool depthEnabled)
+               const float length, const float lineWidth, const int durationMillis, const bool depthEnabled)
 {
     if (!isInitialized(DD_EXPLICIT_CONTEXT_ONLY(ctx)))
     {
@@ -2785,13 +2805,13 @@ void axisTriad(DD_EXPLICIT_CONTEXT_ONLY(ContextHandle ctx,) ddMat4x4_In transfor
     matTransformPointXYZ(p2, yEnd, transform);
     matTransformPointXYZ(p3, zEnd, transform);
 
-    arrow(DD_EXPLICIT_CONTEXT_ONLY(ctx,) p0, p1, cR, size, durationMillis, depthEnabled); // X: red axis
-    arrow(DD_EXPLICIT_CONTEXT_ONLY(ctx,) p0, p2, cG, size, durationMillis, depthEnabled); // Y: green axis
-    arrow(DD_EXPLICIT_CONTEXT_ONLY(ctx,) p0, p3, cB, size, durationMillis, depthEnabled); // Z: blue axis
+    arrow(DD_EXPLICIT_CONTEXT_ONLY(ctx,) p0, p1, cR, size, lineWidth, durationMillis, depthEnabled); // X: red axis
+    arrow(DD_EXPLICIT_CONTEXT_ONLY(ctx,) p0, p2, cG, size, lineWidth, durationMillis, depthEnabled); // Y: green axis
+    arrow(DD_EXPLICIT_CONTEXT_ONLY(ctx,) p0, p3, cB, size, lineWidth, durationMillis, depthEnabled); // Z: blue axis
 }
 
 void arrow(DD_EXPLICIT_CONTEXT_ONLY(ContextHandle ctx,) ddVec3_In from, ddVec3_In to, ddVec3_In color,
-           const float size, const int durationMillis, const bool depthEnabled)
+           const float size, const float lineWidth, const int durationMillis, const bool depthEnabled)
 {
     if (!isInitialized(DD_EXPLICIT_CONTEXT_ONLY(ctx)))
     {
@@ -2813,7 +2833,7 @@ void arrow(DD_EXPLICIT_CONTEXT_ONLY(ContextHandle ctx,) ddVec3_In from, ddVec3_I
     };
 
     // Body line:
-    line(DD_EXPLICIT_CONTEXT_ONLY(ctx,) from, to, color, durationMillis, depthEnabled);
+    line(DD_EXPLICIT_CONTEXT_ONLY(ctx,) from, to, color, lineWidth, durationMillis, depthEnabled);
 
     // Aux vectors to compute the arrowhead:
     ddVec3 up, right, forward;
@@ -2847,13 +2867,13 @@ void arrow(DD_EXPLICIT_CONTEXT_ONLY(ContextHandle ctx,) ddVec3_In from, ddVec3_I
         vecScale(temp, up, scale);
         vecAdd(v2, v2, temp);
 
-        line(DD_EXPLICIT_CONTEXT_ONLY(ctx,) v1, to, color, durationMillis, depthEnabled);
-        line(DD_EXPLICIT_CONTEXT_ONLY(ctx,) v1, v2, color, durationMillis, depthEnabled);
+        line(DD_EXPLICIT_CONTEXT_ONLY(ctx,) v1, to, color, lineWidth, durationMillis, depthEnabled);
+        line(DD_EXPLICIT_CONTEXT_ONLY(ctx,) v1, v2, color, lineWidth, durationMillis, depthEnabled);
     }
 }
 
 void cross(DD_EXPLICIT_CONTEXT_ONLY(ContextHandle ctx,) ddVec3_In center, const float length,
-           const int durationMillis, const bool depthEnabled)
+           const float lineWidth, const int durationMillis, const bool depthEnabled)
 {
     if (!isInitialized(DD_EXPLICIT_CONTEXT_ONLY(ctx)))
     {
@@ -2875,21 +2895,21 @@ void cross(DD_EXPLICIT_CONTEXT_ONLY(ContextHandle ctx,) ddVec3_In center, const 
     // Red line: X - length/2 to X + length/2
     vecSet(from, cx - hl, cy, cz);
     vecSet(to,   cx + hl, cy, cz);
-    line(DD_EXPLICIT_CONTEXT_ONLY(ctx,) from, to, cR, durationMillis, depthEnabled);
+    line(DD_EXPLICIT_CONTEXT_ONLY(ctx,) from, to, cR, lineWidth, durationMillis, depthEnabled);
 
     // Green line: Y - length/2 to Y + length/2
     vecSet(from, cx, cy - hl, cz);
     vecSet(to,   cx, cy + hl, cz);
-    line(DD_EXPLICIT_CONTEXT_ONLY(ctx,) from, to, cG, durationMillis, depthEnabled);
+    line(DD_EXPLICIT_CONTEXT_ONLY(ctx,) from, to, cG, lineWidth, durationMillis, depthEnabled);
 
     // Blue line: Z - length/2 to Z + length/2
     vecSet(from, cx, cy, cz - hl);
     vecSet(to,   cx, cy, cz + hl);
-    line(DD_EXPLICIT_CONTEXT_ONLY(ctx,) from, to, cB, durationMillis, depthEnabled);
+    line(DD_EXPLICIT_CONTEXT_ONLY(ctx,) from, to, cB, lineWidth, durationMillis, depthEnabled);
 }
 
 void circle(DD_EXPLICIT_CONTEXT_ONLY(ContextHandle ctx,) ddVec3_In center, ddVec3_In planeNormal, ddVec3_In color,
-            const float radius, const float numSteps, const int durationMillis, const bool depthEnabled)
+            const float radius, const float numSteps, const float lineWidth, const int durationMillis, const bool depthEnabled)
 {
     if (!isInitialized(DD_EXPLICIT_CONTEXT_ONLY(ctx)))
     {
@@ -2916,14 +2936,14 @@ void circle(DD_EXPLICIT_CONTEXT_ONLY(ContextHandle ctx,) ddVec3_In center, ddVec
         vecAdd(point, center, vs);
         vecAdd(point, point,  vc);
 
-        line(DD_EXPLICIT_CONTEXT_ONLY(ctx,) lastPoint, point, color, durationMillis, depthEnabled);
+        line(DD_EXPLICIT_CONTEXT_ONLY(ctx,) lastPoint, point, color, lineWidth, durationMillis, depthEnabled);
         vecCopy(lastPoint, point);
     }
 }
 
 void plane(DD_EXPLICIT_CONTEXT_ONLY(ContextHandle ctx,) ddVec3_In center, ddVec3_In planeNormal, ddVec3_In planeColor,
-           ddVec3_In normalVecColor, const float planeScale, const float normalVecScale, const int durationMillis,
-           const bool depthEnabled)
+           ddVec3_In normalVecColor, const float planeScale, const float normalVecScale, const float lineWidth,
+           const int durationMillis, const bool depthEnabled)
 {
     if (!isInitialized(DD_EXPLICIT_CONTEXT_ONLY(ctx)))
     {
@@ -2946,10 +2966,10 @@ void plane(DD_EXPLICIT_CONTEXT_ONLY(ContextHandle ctx,) ddVec3_In center, ddVec3
     #undef DD_PLANE_V
 
     // Draw the wireframe plane quadrilateral:
-    line(DD_EXPLICIT_CONTEXT_ONLY(ctx,) v1, v2, planeColor, durationMillis, depthEnabled);
-    line(DD_EXPLICIT_CONTEXT_ONLY(ctx,) v2, v3, planeColor, durationMillis, depthEnabled);
-    line(DD_EXPLICIT_CONTEXT_ONLY(ctx,) v3, v4, planeColor, durationMillis, depthEnabled);
-    line(DD_EXPLICIT_CONTEXT_ONLY(ctx,) v4, v1, planeColor, durationMillis, depthEnabled);
+    line(DD_EXPLICIT_CONTEXT_ONLY(ctx,) v1, v2, planeColor, lineWidth, durationMillis, depthEnabled);
+    line(DD_EXPLICIT_CONTEXT_ONLY(ctx,) v2, v3, planeColor, lineWidth, durationMillis, depthEnabled);
+    line(DD_EXPLICIT_CONTEXT_ONLY(ctx,) v3, v4, planeColor, lineWidth, durationMillis, depthEnabled);
+    line(DD_EXPLICIT_CONTEXT_ONLY(ctx,) v4, v1, planeColor, lineWidth, durationMillis, depthEnabled);
 
     // Optionally add a line depicting the plane normal:
     if (normalVecScale != 0.0f)
@@ -2958,12 +2978,12 @@ void plane(DD_EXPLICIT_CONTEXT_ONLY(ContextHandle ctx,) ddVec3_In center, ddVec3
         normalVec[X] = (planeNormal[X] * normalVecScale) + center[X];
         normalVec[Y] = (planeNormal[Y] * normalVecScale) + center[Y];
         normalVec[Z] = (planeNormal[Z] * normalVecScale) + center[Z];
-        line(DD_EXPLICIT_CONTEXT_ONLY(ctx,) center, normalVec, normalVecColor, durationMillis, depthEnabled);
+        line(DD_EXPLICIT_CONTEXT_ONLY(ctx,) center, normalVec, normalVecColor, lineWidth, durationMillis, depthEnabled);
     }
 }
 
 void sphere(DD_EXPLICIT_CONTEXT_ONLY(ContextHandle ctx,) ddVec3_In center, ddVec3_In color,
-            const float radius, const int durationMillis, const bool depthEnabled)
+            const float radius, const float lineWidth, const int durationMillis, const bool depthEnabled)
 {
     if (!isInitialized(DD_EXPLICIT_CONTEXT_ONLY(ctx)))
     {
@@ -2998,8 +3018,8 @@ void sphere(DD_EXPLICIT_CONTEXT_ONLY(ContextHandle ctx,) ddVec3_In center, ddVec
             temp[Y] = center[Y] + floatCos(degreesToRadians(j)) * radius * s;
             temp[Z] = lastPoint[Z];
 
-            line(DD_EXPLICIT_CONTEXT_ONLY(ctx,) lastPoint, temp, color, durationMillis, depthEnabled);
-            line(DD_EXPLICIT_CONTEXT_ONLY(ctx,) lastPoint, cache[n], color, durationMillis, depthEnabled);
+            line(DD_EXPLICIT_CONTEXT_ONLY(ctx,) lastPoint, temp, color, lineWidth, durationMillis, depthEnabled);
+            line(DD_EXPLICIT_CONTEXT_ONLY(ctx,) lastPoint, cache[n], color, lineWidth, durationMillis, depthEnabled);
 
             vecCopy(cache[n], lastPoint);
             vecCopy(lastPoint, temp);
@@ -3008,7 +3028,7 @@ void sphere(DD_EXPLICIT_CONTEXT_ONLY(ContextHandle ctx,) ddVec3_In center, ddVec
 }
 
 void cone(DD_EXPLICIT_CONTEXT_ONLY(ContextHandle ctx,) ddVec3_In apex, ddVec3_In dir, ddVec3_In color,
-          const float baseRadius, const float apexRadius, const int durationMillis, const bool depthEnabled)
+          const float baseRadius, const float apexRadius, const float lineWidth, const int durationMillis, const bool depthEnabled)
 {
     if (!isInitialized(DD_EXPLICIT_CONTEXT_ONLY(ctx)))
     {
@@ -3043,8 +3063,8 @@ void cone(DD_EXPLICIT_CONTEXT_ONLY(ContextHandle ctx,) ddVec3_In apex, ddVec3_In
             vecScale(temp0, temp0, baseRadius);
             vecAdd(p2, top, temp0);
 
-            line(DD_EXPLICIT_CONTEXT_ONLY(ctx,) lastP2, p2, color, durationMillis, depthEnabled);
-            line(DD_EXPLICIT_CONTEXT_ONLY(ctx,) p2, apex, color, durationMillis, depthEnabled);
+            line(DD_EXPLICIT_CONTEXT_ONLY(ctx,) lastP2, p2, color, lineWidth, durationMillis, depthEnabled);
+            line(DD_EXPLICIT_CONTEXT_ONLY(ctx,) p2, apex, color, lineWidth, durationMillis, depthEnabled);
 
             vecCopy(lastP2, p2);
         }
@@ -3066,9 +3086,9 @@ void cone(DD_EXPLICIT_CONTEXT_ONLY(ContextHandle ctx,) ddVec3_In apex, ddVec3_In
             vecAdd(p1, apex, temp1);
             vecAdd(p2, top,  temp2);
 
-            line(DD_EXPLICIT_CONTEXT_ONLY(ctx,) lastP1, p1, color, durationMillis, depthEnabled);
-            line(DD_EXPLICIT_CONTEXT_ONLY(ctx,) lastP2, p2, color, durationMillis, depthEnabled);
-            line(DD_EXPLICIT_CONTEXT_ONLY(ctx,) p1, p2, color, durationMillis, depthEnabled);
+            line(DD_EXPLICIT_CONTEXT_ONLY(ctx,) lastP1, p1, color, lineWidth, durationMillis, depthEnabled);
+            line(DD_EXPLICIT_CONTEXT_ONLY(ctx,) lastP2, p2, color, lineWidth, durationMillis, depthEnabled);
+            line(DD_EXPLICIT_CONTEXT_ONLY(ctx,) p1, p2, color, lineWidth, durationMillis, depthEnabled);
 
             vecCopy(lastP1, p1);
             vecCopy(lastP2, p2);
@@ -3077,20 +3097,20 @@ void cone(DD_EXPLICIT_CONTEXT_ONLY(ContextHandle ctx,) ddVec3_In apex, ddVec3_In
 }
 
 void box(DD_EXPLICIT_CONTEXT_ONLY(ContextHandle ctx,) const ddVec3 points[8], ddVec3_In color,
-         const int durationMillis, const bool depthEnabled)
+         const float lineWidth, const int durationMillis, const bool depthEnabled)
 {
     // Build the lines from points using clever indexing tricks:
     // (& 3 is a fancy way of doing % 4, but avoids the expensive modulo operation)
     for (int i = 0; i < 4; ++i)
     {
-        line(DD_EXPLICIT_CONTEXT_ONLY(ctx,) points[i], points[(i + 1) & 3], color, durationMillis, depthEnabled);
-        line(DD_EXPLICIT_CONTEXT_ONLY(ctx,) points[4 + i], points[4 + ((i + 1) & 3)], color, durationMillis, depthEnabled);
-        line(DD_EXPLICIT_CONTEXT_ONLY(ctx,) points[i], points[4 + i], color, durationMillis, depthEnabled);
+        line(DD_EXPLICIT_CONTEXT_ONLY(ctx,) points[i], points[(i + 1) & 3], color, lineWidth, durationMillis, depthEnabled);
+        line(DD_EXPLICIT_CONTEXT_ONLY(ctx,) points[4 + i], points[4 + ((i + 1) & 3)], color, lineWidth, durationMillis, depthEnabled);
+        line(DD_EXPLICIT_CONTEXT_ONLY(ctx,) points[i], points[4 + i], color, lineWidth, durationMillis, depthEnabled);
     }
 }
 
 void box(DD_EXPLICIT_CONTEXT_ONLY(ContextHandle ctx,) ddVec3_In center, ddVec3_In color, const float width,
-         const float height, const float depth, const int durationMillis, const bool depthEnabled)
+         const float height, const float depth, const float lineWidth, const int durationMillis, const bool depthEnabled)
 {
     if (!isInitialized(DD_EXPLICIT_CONTEXT_ONLY(ctx)))
     {
@@ -3120,11 +3140,11 @@ void box(DD_EXPLICIT_CONTEXT_ONLY(ContextHandle ctx,) ddVec3_In center, ddVec3_I
     DD_BOX_V(points[7], +, -, +);
     #undef DD_BOX_V
 
-    box(DD_EXPLICIT_CONTEXT_ONLY(ctx,) points, color, durationMillis, depthEnabled);
+    box(DD_EXPLICIT_CONTEXT_ONLY(ctx,) points, color, lineWidth, durationMillis, depthEnabled);
 }
 
 void aabb(DD_EXPLICIT_CONTEXT_ONLY(ContextHandle ctx,) ddVec3_In mins, ddVec3_In maxs,
-          ddVec3_In color, const int durationMillis, const bool depthEnabled)
+          ddVec3_In color, const float lineWidth, const int durationMillis, const bool depthEnabled)
 {
     if (!isInitialized(DD_EXPLICIT_CONTEXT_ONLY(ctx)))
     {
@@ -3146,11 +3166,11 @@ void aabb(DD_EXPLICIT_CONTEXT_ONLY(ContextHandle ctx,) ddVec3_In mins, ddVec3_In
     }
 
     // Build the lines:
-    box(DD_EXPLICIT_CONTEXT_ONLY(ctx,) points, color, durationMillis, depthEnabled);
+    box(DD_EXPLICIT_CONTEXT_ONLY(ctx,) points, color, lineWidth, durationMillis, depthEnabled);
 }
 
 void frustum(DD_EXPLICIT_CONTEXT_ONLY(ContextHandle ctx,) ddMat4x4_In invClipMatrix,
-             ddVec3_In color, const int durationMillis, const bool depthEnabled)
+             ddVec3_In color, const float lineWidth, const int durationMillis, const bool depthEnabled)
 {
     if (!isInitialized(DD_EXPLICIT_CONTEXT_ONLY(ctx)))
     {
@@ -3191,11 +3211,11 @@ void frustum(DD_EXPLICIT_CONTEXT_ONLY(ContextHandle ctx,) ddMat4x4_In invClipMat
     }
 
     // Connect the dots:
-    box(DD_EXPLICIT_CONTEXT_ONLY(ctx,) points, color, durationMillis, depthEnabled);
+    box(DD_EXPLICIT_CONTEXT_ONLY(ctx,) points, color, lineWidth, durationMillis, depthEnabled);
 }
 
 void vertexNormal(DD_EXPLICIT_CONTEXT_ONLY(ContextHandle ctx,) ddVec3_In origin, ddVec3_In normal,
-                  const float length, const int durationMillis, const bool depthEnabled)
+                  const float length, const float lineWidth, const int durationMillis, const bool depthEnabled)
 {
     if (!isInitialized(DD_EXPLICIT_CONTEXT_ONLY(ctx)))
     {
@@ -3211,11 +3231,11 @@ void vertexNormal(DD_EXPLICIT_CONTEXT_ONLY(ContextHandle ctx,) ddVec3_In origin,
     normalVec[Y] = (normal[Y] * length) + origin[Y];
     normalVec[Z] = (normal[Z] * length) + origin[Z];
 
-    line(DD_EXPLICIT_CONTEXT_ONLY(ctx,) origin, normalVec, normalColor, durationMillis, depthEnabled);
+    line(DD_EXPLICIT_CONTEXT_ONLY(ctx,) origin, normalVec, normalColor, lineWidth, durationMillis, depthEnabled);
 }
 
 void tangentBasis(DD_EXPLICIT_CONTEXT_ONLY(ContextHandle ctx,) ddVec3_In origin, ddVec3_In normal, ddVec3_In tangent,
-                  ddVec3_In bitangent, const float lengths, const int durationMillis, const bool depthEnabled)
+                  ddVec3_In bitangent, const float lengths, const float lineWidth, const int durationMillis, const bool depthEnabled)
 {
     if (!isInitialized(DD_EXPLICIT_CONTEXT_ONLY(ctx)))
     {
@@ -3241,13 +3261,13 @@ void tangentBasis(DD_EXPLICIT_CONTEXT_ONLY(ContextHandle ctx,) ddVec3_In origin,
     vB[Y] = (bitangent[Y] * lengths) + origin[Y];
     vB[Z] = (bitangent[Z] * lengths) + origin[Z];
 
-    line(DD_EXPLICIT_CONTEXT_ONLY(ctx,) origin, vN, cN, durationMillis, depthEnabled);
-    line(DD_EXPLICIT_CONTEXT_ONLY(ctx,) origin, vT, cT, durationMillis, depthEnabled);
-    line(DD_EXPLICIT_CONTEXT_ONLY(ctx,) origin, vB, cB, durationMillis, depthEnabled);
+    line(DD_EXPLICIT_CONTEXT_ONLY(ctx,) origin, vN, cN, lineWidth, durationMillis, depthEnabled);
+    line(DD_EXPLICIT_CONTEXT_ONLY(ctx,) origin, vT, cT, lineWidth, durationMillis, depthEnabled);
+    line(DD_EXPLICIT_CONTEXT_ONLY(ctx,) origin, vB, cB, lineWidth, durationMillis, depthEnabled);
 }
 
 void xzSquareGrid(DD_EXPLICIT_CONTEXT_ONLY(ContextHandle ctx,) const float mins, const float maxs, const float y,
-                  const float step, ddVec3_In color, const int durationMillis, const bool depthEnabled)
+                  const float step, ddVec3_In color, const float lineWidth, const int durationMillis, const bool depthEnabled)
 {
     if (!isInitialized(DD_EXPLICIT_CONTEXT_ONLY(ctx)))
     {
@@ -3260,12 +3280,12 @@ void xzSquareGrid(DD_EXPLICIT_CONTEXT_ONLY(ContextHandle ctx,) const float mins,
         // Horizontal line (along the X)
         vecSet(from, mins, y, i);
         vecSet(to,   maxs, y, i);
-        line(DD_EXPLICIT_CONTEXT_ONLY(ctx,) from, to, color, durationMillis, depthEnabled);
+        line(DD_EXPLICIT_CONTEXT_ONLY(ctx,) from, to, color, lineWidth, durationMillis, depthEnabled);
 
         // Vertical line (along the Z)
         vecSet(from, i, y, mins);
         vecSet(to,   i, y, maxs);
-        line(DD_EXPLICIT_CONTEXT_ONLY(ctx,) from, to, color, durationMillis, depthEnabled);
+        line(DD_EXPLICIT_CONTEXT_ONLY(ctx,) from, to, color, lineWidth, durationMillis, depthEnabled);
     }
 }
 
