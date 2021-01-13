@@ -414,8 +414,7 @@ namespace Renderer
 										break;
 
 									case GraphicsShaderType::Geometry:
-										// TODO(co) "Renderer::ShaderCacheManager::getGraphicsShaderCache()" needs to provide additional geometry shader information
-										// shader = shaderLanguage->createGeometryShaderFromSourceCode(shaderSourceCode.c_str(), &shaderCache->mShaderBytecode RHI_RESOURCE_DEBUG_NAME("Pipeline state compiler"));
+										shader = shaderLanguage.createGeometryShaderFromSourceCode(shaderSourceCode.c_str(), &shaderCache->mShaderBytecode RHI_RESOURCE_DEBUG_NAME("Pipeline state compiler"));
 										break;
 
 									case GraphicsShaderType::Fragment:

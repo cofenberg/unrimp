@@ -91,8 +91,7 @@ namespace Renderer
 								break;
 
 							case GraphicsShaderType::Geometry:
-								// TODO(co) "Renderer::ShaderCacheManager::getGraphicsShaderCache()" needs to provide additional geometry shader information
-								// shaderCache->mShaderPtr = shaderLanguage.createGeometryShaderFromBytecode(shaderCache->mShaderBytecode RHI_RESOURCE_DEBUG_NAME("From bytecode"));
+								shaderCache->mShaderPtr = shaderLanguage.createGeometryShaderFromBytecode(shaderCache->mShaderBytecode RHI_RESOURCE_DEBUG_NAME("From bytecode"));
 								break;
 
 							case GraphicsShaderType::Fragment:
@@ -163,8 +162,7 @@ namespace Renderer
 									break;
 
 								case GraphicsShaderType::Geometry:
-									// TODO(co) "Renderer::ShaderCacheManager::getShaderCache()" needs to provide additional geometry shader information
-									// shader = shaderLanguage.createGeometryShaderFromSourceCode(sourceCode.c_str(), &shaderCache->mShaderBytecode RHI_RESOURCE_DEBUG_NAME(shaderBlueprintAsset.virtualFilename));
+									shader = shaderLanguage.createGeometryShaderFromSourceCode(sourceCode.c_str(), &shaderCache->mShaderBytecode RHI_RESOURCE_DEBUG_NAME(shaderBlueprintAsset.virtualFilename));
 									break;
 
 								case GraphicsShaderType::Fragment:
