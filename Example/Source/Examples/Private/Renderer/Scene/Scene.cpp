@@ -219,7 +219,7 @@ namespace
 			debugDrawSceneItem.drawPoint(origin, Color4::WHITE, 15.0f);
 
 			// Grid from -50 to +50 in both X & Z
-			debugDrawSceneItem.drawXzSquareGrid(-50.0f, 50.0f, -1.0f, 1.7f, Color4::GREEN);
+			debugDrawSceneItem.drawXzSquareGrid(-50.0f, 50.0f, -1.0f, 2.0f, Color4::GREEN);
 
 			{ // Draw frustum
 				const glm::vec3 frustumOrigin(-8.0f, 0.5f, 14.0f);
@@ -538,7 +538,7 @@ void Scene::onUpdate()
 				glm::vec3 origin(1.0f, 0.0f, 0.0f);
 				for (int i = 0; i < 10; ++i)
 				{
-					mDebugDrawSceneItem->drawBox(origin, glm::vec3(1.0f, 1.0f, 1.0f), Color4::WHITE, 1.0f + static_cast<float>(i) * 0.2f);
+					mDebugDrawSceneItem->drawBox(origin, glm::vec3(1.0f, 1.0f, 1.0f), Color4::WHITE, 2.0f, 1.0f + static_cast<float>(i) * 0.2f);
 					origin.x += 1.2f;
 				}
 			}

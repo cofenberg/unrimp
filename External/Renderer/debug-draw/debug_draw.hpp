@@ -3274,8 +3274,33 @@ void xzSquareGrid(DD_EXPLICIT_CONTEXT_ONLY(ContextHandle ctx,) const float mins,
         return;
     }
 
+    // Center horizontal line (along the X) with twice the given line width
     ddVec3 from, to;
-    for (float i = mins; i <= maxs; i += step)
+    vecSet(from, mins, y, 0.0f);
+    vecSet(to,   maxs, y, 0.0f);
+    line(DD_EXPLICIT_CONTEXT_ONLY(ctx,) from, to, color, lineWidth * 2.0f, durationMillis, depthEnabled);
+
+    // Center vertical line (along the Z) with twice the given line width
+    vecSet(from, 0.0f, y, mins);
+    vecSet(to,   0.0f, y, maxs);
+    line(DD_EXPLICIT_CONTEXT_ONLY(ctx,) from, to, color, lineWidth * 2.0f, durationMillis, depthEnabled);
+
+    // Lines towards the minimum starting at the center
+    for (float i = -step; i >= mins; i -= step)
+    {
+        // Horizontal line (along the X)
+        vecSet(from, mins, y, i);
+        vecSet(to,   maxs, y, i);
+        line(DD_EXPLICIT_CONTEXT_ONLY(ctx,) from, to, color, lineWidth, durationMillis, depthEnabled);
+
+        // Vertical line (along the Z)
+        vecSet(from, i, y, mins);
+        vecSet(to,   i, y, maxs);
+        line(DD_EXPLICIT_CONTEXT_ONLY(ctx,) from, to, color, lineWidth, durationMillis, depthEnabled);
+    }
+
+    // Lines towards the maximum starting at the center
+    for (float i = step; i <= maxs; i += step)
     {
         // Horizontal line (along the X)
         vecSet(from, mins, y, i);
