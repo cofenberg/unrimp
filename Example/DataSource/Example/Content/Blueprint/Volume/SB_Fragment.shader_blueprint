@@ -36,7 +36,7 @@
 //[-------------------------------------------------------]
 //[ Definitions                                           ]
 //[-------------------------------------------------------]
-@includepiece(../SharedShaderPiece/SP_Core.asset)
+@includepiece(../Shared/SP_Core.asset)
 	@insertpiece(SetCrossPlatformSettings)
 
 
@@ -101,9 +101,9 @@ SAMPLER_STATE(4, 1, SamplerPointClamp, 1)
 //[-------------------------------------------------------]
 //[ Functions                                             ]
 //[-------------------------------------------------------]
-@includepiece(../SharedShaderPiece/SP_Depth.asset)
+@includepiece(../Shared/SP_Depth.asset)
 	@insertpiece(DefineGetLinearDepth)
-@includepiece(../SharedShaderPiece/SP_Normal.asset)
+@includepiece(../Shared/SP_Normal.asset)
 	@insertpiece(DefineGetTangentFrame)
 
 /**

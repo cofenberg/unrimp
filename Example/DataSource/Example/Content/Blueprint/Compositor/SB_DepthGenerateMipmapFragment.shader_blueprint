@@ -25,7 +25,7 @@
 //[-------------------------------------------------------]
 //[ Definitions                                           ]
 //[-------------------------------------------------------]
-@includepiece(../SharedShaderPiece/SP_Core.asset)
+@includepiece(../Shared/SP_Core.asset)
 	@insertpiece(SetCrossPlatformSettings)
 
 // Minimum operator due to the usage of Reversed-Z (see e.g. https://developer.nvidia.com/content/depth-precision-visualized and https://nlguillemot.wordpress.com/2016/12/07/reversed-z-in-opengl/)

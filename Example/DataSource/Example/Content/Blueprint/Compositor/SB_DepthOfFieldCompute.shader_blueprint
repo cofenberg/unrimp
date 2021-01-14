@@ -21,7 +21,7 @@
 //[-------------------------------------------------------]
 //[ Definitions                                           ]
 //[-------------------------------------------------------]
-@includepiece(../SharedShaderPiece/SP_Core.asset)
+@includepiece(../Shared/SP_Core.asset)
 	@insertpiece(SetCrossPlatformSettings)
 
 
@@ -61,7 +61,7 @@ SAMPLER_STATE(2, 1, SamplerLinear, 1)
 //[-------------------------------------------------------]
 //[ Functions                                             ]
 //[-------------------------------------------------------]
-@includepiece(../SharedShaderPiece/SP_Depth.asset)
+@includepiece(../Shared/SP_Depth.asset)
 	@insertpiece(DefineGetLinearDepth)
 
 float ConvertDepth(float linearDepth)

@@ -21,7 +21,7 @@
 //[-------------------------------------------------------]
 //[ Definitions                                           ]
 //[-------------------------------------------------------]
-@includepiece(../SharedShaderPiece/SP_Core.asset)
+@includepiece(../Shared/SP_Core.asset)
 	@insertpiece(SetCrossPlatformSettings)
 
 
@@ -41,7 +41,7 @@ OUTPUT_END
 //[-------------------------------------------------------]
 //[ Functions                                             ]
 //[-------------------------------------------------------]
-@includepiece(../SharedShaderPiece/SP_Color.asset)
+@includepiece(../Shared/SP_Color.asset)
 	@insertpiece(DefineGammaSpaceToLinearSpace3)
 
 

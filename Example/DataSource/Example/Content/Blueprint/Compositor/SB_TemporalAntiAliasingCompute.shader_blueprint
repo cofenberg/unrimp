@@ -25,7 +25,7 @@
 //[-------------------------------------------------------]
 //[ Definitions                                           ]
 //[-------------------------------------------------------]
-@includepiece(../SharedShaderPiece/SP_Core.asset)
+@includepiece(../Shared/SP_Core.asset)
 	@insertpiece(SetCrossPlatformSettings)
 
 
@@ -58,7 +58,7 @@ RW_TEXTURE_2D(1, 4, OutputTexture2D, 4, r11f_g11f_b10f, writeonly)
 //[-------------------------------------------------------]
 //[ Functions                                             ]
 //[-------------------------------------------------------]
-@includepiece(../SharedShaderPiece/SP_Color.asset)
+@includepiece(../Shared/SP_Color.asset)
 	@insertpiece(DefineColorToLuminance)
 
 // From "Temporal Reprojection Anti-Aliasing": https://github.com/playdeadgames/temporal

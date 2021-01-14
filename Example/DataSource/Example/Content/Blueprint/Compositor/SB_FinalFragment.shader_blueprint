@@ -21,9 +21,9 @@
 //[-------------------------------------------------------]
 //[ Definitions                                           ]
 //[-------------------------------------------------------]
-@includepiece(../SharedShaderPiece/SP_Core.asset)
+@includepiece(../Shared/SP_Core.asset)
 	@insertpiece(SetCrossPlatformSettings)
-@includepiece(../SharedShaderPiece/SP_Color.asset)
+@includepiece(../Shared/SP_Color.asset)
 @includepiece(./SP_Fxaa.asset)
 	@property(Fxaa)
 		#define FXAA_PC				 1
@@ -84,7 +84,7 @@ SAMPLER_STATE(2, 0, SamplerLinear, 0)
 @insertpiece(DefineGetBayerScreenSpaceDitherValue)
 
 @property(OldCrtEffect)
-	@includepiece(../SharedShaderPiece/SP_Noise.asset)
+	@includepiece(../Shared/SP_Noise.asset)
 		@insertpiece(DefineSimplexNoise2D)
 	@includepiece(./SP_OldCrtEffect.asset)
 		@insertpiece(DefineOldCrtEffect)

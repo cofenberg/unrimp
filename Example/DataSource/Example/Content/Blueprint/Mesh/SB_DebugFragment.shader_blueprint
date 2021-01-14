@@ -21,7 +21,7 @@
 //[-------------------------------------------------------]
 //[ Definitions                                           ]
 //[-------------------------------------------------------]
-@includepiece(../SharedShaderPiece/SP_Core.asset)
+@includepiece(../Shared/SP_Core.asset)
 	@insertpiece(SetCrossPlatformSettings)
 
 
@@ -63,7 +63,7 @@ SAMPLER_STATE(4, 0, SamplerLinear, 0)
 //[-------------------------------------------------------]
 //[ Functions                                             ]
 //[-------------------------------------------------------]
-@includepiece(../SharedShaderPiece/SP_Color.asset)
+@includepiece(../Shared/SP_Color.asset)
 	@insertpiece(DefineLinearSpaceToGammaSpace3)
 
 

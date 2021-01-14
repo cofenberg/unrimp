@@ -21,9 +21,9 @@
 //[-------------------------------------------------------]
 //[ Definitions                                           ]
 //[-------------------------------------------------------]
-@includepiece(../SharedShaderPiece/SP_Core.asset)
+@includepiece(../Shared/SP_Core.asset)
 	@insertpiece(SetCrossPlatformSettings)
-@includepiece(../SharedShaderPiece/SP_MotionBlur.asset)
+@includepiece(../Shared/SP_MotionBlur.asset)
 @includepiece(./SP_Terrain.asset)
 	@insertpiece(DefineTerrainPassDataStruct)
 
@@ -70,12 +70,12 @@ SAMPLER_STATE(3, 1, SamplerLinearClamp, 1)
 //[-------------------------------------------------------]
 //[ Functions                                             ]
 //[-------------------------------------------------------]
-@includepiece(../SharedShaderPiece/SP_Normal.asset)
+@includepiece(../Shared/SP_Normal.asset)
 	@insertpiece(DefineGetTangentFrame)
 	@insertpiece(DefineUnpackTextureNormalXY)
 	@insertpiece(DefineFilterNormal)
 	@insertpiece(DefineBlendNormalUdn)
-@includepiece(../SharedShaderPiece/SP_Noise.asset)
+@includepiece(../Shared/SP_Noise.asset)
 	@insertpiece(DefineMultipleOctavesNoise2D)
 	@insertpiece(DefineMultipleOctavesNoise3D)
 // @includepiece(./SP_Terrain.asset) is already included at the top
@@ -87,7 +87,7 @@ SAMPLER_STATE(3, 1, SamplerLinearClamp, 1)
 	@property(UseTriplanarMapping)
 		@insertpiece(DefineTriplanarMapping)
 	@end
-@includepiece(../SharedShaderPiece/SP_Color.asset)
+@includepiece(../Shared/SP_Color.asset)
 	@insertpiece(DefineOverlayColorBlending)
 
 

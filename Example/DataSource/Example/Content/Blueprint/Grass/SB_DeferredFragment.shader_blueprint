@@ -21,9 +21,9 @@
 //[-------------------------------------------------------]
 //[ Definitions                                           ]
 //[-------------------------------------------------------]
-@includepiece(../SharedShaderPiece/SP_Core.asset)
+@includepiece(../Shared/SP_Core.asset)
 	@insertpiece(SetCrossPlatformSettings)
-@includepiece(../SharedShaderPiece/SP_MotionBlur.asset)
+@includepiece(../Shared/SP_MotionBlur.asset)
 
 
 //[-------------------------------------------------------]

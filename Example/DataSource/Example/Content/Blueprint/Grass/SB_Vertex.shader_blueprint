@@ -21,7 +21,7 @@
 //[-------------------------------------------------------]
 //[ Definitions                                           ]
 //[-------------------------------------------------------]
-@includepiece(../SharedShaderPiece/SP_Core.asset)
+@includepiece(../Shared/SP_Core.asset)
 	@insertpiece(SetCrossPlatformSettings)
 
 
@@ -81,7 +81,7 @@ STRUCTURED_BUFFER(2, 0, GrassStructuredBuffer, 0, GrassDataStruct, GrassData)
 //[-------------------------------------------------------]
 //[ Functions                                             ]
 //[-------------------------------------------------------]
-@includepiece(../SharedShaderPiece/SP_Normal.asset)
+@includepiece(../Shared/SP_Normal.asset)
 	@insertpiece(DefineGetTangentFrame)
 
 

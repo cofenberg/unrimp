@@ -21,7 +21,7 @@
 //[-------------------------------------------------------]
 //[ Definitions                                           ]
 //[-------------------------------------------------------]
-@includepiece(../SharedShaderPiece/SP_Core.asset)
+@includepiece(../Shared/SP_Core.asset)
 	@insertpiece(SetCrossPlatformSettings)
 
 
@@ -56,7 +56,7 @@ UNIFORM_BUFFER_END
 //[-------------------------------------------------------]
 //[ Functions                                             ]
 //[-------------------------------------------------------]
-@includepiece(../SharedShaderPiece/SP_ExponentialShadow.asset)
+@includepiece(../Shared/SP_ExponentialShadow.asset)
 	@insertpiece(DefineExponentialShadow)
 
 

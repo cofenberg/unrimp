@@ -21,7 +21,7 @@
 //[-------------------------------------------------------]
 //[ Definitions                                           ]
 //[-------------------------------------------------------]
-@includepiece(../SharedShaderPiece/SP_Core.asset)
+@includepiece(../Shared/SP_Core.asset)
 	@insertpiece(SetCrossPlatformSettings)
 
 
@@ -121,27 +121,27 @@ SAMPLER_STATE(4, 0, SamplerLinear, 0)
 //[-------------------------------------------------------]
 //[ Functions                                             ]
 //[-------------------------------------------------------]
-@includepiece(../SharedShaderPiece/SP_Normal.asset)
+@includepiece(../Shared/SP_Normal.asset)
 	@insertpiece(DefineGetTangentFrame)
 	@insertpiece(DefineUnpackTextureNormalXY)
-@includepiece(../SharedShaderPiece/SP_PhysicallyBasedShading.asset)
+@includepiece(../Shared/SP_PhysicallyBasedShading.asset)
 	@property(HighQualityLighting)
 		@insertpiece(DefinePhysicallyBasedShading)
 	@else
 		@insertpiece(DefineBlinnPhongBasedShading)
 	@end
-@includepiece(../SharedShaderPiece/SP_Depth.asset)
+@includepiece(../Shared/SP_Depth.asset)
 	@insertpiece(DefineGetLinearDepthReversedZ)
 @property(ReceiveShadows)
-	@includepiece(../SharedShaderPiece/SP_ExponentialShadow.asset)
+	@includepiece(../Shared/SP_ExponentialShadow.asset)
 		@insertpiece(DefineExponentialShadow)
-	@includepiece(../SharedShaderPiece/SP_Shadow.asset)
+	@includepiece(../Shared/SP_Shadow.asset)
 		@insertpiece(DefineCalculateShadowVisibility)
 @end
-@includepiece(../SharedShaderPiece/SP_Noise.asset)
+@includepiece(../Shared/SP_Noise.asset)
 	@insertpiece(DefineMultipleOctavesNoise3D)
 @property(UseWetSurfaces)
-	@includepiece(../SharedShaderPiece/SP_WetSurfaces.asset)
+	@includepiece(../Shared/SP_WetSurfaces.asset)
 		@insertpiece(DefineWetSurfaces)
 @end
 

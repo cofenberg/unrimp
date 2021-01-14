@@ -21,7 +21,7 @@
 //[-------------------------------------------------------]
 //[ Definitions                                           ]
 //[-------------------------------------------------------]
-@includepiece(../SharedShaderPiece/SP_Core.asset)
+@includepiece(../Shared/SP_Core.asset)
 	@insertpiece(SetCrossPlatformSettings)
 @includepiece(./SP_Terrain.asset)
 	@insertpiece(DefineTerrainPassDataStruct)
@@ -55,7 +55,7 @@ SAMPLER_STATE(3, 1, SamplerLinearClamp, 1)
 //[-------------------------------------------------------]
 //[ Functions                                             ]
 //[-------------------------------------------------------]
-@includepiece(../SharedShaderPiece/SP_Color.asset)
+@includepiece(../Shared/SP_Color.asset)
 	@insertpiece(DefineLinearSpaceToGammaSpace3)
 
 

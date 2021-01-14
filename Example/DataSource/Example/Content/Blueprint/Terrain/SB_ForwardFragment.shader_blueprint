@@ -21,9 +21,9 @@
 //[-------------------------------------------------------]
 //[ Definitions                                           ]
 //[-------------------------------------------------------]
-@includepiece(../SharedShaderPiece/SP_Core.asset)
+@includepiece(../Shared/SP_Core.asset)
 	@insertpiece(SetCrossPlatformSettings)
-@includepiece(../SharedShaderPiece/SP_MotionBlur.asset)
+@includepiece(../Shared/SP_MotionBlur.asset)
 @includepiece(./SP_Terrain.asset)
 	@insertpiece(DefineTerrainPassDataStruct)
 
@@ -79,13 +79,13 @@ SAMPLER_STATE(3, 1, SamplerLinearClamp, 1)
 //[-------------------------------------------------------]
 //[ Functions                                             ]
 //[-------------------------------------------------------]
-@includepiece(../SharedShaderPiece/SP_Normal.asset)
+@includepiece(../Shared/SP_Normal.asset)
 	@insertpiece(DefineGetTangentFrame)
 	@insertpiece(DefineUnpackTextureNormalXY)
 	@insertpiece(DefineCalculateCotangentFrame)
 	@insertpiece(DefineFilterNormal)
 	@insertpiece(DefineBlendNormalUdn)
-@includepiece(../SharedShaderPiece/SP_Noise.asset)
+@includepiece(../Shared/SP_Noise.asset)
 	@insertpiece(DefineMultipleOctavesNoise2D)
 	@insertpiece(DefineMultipleOctavesNoise3D)
 // @includepiece(./SP_Terrain.asset) is already included at the top
@@ -97,25 +97,25 @@ SAMPLER_STATE(3, 1, SamplerLinearClamp, 1)
 	@property(UseTriplanarMapping)
 		@insertpiece(DefineTriplanarMapping)
 	@end
-@includepiece(../SharedShaderPiece/SP_PhysicallyBasedShading.asset)
+@includepiece(../Shared/SP_PhysicallyBasedShading.asset)
 	@property(HighQualityLighting)
 		@insertpiece(DefinePhysicallyBasedShading)
 	@else
 		@insertpiece(DefineBlinnPhongBasedShading)
 	@end
-@includepiece(../SharedShaderPiece/SP_Depth.asset)
+@includepiece(../Shared/SP_Depth.asset)
 	@insertpiece(DefineGetLinearDepthReversedZ)
 @property(ReceiveShadows)
-	@includepiece(../SharedShaderPiece/SP_ExponentialShadow.asset)
+	@includepiece(../Shared/SP_ExponentialShadow.asset)
 		@insertpiece(DefineExponentialShadow)
-	@includepiece(../SharedShaderPiece/SP_Shadow.asset)
+	@includepiece(../Shared/SP_Shadow.asset)
 		@insertpiece(DefineCalculateShadowVisibility)
 		@insertpiece(DefineShadowDebugging)
 @end
-@includepiece(../SharedShaderPiece/SP_Color.asset)
+@includepiece(../Shared/SP_Color.asset)
 	@insertpiece(DefineOverlayColorBlending)
 @property(UseWetSurfaces)
-	@includepiece(../SharedShaderPiece/SP_WetSurfaces.asset)
+	@includepiece(../Shared/SP_WetSurfaces.asset)
 		@insertpiece(DefineWetSurfaces)
 @end
 

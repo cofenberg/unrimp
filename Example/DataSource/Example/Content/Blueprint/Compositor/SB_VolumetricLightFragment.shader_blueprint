@@ -21,7 +21,7 @@
 //[-------------------------------------------------------]
 //[ Definitions                                           ]
 //[-------------------------------------------------------]
-@includepiece(../SharedShaderPiece/SP_Core.asset)
+@includepiece(../Shared/SP_Core.asset)
 	@insertpiece(SetCrossPlatformSettings)
 
 #define PI 3.14159265359	// TODO(co) Add generic PI definition in a math shader piece?
@@ -81,14 +81,14 @@ SAMPLER_STATE(2, 0, SamplerLinear, 0)
 //[-------------------------------------------------------]
 //[ Functions                                             ]
 //[-------------------------------------------------------]
-@includepiece(../SharedShaderPiece/SP_Color.asset)
+@includepiece(../Shared/SP_Color.asset)
 	@insertpiece(DefineGetBayerScreenSpaceDitherValue)
-@includepiece(../SharedShaderPiece/SP_Depth.asset)
+@includepiece(../Shared/SP_Depth.asset)
 	@insertpiece(DefineGetLinearDepth)
 @property(ReceiveShadows)
-	@includepiece(../SharedShaderPiece/SP_ExponentialShadow.asset)
+	@includepiece(../Shared/SP_ExponentialShadow.asset)
 		@insertpiece(DefineExponentialShadow)
-	@includepiece(../SharedShaderPiece/SP_Shadow.asset)
+	@includepiece(../Shared/SP_Shadow.asset)
 		@insertpiece(DefineCalculateShadowVisibility)
 @end
 

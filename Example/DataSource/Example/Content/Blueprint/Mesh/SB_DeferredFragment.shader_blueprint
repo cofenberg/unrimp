@@ -21,9 +21,9 @@
 //[-------------------------------------------------------]
 //[ Definitions                                           ]
 //[-------------------------------------------------------]
-@includepiece(../SharedShaderPiece/SP_Core.asset)
+@includepiece(../Shared/SP_Core.asset)
 	@insertpiece(SetCrossPlatformSettings)
-@includepiece(../SharedShaderPiece/SP_MotionBlur.asset)
+@includepiece(../Shared/SP_MotionBlur.asset)
 @includepiece(./SP_ComplexPixel.asset)
 
 
@@ -103,13 +103,13 @@ SAMPLER_STATE(4, 0, SamplerLinear, 0)
 //[-------------------------------------------------------]
 //[ Functions                                             ]
 //[-------------------------------------------------------]
-@includepiece(../SharedShaderPiece/SP_Normal.asset)
+@includepiece(../Shared/SP_Normal.asset)
 	@property(UseParallaxOcclusionMapping)
 		@insertpiece(DefineGetTangentFrame)
 	@end
 	@insertpiece(DefineUnpackTextureNormalXY)
 @property(UseParallaxOcclusionMapping)
-	@includepiece(../SharedShaderPiece/SP_ParallaxOcclusionMapping.asset)
+	@includepiece(../Shared/SP_ParallaxOcclusionMapping.asset)
 		@insertpiece(DefineParallaxOcclusionMapping)
 @end
 
