@@ -34,7 +34,7 @@
 		},
 		"GraphicsPipelineState":
 		{
-			"VertexAttributes": "./VA_Grass.asset", 
+			"VertexAttributes": "../Shared/VA_DrawId.asset",
 			"ShaderBlueprints":
 			{
 				"VertexShaderBlueprint": "./SB_Vertex.asset",

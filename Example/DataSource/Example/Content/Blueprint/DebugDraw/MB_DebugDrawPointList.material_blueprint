@@ -42,7 +42,7 @@
 		},
 		"GraphicsPipelineState":
 		{
-			"VertexAttributes": "./VA_DebugDrawPointList.asset", 
+			"VertexAttributes": "../Shared/VA_DrawId.asset",
 			"ShaderBlueprints":
 			{
 				"VertexShaderBlueprint": "./SB_VertexPointList.asset",

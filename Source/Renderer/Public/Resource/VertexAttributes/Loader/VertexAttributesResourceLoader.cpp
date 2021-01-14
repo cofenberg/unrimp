@@ -231,9 +231,7 @@ namespace Renderer
 		{
 			mVertexAttributesResource->mVertexAttributes = Rhi::VertexAttributes(MeshResource::SKINNED_VERTEX_ATTRIBUTES.numberOfAttributes, MeshResource::SKINNED_VERTEX_ATTRIBUTES.attributes);
 		}
-		else if (ASSET_ID("Example/Blueprint/Particles/VA_Particles") == getAsset().assetId ||
-				 ASSET_ID("Example/Blueprint/Grass/VA_Grass") == getAsset().assetId ||
-				 ASSET_ID("Example/Blueprint/DebugDraw/VA_DebugDrawPointList") == getAsset().assetId)
+		else if (ASSET_ID("Example/Blueprint/Shared/VA_DrawId") == getAsset().assetId)
 		{
 			mVertexAttributesResource->mVertexAttributes = Rhi::VertexAttributes(MeshResourceManager::DRAW_ID_VERTEX_ATTRIBUTES.numberOfAttributes, MeshResourceManager::DRAW_ID_VERTEX_ATTRIBUTES.attributes);
 		}
