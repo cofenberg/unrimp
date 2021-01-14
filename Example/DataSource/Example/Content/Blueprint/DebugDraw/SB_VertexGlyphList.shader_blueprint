@@ -30,9 +30,8 @@
 //[-------------------------------------------------------]
 // Attribute input / output
 INPUT_BEGIN_VERTEX
-	INPUT_VERTEX_POSITION	(0, float2, Position)		// Screen-space vertex xy-position, origin at the top-left corner of the screen
-	INPUT_TEXTURE_COORDINATE(1, float2, TexCoord, 0)	// 32 bit texture coordinate
-	INPUT_VERTEX_COLOR	 	(2, float3, Color)			// Linear space vertex color
+	INPUT_VERTEX_POSITION(0, float4, PositionTexCoord)	// xy = screen-space vertex xy-position with origin at the top-left corner of the screen, zw = normalized 32 bit glyph vertex texture coordinate
+	INPUT_VERTEX_COLOR	 (1, float3, Color)				// Linear space vertex color
 INPUT_END_VERTEX
 OUTPUT_BEGIN_VERTEX
 	OUTPUT_TEXTURE_COORDINATE(1, float2, TexCoordVS, 0)	// xy = glyph texture coordinate
@@ -62,13 +61,13 @@ UNIFORM_BUFFER_END
 //[-------------------------------------------------------]
 MAIN_BEGIN_VERTEX
 	{ // Map to normalized clip coordinates
-		float x = ((2.0f * (MAIN_INPUT(Position).x - 0.5f)) * PassData.InverseViewportSize.x) - 1.0f;
-		float y = 1.0f - ((2.0f * (MAIN_INPUT(Position).y - 0.5f)) * PassData.InverseViewportSize.y);
+		float x = ((2.0f * (MAIN_INPUT(PositionTexCoord).x - 0.5f)) * PassData.InverseViewportSize.x) - 1.0f;
+		float y = 1.0f - ((2.0f * (MAIN_INPUT(PositionTexCoord).y - 0.5f)) * PassData.InverseViewportSize.y);
 		MAIN_OUTPUT_POSITION = float4(x, y, 0.0f, 1.0f);
 	}
 
 	// Pass through the texture coordinates
-	MAIN_OUTPUT(TexCoordVS) = MAIN_INPUT(TexCoord);
+	MAIN_OUTPUT(TexCoordVS) = MAIN_INPUT(PositionTexCoord).zw;
 
 	// Pass through the vertex color
 	MAIN_OUTPUT(ColorVS) = LinearSpaceToGammaSpace3(MAIN_INPUT(Color));

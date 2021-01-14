@@ -144,39 +144,27 @@ namespace
 					{
 						{ // Attribute 0
 							// Data destination
-							Rhi::VertexAttributeFormat::FLOAT_2,						// vertexAttributeFormat (Rhi::VertexAttributeFormat)
-							"Position",													// name[32] (char)
-							"POSITION",													// semanticName[32] (char)
-							0,															// semanticIndex (uint32_t)
+							Rhi::VertexAttributeFormat::FLOAT_4,	// vertexAttributeFormat (Rhi::VertexAttributeFormat)
+							"Position",								// name[32] (char)
+							"POSITION",								// semanticName[32] (char)
+							0,										// semanticIndex (uint32_t)
 							// Data source
-							0,															// inputSlot (uint32_t)
-							0,															// alignedByteOffset (uint32_t)
-							sizeof(float) * 2 + sizeof(float) * 2 + sizeof(float) * 3,	// strideInBytes (uint32_t)
-							0															// instancesPerElement (uint32_t)
+							0,										// inputSlot (uint32_t)
+							0,										// alignedByteOffset (uint32_t)
+							sizeof(float) * 4 + sizeof(float) * 3,	// strideInBytes (uint32_t)
+							0										// instancesPerElement (uint32_t)
 						},
 						{ // Attribute 1
 							// Data destination
-							Rhi::VertexAttributeFormat::FLOAT_2,						// vertexAttributeFormat (Rhi::VertexAttributeFormat)
-							"TexCoord",													// name[32] (char)
-							"TEXCOORD",													// semanticName[32] (char)
-							0,															// semanticIndex (uint32_t)
+							Rhi::VertexAttributeFormat::FLOAT_3,	// vertexAttributeFormat (Rhi::VertexAttributeFormat)
+							"Color",								// name[32] (char)
+							"COLOR",								// semanticName[32] (char)
+							0,										// semanticIndex (uint32_t)
 							// Data source
-							0,															// inputSlot (uint32_t)
-							sizeof(float) * 2,											// alignedByteOffset (uint32_t)
-							sizeof(float) * 2 + sizeof(float) * 2 + sizeof(float) * 3,	// strideInBytes (uint32_t)
-							0															// instancesPerElement (uint32_t)
-						},
-						{ // Attribute 2
-							// Data destination
-							Rhi::VertexAttributeFormat::FLOAT_3,						// vertexAttributeFormat (Rhi::VertexAttributeFormat)
-							"Color",													// name[32] (char)
-							"COLOR",													// semanticName[32] (char)
-							0,															// semanticIndex (uint32_t)
-							// Data source
-							0,															// inputSlot (uint32_t)
-							sizeof(float) * 2 + sizeof(float) * 2,						// alignedByteOffset (uint32_t)
-							sizeof(float) * 2 + sizeof(float) * 2 + sizeof(float) * 3,	// strideInBytes (uint32_t)
-							0															// instancesPerElement (uint32_t)
+							0,										// inputSlot (uint32_t)
+							sizeof(float) * 4,						// alignedByteOffset (uint32_t)
+							sizeof(float) * 4 + sizeof(float) * 3,	// strideInBytes (uint32_t)
+							0										// instancesPerElement (uint32_t)
 						}
 					};
 					const Rhi::VertexAttributes vertexAttributes(static_cast<uint32_t>(GLM_COUNTOF(vertexAttributesLayoutLineList)), vertexAttributesLayoutLineList);
@@ -385,12 +373,12 @@ namespace
 							GlyphListVertex& vertex = glyphListVertex[v];
 
 							// Position
-							vertex.position[0] = glyph.glyph.x;
-							vertex.position[1] = glyph.glyph.y;
+							vertex.positionTexCoord[0] = glyph.glyph.x;
+							vertex.positionTexCoord[1] = glyph.glyph.y;
 
 							// Texture coordinate
-							vertex.texCoord[0] = glyph.glyph.u;
-							vertex.texCoord[1] = glyph.glyph.v;
+							vertex.positionTexCoord[2] = glyph.glyph.u;
+							vertex.positionTexCoord[3] = glyph.glyph.v;
 
 							// Color
 							vertex.color[0] = glyph.glyph.r;
@@ -432,9 +420,8 @@ namespace
 			};
 			struct GlyphListVertex final
 			{
-				float position[2];	// Screen-space vertex xy-position, origin at the top-left corner of the screen
-				float texCoord[2];	// Normalized glyph vertex texture coordinate
-				float color[3];		// Linear space RGB glyph vertex color
+				float positionTexCoord[4];	// xy = screen-space vertex xy-position with origin at the top-left corner of the screen, zw = normalized 32 bit glyph vertex texture coordinate
+				float color[3];				// Linear space RGB glyph vertex color
 			};
 
 
