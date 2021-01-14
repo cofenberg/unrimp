@@ -691,15 +691,15 @@ union DrawVertex
     struct
     {
         float x, y, z;
-        float r, g, b;
         float size;
+        float r, g, b;
     } point;
 
     struct
     {
         float x, y, z;
-        float r, g, b;
         float width;
+        float r, g, b;
     } line;
 
     struct
@@ -2205,10 +2205,10 @@ static void pushPointVert(DD_EXPLICIT_CONTEXT_ONLY(ContextHandle ctx,) const Deb
     v.point.x      = point.position[X];
     v.point.y      = point.position[Y];
     v.point.z      = point.position[Z];
+    v.point.size   = point.size;
     v.point.r      = point.color[X];
     v.point.g      = point.color[Y];
     v.point.b      = point.color[Z];
-    v.point.size   = point.size;
 }
 
 static void pushLineVert(DD_EXPLICIT_CONTEXT_ONLY(ContextHandle ctx,) const DebugLine & line)
@@ -2225,18 +2225,18 @@ static void pushLineVert(DD_EXPLICIT_CONTEXT_ONLY(ContextHandle ctx,) const Debu
     v0.line.x = line.posFrom[X];
     v0.line.y = line.posFrom[Y];
     v0.line.z = line.posFrom[Z];
+    v0.line.width = line.width;
     v0.line.r = line.color[X];
     v0.line.g = line.color[Y];
     v0.line.b = line.color[Z];
-    v0.line.width = line.width;
 
     v1.line.x = line.posTo[X];
     v1.line.y = line.posTo[Y];
     v1.line.z = line.posTo[Z];
+    v1.line.width = line.width;
     v1.line.r = line.color[X];
     v1.line.g = line.color[Y];
     v1.line.b = line.color[Z];
-    v1.line.width = line.width;
 }
 
 static void pushGlyphVerts(DD_EXPLICIT_CONTEXT_ONLY(ContextHandle ctx,) const DrawVertex verts[4])

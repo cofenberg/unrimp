@@ -30,7 +30,7 @@
 //[-------------------------------------------------------]
 // Attribute input / output
 INPUT_BEGIN
-	INPUT_TEXTURE_COORDINATE(1, float4, ColorVS, 0)	// sRGB vertex color
+	INPUT_TEXTURE_COORDINATE(1, float3, ColorVS, 0)	// sRGB vertex color
 	@property(SmoothPoint)
 		INPUT_TEXTURE_COORDINATE(2, float3, TexCoordVS, 1)	// xy = normalized texture coordinate, z = point size
 	@end
@@ -52,7 +52,7 @@ OUTPUT_END
 //[-------------------------------------------------------]
 MAIN_BEGIN
 	// Fragment color
-	MAIN_OUTPUT_COLOR(0) = float4(GammaSpaceToLinearSpace3(MAIN_INPUT(ColorVS).rgb), MAIN_INPUT(ColorVS).a);
+	MAIN_OUTPUT_COLOR(0) = float4(GammaSpaceToLinearSpace3(MAIN_INPUT(ColorVS)), 1.0f);
 
 	// Smooth point
 	// -> Basing on "Im3d" ( https://github.com/john-chapman/im3d ) DirectX11 example: "https://github.com/john-chapman/im3d/blob/master/examples/DirectX11/im3d.hlsl"
@@ -60,6 +60,6 @@ MAIN_BEGIN
 		const float ANTIALIASING = 2.0f;
 		float d = length(MAIN_INPUT(TexCoordVS).xy - float2(0.5f, 0.5f));
 		d = smoothstep(0.5f, 0.5f - (ANTIALIASING / MAIN_INPUT(TexCoordVS).z), d);
-		MAIN_OUTPUT_COLOR(0).a *= d;
+		MAIN_OUTPUT_COLOR(0).a = d;
 	@end
 MAIN_END

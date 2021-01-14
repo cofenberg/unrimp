@@ -281,28 +281,11 @@ namespace
 				const uint32_t depthIndex = (depthEnabled ? 1u : 0u);
 				if (nullptr != mPointListStructuredBuffer[depthIndex])
 				{
-					{ // Copy and convert all points into a single contiguous buffer
+					{ // Copy all points into a single contiguous buffer
 						Rhi::MappedSubresource structuredBufferMappedSubresource;
 						if (mRhi.map(*mPointListStructuredBuffer[depthIndex], 0, Rhi::MapType::WRITE_DISCARD, 0, structuredBufferMappedSubresource))
 						{
-							PointDataStruct* pointListPoint = static_cast<PointDataStruct*>(structuredBufferMappedSubresource.data);
-							for (int v = 0; v < count; ++v)
-							{
-								const dd::DrawVertex& point = points[v];
-								PointDataStruct& pointDataStruct = pointListPoint[v];
-
-								// Position
-								pointDataStruct.positionSize[0] = point.point.x;
-								pointDataStruct.positionSize[1] = point.point.y;
-								pointDataStruct.positionSize[2] = point.point.z;
-								pointDataStruct.positionSize[3] = point.point.size;
-
-								// Color
-								pointDataStruct.color[0] = point.point.r;
-								pointDataStruct.color[1] = point.point.g;
-								pointDataStruct.color[2] = point.point.b;
-								pointDataStruct.color[3] = 1.0f;	// The opacity is fixed build in to one, due to structured buffer aligning it doesn't make much sense to try to optimize this out
-							}
+							memcpy(structuredBufferMappedSubresource.data, points, sizeof(PointDataStruct) * count);
 
 							// Unmap the structured buffer
 							mRhi.unmap(*mPointListStructuredBuffer[depthIndex], 0);
@@ -322,27 +305,11 @@ namespace
 				RHI_ASSERT(mRhi.getContext(), !mRenderableManager.getRenderables().empty(), "Invalid renderables")
 
 				const uint32_t depthIndex = (depthEnabled ? 1u : 0u);
-				{ // Copy and convert all vertices into a single contiguous buffer
+				{ // Copy all vertices into a single contiguous buffer
 					Rhi::MappedSubresource vertexBufferMappedSubresource;
 					if (mRhi.map(*mLineListVertexBuffer[depthIndex], 0, Rhi::MapType::WRITE_DISCARD, 0, vertexBufferMappedSubresource))
 					{
-						LineListVertex* lineListVertex = static_cast<LineListVertex*>(vertexBufferMappedSubresource.data);
-						for (int v = 0; v < count; ++v)
-						{
-							const dd::DrawVertex& line = lines[v];
-							LineListVertex& vertex = lineListVertex[v];
-
-							// Position and width
-							vertex.positionWidth[0] = line.line.x;
-							vertex.positionWidth[1] = line.line.y;
-							vertex.positionWidth[2] = line.line.z;
-							vertex.positionWidth[3] = line.line.width;
-
-							// Color
-							vertex.color[0] = line.line.r;
-							vertex.color[1] = line.line.g;
-							vertex.color[2] = line.line.b;
-						}
+						memcpy(vertexBufferMappedSubresource.data, lines, sizeof(LineListVertex) * count);
 
 						// Unmap the vertex buffer
 						mRhi.unmap(*mLineListVertexBuffer[depthIndex], 0);
@@ -362,29 +329,11 @@ namespace
 				RHI_ASSERT(mRhi.getContext(), count > 0 && count <= DEBUG_DRAW_VERTEX_BUFFER_SIZE, "Invalid count")
 				RHI_ASSERT(mRhi.getContext(), !mRenderableManager.getRenderables().empty(), "Invalid renderables")
 
-				{ // Copy and convert all vertices into a single contiguous buffer
+				{ // Copy all vertices into a single contiguous buffer
 					Rhi::MappedSubresource vertexBufferMappedSubresource;
 					if (mRhi.map(*mGlyphListVertexBuffer, 0, Rhi::MapType::WRITE_DISCARD, 0, vertexBufferMappedSubresource))
 					{
-						GlyphListVertex* glyphListVertex = static_cast<GlyphListVertex*>(vertexBufferMappedSubresource.data);
-						for (int v = 0; v < count; ++v)
-						{
-							const dd::DrawVertex& glyph = glyphs[v];
-							GlyphListVertex& vertex = glyphListVertex[v];
-
-							// Position
-							vertex.positionTexCoord[0] = glyph.glyph.x;
-							vertex.positionTexCoord[1] = glyph.glyph.y;
-
-							// Texture coordinate
-							vertex.positionTexCoord[2] = glyph.glyph.u;
-							vertex.positionTexCoord[3] = glyph.glyph.v;
-
-							// Color
-							vertex.color[0] = glyph.glyph.r;
-							vertex.color[1] = glyph.glyph.g;
-							vertex.color[2] = glyph.glyph.b;
-						}
+						memcpy(vertexBufferMappedSubresource.data, glyphs, sizeof(GlyphListVertex) * count);
 
 						// Unmap the vertex buffer
 						mRhi.unmap(*mGlyphListVertexBuffer, 0);
@@ -411,7 +360,7 @@ namespace
 			struct PointDataStruct final
 			{
 				float positionSize[4];	// Object space point xyz-position, w = point screen size
-				float color[4];			// Linear space RGB point color and opacity
+				float color[4];			// Linear space RGB point color, a = only exists for alignment purposes
 			};
 			struct LineListVertex final
 			{

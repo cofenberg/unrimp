@@ -35,7 +35,7 @@ INPUT_BEGIN_VERTEX
 	INPUT_INSTANCE_ID
 INPUT_END_VERTEX
 OUTPUT_BEGIN_VERTEX
-	OUTPUT_TEXTURE_COORDINATE(1, float4, ColorVS, 0)	// sRGB vertex color
+	OUTPUT_TEXTURE_COORDINATE(1, float3, ColorVS, 0)	// sRGB vertex color
 	@property(SmoothPoint)
 		OUTPUT_TEXTURE_COORDINATE(2, float3, TexCoordVS, 1)	// xy = normalized texture coordinate, z = point size
 	@end
@@ -64,7 +64,7 @@ UNIFORM_BUFFER_END
 struct PointDataStruct
 {
 	float4 PositionSize;	// Object space point xyz-position, w = point screen size
-	float4 Color;			// Linear space RGB point color and opacity
+	float4 Color;			// Linear space RGB point color, a = only exists for alignment purposes
 };
 STRUCTURED_BUFFER(2, 0, PointStructuredBuffer, 0, PointDataStruct, PointData)
 
@@ -109,7 +109,7 @@ MAIN_BEGIN_VERTEX
 		//    So, instead of using the evil NaN approach, we're ensuring that the triangle is always clipped, beside also beeing a degenerated triangle.
 		// -> We don't care that bigger points might get culling in a visible way as soon as the center is out of the frustum, the debug draw is for debugging and simple visualization only
 		MAIN_OUTPUT_POSITION = float4(10.0, 10.0, 10.0, 0.0f);
-		MAIN_OUTPUT(ColorVS) = float4(1.0f, 1.0f, 1.0f, 1.0f);
+		MAIN_OUTPUT(ColorVS) = float3(1.0f, 1.0f, 1.0f);
 		@property(SmoothPoint)
 			MAIN_OUTPUT(TexCoordVS) = float3(0.0f, 0.0f, 1.0f);
 		@end
@@ -131,7 +131,7 @@ MAIN_BEGIN_VERTEX
 		}
 
 		// Pass through the color and clip space position
-		MAIN_OUTPUT(ColorVS) = float4(LinearSpaceToGammaSpace3(pointDataStruct.Color.rgb), pointDataStruct.Color.a);
+		MAIN_OUTPUT(ColorVS) = LinearSpaceToGammaSpace3(pointDataStruct.Color.rgb);
 
 		// Pass through the texture coordinate and point size for smooth point
 		@property(SmoothPoint)
