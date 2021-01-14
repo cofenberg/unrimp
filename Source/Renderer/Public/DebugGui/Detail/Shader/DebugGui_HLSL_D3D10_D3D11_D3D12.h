@@ -46,17 +46,16 @@ cbuffer UniformBlockDynamicVs : register(b0)
 }
 
 // Programs
-VS_OUTPUT main(float2 Position : POSITION,	// Clip space vertex position as input, left/bottom is (-1,-1) and right/top is (1,1)
-			   float2 TexCoord : TEXCOORD0,	// Normalized texture coordinate as input
-			   float4 Color    : COLOR0)	// sRGB vertex color
+VS_OUTPUT main(float4 PositionTexCoord : POSITION,	// xy = clip space vertex position as input with left/bottom is (-1,-1) and right/top is (1,1), zw = normalized 32 bit texture coordinate as input
+			   float4 Color            : COLOR0)	// sRGB vertex color
 {
 	VS_OUTPUT output;
 
 	// Calculate the clip space vertex position, lower/left is (-1,-1) and upper/right is (1,1)
-	output.Position = mul(ObjectSpaceToClipSpaceMatrix, float4(Position, 0.5f, 1.0f));
+	output.Position = mul(ObjectSpaceToClipSpaceMatrix, float4(PositionTexCoord.xy, 0.5f, 1.0f));
 
 	// Pass through the vertex texture coordinate
-	output.TexCoord = TexCoord;
+	output.TexCoord = PositionTexCoord.zw;
 
 	// Pass through the vertex color
 	output.Color = Color;

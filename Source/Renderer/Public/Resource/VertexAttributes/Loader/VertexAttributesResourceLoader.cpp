@@ -131,7 +131,7 @@ namespace Renderer
 			{
 				{ // Attribute 0
 					// Data destination
-					Rhi::VertexAttributeFormat::FLOAT_2,		// vertexAttributeFormat (Rhi::VertexAttributeFormat)
+					Rhi::VertexAttributeFormat::FLOAT_4,		// vertexAttributeFormat (Rhi::VertexAttributeFormat)
 					"Position",									// name[32] (char)
 					"POSITION",									// semanticName[32] (char)
 					0,											// semanticIndex (uint32_t)
@@ -142,18 +142,6 @@ namespace Renderer
 					0											// instancesPerElement (uint32_t)
 				},
 				{ // Attribute 1
-					// Data destination
-					Rhi::VertexAttributeFormat::FLOAT_2,		// vertexAttributeFormat (Rhi::VertexAttributeFormat)
-					"TexCoord",									// name[32] (char)
-					"TEXCOORD",									// semanticName[32] (char)
-					0,											// semanticIndex (uint32_t)
-					// Data source
-					0,											// inputSlot (uint32_t)
-					sizeof(float) * 2,							// alignedByteOffset (uint32_t)
-					sizeof(float) * 4 + sizeof(uint8_t) * 4,	// strideInBytes (uint32_t)
-					0											// instancesPerElement (uint32_t)
-				},
-				{ // Attribute 2
 					// Data destination
 					Rhi::VertexAttributeFormat::R8G8B8A8_UNORM,	// vertexAttributeFormat (Rhi::VertexAttributeFormat)
 					"Color",									// name[32] (char)

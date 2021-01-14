@@ -33,11 +33,10 @@ if (rhi.getNameId() == Rhi::NameId::OPENGLES3)
 vertexShaderSourceCode = R"(#version 300 es	// OpenGL ES 3.0
 
 // Attribute input/output
-in  highp vec2 Position;	// Object space vertex position as input, left/bottom is (0,0) and right/top is (1,1)
-in  highp vec2 TexCoord;	// Normalized texture coordinate as input
-out highp vec2 TexCoordVs;	// Normalized texture coordinate as output
-in  highp vec4 Color;		// sRGB vertex color as input
-out highp vec4 ColorVs;		// sRGB vertex color as output
+in  highp vec4 PositionTexCoord;	// xy = object space vertex position as input with left/bottom is (0,0) and right/top is (1,1), zw = normalized 32 bit texture coordinate as input
+in  highp vec4 Color;				// sRGB vertex color as input
+out highp vec2 TexCoordVs;			// Normalized texture coordinate as output
+out highp vec4 ColorVs;				// sRGB vertex color as output
 
 // Uniforms
 layout(std140) uniform UniformBlockDynamicVs
@@ -49,10 +48,10 @@ layout(std140) uniform UniformBlockDynamicVs
 void main()
 {
 	// Calculate the clip space vertex position, lower/left is (-1,-1) and upper/right is (1,1)
-	gl_Position = ObjectSpaceToClipSpaceMatrix * vec4(Position, 0.5f, 1.0f);
+	gl_Position = ObjectSpaceToClipSpaceMatrix * vec4(PositionTexCoord.xy, 0.5f, 1.0f);
 
 	// Pass through the vertex texture coordinate
-	TexCoordVs = TexCoord;
+	TexCoordVs = PositionTexCoord.zw;
 
 	// Pass through the vertex color
 	ColorVs = Color;
