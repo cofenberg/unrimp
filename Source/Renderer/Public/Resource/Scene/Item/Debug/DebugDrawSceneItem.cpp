@@ -90,7 +90,7 @@ namespace
 					// Create the structured buffer
 					for (int depthIndex = 0; depthIndex < 2; ++depthIndex)
 					{
-						mPointListStructuredBuffer[depthIndex] = bufferManager.createStructuredBuffer(sizeof(PointDataStruct) * DEBUG_DRAW_VERTEX_BUFFER_SIZE, nullptr, Rhi::BufferFlag::SHADER_RESOURCE, Rhi::BufferUsage::DYNAMIC_DRAW, sizeof(PointDataStruct) RHI_RESOURCE_DEBUG_NAME("DebugDrawPointList"));
+						mPointListStructuredBuffer[depthIndex] = bufferManager.createStructuredBuffer(sizeof(dd::DrawVertex) * DEBUG_DRAW_VERTEX_BUFFER_SIZE, nullptr, Rhi::BufferFlag::SHADER_RESOURCE, Rhi::BufferUsage::DYNAMIC_DRAW, sizeof(dd::DrawVertex) RHI_RESOURCE_DEBUG_NAME("DebugDrawPointList"));
 					}
 				}
 				else
@@ -111,19 +111,19 @@ namespace
 							// Data source
 							0,										// inputSlot (uint32_t)
 							0,										// alignedByteOffset (uint32_t)
-							sizeof(LineListVertex),					// strideInBytes (uint32_t)
+							sizeof(dd::DrawVertex),					// strideInBytes (uint32_t)
 							0										// instancesPerElement (uint32_t)
 						},
 						{ // Attribute 1
 							// Data destination
-							Rhi::VertexAttributeFormat::FLOAT_3,	// vertexAttributeFormat (Rhi::VertexAttributeFormat)
+							Rhi::VertexAttributeFormat::FLOAT_4,	// vertexAttributeFormat (Rhi::VertexAttributeFormat)
 							"Color",								// name[32] (char)
 							"COLOR",								// semanticName[32] (char)
 							0,										// semanticIndex (uint32_t)
 							// Data source
 							0,										// inputSlot (uint32_t)
 							sizeof(float) * 4,						// alignedByteOffset (uint32_t)
-							sizeof(LineListVertex),					// strideInBytes (uint32_t)
+							sizeof(dd::DrawVertex),					// strideInBytes (uint32_t)
 							0										// instancesPerElement (uint32_t)
 						}
 					};
@@ -132,7 +132,7 @@ namespace
 					// Create line list vertex array object (VAO)
 					for (int depthIndex = 0; depthIndex < 2; ++depthIndex)
 					{
-						mLineListVertexBuffer[depthIndex] = bufferManager.createVertexBuffer(sizeof(LineListVertex) * DEBUG_DRAW_VERTEX_BUFFER_SIZE, nullptr, 0, Rhi::BufferUsage::DYNAMIC_DRAW RHI_RESOURCE_DEBUG_NAME("DebugDrawLineList"));
+						mLineListVertexBuffer[depthIndex] = bufferManager.createVertexBuffer(sizeof(dd::DrawVertex) * DEBUG_DRAW_VERTEX_BUFFER_SIZE, nullptr, 0, Rhi::BufferUsage::DYNAMIC_DRAW RHI_RESOURCE_DEBUG_NAME("DebugDrawLineList"));
 						const Rhi::VertexArrayVertexBuffer vertexArrayVertexBuffers[] = { mLineListVertexBuffer[depthIndex] };
 						mLineListVertexArray[depthIndex] = bufferManager.createVertexArray(vertexAttributes, static_cast<uint32_t>(GLM_COUNTOF(vertexArrayVertexBuffers)), vertexArrayVertexBuffers, nullptr RHI_RESOURCE_DEBUG_NAME("DebugDrawLineList"));
 					}
@@ -151,26 +151,26 @@ namespace
 							// Data source
 							0,										// inputSlot (uint32_t)
 							0,										// alignedByteOffset (uint32_t)
-							sizeof(float) * 4 + sizeof(float) * 3,	// strideInBytes (uint32_t)
+							sizeof(float) * 4 + sizeof(float) * 4,	// strideInBytes (uint32_t)
 							0										// instancesPerElement (uint32_t)
 						},
 						{ // Attribute 1
 							// Data destination
-							Rhi::VertexAttributeFormat::FLOAT_3,	// vertexAttributeFormat (Rhi::VertexAttributeFormat)
+							Rhi::VertexAttributeFormat::FLOAT_4,	// vertexAttributeFormat (Rhi::VertexAttributeFormat)
 							"Color",								// name[32] (char)
 							"COLOR",								// semanticName[32] (char)
 							0,										// semanticIndex (uint32_t)
 							// Data source
 							0,										// inputSlot (uint32_t)
 							sizeof(float) * 4,						// alignedByteOffset (uint32_t)
-							sizeof(float) * 4 + sizeof(float) * 3,	// strideInBytes (uint32_t)
+							sizeof(float) * 4 + sizeof(float) * 4,	// strideInBytes (uint32_t)
 							0										// instancesPerElement (uint32_t)
 						}
 					};
 					const Rhi::VertexAttributes vertexAttributes(static_cast<uint32_t>(GLM_COUNTOF(vertexAttributesLayoutLineList)), vertexAttributesLayoutLineList);
 
 					// Create glyph list vertex array object (VAO)
-					mGlyphListVertexBuffer = bufferManager.createVertexBuffer(sizeof(GlyphListVertex) * DEBUG_DRAW_VERTEX_BUFFER_SIZE, nullptr, 0, Rhi::BufferUsage::DYNAMIC_DRAW RHI_RESOURCE_DEBUG_NAME("DebugDrawGlyphList"));
+					mGlyphListVertexBuffer = bufferManager.createVertexBuffer(sizeof(dd::DrawVertex) * DEBUG_DRAW_VERTEX_BUFFER_SIZE, nullptr, 0, Rhi::BufferUsage::DYNAMIC_DRAW RHI_RESOURCE_DEBUG_NAME("DebugDrawGlyphList"));
 					const Rhi::VertexArrayVertexBuffer vertexArrayVertexBuffers[] = { mGlyphListVertexBuffer };
 					mGlyphListVertexArray = bufferManager.createVertexArray(vertexAttributes, static_cast<uint32_t>(GLM_COUNTOF(vertexArrayVertexBuffers)), vertexArrayVertexBuffers, nullptr RHI_RESOURCE_DEBUG_NAME("DebugDrawGlyphList"));
 				}
@@ -285,7 +285,7 @@ namespace
 						Rhi::MappedSubresource structuredBufferMappedSubresource;
 						if (mRhi.map(*mPointListStructuredBuffer[depthIndex], 0, Rhi::MapType::WRITE_DISCARD, 0, structuredBufferMappedSubresource))
 						{
-							memcpy(structuredBufferMappedSubresource.data, points, sizeof(PointDataStruct) * count);
+							memcpy(structuredBufferMappedSubresource.data, points, sizeof(dd::DrawVertex) * count);
 
 							// Unmap the structured buffer
 							mRhi.unmap(*mPointListStructuredBuffer[depthIndex], 0);
@@ -309,7 +309,7 @@ namespace
 					Rhi::MappedSubresource vertexBufferMappedSubresource;
 					if (mRhi.map(*mLineListVertexBuffer[depthIndex], 0, Rhi::MapType::WRITE_DISCARD, 0, vertexBufferMappedSubresource))
 					{
-						memcpy(vertexBufferMappedSubresource.data, lines, sizeof(LineListVertex) * count);
+						memcpy(vertexBufferMappedSubresource.data, lines, sizeof(dd::DrawVertex) * count);
 
 						// Unmap the vertex buffer
 						mRhi.unmap(*mLineListVertexBuffer[depthIndex], 0);
@@ -333,7 +333,7 @@ namespace
 					Rhi::MappedSubresource vertexBufferMappedSubresource;
 					if (mRhi.map(*mGlyphListVertexBuffer, 0, Rhi::MapType::WRITE_DISCARD, 0, vertexBufferMappedSubresource))
 					{
-						memcpy(vertexBufferMappedSubresource.data, glyphs, sizeof(GlyphListVertex) * count);
+						memcpy(vertexBufferMappedSubresource.data, glyphs, sizeof(dd::DrawVertex) * count);
 
 						// Unmap the vertex buffer
 						mRhi.unmap(*mGlyphListVertexBuffer, 0);
@@ -354,34 +354,13 @@ namespace
 
 
 		//[-------------------------------------------------------]
-		//[ Private definitions                                   ]
-		//[-------------------------------------------------------]
-		private:
-			struct PointDataStruct final
-			{
-				float positionSize[4];	// Object space point xyz-position, w = point screen size
-				float color[4];			// Linear space RGB point color, a = only exists for alignment purposes
-			};
-			struct LineListVertex final
-			{
-				float positionWidth[4];	// Object space line vertex xyz-position, w = line width
-				float color[3];			// Linear space RGB line vertex color
-			};
-			struct GlyphListVertex final
-			{
-				float positionTexCoord[4];	// xy = screen-space vertex xy-position with origin at the top-left corner of the screen, zw = normalized 32 bit glyph vertex texture coordinate
-				float color[3];				// Linear space RGB glyph vertex color
-			};
-
-
-		//[-------------------------------------------------------]
 		//[ Private data                                          ]
 		//[-------------------------------------------------------]
 		private:
 			Rhi::IRhi&					 mRhi;
 			const Renderer::IRenderer&   mRenderer;
 			Renderer::RenderableManager& mRenderableManager;
-			Rhi::IStructuredBufferPtr	 mPointListStructuredBuffer[2];	///< Structured buffer the data of the individual points ("::DebugDrawRenderInterface::PointDataStruct")
+			Rhi::IStructuredBufferPtr	 mPointListStructuredBuffer[2];	///< Structured buffer the data of the individual points ("dd::DrawVertex")
 			Rhi::IVertexBufferPtr		 mLineListVertexBuffer[2];		///< Line list vertex buffer object (VBO), can be a null pointer, "Renderer::DebugDrawSceneItem::RenderableIndex::LINE_LIST"
 			Rhi::IVertexArrayPtr		 mLineListVertexArray[2];		///< Line list vertex array object (VAO), can be a null pointer, "Renderer::DebugDrawSceneItem::RenderableIndex::LINE_LIST"
 			Rhi::IVertexBufferPtr		 mGlyphListVertexBuffer;		///< Glyph list vertex buffer object (VBO), can be a null pointer, "Renderer::DebugDrawSceneItem::RenderableIndex::GLYPH_LIST"

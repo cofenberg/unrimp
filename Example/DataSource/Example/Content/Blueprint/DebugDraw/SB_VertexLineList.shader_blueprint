@@ -31,7 +31,7 @@
 // Attribute input / output
 INPUT_BEGIN_VERTEX
 	INPUT_VERTEX_POSITION(0, float4, PositionWidth)	// Object space vertex position, w = line width
-	INPUT_VERTEX_COLOR	 (1, float3, Color)			// Linear space vertex color
+	INPUT_VERTEX_COLOR	 (1, float4, Color)			// Linear space RGB vertex color, a = only exists for alignment purposes
 INPUT_END_VERTEX
 OUTPUT_BEGIN_VERTEX
 	OUTPUT_TEXTURE_COORDINATE(0, float4, PositionVS, 0)	// Clip space vertex position as output, left/bottom is (-1,-1) and right/top is (1,1)
@@ -81,5 +81,5 @@ MAIN_BEGIN_VERTEX
 	MAIN_OUTPUT(PositionVS) = MATRIX_MUL(PassData.WorldSpaceToClipSpaceMatrix[MAIN_INPUT_STEREO_EYE_INDEX], float4(worldSpacePosition, 1.0f));
 
 	// Pass through the vertex color and line width
-	MAIN_OUTPUT(ColorVS) = float4(LinearSpaceToGammaSpace3(MAIN_INPUT(Color)), MAIN_INPUT(PositionWidth).w);
+	MAIN_OUTPUT(ColorVS) = float4(LinearSpaceToGammaSpace3(MAIN_INPUT(Color).rgb), MAIN_INPUT(PositionWidth).w);
 MAIN_END_VERTEX(MAIN_OUTPUT(PositionVS))

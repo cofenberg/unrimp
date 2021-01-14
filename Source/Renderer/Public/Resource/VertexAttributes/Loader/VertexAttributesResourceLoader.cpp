@@ -171,19 +171,19 @@ namespace Renderer
 					// Data source
 					0,										// inputSlot (uint32_t)
 					0,										// alignedByteOffset (uint32_t)
-					sizeof(float) * 4 + sizeof(float) * 3,	// strideInBytes (uint32_t)
+					sizeof(float) * 4 + sizeof(float) * 4,	// strideInBytes (uint32_t)
 					0										// instancesPerElement (uint32_t)
 				},
 				{ // Attribute 1
 					// Data destination
-					Rhi::VertexAttributeFormat::FLOAT_3,	// vertexAttributeFormat (Rhi::VertexAttributeFormat)
+					Rhi::VertexAttributeFormat::FLOAT_4,	// vertexAttributeFormat (Rhi::VertexAttributeFormat)
 					"Color",								// name[32] (char)
 					"COLOR",								// semanticName[32] (char)
 					0,										// semanticIndex (uint32_t)
 					// Data source
 					0,										// inputSlot (uint32_t)
 					sizeof(float) * 4,						// alignedByteOffset (uint32_t)
-					sizeof(float) * 4 + sizeof(float) * 3,	// strideInBytes (uint32_t)
+					sizeof(float) * 4 + sizeof(float) * 4,	// strideInBytes (uint32_t)
 					0										// instancesPerElement (uint32_t)
 				}
 			};
@@ -204,19 +204,19 @@ namespace Renderer
 					// Data source
 					0,										// inputSlot (uint32_t)
 					0,										// alignedByteOffset (uint32_t)
-					sizeof(float) * 4 + sizeof(float) * 3,	// strideInBytes (uint32_t)
+					sizeof(float) * 4 + sizeof(float) * 4,	// strideInBytes (uint32_t)
 					0										// instancesPerElement (uint32_t)
 				},
 				{ // Attribute 1
 					// Data destination
-					Rhi::VertexAttributeFormat::FLOAT_3,	// vertexAttributeFormat (Rhi::VertexAttributeFormat)
+					Rhi::VertexAttributeFormat::FLOAT_4,	// vertexAttributeFormat (Rhi::VertexAttributeFormat)
 					"Color",								// name[32] (char)
 					"COLOR",								// semanticName[32] (char)
 					0,										// semanticIndex (uint32_t)
 					// Data source
 					0,										// inputSlot (uint32_t)
 					sizeof(float) * 4,						// alignedByteOffset (uint32_t)
-					sizeof(float) * 4 + sizeof(float) * 3,	// strideInBytes (uint32_t)
+					sizeof(float) * 4 + sizeof(float) * 4,	// strideInBytes (uint32_t)
 					0										// instancesPerElement (uint32_t)
 				}
 			};

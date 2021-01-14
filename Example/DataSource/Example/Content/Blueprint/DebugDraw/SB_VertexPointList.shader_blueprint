@@ -130,7 +130,7 @@ MAIN_BEGIN_VERTEX
 			MAIN_OUTPUT_POSITION.w = 1.0f;
 		}
 
-		// Pass through the color and clip space position
+		// Pass through the color
 		MAIN_OUTPUT(ColorVS) = LinearSpaceToGammaSpace3(pointDataStruct.Color.rgb);
 
 		// Pass through the texture coordinate and point size for smooth point

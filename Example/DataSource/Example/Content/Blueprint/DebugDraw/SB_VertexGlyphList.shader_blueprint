@@ -31,7 +31,7 @@
 // Attribute input / output
 INPUT_BEGIN_VERTEX
 	INPUT_VERTEX_POSITION(0, float4, PositionTexCoord)	// xy = screen-space vertex xy-position with origin at the top-left corner of the screen, zw = normalized 32 bit glyph vertex texture coordinate
-	INPUT_VERTEX_COLOR	 (1, float3, Color)				// Linear space vertex color
+	INPUT_VERTEX_COLOR	 (1, float4, Color)				// Linear space RGB vertex color, a = only exists for alignment purposes
 INPUT_END_VERTEX
 OUTPUT_BEGIN_VERTEX
 	OUTPUT_TEXTURE_COORDINATE(1, float2, TexCoordVS, 0)	// xy = glyph texture coordinate
@@ -70,5 +70,5 @@ MAIN_BEGIN_VERTEX
 	MAIN_OUTPUT(TexCoordVS) = MAIN_INPUT(PositionTexCoord).zw;
 
 	// Pass through the vertex color
-	MAIN_OUTPUT(ColorVS) = LinearSpaceToGammaSpace3(MAIN_INPUT(Color));
+	MAIN_OUTPUT(ColorVS) = LinearSpaceToGammaSpace3(MAIN_INPUT(Color).rgb);
 MAIN_END_VERTEX(MAIN_OUTPUT_POSITION)

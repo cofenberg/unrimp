@@ -684,6 +684,11 @@ void xzSquareGrid(DD_EXPLICIT_CONTEXT_ONLY(ContextHandle ctx,)
 // ========================================================
 // Debug Draw vertex type:
 // The only drawing type the user has to interface with.
+//
+// The structure is aligned to 128 bits (sizeof float4) by intent to enable render interface
+// implementations to copy the data directly into a GPU buffer without further processing.
+// (see e.g. "Understanding Structured Buffer Performance" by Evan Hart, posted April 17
+//  2015 at 11:33AM at https://developer.nvidia.com/content/understanding-structured-buffer-performance )
 // ========================================================
 
 union DrawVertex
@@ -693,6 +698,7 @@ union DrawVertex
         float x, y, z;
         float size;
         float r, g, b;
+        float pad0;
     } point;
 
     struct
@@ -700,6 +706,7 @@ union DrawVertex
         float x, y, z;
         float width;
         float r, g, b;
+        float pad0;
     } line;
 
     struct
@@ -707,6 +714,7 @@ union DrawVertex
         float x, y;
         float u, v;
         float r, g, b;
+        float pad0;
     } glyph;
 };
 
