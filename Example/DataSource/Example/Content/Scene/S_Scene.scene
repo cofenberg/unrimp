@@ -111,6 +111,20 @@
 			{
 				"Properties":
 				{
+					"Position": "-15.0 17.0 -5.0 METER",
+					"Scale": "0.5 0.5 0.5 FACTOR"
+				},
+				"Items":
+				{
+					"MeshSceneItem":
+					{
+						"Mesh": "${PROJECT_NAME}/Mesh/MetalRoughSpheres/SM_MetalRoughSpheres.asset"
+					}
+				}
+			},
+			{
+				"Properties":
+				{
 					"Position": "-2.0 1.5 0.0 METER",
 					"Scale": "0.01 0.01 0.01 FACTOR"
 				},

@@ -1,0 +1,24 @@
+{
+	"Format":
+	{
+		"Type": "Asset",
+		"Version": "1"
+	},
+	"Asset":
+	{
+		"Metadata":
+		{
+			"Copyright": "Copyright 2017 Analytical Graphics, Inc, CC-BY 4.0 https://creativecommons.org/licenses/by/4.0/ - Model and textures by Ed Mackey. Downloaded from https://github.com/KhronosGroup/glTF-Sample-Models/tree/master/2.0/MetalRoughSpheres/glTF ."
+		},
+		"Compiler":
+		{
+			"ClassName": "RendererToolkit::TextureAssetCompiler",
+			"TextureSemantic": "PACKED_CHANNELS",
+			"TextureChannelPacking": "_argb_nxa",
+			"InputFiles":
+			{
+				"ALBEDO_MAP": "./Spheres_BaseColor.png"
+			}
+		}
+	}
+}
