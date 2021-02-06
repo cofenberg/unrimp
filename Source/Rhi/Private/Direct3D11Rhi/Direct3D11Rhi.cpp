@@ -3170,7 +3170,7 @@ namespace Direct3D11Rhi
 					::FreeLibrary(static_cast<HMODULE>(mAmdAgsSharedLibrary));
 				}
 			#else
-				if (AGS_SUCCESS != agsDeInit(mAgsContext))
+				if (nullptr != g_AmdAgsAllocator && AGS_SUCCESS != agsDeInit(mAgsContext))
 				{
 					RHI_LOG(mDirect3D11Rhi.getContext(), CRITICAL, "Direct3D 11: Failed to unload AMG AGS")
 				}
