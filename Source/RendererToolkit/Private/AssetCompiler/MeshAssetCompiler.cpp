@@ -556,10 +556,13 @@ namespace
 								binormal = assimpMesh.mBitangents[j];
 							}
 
-							// Transform the Assimp mesh vertex data into global space
+							// Transform the Assimp mesh vertex data into global space and re-normalize since the transform might contain scale
 							tangent *= currentAssimpNormalTransformation;
 							binormal *= currentAssimpNormalTransformation;
 							normal *= currentAssimpNormalTransformation;
+							tangent.Normalize();
+							binormal.Normalize();
+							normal.Normalize();
 
 							// Generate tangent frame rotation matrix
 							glm::mat3 tangentFrame(
