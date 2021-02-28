@@ -249,14 +249,34 @@ namespace Rhi
 				utf16Line.resize(static_cast<std::wstring::size_type>(::MultiByteToWideChar(CP_UTF8, 0, fullMessage.c_str(), static_cast<int>(fullMessage.size()), nullptr , 0)));
 				::MultiByteToWideChar(CP_UTF8, 0, fullMessage.c_str(), static_cast<int>(fullMessage.size()), utf16Line.data(), static_cast<int>(utf16Line.size()));
 
-				// Write into standard output stream
-				if (Type::CRITICAL == type)
-				{
-					std::wcerr << utf16Line.c_str();
-				}
-				else
-				{
-					std::wcout << utf16Line.c_str();
+				{ // Write into standard output stream with font color depending on type
+					const HANDLE handle = (Type::CRITICAL == type) ? ::GetStdHandle(STD_ERROR_HANDLE) : ::GetStdHandle(STD_OUTPUT_HANDLE);
+					static const constexpr WORD COLOR[7] =
+					{
+						FOREGROUND_RED | FOREGROUND_BLUE | FOREGROUND_INTENSITY,	// Trace, also known as verbose logging = magenta
+						FOREGROUND_GREEN | FOREGROUND_INTENSITY,					// Debug = green
+						FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE,		// Information = white = reset
+						FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_INTENSITY,	// General warning = yellow
+						FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_INTENSITY,	// Performance related warning = yellow
+						FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_INTENSITY,	// Compatibility related warning = yellow
+						FOREGROUND_RED | FOREGROUND_INTENSITY						// Critical = red
+					};
+					if (Type::INFORMATION != type)
+					{
+						::SetConsoleTextAttribute(handle, COLOR[static_cast<int>(type)]);
+					}
+					if (Type::CRITICAL == type)
+					{
+						std::wcerr << utf16Line.c_str();
+					}
+					else
+					{
+						std::wcout << utf16Line.c_str();
+					}
+					if (Type::INFORMATION != type)
+					{
+						::SetConsoleTextAttribute(handle, FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE);	// Reset
+					}
 				}
 
 				// On Microsoft Windows, ensure the output can be seen inside the Visual Studio output window as well
@@ -267,6 +287,7 @@ namespace Rhi
 				}
 			}
 			#elif __ANDROID__
+			{
 				int prio = ANDROID_LOG_DEFAULT;
 				switch (type)
 				{
@@ -293,15 +314,28 @@ namespace Rhi
 						break;
 				}
 				__android_log_write(prio, "Unrimp", fullMessage.c_str());	// TODO(co) Might make sense to make the app-name customizable
+			}
 			#elif LINUX
-				// Write into standard output stream
-				if (Type::CRITICAL == type)
-				{
-					std::cerr << fullMessage.c_str();
-				}
-				else
-				{
-					std::cout << fullMessage.c_str();
+				{ // Write into standard output stream with font color depending on type
+					static const constexpr wchar_t RESET_COLOR[9] = L"\033[39m";
+					static const constexpr wchar_t COLOR[7][9] =
+					{
+						L"\033[35m",	// Trace, also known as verbose logging = magenta
+						L"\033[32m",	// Debug = green
+						L"\033[39m",	// Information = white = reset
+						L"\033[33m",	// General warning = yellow
+						L"\033[33m",	// Performance related warning = yellow
+						L"\033[33m",	// Compatibility related warning = yellow
+						L"\033[31m"		// Critical = red
+					};
+					if (Type::CRITICAL == type)
+					{
+						std::cerr << COLOR[static_cast<int>(type)] << fullMessage.c_str() << RESET_COLOR;
+					}
+					else
+					{
+						std::cout << COLOR[static_cast<int>(type)] << fullMessage.c_str() << RESET_COLOR;
+					}
 				}
 			#else
 				#error "Unsupported platform"
