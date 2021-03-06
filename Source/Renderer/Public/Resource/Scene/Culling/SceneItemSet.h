@@ -42,6 +42,7 @@ PRAGMA_WARNING_PUSH
 	PRAGMA_WARNING_DISABLE_MSVC(4774)	// warning C4774: 'sprintf_s' : format string expected in argument 3 is not a string literal
 	PRAGMA_WARNING_DISABLE_MSVC(5026)	// warning C5026: 'std::_Generic_error_category': move constructor was implicitly defined as deleted
 	PRAGMA_WARNING_DISABLE_MSVC(5027)	// warning C5027: 'std::_Generic_error_category': move assignment operator was implicitly defined as deleted
+	PRAGMA_WARNING_DISABLE_MSVC(5219)	// warning C5219: implicit conversion from 'const int' to 'const _Ty', possible loss of data
 	#define XSIMD_INSTR_SET_NOT_AVAILABLE 0	// warning C4668: 'XSIMD_INSTR_SET_NOT_AVAILABLE' is not defined as a preprocessor macro, replacing with '0' for '#if/#elif'
 	#define XSIMD_FORCE_X86_INSTR_SET XSIMD_X86_SSE4_2_VERSION	// TODO(co) How to use xsimd correctly to get rid of errors like "error C2440: 'initializing': cannot convert from 'xsimd::simd_batch_traits<xsimd::batch<float,8>>::batch_bool_type' to 'xsimd::batch_bool<float,4>'" when using "Advanced Vector Extensions 2 (/arch:AVX2)"?
 	#include <xsimd/xsimd.hpp>
