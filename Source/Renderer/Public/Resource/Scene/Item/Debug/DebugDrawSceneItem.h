@@ -183,7 +183,7 @@ namespace Renderer
 	//[ Private definitions                                   ]
 	//[-------------------------------------------------------]
 	private:
-		struct MaterialData
+		struct MaterialData final
 		{
 			AssetId				materialAssetId;											///< If material blueprint asset ID is set, material asset ID must be invalid
 			MaterialTechniqueId	materialTechniqueId = getInvalid<MaterialTechniqueId>();	///< Must always be valid

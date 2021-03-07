@@ -59,7 +59,7 @@ namespace
 		//[-------------------------------------------------------]
 		//[ Global definitions                                    ]
 		//[-------------------------------------------------------]
-		static constexpr char* VIRTUAL_SETTINGS_FILENAME = "LocalData/ImGuiExampleSelectorExample.ini";
+		static constexpr char VIRTUAL_SETTINGS_FILENAME[] = "LocalData/ImGuiExampleSelectorExample.ini";
 
 
 //[-------------------------------------------------------]

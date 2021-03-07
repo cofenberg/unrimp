@@ -23,6 +23,7 @@
 	// Disable warnings in external headers, we can't fix them
 	__pragma(warning(disable: 4061))	// warning C4061: enumerator 'EBadProfile' in switch of enum 'EProfile' is not explicitly handled by a case label
 	__pragma(warning(disable: 4100))	// warning C4100: 'typeProxy': unreferenced formal parameter
+	__pragma(warning(disable: 4146))	// warning C4146: unary minus operator applied to unsigned type, result still unsigned
 	__pragma(warning(disable: 4189))	// warning C4189: 'isFloat': local variable is initialized but not referenced (compiling source file ..\..\..\External\glslang\glslangUnityBuild1.cpp)
 	__pragma(warning(disable: 4242))	// warning C4242: '=': conversion from 'int' to 'yytype_int16', possible loss of data
 	__pragma(warning(disable: 4244))	// warning C4244: '=': conversion from 'int' to 'char', possible loss of data

@@ -8642,7 +8642,7 @@ namespace Direct3D11Rhi
 			#ifdef RHI_DEBUG
 				if (nullptr != mD3D11RasterizerState)
 				{
-					static constexpr char* NAME = "Rasterizer state";
+					static constexpr char NAME[] = "Rasterizer state";
 					FAILED_DEBUG_BREAK(mD3D11RasterizerState->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(NAME)), NAME))
 				}
 			#endif
@@ -8722,7 +8722,7 @@ namespace Direct3D11Rhi
 			#ifdef RHI_DEBUG
 				if (nullptr != mD3D11DepthStencilState)
 				{
-					static constexpr char* NAME = "Depth stencil state";
+					static constexpr char NAME[] = "Depth stencil state";
 					FAILED_DEBUG_BREAK(mD3D11DepthStencilState->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(NAME)), NAME))
 				}
 			#endif
@@ -8803,7 +8803,7 @@ namespace Direct3D11Rhi
 			#ifdef RHI_DEBUG
 				if (nullptr != mD3D11BlendState)
 				{
-					static constexpr char* NAME = "Blend state";
+					static constexpr char NAME[] = "Blend state";
 					FAILED_DEBUG_BREAK(mD3D11BlendState->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(NAME)), NAME))
 				}
 			#endif

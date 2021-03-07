@@ -109,9 +109,9 @@ namespace
 		//[-------------------------------------------------------]
 		//[ Global definitions                                    ]
 		//[-------------------------------------------------------]
-		static constexpr char*    VIRTUAL_SETTINGS_FILENAME	= "LocalData/SceneExample.ini";
-		static constexpr uint32_t SCENE_ASSET_ID			= ASSET_ID("Example/Scene/S_Scene");
-		static constexpr uint32_t IMROD_MATERIAL_ASSET_ID	= ASSET_ID("Example/Mesh/Imrod/M_Imrod");
+		static constexpr char     VIRTUAL_SETTINGS_FILENAME[] = "LocalData/SceneExample.ini";
+		static constexpr uint32_t SCENE_ASSET_ID			  = ASSET_ID("Example/Scene/S_Scene");
+		static constexpr uint32_t IMROD_MATERIAL_ASSET_ID	  = ASSET_ID("Example/Mesh/Imrod/M_Imrod");
 
 
 		//[-------------------------------------------------------]

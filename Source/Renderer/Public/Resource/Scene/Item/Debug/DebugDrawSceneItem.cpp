@@ -490,6 +490,7 @@ namespace Renderer
 
 	void DebugDrawSceneItem::drawFrustum(const glm::mat4& clipSpaceToObjectSpace, const float sRgbColor[3], float lineWidth, float durationInSeconds, bool depthEnabled)
 	{
+		// "dd::frustum()" is using a reverse projection as mentioned in "Three Methods to Extract Frustum Points" by Don Williamson online at http://donw.io/post/frustum-point-extraction/ (see article for alternative solutions)
 		dd::frustum(static_cast<dd::ContextHandle>(mContextHandle), glm::value_ptr(clipSpaceToObjectSpace), sRgbColor, lineWidth, ::DebugDrawSceneItemDetail::secondsToMilliseconds(durationInSeconds), depthEnabled);
 	}
 
@@ -613,7 +614,9 @@ namespace Renderer
 		mContextHandle(nullptr)
 	{
 		// Initialize the debug-draw library
-		dd::initialize(&static_cast<dd::ContextHandle>(mContextHandle), static_cast<dd::RenderInterface*>(mDebugDrawRenderInterface));
+		dd::ContextHandle contextHandle = nullptr;
+		dd::initialize(&contextHandle, static_cast<dd::RenderInterface*>(mDebugDrawRenderInterface));
+		mContextHandle = contextHandle;
 	}
 
 	DebugDrawSceneItem::~DebugDrawSceneItem()

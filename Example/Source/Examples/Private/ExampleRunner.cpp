@@ -26,6 +26,7 @@
 #include "Examples/Private/Framework/CommandLineArguments.h"
 #include "Examples/Private/Framework/IApplicationRhi.h"
 #include "Examples/Private/Framework/IApplicationRenderer.h"
+
 // Basics
 #include "Examples/Private/Basics/Triangle/Triangle.h"
 #include "Examples/Private/Basics/IndirectBuffer/IndirectBuffer.h"

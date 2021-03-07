@@ -52,7 +52,7 @@ namespace
 		//[-------------------------------------------------------]
 		//[ Global definitions                                    ]
 		//[-------------------------------------------------------]
-		static constexpr char* WHITESPACE_CHARACTERS = " \t\n\r\f\v";
+		static constexpr char WHITESPACE_CHARACTERS[] = " \t\n\r\f\v";
 
 
 		//[-------------------------------------------------------]

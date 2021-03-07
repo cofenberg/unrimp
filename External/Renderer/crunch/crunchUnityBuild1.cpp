@@ -31,6 +31,7 @@
 	__pragma(warning(disable: 4456))	// warning C4456: declaration of 'lc' hides previous local declaration
 	__pragma(warning(disable: 4457))	// warning C4457: declaration of 'm' hides function parameter
 	__pragma(warning(disable: 4464))	// warning C4464: relative include path contains '..'
+	__pragma(warning(disable: 4499))	// warning C4499: 'static': an explicit specialization cannot have a storage class (ignored)
 	__pragma(warning(disable: 4548))	// warning C4548: expression before comma has no effect; expected expression with side-effect
 	__pragma(warning(disable: 4555))	// warning C4555: expression has no effect; expected expression with side-effect
 	__pragma(warning(disable: 4571))	// warning C4571: Informational: catch(...) semantics changed since Visual C++ 7.1; structured exceptions (SEH) are no longer caught
@@ -43,6 +44,7 @@
 	__pragma(warning(disable: 5026))	// warning C5026: 'std::_Generic_error_category': move constructor was implicitly defined as deleted
 	__pragma(warning(disable: 5027))	// warning C5027: 'std::_Generic_error_category': move assignment operator was implicitly defined as deleted
 	__pragma(warning(disable: 5039))	// warning C5039: 'tdefl_init': pointer or reference to potentially throwing function passed to extern C function under -EHc. Undefined behavior may occur if this function throws an exception.
+	__pragma(warning(disable: 5054))	// warning C5054: operator '|': deprecated between enumerations of different types
 	__pragma(warning(disable: 5204))	// warning C5204: 'crnlib::task_pool::executable_task': class has virtual functions, but its trivial destructor is not virtual; instances of objects derived from this class may not be destructed correctly
 	__pragma(warning(disable: 5220))	// warning C5220: 'crnlib::spinlock::m_flag': a non-static data member with a volatile qualified type no longer implies
 #endif

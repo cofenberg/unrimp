@@ -39,6 +39,7 @@
 #ifdef _WIN32
 	// Disable warnings in external headers, we can't fix them
 	__pragma(warning(push))
+		__pragma(warning(disable: 4201))	// warning C4201: nonstandard extension used: nameless struct/union
 		__pragma(warning(disable: 4365))	// warning C4365: 'return': conversion from 'int' to 'std::_Rand_urng_from_func::result_type', signed/unsigned mismatch
 		__pragma(warning(disable: 4530))	// warning C4530: C++ exception handler used, but unwind semantics are not enabled. Specify /EHsc
 		__pragma(warning(disable: 4548))	// warning C4548: expression before comma has no effect; expected expression with side-effect
@@ -48,6 +49,7 @@
 		__pragma(warning(disable: 4774))	// warning C4774: '_scprintf' : format string expected in argument 1 is not a string literal
 		__pragma(warning(disable: 5026))	// warning C5026: 'std::messages_base': move constructor was implicitly defined as deleted
 		__pragma(warning(disable: 5027))	// warning C5027: 'std::messages_base': move assignment operator was implicitly defined as deleted
+		__pragma(warning(disable: 5031))	// warning C5031: #pragma warning(pop): likely mismatch, popping warning state pushed in different file
 		#include <filesystem>
 	__pragma(warning(pop))
 	namespace std_filesystem = std::filesystem;

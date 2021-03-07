@@ -28,6 +28,7 @@
 //[ Includes                                              ]
 //[-------------------------------------------------------]
 #include "Examples/Private/Framework/PlatformTypes.h"
+#include "Examples/Private/Framework/IApplicationRenderer.h"
 
 // Disable warnings in external headers, we can't fix them
 PRAGMA_WARNING_PUSH

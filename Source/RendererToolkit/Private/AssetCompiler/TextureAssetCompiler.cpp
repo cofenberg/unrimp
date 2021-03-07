@@ -40,6 +40,7 @@ PRAGMA_WARNING_PUSH
 	PRAGMA_WARNING_DISABLE_MSVC(4201)	// warning C4201: nonstandard extension used: nameless struct/union
 	PRAGMA_WARNING_DISABLE_MSVC(4324)	// warning C4324: '<x>': structure was padded due to alignment specifier
 	PRAGMA_WARNING_DISABLE_MSVC(4464)	// warning C4464: relative include path contains '..'
+	PRAGMA_WARNING_DISABLE_MSVC(5214)	// warning C5214: applying '*=' to an operand with a volatile qualified type is deprecated in C++20 (compiling source file E:\private\unrimp\Source\RendererToolkit\Private\AssetCompiler\TextureAssetCompiler.cpp)
 	#include <glm/glm.hpp>
 	#include <glm/gtc/constants.hpp>
 PRAGMA_WARNING_POP
@@ -56,6 +57,7 @@ PRAGMA_WARNING_PUSH
 	PRAGMA_WARNING_DISABLE_MSVC(4312)						// warning C4312: 'type cast': conversion from 'int' to 'unsigned char *' of greater size
 	PRAGMA_WARNING_DISABLE_MSVC(4365)						// warning C4365: 'argument': conversion from 'long' to 'crnlib::uint', signed/unsigned mismatch
 	PRAGMA_WARNING_DISABLE_MSVC(4464)						// warning C4464: relative include path contains '..'
+	PRAGMA_WARNING_DISABLE_MSVC(4499)						// warning C4499: 'static': an explicit specialization cannot have a storage class (ignored)
 	PRAGMA_WARNING_DISABLE_MSVC(4555)						// warning C4555: result of expression not used
 	PRAGMA_WARNING_DISABLE_MSVC(4574)						// warning C4574: 'CRNLIB_RESAMPLER_DEBUG_OPS' is defined to be '0': did you mean to use '#if CRNLIB_RESAMPLER_DEBUG_OPS'?
 	PRAGMA_WARNING_DISABLE_MSVC(4548)						// warning C4548: expression before comma has no effect; expected expression with side-effect
@@ -94,6 +96,7 @@ PRAGMA_WARNING_PUSH
 	PRAGMA_WARNING_DISABLE_MSVC(4866)	// warning C4866: compiler may not enforce left-to-right evaluation order for call to 'rapidjson::GenericValue<rapidjson::UTF8<char>,rapidjson::MemoryPoolAllocator<rapidjson::CrtAllocator> >::operator[]<rapidjson::MemoryPoolAllocator<rapidjson::CrtAllocator> >'
 	PRAGMA_WARNING_DISABLE_MSVC(5026)	// warning C5026: 'std::_Generic_error_category': move constructor was implicitly defined as deleted
 	PRAGMA_WARNING_DISABLE_MSVC(5027)	// warning C5027: 'std::_Generic_error_category': move assignment operator was implicitly defined as deleted
+	PRAGMA_WARNING_DISABLE_MSVC(5054)	// warning C5054: operator '|': deprecated between enumerations of different types
 	#include <rapidjson/document.h>
 PRAGMA_WARNING_POP
 
@@ -1240,7 +1243,7 @@ namespace
 		{
 			const rapidjson::Value& rapidJsonValueInputFiles = rapidJsonValueTextureAssetCompiler["InputFiles"];
 			static constexpr uint32_t NUMBER_OF_FACES = 6;
-			static constexpr char* FACE_NAMES[NUMBER_OF_FACES] = { "PositiveX", "NegativeX", "NegativeY", "PositiveY", "PositiveZ", "NegativeZ" };
+			static constexpr char FACE_NAMES[NUMBER_OF_FACES][10] = { "PositiveX", "NegativeX", "NegativeY", "PositiveY", "PositiveZ", "NegativeZ" };
 
 			// The face order must be: +X, -X, -Y, +Y, +Z, -Z
 			Filenames filenames;

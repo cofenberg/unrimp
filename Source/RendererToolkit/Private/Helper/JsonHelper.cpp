@@ -40,6 +40,7 @@ PRAGMA_WARNING_PUSH
 	PRAGMA_WARNING_DISABLE_MSVC(4774)	// warning C4774: 'sprintf_s' : format string expected in argument 3 is not a string literal
 	PRAGMA_WARNING_DISABLE_MSVC(5027)	// warning C5027: 'std::_Generic_error_category': move assignment operator was implicitly defined as deleted
 	PRAGMA_WARNING_DISABLE_MSVC(5026)	// warning C5026: 'std::_Generic_error_category': move constructor was implicitly defined as deleted
+	PRAGMA_WARNING_DISABLE_MSVC(5054)	// warning C5054: operator '|': deprecated between enumerations of different types
 	#include <rapidjson/document.h>
 	#include <rapidjson/error/en.h>
 	#include <rapidjson/prettywriter.h>
@@ -56,7 +57,9 @@ PRAGMA_WARNING_POP
 
 // Disable warnings in external headers, we can't fix them
 PRAGMA_WARNING_PUSH
+	PRAGMA_WARNING_DISABLE_MSVC(4201)	// warning C4201: nonstandard extension used: nameless struct/union
 	PRAGMA_WARNING_DISABLE_MSVC(4365)	// warning C4365: 'return': conversion from 'int' to 'std::_Rand_urng_from_func::result_type', signed/unsigned mismatch
+	PRAGMA_WARNING_DISABLE_MSVC(5031)	// warning C5031: #pragma warning(pop): likely mismatch, popping warning state pushed in different file (compiling source file E:\private\unrimp\Source\RendererToolkit\Private\Helper\JsonHelper.cpp)
 	#include <sstream>
 	#include <algorithm> // For "std::count()"
 PRAGMA_WARNING_POP

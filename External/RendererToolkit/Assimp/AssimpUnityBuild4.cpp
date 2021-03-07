@@ -25,6 +25,7 @@
 	__pragma(warning(disable: 4619))	// warning C4619: #pragma warning: there is no warning number '4351'
 	__pragma(warning(disable: 4777))	// warning C4777: 'snprintf' : format string '%Iu' requires an argument of type 'unsigned int', but variadic argument 1 has type 'const size_t'
 	__pragma(warning(disable: 4826))	// warning C4826: Conversion from 'aiBone **' to 'uint64_t' is sign-extended. This may cause unexpected runtime behavior.
+	__pragma(warning(disable: 5054))	// warning C5054: operator '|': deprecated between enumerations of different types
 #endif
 #include "Configuration.h"
 // AssetLib

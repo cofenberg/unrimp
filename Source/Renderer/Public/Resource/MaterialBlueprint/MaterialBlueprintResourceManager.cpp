@@ -314,7 +314,7 @@ namespace Renderer
 		mGlobalMaterialProperties.setPropertyById(STRING_ID("GlobalPastSecondsSinceLastFrame"), MaterialPropertyValue::fromFloat(timeManager.getPastSecondsSinceLastFrame()), MaterialProperty::Usage::SHADER_UNIFORM);
 		{ // Set previous global time in seconds
 			const MaterialProperty* materialProperty = mGlobalMaterialProperties.getPropertyById(STRING_ID("GlobalTimeInSeconds"));
-			mGlobalMaterialProperties.setPropertyById(STRING_ID("PreviousGlobalTimeInSeconds"), (nullptr != materialProperty) ? *materialProperty : MaterialPropertyValue::fromFloat(timeManager.getGlobalTimeInSeconds()), MaterialProperty::Usage::SHADER_UNIFORM);
+			mGlobalMaterialProperties.setPropertyById(STRING_ID("PreviousGlobalTimeInSeconds"), (nullptr != materialProperty) ? *static_cast<const MaterialPropertyValue*>(materialProperty) : MaterialPropertyValue::fromFloat(timeManager.getGlobalTimeInSeconds()), MaterialProperty::Usage::SHADER_UNIFORM);
 		}
 		mGlobalMaterialProperties.setPropertyById(STRING_ID("GlobalTimeInSeconds"), MaterialPropertyValue::fromFloat(timeManager.getGlobalTimeInSeconds()), MaterialProperty::Usage::SHADER_UNIFORM);
 		mGlobalMaterialProperties.setPropertyById(STRING_ID("GlobalFramesPerSecond"), MaterialPropertyValue::fromFloat(timeManager.getFramesPerSecond()), MaterialProperty::Usage::SHADER_UNIFORM);
