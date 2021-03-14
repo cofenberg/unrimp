@@ -382,6 +382,12 @@ Hints
 	- Visual Studio 2019 -> Menu bar -> "Options" -> "Text Editor" -> "C/C++" -> "Advanced" -> "Inactive Platform IntelliSense Limit" -> Set it to e.g. 16 (see https://blogs.msdn.microsoft.com/vcblog/2018/01/10/intellisense-enhancements-for-cpp-open-folder-and-cmake/ )
 - How to test the 64 bit world space position support?
 	- Inside "SceneResourceLoader.cpp" -> "nodeDeserialization()" after reading a node, add an 100.000.000 offset to the node transform position
+- A few words about Euler angles
+	- We use the YXZ rotation order as default (`glm::eulerAngleYXZ()`/`glm::extractEulerAngleYXZ()`)
+		- "yaw" represents a rotation around the Y-axis (= up vector)
+		- Then "pitch" is applied as a rotation around the local (i.e. already rotated) X-axis (= right vector)
+		- Finally "roll" rotates around the local Z-axis (= front vector)
+	- When dealing with Euler angles keep care of 'gimbal lock', at http://www.sjbaker.org/steve/omniv/eulers_are_evil.html you will find some good information about this topic.
 
 The unified RHI can't unify some RHI implementation behaviour differences. Here's a list of hints you might want to know:
 - Texel coordinate system origin

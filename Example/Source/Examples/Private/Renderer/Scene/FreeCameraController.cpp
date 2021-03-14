@@ -25,11 +25,16 @@
 #include "Examples/Private/Framework/IApplication.h"
 
 #include <Renderer/Public/Core/Math/Math.h>
-#include <Renderer/Public/Core/Math/EulerAngles.h>
 #include <Renderer/Public/Resource/Scene/SceneNode.h>
 #include <Renderer/Public/Resource/Scene/Item/Camera/CameraSceneItem.h>
 
 #include <DeviceInput/DeviceInput.h>
+
+// Disable warnings in external headers, we can't fix them
+PRAGMA_WARNING_PUSH
+	PRAGMA_WARNING_DISABLE_MSVC(4464)	// warning C4464: relative include path contains '..'
+	#include <glm/gtx/euler_angles.hpp>
+PRAGMA_WARNING_POP
 
 
 //[-------------------------------------------------------]
@@ -206,11 +211,10 @@ void FreeCameraController::onUpdate(float pastSecondsSinceLastFrame, bool inputE
 					}
 
 					// Calculate yaw and pitch from transformation
-					// -> GLM 0.9.9.0 "glm::yaw()" and "glm::pitch" behave odd, so "Renderer::EulerAngles::matrixToEuler()" is used instead
-					// -> See discussion at https://github.com/g-truc/glm/issues/569
 					float yaw = 0.0f, pitch = 0.0f;
 					{
-						const glm::vec3 eulerAngles = Renderer::EulerAngles::matrixToEuler(glm::mat3_cast(transform.rotation));
+						glm::vec3 eulerAngles;
+						glm::extractEulerAngleYXZ(glm::mat4_cast(transform.rotation), eulerAngles.x, eulerAngles.y, eulerAngles.z);
 						yaw = glm::degrees(eulerAngles.x);
 						pitch = glm::degrees(eulerAngles.y);
 					}

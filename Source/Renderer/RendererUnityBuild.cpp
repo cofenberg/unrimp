@@ -32,7 +32,6 @@
 #include "Public/Asset/Loader/AssetPackageLoader.cpp"
 #include "Public/Core/File/FileSystemHelper.cpp"
 #include "Public/Core/File/MemoryFile.cpp"
-#include "Public/Core/Math/EulerAngles.cpp"
 #include "Public/Core/Math/Frustum.cpp"
 #include "Public/Core/Math/Math.cpp"
 #include "Public/Core/Math/Transform.cpp"

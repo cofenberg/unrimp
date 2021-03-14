@@ -35,7 +35,6 @@
 #endif
 
 #include <Renderer/Public/IRenderer.h>
-#include <Renderer/Public/Core/Math/EulerAngles.h>
 #include <Renderer/Public/Core/Time/TimeManager.h>
 #ifdef RENDERER_GRAPHICS_DEBUGGER
 	#include <Renderer/Public/Core/RenderDocGraphicsDebugger.h>
@@ -88,6 +87,7 @@ PRAGMA_WARNING_PUSH
 	PRAGMA_WARNING_DISABLE_MSVC(4324)	// warning C4324: '<x>': structure was padded due to alignment specifier
 	PRAGMA_WARNING_DISABLE_MSVC(4668)	// warning C4668: '_M_HYBRID_X86_ARM64' is not defined as a preprocessor macro, replacing with '0' for '#if/#elif'
 	#include <glm/gtc/type_ptr.hpp>
+	#include <glm/gtx/euler_angles.hpp>
 PRAGMA_WARNING_POP
 
 
@@ -488,9 +488,10 @@ void Scene::onUpdate()
 	// Update the scene node rotation
 	if (nullptr != mSceneNode && mRotationSpeed > 0.0f)
 	{
-		glm::vec3 eulerAngles = Renderer::EulerAngles::matrixToEuler(glm::mat3_cast(mSceneNode->getGlobalTransform().rotation));
+		glm::vec3 eulerAngles;
+		glm::extractEulerAngleYXZ(glm::mat4_cast(mSceneNode->getGlobalTransform().rotation), eulerAngles.x, eulerAngles.y, eulerAngles.z);
 		eulerAngles.x += renderer.getTimeManager().getPastSecondsSinceLastFrame() * mRotationSpeed;
-		mSceneNode->setRotation(Renderer::EulerAngles::eulerToQuaternion(eulerAngles));
+		mSceneNode->setRotation(glm::eulerAngleYXZ(eulerAngles.x, eulerAngles.y, eulerAngles.z));
 	}
 
 	// Update controller

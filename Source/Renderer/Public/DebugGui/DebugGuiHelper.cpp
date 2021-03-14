@@ -23,7 +23,6 @@
 //[-------------------------------------------------------]
 #include "Renderer/Public/DebugGui/DebugGuiHelper.h"
 #include "Renderer/Public/Core/Math/Transform.h"
-#include "Renderer/Public/Core/Math/EulerAngles.h"
 #include "Renderer/Public/Resource/Scene/SceneNode.h"
 #include "Renderer/Public/Resource/Scene/SceneResource.h"
 #include "Renderer/Public/Resource/Scene/Item/Camera/CameraSceneItem.h"
@@ -42,6 +41,7 @@ PRAGMA_WARNING_PUSH
 	PRAGMA_WARNING_DISABLE_MSVC(4201)	// warning C4201: nonstandard extension used: nameless struct/union
 	PRAGMA_WARNING_DISABLE_MSVC(4464)	// warning C4464: relative include path contains '..'
 	#include <glm/gtc/type_ptr.hpp>
+	#include <glm/gtx/euler_angles.hpp>
 PRAGMA_WARNING_POP
 
 // Disable warnings in external headers, we can't fix them
@@ -189,7 +189,9 @@ namespace Renderer
 			gizmoSettings.currentGizmoOperation = GizmoOperation::SCALE;
 		}
 		{ // Show and edit rotation quaternion using Euler angles in degree
-			glm::vec3 eulerAngles = glm::degrees(EulerAngles::matrixToEuler(glm::mat3_cast(transform.rotation)));
+			glm::vec3 eulerAngles;
+			glm::extractEulerAngleYXZ(glm::mat4_cast(transform.rotation), eulerAngles.x, eulerAngles.y, eulerAngles.z);
+			eulerAngles = glm::degrees(eulerAngles);
 			{ // TODO(co) We're using a 64 bit position, ImGui can only process 32 bit floating point values
 				glm::vec3 position = transform.position;
 				ImGui::InputFloat3("Tr", glm::value_ptr(position), "%.3f");
@@ -197,7 +199,7 @@ namespace Renderer
 			}
 			ImGui::InputFloat3("Rt", glm::value_ptr(eulerAngles), "%.3f");
 			ImGui::InputFloat3("Sc", glm::value_ptr(transform.scale), "%.3f");
-			transform.rotation = EulerAngles::eulerToQuaternion(glm::radians(eulerAngles));
+			transform.rotation = glm::eulerAngleYXZ(glm::radians(eulerAngles.x), glm::radians(eulerAngles.y), glm::radians(eulerAngles.z));
 		}
 		if (gizmoSettings.currentGizmoOperation != GizmoOperation::SCALE)
 		{

@@ -26,7 +26,6 @@
 #include <Renderer/Public/IRenderer.h>
 #include <Renderer/Public/Core/Math/Math.h>
 #include <Renderer/Public/Core/Math/Transform.h>
-#include <Renderer/Public/Core/Math/EulerAngles.h>
 #include <Renderer/Public/Resource/Scene/SceneNode.h>
 #include <Renderer/Public/Resource/Scene/SceneResource.h>
 #include <Renderer/Public/Resource/Scene/Item/Mesh/MeshSceneItem.h>
@@ -235,7 +234,7 @@ namespace
 					{
 						ASSERT(sizeof(float) * 4 * 4 == numberOfBytes, "Invalid number of bytes")
 						const ImGuiIO& imGuiIo = ImGui::GetIO();
-						const glm::quat rotationOffset = Renderer::EulerAngles::eulerToQuaternion(glm::vec3(glm::degrees(0.0f), glm::degrees(180.0f), 0.0f));
+						const glm::quat rotationOffset = glm::eulerAngleYXZ(0.0f, glm::degrees(180.0f), 0.0f);
 						const glm::mat4 guiScaleMatrix = glm::scale(Renderer::Math::MAT4_IDENTITY, glm::vec3(1.0f / imGuiIo.DisplaySize.x, 1.0f / imGuiIo.DisplaySize.y, 1.0f));
 						const glm::mat4& devicePoseMatrix = mVrManagerOpenVR->getDevicePoseMatrix(mVrManagerOpenVRListener->getVrControllerTrackedDeviceIndices(SECOND_CONTROLLER_INDEX));
 						// TODO(co) 64 bit support

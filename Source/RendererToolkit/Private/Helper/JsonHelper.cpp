@@ -51,8 +51,9 @@ PRAGMA_WARNING_POP
 PRAGMA_WARNING_PUSH
 	PRAGMA_WARNING_DISABLE_MSVC(4201)	// warning C4201: nonstandard extension used: nameless struct/union
 	PRAGMA_WARNING_DISABLE_MSVC(4464)	// warning C4464: relative include path contains '..'
-	#include <glm/gtc/quaternion.hpp>
 	#include <glm/gtc/epsilon.hpp>
+	#include <glm/gtc/quaternion.hpp>
+	#include <glm/gtx/euler_angles.hpp>
 PRAGMA_WARNING_POP
 
 // Disable warnings in external headers, we can't fix them
@@ -885,16 +886,16 @@ namespace RendererToolkit
 			}
 			else if (elements.size() == 4)
 			{
-				const float pitch = std::stof(elements[0]);
-				const float yaw   = std::stof(elements[1]);
-				const float roll  = std::stof(elements[2]);
+				const float pitch = std::stof(elements[0]);	// X
+				const float yaw   = std::stof(elements[1]);	// Y
+				const float roll  = std::stof(elements[2]);	// Z
 				if (elements[3] == "DEGREE")
 				{
-					value = glm::quat(glm::vec3(glm::radians(pitch), glm::radians(yaw), glm::radians(roll)));
+					value = glm::eulerAngleYXZ(glm::radians(pitch), glm::radians(yaw), glm::radians(roll));
 				}
 				else if (elements[3] == "RADIAN")
 				{
-					value = glm::quat(glm::vec3(pitch, yaw, roll));
+					value = glm::eulerAngleYXZ(pitch, yaw, roll);
 				}
 				else
 				{

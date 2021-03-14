@@ -23,8 +23,6 @@
 //[-------------------------------------------------------]
 #include "Examples/Private/Advanced/InstancedCubes/CubeRendererDrawInstanced/BatchDrawInstanced.h"
 
-#include <Renderer/Public/Core/Math/EulerAngles.h>
-
 // Disable warnings in external headers, we can't fix them
 PRAGMA_WARNING_PUSH
 	PRAGMA_WARNING_DISABLE_MSVC(4127)	// warning C4127: conditional expression is constant
@@ -35,6 +33,7 @@ PRAGMA_WARNING_PUSH
 	PRAGMA_WARNING_DISABLE_MSVC(5214)	// warning C5214: applying '*=' to an operand with a volatile qualified type is deprecated in C++20 (compiling source file E:\private\unrimp\Source\RendererToolkit\Private\AssetCompiler\TextureAssetCompiler.cpp)
 	#include <glm/glm.hpp>
 	#include <glm/gtc/quaternion.hpp>
+	#include <glm/gtx/euler_angles.hpp>
 PRAGMA_WARNING_POP
 
 #include <stdlib.h> // For rand()
@@ -85,7 +84,7 @@ void BatchDrawInstanced::initialize(Rhi::IBufferManager& bufferManager, Rhi::IRo
 			}
 
 			{ // Rotation
-				rotation = Renderer::EulerAngles::eulerToQuaternion(static_cast<float>(rand() % 65536) / 65536.0f, static_cast<float>(rand() % 65536) / 65536.0f * 2.0f, static_cast<float>(rand() % 65536) / 65536.0f * 3.0f);
+				rotation = glm::eulerAngleYXZ(static_cast<float>(rand() % 65536) / 65536.0f, static_cast<float>(rand() % 65536) / 65536.0f * 2.0f, static_cast<float>(rand() % 65536) / 65536.0f * 3.0f);
 
 				// r=x
 				*dataCurrent = rotation.x;
