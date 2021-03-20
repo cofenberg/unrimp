@@ -51,7 +51,7 @@ PRAGMA_WARNING_POP
 PRAGMA_WARNING_PUSH
 	PRAGMA_WARNING_DISABLE_MSVC(4201)	// warning C4201: nonstandard extension used: nameless struct/union
 	PRAGMA_WARNING_DISABLE_MSVC(4464)	// warning C4464: relative include path contains '..'
-	#include <glm/gtc/epsilon.hpp>
+	PRAGMA_WARNING_DISABLE_MSVC(5214)	// warning C5214: applying '*=' to an operand with a volatile qualified type is deprecated in C++2	#include <glm/gtc/epsilon.hpp>
 	#include <glm/gtc/quaternion.hpp>
 	#include <glm/gtx/euler_angles.hpp>
 PRAGMA_WARNING_POP
