@@ -40,6 +40,10 @@ PRAGMA_WARNING_PUSH
 	PRAGMA_WARNING_DISABLE_MSVC(5026)	// warning C5026: 'std::_Generic_error_category': move constructor was implicitly defined as deleted
 	PRAGMA_WARNING_DISABLE_MSVC(5027)	// warning C5027: 'std::_Generic_error_category': move assignment operator was implicitly defined as deleted
 	PRAGMA_WARNING_DISABLE_MSVC(5039)	// warning C5039: '_Thrd_start': pointer or reference to potentially throwing function passed to extern C function under -EHc. Undefined behavior may occur if this function throws an exception.
+	#ifndef __ANDROID__
+		#include <filesystem>
+		#include <fstream>
+	#endif
 	#include <string>
 	#include <mutex>
 PRAGMA_WARNING_POP
@@ -129,8 +133,8 @@ namespace Rhi
 	*  @note
 	*    - Example: RHI_LOG(mContext, DEBUG, "Direct3D 11 RHI implementation startup")
 	*    - Designed to be instanced and used inside a single C++ file
-	*    - On Microsoft Windows it will print to the Visual Studio output console, on critical message the debugger will break
-	*    - On Linux it will print on the console
+	*    - On Microsoft Windows it will print with colors on the console and a file in a separate thread, it will also print to the Visual Studio output console, on critical message the debugger will break
+	*    - On Linux it will print with colors on the console and a file in a separate thread
 	*    - On Android it will print into the Android system log
 	*/
 	class DefaultLog : public ILog
@@ -141,14 +145,30 @@ namespace Rhi
 	//[ Public methods                                        ]
 	//[-------------------------------------------------------]
 	public:
-		inline DefaultLog()
+		inline DefaultLog([[maybe_unused]] const std::string& absoluteLogDirectory = "", const std::string& prefix = "", [[maybe_unused]] bool verbose = false)
+			#ifdef _DEBUG
+				: mVerbose(verbose)
+			#endif
+			#ifndef __ANDROID__
+				, mAbsoluteLogDirectory(absoluteLogDirectory)
+				, mPrefix(prefix)
+			#endif
 		{
-			// Nothing here
+			#ifndef __ANDROID__
+				// Create the thread responsible for writing into the log file
+				mWorkerThread = new std::thread(DefaultLog::StaticThreadFunction, this);
+			#endif
 		}
 
 		inline virtual ~DefaultLog() override
 		{
-			// Nothing here
+			#ifndef __ANDROID__
+				mThreadShouldBeRunning = false;
+				mConditionVariable.notify_one();
+				mWorkerThread->join();
+				delete mWorkerThread;
+				mOfstream.close();
+			#endif
 		}
 
 
@@ -230,11 +250,32 @@ namespace Rhi
 			std::lock_guard<std::mutex> mutexLock(mMutex);
 			bool requestDebugBreak = false;
 
+			// Timestamp
+			// -> No timestamp in case one writes e.g. "RHI_LOG(INFORMATION, "")" -> This will just produce a new line
+			std::string timestamp;
+			if (*message != '\0')
+			{
+				struct tm tstruct;
+				char buffer[128];
+				const time_t now = ::time(0);
+				::localtime_s(&tstruct, &now);
+				::strftime(buffer, sizeof(buffer), "%Y-%m-%d.%X", &tstruct);	// Visit http://en.cppreference.com/w/cpp/chrono/c/strftime for more information about date/time format
+				timestamp = buffer;
+			}
+
+			// Get type as string
+			// -> Don't show the regular "information"
+			std::string typeAsString;
+			if (Type::INFORMATION != type)
+			{
+				typeAsString = std::string(typeToString(type));
+			}
+
 			// Construct the full UTF-8 message text
 			#ifdef RHI_DEBUG
-				std::string fullMessage = "File \"" + std::string(file) + "\" | Line " + std::to_string(line) + " | " + std::string(typeToString(type)) + message;
+				std::string fullMessage = mVerbose ? ("File \"" + std::string(file) + "\" | Line " + std::to_string(line) + " | " + timestamp + ' ' + typeAsString + message) : (timestamp + ' ' + typeAsString + message);
 			#else
-				std::string fullMessage = std::string(typeToString(type)) + message;
+				std::string fullMessage = timestamp + ' ' + typeAsString + message;
 			#endif
 			if ('\n' != fullMessage.back())
 			{
@@ -341,6 +382,13 @@ namespace Rhi
 				#error "Unsupported platform"
 			#endif
 
+			#ifndef __ANDROID__
+			{ // Add to log file write queue
+				std::lock_guard<std::mutex> guard(mQueueMutex);
+				mLogFileQueue.emplace_back(std::move(fullMessage));
+			}
+			#endif
+
 			// Done
 			return requestDebugBreak;
 		}
@@ -386,6 +434,48 @@ namespace Rhi
 	//[-------------------------------------------------------]
 	protected:
 		std::mutex mMutex;
+		#ifdef _DEBUG
+			bool mVerbose = false;
+		#endif
+		#ifndef __ANDROID__
+			std::string mAbsoluteLogDirectory;	// Get the absolute UTF-8 base directory, with "/" at the end
+			std::string mPrefix;
+			std::ofstream mOfstream;
+
+			// Thread-related members
+			std::thread*			 mWorkerThread = nullptr;
+			bool					 mThreadShouldBeRunning = true;
+			std::vector<std::string> mLogFileQueue;		// Not using an actual std::queue, because that's not needed here and std::vector makes things a hit easier
+			std::mutex				 mQueueMutex;
+			std::condition_variable  mConditionVariable;
+		#endif
+
+
+	//[-------------------------------------------------------]
+	//[ Private static methods                                ]
+	//[-------------------------------------------------------]
+	private:
+		#ifndef __ANDROID__
+			// From https://stackoverflow.com/a/61067330
+			template <typename TP>
+			std::time_t to_time_t(TP tp)
+			{
+				using namespace std::chrono;
+				auto sctp = time_point_cast<system_clock::duration>(tp - TP::clock::now() + system_clock::now());
+				return system_clock::to_time_t(sctp);
+			}
+
+			inline static std::string getAbsoluteFilename(const std::string& absoluteLogDirectory, const std::string& prefix, int index)
+			{
+				std::string FILENAME = prefix + ((index <= 0) ? "Log.log" : "Log_" + std::to_string(index) + ".log");
+				return absoluteLogDirectory + FILENAME;
+			}
+
+			inline static void StaticThreadFunction(DefaultLog* defaultLog)
+			{
+				defaultLog->ThreadFunction();
+			}
+		#endif
 
 
 	//[-------------------------------------------------------]
@@ -394,6 +484,86 @@ namespace Rhi
 	private:
 		explicit DefaultLog(const DefaultLog&) = delete;
 		DefaultLog& operator=(const DefaultLog&) = delete;
+
+		#ifndef __ANDROID__
+			inline void ThreadFunction()
+			{
+				std::vector<std::string> linesToLog;
+				while (mThreadShouldBeRunning)
+				{
+					{
+						// Wait until there's something new in the queue
+						//  -> Wake up once a second in any case, just to be on the safe side (these condition variables are not always 100% reliable, there's things like "lost wakeups")
+						std::unique_lock<std::mutex> lock(mQueueMutex);
+						mConditionVariable.wait_for(lock, std::chrono::milliseconds(1000));
+
+						// We own the lock now, use it only very briefly to do a quick swap
+						linesToLog.swap(mLogFileQueue);
+					}
+
+					// Now write to file
+					if (!linesToLog.empty())
+					{
+						// Open file, if necessary
+						if (!mOfstream.is_open())
+						{
+							// Get the absolute UTF-8 base directory, with "/" at the end
+							const std::string selectedAbsoluteLogDirectory = mAbsoluteLogDirectory.empty() ? (std::filesystem::current_path() / "../LocalData/Log/").generic_string() : mAbsoluteLogDirectory;
+
+							// Rename an already existing log file
+							std::string absoluteFilename;
+							{
+								int index = 0;
+								bool success = false;
+								while (!success)
+								{
+									absoluteFilename = getAbsoluteFilename(selectedAbsoluteLogDirectory, mPrefix, index);
+									success = true;
+									if (std::filesystem::exists(absoluteFilename))
+									{
+										const std::time_t fileTime = to_time_t(std::filesystem::last_write_time(absoluteFilename));
+										std::string fileTimeAsString;
+										{
+											struct tm tstruct;
+											char buffer[128];
+											::localtime_s(&tstruct, &fileTime);
+											::strftime(buffer, sizeof(buffer), "%Y-%m-%d_%X", &tstruct);	// Visit http://en.cppreference.com/w/cpp/chrono/c/strftime for more information about date/time format
+											fileTimeAsString = buffer;
+											std::replace(fileTimeAsString.begin(), fileTimeAsString.end(), ':', '-');
+										}
+										try
+										{
+											std::filesystem::rename(absoluteFilename, std::filesystem::path(absoluteFilename).replace_extension().generic_string() + '_' + fileTimeAsString + ".log");
+										}
+										catch (const std::exception&)
+										{
+											// If that failed, we should try again with a different file name
+											//  -> This will happen e.g. when starting multiple instances, which is not unusual for the lobby client
+											success = false;
+											++index;
+										}
+									}
+								}
+							}
+
+							// Ensure the directory exists
+							std::filesystem::create_directories(std::filesystem::path(absoluteFilename).parent_path().generic_string());
+
+							// Open log file
+							mOfstream.open(absoluteFilename);
+						}
+
+						// Write to file
+						for (const std::string& line : linesToLog)
+						{
+							mOfstream << line;
+						}
+						mOfstream.flush();
+						linesToLog.clear();
+					}
+				}
+			}
+		#endif
 
 
 	};
