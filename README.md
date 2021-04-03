@@ -31,9 +31,9 @@ General
 ======
 - C++20 and above, no legacy compiler support, compiled with wall warning level
 - Compact user-header for the RHI
-	- A single all in one header for ease-of-use and best possible compile times
+	- A single all in one header for ease-of-use and optimized compile times
 	- No need to links against the RHI library itself, load RHI implementations dynamically during runtime
-- Usage of [Amalgamated](https://blog.forrestthewoods.com/improving-open-source-with-amalgamation-cf293592c5f4)/[Unity](http://buffered.io/posts/the-magic-of-unity-builds/) builds for best possible compile times
+- Usage of [amalgamated](https://blog.forrestthewoods.com/improving-open-source-with-amalgamation-cf293592c5f4)/[unity](http://buffered.io/posts/the-magic-of-unity-builds/) builds for optimized compile times
 - Using [CMake](https://cmake.org/) for the build process
 - Using [Doxygen](http://www.doxygen.org) for code documentation
 - Lightweight RHI implementations
