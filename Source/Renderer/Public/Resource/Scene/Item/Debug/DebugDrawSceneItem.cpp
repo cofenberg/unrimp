@@ -609,7 +609,7 @@ namespace Renderer
 	//[-------------------------------------------------------]
 	DebugDrawSceneItem::DebugDrawSceneItem(SceneResource& sceneResource) :
 		ISceneItem(sceneResource, false),	///< The debug draw isn't allowed to be culled
-		mLoadingMaterialResourceIds{ Renderer::getInvalid<Renderer::MaterialResourceId>(), Renderer::getInvalid<Renderer::MaterialResourceId>(), Renderer::getInvalid<Renderer::MaterialResourceId>() },
+		mLoadingMaterialResourceIds{ getInvalid<MaterialResourceId>(), getInvalid<MaterialResourceId>(), getInvalid<MaterialResourceId>(), getInvalid<MaterialResourceId>(), getInvalid<MaterialResourceId>() },
 		mDebugDrawRenderInterface(new ::DebugDrawSceneItemDetail::DebugDrawRenderInterface(getSceneResource().getRenderer(), mRenderableManager)),
 		mContextHandle(nullptr)
 	{
