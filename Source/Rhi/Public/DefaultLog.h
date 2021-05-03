@@ -146,14 +146,15 @@ namespace Rhi
 	//[-------------------------------------------------------]
 	public:
 		inline DefaultLog([[maybe_unused]] const std::string& absoluteLogDirectory = "", const std::string& prefix = "", [[maybe_unused]] bool verbose = false)
+		{
 			#ifdef _DEBUG
-				: mVerbose(verbose)
+				mVerbose = verbose;
 			#endif
 			#ifndef __ANDROID__
-				, mAbsoluteLogDirectory(absoluteLogDirectory)
-				, mPrefix(prefix)
+				mAbsoluteLogDirectory = absoluteLogDirectory;
+				mPrefix = prefix;
 			#endif
-		{
+
 			#ifndef __ANDROID__
 				// Create the thread responsible for writing into the log file
 				mWorkerThread = new std::thread(DefaultLog::StaticThreadFunction, this);
