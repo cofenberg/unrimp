@@ -1138,51 +1138,54 @@ namespace
 		//[-------------------------------------------------------]
 		[[nodiscard]] bool crunchConsoleOutput(crnlib::eConsoleMessageType crunchType, const char* message, void* data)
 		{
-			// Map the log message type
-			Rhi::ILog::Type type = Rhi::ILog::Type::TRACE;
-			switch (crunchType)
+			// Ignore empty messages by intent (search for "console::progress("");" inside Crunch source codes)
+			if (nullptr != message && '\0'!= *message)
 			{
-				case crnlib::cDebugConsoleMessage:
-					type = Rhi::ILog::Type::DEBUG;
-					break;
+				// Map the log message type
+				Rhi::ILog::Type type = Rhi::ILog::Type::TRACE;
+				switch (crunchType)
+				{
+					case crnlib::cDebugConsoleMessage:
+						type = Rhi::ILog::Type::DEBUG;
+						break;
 
-				case crnlib::cProgressConsoleMessage:
-					// Ignored by intent since Crunch writes empty message here (search for "console::progress("");" inside Crunch source codes)
-					// type = Rhi::ILog::Type::TRACE;
-					break;
+					case crnlib::cProgressConsoleMessage:
+						type = Rhi::ILog::Type::TRACE;
+						break;
 
-				case crnlib::cInfoConsoleMessage:
-					type = Rhi::ILog::Type::INFORMATION;
-					break;
+					case crnlib::cInfoConsoleMessage:
+						type = Rhi::ILog::Type::INFORMATION;
+						break;
 
-				case crnlib::cConsoleConsoleMessage:
-					type = Rhi::ILog::Type::INFORMATION;
-					break;
+					case crnlib::cConsoleConsoleMessage:
+						type = Rhi::ILog::Type::INFORMATION;
+						break;
 
-				case crnlib::cMessageConsoleMessage:
-					type = Rhi::ILog::Type::INFORMATION;
-					break;
+					case crnlib::cMessageConsoleMessage:
+						type = Rhi::ILog::Type::INFORMATION;
+						break;
 
-				case crnlib::cWarningConsoleMessage:
-					type = Rhi::ILog::Type::WARNING;
-					break;
+					case crnlib::cWarningConsoleMessage:
+						type = Rhi::ILog::Type::WARNING;
+						break;
 
-				case crnlib::cErrorConsoleMessage:
-					type = Rhi::ILog::Type::CRITICAL;
-					break;
+					case crnlib::cErrorConsoleMessage:
+						type = Rhi::ILog::Type::CRITICAL;
+						break;
 
-				case crnlib::cCMTTotal:
-				default:
-					break;
-			}
+					case crnlib::cCMTTotal:
+					default:
+						break;
+				}
 
-			// Write RHI log
-			// TODO(co) More context information like which asset is compiled right now might be useful. We need to keep in mind that there can be multiple texture compiler instances
-			//          running at one and the same time. We could use the Crunch console output data to transport this information, on the other hand we need to ensure that we can
-			//          unregister our function when we're done. "crnlib::console::remove_console_output_func() only checks the function pointer.
-			if (static_cast<const RendererToolkit::Context*>(data)->getLog().print(type, nullptr, __FILE__, static_cast<uint32_t>(__LINE__), message))
-			{
-				DEBUG_BREAK;
+				// Write RHI log
+				// TODO(co) More context information like which asset is compiled right now might be useful. We need to keep in mind that there can be multiple texture compiler instances
+				//          running at one and the same time. We could use the Crunch console output data to transport this information, on the other hand we need to ensure that we can
+				//          unregister our function when we're done. "crnlib::console::remove_console_output_func() only checks the function pointer.
+				if (static_cast<const RendererToolkit::Context*>(data)->getLog().print(type, nullptr, __FILE__, static_cast<uint32_t>(__LINE__), message))
+				{
+					DEBUG_BREAK;
+				}
 			}
 
 			// We handled the console output
