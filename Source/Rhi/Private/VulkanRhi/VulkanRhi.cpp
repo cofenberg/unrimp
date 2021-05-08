@@ -160,6 +160,55 @@ PRAGMA_WARNING_POP
 
 
 //[-------------------------------------------------------]
+//[ STD allocator                                         ]
+//[-------------------------------------------------------]
+Rhi::IAllocator* g_Allocator = nullptr;	// Sadly, the STD allocator is stateless, hence this nasty global variable
+
+template <class T>
+class Allocator
+{
+public:
+	using value_type = T;
+	template <class U> Allocator(Allocator<U> const&) noexcept {}
+	Allocator() noexcept {};
+
+	value_type* allocate(std::size_t n)
+	{
+		return static_cast<T*>(g_Allocator->reallocate(nullptr, 0, n * sizeof(T), 1));
+	}
+
+	void deallocate(value_type* p, std::size_t n) noexcept
+	{
+		g_Allocator->reallocate(p, n * sizeof(T), 0, 1);
+	}
+};
+
+template <class T>
+class Vector : public std::vector<T, Allocator<T>>
+{
+public:
+	Vector()
+	{
+		// Nothing here
+	}
+
+	explicit Vector(size_t _Count) :
+		std::vector<T, Allocator<T>>(_Count)
+	{
+		// Nothing here
+	}
+
+	Vector(const std::initializer_list<T>& _Ilist) :
+		std::vector<T, Allocator<T>>(_Ilist)
+	{
+		// Nothing here
+	}
+};
+
+
+
+
+//[-------------------------------------------------------]
 //[ VulkanRhi/MakeID.h                                    ]
 //[-------------------------------------------------------]
 /*
@@ -740,8 +789,8 @@ namespace
 		//[ Global definitions                                    ]
 		//[-------------------------------------------------------]
 		static constexpr const char* GLSL_NAME = "GLSL";	///< ASCII name of this shader language, always valid (do not free the memory the returned pointer is pointing to)
-		typedef std::vector<VkPhysicalDevice> VkPhysicalDevices;
-		typedef std::vector<VkExtensionProperties> VkExtensionPropertiesVector;
+		typedef Vector<VkPhysicalDevice> VkPhysicalDevices;
+		typedef Vector<VkExtensionProperties> VkExtensionPropertiesVector;
 		typedef std::array<VkPipelineShaderStageCreateInfo, 5> VkPipelineShaderStageCreateInfos;
 		#ifdef __ANDROID__
 			// On Android we need to explicitly select all layers
@@ -1014,7 +1063,7 @@ namespace
 					// Reject physical Vulkan device
 					continue;
 				}
-				std::vector<VkQueueFamilyProperties> queueFamilyProperties(queueFamilyPropertyCount);
+				Vector<VkQueueFamilyProperties> queueFamilyProperties(queueFamilyPropertyCount);
 				vkGetPhysicalDeviceQueueFamilyProperties(vkPhysicalDevice, &queueFamilyPropertyCount, queueFamilyProperties.data());
 				for (uint32_t i = 0; i < queueFamilyPropertyCount; ++i)
 				{
@@ -1061,11 +1110,10 @@ namespace
 		[[nodiscard]] VkResult createVkDevice(const Rhi::Context& context, const VkAllocationCallbacks* vkAllocationCallbacks, VkPhysicalDevice vkPhysicalDevice, const VkDeviceQueueCreateInfo& vkDeviceQueueCreateInfo, bool enableValidation, bool enableDebugMarker, bool hasMeshShaderSupport, VkDevice& vkDevice)
 		{
 			// See http://vulkan.gpuinfo.org/listfeatures.php to check out GPU hardware capabilities
-			std::vector<const char*> enabledExtensions =
-			{
-				VK_KHR_SWAPCHAIN_EXTENSION_NAME,
-				VK_KHR_MAINTENANCE1_EXTENSION_NAME		// We want to be able to specify a negative viewport height, this way we don't have to apply "<output position>.y = -<output position>.y" inside vertex shaders to compensate for the Vulkan coordinate system
-			};
+			Vector<const char*> enabledExtensions;
+			enabledExtensions.reserve(4);
+			enabledExtensions.push_back(VK_KHR_SWAPCHAIN_EXTENSION_NAME);
+			enabledExtensions.push_back(VK_KHR_MAINTENANCE1_EXTENSION_NAME);	// We want to be able to specify a negative viewport height, this way we don't have to apply "<output position>.y = -<output position>.y" inside vertex shaders to compensate for the Vulkan coordinate system
 			if (enableDebugMarker)
 			{
 				enabledExtensions.emplace_back(VK_EXT_DEBUG_MARKER_EXTENSION_NAME);
@@ -1190,7 +1238,7 @@ namespace
 			vkGetPhysicalDeviceQueueFamilyProperties(vkPhysicalDevice, &queueFamilyPropertyCount, nullptr);
 			if (queueFamilyPropertyCount > 0)
 			{
-				std::vector<VkQueueFamilyProperties> vkQueueFamilyProperties;
+				Vector<VkQueueFamilyProperties> vkQueueFamilyProperties;
 				vkQueueFamilyProperties.resize(queueFamilyPropertyCount);
 				vkGetPhysicalDeviceQueueFamilyProperties(vkPhysicalDevice, &queueFamilyPropertyCount, vkQueueFamilyProperties.data());
 
@@ -1539,7 +1587,7 @@ namespace
 				return { VK_FORMAT_UNDEFINED, VK_COLOR_SPACE_MAX_ENUM_KHR };
 			}
 
-			std::vector<VkSurfaceFormatKHR> surfaceFormats(surfaceFormatCount);
+			Vector<VkSurfaceFormatKHR> surfaceFormats(surfaceFormatCount);
 			if (vkGetPhysicalDeviceSurfaceFormatsKHR(vkPhysicalDevice, vkSurfaceKHR, &surfaceFormatCount, surfaceFormats.data()) != VK_SUCCESS)
 			{
 				RHI_LOG(context, CRITICAL, "Failed to get physical Vulkan device surface formats")
@@ -1640,7 +1688,7 @@ namespace
 				return VK_PRESENT_MODE_MAX_ENUM_KHR;
 			}
 
-			std::vector<VkPresentModeKHR> presentModes(presentModeCount);
+			Vector<VkPresentModeKHR> presentModes(presentModeCount);
 			if (vkGetPhysicalDeviceSurfacePresentModesKHR(vkPhysicalDevice, vkSurfaceKHR, &presentModeCount, presentModes.data()) != VK_SUCCESS)
 			{
 				RHI_LOG(context, CRITICAL, "Failed to get physical Vulkan device surface present modes")
@@ -1756,7 +1804,7 @@ namespace
 			return vkRenderPass;
 		}
 
-		[[nodiscard]] VkFormat findSupportedVkFormat(VkPhysicalDevice vkPhysicalDevice, const std::vector<VkFormat>& vkFormatCandidates, VkImageTiling vkImageTiling, VkFormatFeatureFlags vkFormatFeatureFlags)
+		[[nodiscard]] VkFormat findSupportedVkFormat(VkPhysicalDevice vkPhysicalDevice, const Vector<VkFormat>& vkFormatCandidates, VkImageTiling vkImageTiling, VkFormatFeatureFlags vkFormatFeatureFlags)
 		{
 			for (VkFormat vkFormat : vkFormatCandidates)
 			{
@@ -1910,6 +1958,7 @@ namespace
 						const glslang::TIntermediate* intermediate = program.getIntermediate(shLanguage);
 						if (nullptr != intermediate)
 						{
+							// TODO(co) "glslang::GlslangToSpv()" is using the default allocator
 							std::vector<unsigned int> spirv;
 							glslang::GlslangToSpv(*intermediate, spirv);
 
@@ -2652,7 +2701,9 @@ namespace VulkanRhi
 		[[nodiscard]] VkResult createVulkanInstance(bool enableValidation)
 		{
 			// Enable surface extensions depending on OS
-			std::vector<const char*> enabledExtensions = { VK_KHR_SURFACE_EXTENSION_NAME };
+			Vector<const char*> enabledExtensions;
+			enabledExtensions.reserve(6);
+			enabledExtensions.push_back(VK_KHR_SURFACE_EXTENSION_NAME);
 			#ifdef VK_USE_PLATFORM_WIN32_KHR
 				enabledExtensions.push_back(VK_KHR_WIN32_SURFACE_EXTENSION_NAME);
 			#elif defined VK_USE_PLATFORM_ANDROID_KHR
@@ -4197,7 +4248,7 @@ namespace VulkanRhi
 					uint32_t currentDepth  = depth;
 
 					// Allocate list of VkBufferImageCopy and setup VkBufferImageCopy data for each mipmap level
-					std::vector<VkBufferImageCopy> vkBufferImageCopyList;
+					Vector<VkBufferImageCopy> vkBufferImageCopyList;
 					vkBufferImageCopyList.reserve(numberOfUploadedMipmaps);
 					for (uint32_t mipmap = 0; mipmap < numberOfUploadedMipmaps; ++mipmap)
 					{
@@ -4547,7 +4598,7 @@ namespace VulkanRhi
 				vkDescriptorSetLayouts.reserve(numberOfRootParameters);
 				mVkDescriptorSetLayouts.resize(numberOfRootParameters);
 				std::fill(mVkDescriptorSetLayouts.begin(), mVkDescriptorSetLayouts.end(), static_cast<VkDescriptorSetLayout>(VK_NULL_HANDLE));	// TODO(co) Get rid of this
-				typedef std::vector<VkDescriptorSetLayoutBinding> VkDescriptorSetLayoutBindings;
+				typedef Vector<VkDescriptorSetLayoutBinding> VkDescriptorSetLayoutBindings;
 				VkDescriptorSetLayoutBindings vkDescriptorSetLayoutBindings;
 				vkDescriptorSetLayoutBindings.reserve(numberOfRootParameters);
 				for (uint32_t rootParameterIndex = 0; rootParameterIndex < numberOfRootParameters; ++rootParameterIndex)
@@ -4946,7 +4997,7 @@ namespace VulkanRhi
 	//[ Private definitions                                   ]
 	//[-------------------------------------------------------]
 	private:
-		typedef std::vector<VkDescriptorSetLayout> VkDescriptorSetLayouts;
+		typedef Vector<VkDescriptorSetLayout> VkDescriptorSetLayouts;
 
 
 	//[-------------------------------------------------------]
@@ -7355,12 +7406,12 @@ namespace VulkanRhi
 			const bool hasDepthStencilAttachment = (Rhi::TextureFormat::Enum::UNKNOWN != depthStencilAttachmentTextureFormat);
 
 			// Vulkan attachment descriptions
-			std::vector<VkAttachmentDescription> vkAttachmentDescriptions;
+			Vector<VkAttachmentDescription> vkAttachmentDescriptions;
 			vkAttachmentDescriptions.resize(mNumberOfColorAttachments + (hasDepthStencilAttachment ? 1u : 0u));
 			uint32_t currentVkAttachmentDescriptionIndex = 0;
 
 			// Handle color attachments
-			typedef std::vector<VkAttachmentReference> VkAttachmentReferences;
+			typedef Vector<VkAttachmentReference> VkAttachmentReferences;
 			VkAttachmentReferences colorVkAttachmentReferences;
 			if (mNumberOfColorAttachments > 0)
 			{
@@ -8239,7 +8290,7 @@ namespace VulkanRhi
 					RHI_LOG(context, CRITICAL, "Failed to get Vulkan swap chain images")
 					return;
 				}
-				std::vector<VkImage> vkImages(swapchainImageCount);
+				Vector<VkImage> vkImages(swapchainImageCount);
 				if (vkGetSwapchainImagesKHR(vkDevice, mVkSwapchainKHR, &swapchainImageCount, vkImages.data()) != VK_SUCCESS)
 				{
 					RHI_LOG(context, CRITICAL, "Failed to get Vulkan swap chain images")
@@ -8399,7 +8450,7 @@ namespace VulkanRhi
 			VkImageView   vkImageView	= VK_NULL_HANDLE;	///< Vulkan image view, destroy if no longer needed
 			VkFramebuffer vkFramebuffer	= VK_NULL_HANDLE;	///< Vulkan framebuffer, destroy if no longer needed
 		};
-		typedef std::vector<SwapChainBuffer> SwapChainBuffers;
+		typedef Vector<SwapChainBuffer> SwapChainBuffers;
 
 
 	//[-------------------------------------------------------]
@@ -8473,7 +8524,7 @@ namespace VulkanRhi
 			const VulkanRhi& vulkanRhi = static_cast<VulkanRhi&>(renderPass.getRhi());
 
 			// Vulkan attachment descriptions and views to fill
-			std::vector<VkImageView> vkImageViews;
+			Vector<VkImageView> vkImageViews;
 			vkImageViews.resize(mNumberOfColorTextures + ((nullptr != depthStencilFramebufferAttachment) ? 1u : 0u));
 			uint32_t currentVkAttachmentDescriptionIndex = 0;
 
@@ -10407,8 +10458,8 @@ namespace VulkanRhi
 
 			// Vertex attributes
 			const uint32_t numberOfAttributes = graphicsPipelineState.vertexAttributes.numberOfAttributes;
-			std::vector<VkVertexInputBindingDescription> vkVertexInputBindingDescriptions;
-			std::vector<VkVertexInputAttributeDescription> vkVertexInputAttributeDescriptions(numberOfAttributes);
+			Vector<VkVertexInputBindingDescription> vkVertexInputBindingDescriptions;
+			Vector<VkVertexInputAttributeDescription> vkVertexInputAttributeDescriptions(numberOfAttributes);
 			for (uint32_t attribute = 0; attribute < numberOfAttributes; ++attribute)
 			{
 				const Rhi::VertexAttribute* attributes = &graphicsPipelineState.vertexAttributes.attributes[attribute];
@@ -11727,6 +11778,9 @@ namespace VulkanRhi
 		mVertexArray(nullptr),
 		mRenderTarget(nullptr)
 	{
+		// Set global STD allocator
+		g_Allocator = &context.getAllocator();
+
 		// TODO(co) Make it possible to enable/disable validation from the outside?
 		#ifdef RHI_DEBUG
 			const bool enableValidation = true;
@@ -11820,6 +11874,9 @@ namespace VulkanRhi
 
 		// Destroy the Vulkan runtime linking instance
 		RHI_DELETE(mContext, VulkanRuntimeLinking, mVulkanRuntimeLinking);
+
+		// Reset global STD allocator
+		g_Allocator = nullptr;
 	}
 
 	void VulkanRhi::dispatchCommandBufferInternal(const Rhi::CommandBuffer& commandBuffer)
