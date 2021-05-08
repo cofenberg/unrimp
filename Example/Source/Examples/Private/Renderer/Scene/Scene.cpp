@@ -94,7 +94,7 @@ PRAGMA_WARNING_POP
 //[-------------------------------------------------------]
 //[ Global variables                                      ]
 //[-------------------------------------------------------]
-extern Rhi::DefaultAllocator g_DefaultAllocator;
+extern Rhi::IAllocator* g_Allocator;
 
 
 //[-------------------------------------------------------]
@@ -325,7 +325,7 @@ Scene::Scene() :
 	mDebugDrawEnabledIniProperty(INI_NOT_FOUND)
 {
 	#ifdef RENDERER_IMGUI
-		Renderer::DebugGuiManager::setImGuiAllocatorFunctions(g_DefaultAllocator);
+		Renderer::DebugGuiManager::setImGuiAllocatorFunctions(*g_Allocator);
 		mImGuiLog = new Renderer::ImGuiLog();
 		setCustomLog(mImGuiLog);
 	#endif

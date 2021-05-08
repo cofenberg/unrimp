@@ -29,6 +29,12 @@
 //[-------------------------------------------------------]
 #include <Rhi/Public/Rhi.h>
 
+// Disable warnings in external headers, we can't fix them
+PRAGMA_WARNING_PUSH
+	PRAGMA_WARNING_DISABLE_MSVC(4668)	// warning C4668: '__GNUC__' is not defined as a preprocessor macro, replacing with '0' for '#if/#elif'
+	#include <mimalloc.h>
+PRAGMA_WARNING_POP
+
 #include <stdlib.h>
 
 
@@ -53,52 +59,20 @@ namespace
 			if (nullptr != oldPointer && 0 != newNumberOfBytes)
 			{
 				// Reallocate
-				#ifdef _MSC_VER
-					return _aligned_realloc(oldPointer, newNumberOfBytes, alignment);
-				#else
-					// TODO(co) Need aligned version, see e.g. https://github.com/philiptaylor/vulkan-sxs/blob/9cb21b3/common/AllocationCallbacks.cpp#L87 or XSIMD "xsimd_aligned_allocator"
-					return realloc(oldPointer, newNumberOfBytes);
-				#endif
+				return mi_realloc_aligned(oldPointer, newNumberOfBytes, alignment);
 			}
 			else
 			{
 				// Malloc / free
-				#ifdef _MSC_VER
-					// Null pointer is valid in here, does nothing in this case
-					if (nullptr != oldPointer)
-					{
-						::_aligned_free(oldPointer);
-					}
 
-					// Allocate
-					return (0 != newNumberOfBytes) ? ::_aligned_malloc(newNumberOfBytes, alignment) : nullptr;
-				#elif defined(__ANDROID__)
-					// Null pointer is valid in here, does nothing in this case
-					if (nullptr != oldPointer)
-					{
-						::free(oldPointer);
-					}
+				// Null pointer is valid in here, does nothing in this case
+				if (nullptr != oldPointer)
+				{
+					mi_free(oldPointer);
+				}
 
-					// Allocate
-					if (0 != newNumberOfBytes)
-					{
-						void* memptr = nullptr;
-						return (posix_memalign(&memptr, alignment, newNumberOfBytes) == 0) ? memptr : nullptr;
-					}
-					else
-					{
-						return nullptr;
-					}
-				#else
-					// Null pointer is valid in here, does nothing in this case
-					if (nullptr != oldPointer)
-					{
-						::free(oldPointer);
-					}
-
-					// Allocate
-					return (0 != newNumberOfBytes) ? ::aligned_alloc(alignment, newNumberOfBytes) : nullptr;
-				#endif
+				// Allocate
+				return (0 != newNumberOfBytes) ? mi_malloc_aligned(newNumberOfBytes, alignment) : nullptr;
 			}
 		}
 
@@ -122,13 +96,13 @@ namespace Rhi
 	//[-------------------------------------------------------]
 	/**
 	*  @brief
-	*    Default memory allocator implementation class one can use
+	*    Optional "mimalloc" ( https://github.com/microsoft/mimalloc ) memory allocator implementation class one can use
 	*
 	*  @note
 	*    - Example: uint8_t* spirvOutputBuffer = RHI_MALLOC_TYPED(context, uint8_t, spirvOutputBufferSize);
 	*    - Designed to be instanced and used inside a single C++ file
 	*/
-	class DefaultAllocator final : public IAllocator
+	class MimallocAllocator final : public IAllocator
 	{
 
 
@@ -136,13 +110,13 @@ namespace Rhi
 	//[ Public methods                                        ]
 	//[-------------------------------------------------------]
 	public:
-		inline DefaultAllocator() :
+		inline MimallocAllocator() :
 			IAllocator(&::detail::reallocate)
 		{
 			// Nothing here
 		}
 
-		inline virtual ~DefaultAllocator() override
+		inline virtual ~MimallocAllocator() override
 		{
 			// Nothing here
 		}
@@ -152,8 +126,8 @@ namespace Rhi
 	//[ Private methods                                       ]
 	//[-------------------------------------------------------]
 	private:
-		explicit DefaultAllocator(const DefaultAllocator&) = delete;
-		DefaultAllocator& operator=(const DefaultAllocator&) = delete;
+		explicit MimallocAllocator(const MimallocAllocator&) = delete;
+		MimallocAllocator& operator=(const MimallocAllocator&) = delete;
 
 
 	};

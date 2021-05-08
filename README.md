@@ -44,6 +44,7 @@ General
 - RTTI and C++ exceptions are not used by RHI and renderer
 - Interfaces for log, assert, memory allocator, graphics debugger, profiler and file so the user has the control over those things
 	- Standard implementations are provided
+	- Standard memory allocator as well as [mimalloc](https://github.com/microsoft/mimalloc) memory allocator implementation is provided
 	- Standard graphics debugger implementation using [RenderDoc](https://renderdoc.org/) is provided
 	- Standard profiler implementation using [Remotery](https://github.com/Celtoys/Remotery) is provided
 	- Standard file implementation using UTF-8 STD file streams as well as [PhysicsFS](https://icculus.org/physfs/) for shipping packed asset packages are provided

@@ -42,6 +42,9 @@ if(WIN32)
 	add_definitions(-DUNICODE)
 endif()
 unrimp_add_conditional_rhi_definitions()
+if(EXAMPLES_MIMALLOC)
+	add_definitions(-DEXAMPLES_MIMALLOC)
+endif()
 unrimp_add_conditional_definition(RENDERER)
 unrimp_add_conditional_definition(RENDERER_GRAPHICS_DEBUGGER)
 unrimp_add_conditional_definition(RENDERER_PROFILER)
@@ -72,6 +75,9 @@ include_directories(${CMAKE_SOURCE_DIR}/External/Example)	# For "DeviceInput" an
 if(ANDROID)
 	include_directories(${CMAKE_SOURCE_DIR}/External/Example/Android)
 endif()
+if(EXAMPLES_MIMALLOC)
+	include_directories(${CMAKE_SOURCE_DIR}/External/Rhi/mimalloc/include)
+endif()
 include_directories(${CMAKE_SOURCE_DIR}/External/Renderer)	# "glm", "PhysicsFS", "ImGui", "OpenVR", "RenderDoc" and "Remotery"
 if(RENDERER_TOOLKIT)
 	include_directories(${CMAKE_SOURCE_DIR}/Renderer/RendererToolkit/include)
@@ -92,6 +98,13 @@ set(EXTERNAL_SOURCE_CODES
 	# DeviceInput external library
 	${CMAKE_SOURCE_DIR}/External/Example/DeviceInput/DeviceInput.cpp
 )
+if(EXAMPLES_MIMALLOC)
+	set(EXTERNAL_SOURCE_CODES
+		${EXTERNAL_SOURCE_CODES}
+		# mimalloc external library
+		${CMAKE_SOURCE_DIR}/External/Rhi/mimalloc/MimallocUnityBuild.cpp
+	)
+endif()
 if(NOT ANDROID)
 	set(EXTERNAL_SOURCE_CODES
 		${EXTERNAL_SOURCE_CODES}

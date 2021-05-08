@@ -27,7 +27,11 @@
 
 #include <Rhi/Public/DefaultLog.h>
 #include <Rhi/Public/DefaultAssert.h>
-#include <Rhi/Public/DefaultAllocator.h>
+#ifdef EXAMPLES_MIMALLOC
+	#include <Rhi/Public/MimallocAllocator.h>
+#else
+	#include <Rhi/Public/DefaultAllocator.h>
+#endif
 #include <Rhi/Public/RhiInstance.h>
 
 #if defined(RENDERER) && defined(RENDERER_GRAPHICS_DEBUGGER)
@@ -38,7 +42,13 @@
 //[-------------------------------------------------------]
 //[ Global variables                                      ]
 //[-------------------------------------------------------]
-Rhi::DefaultAllocator g_DefaultAllocator;
+#ifdef EXAMPLES_MIMALLOC
+	Rhi::MimallocAllocator g_MimallocAllocator;
+	Rhi::IAllocator* g_Allocator = &g_MimallocAllocator;
+#else
+	Rhi::DefaultAllocator g_DefaultAllocator;
+	Rhi::IAllocator* g_Allocator = &g_DefaultAllocator;
+#endif
 
 
 //[-------------------------------------------------------]
@@ -267,12 +277,12 @@ Rhi::IRhi* IApplicationRhi::createRhiInstance(const char* rhiName)
 		bool loadRhiApiSharedLibrary = false;
 		Rhi::ILog& log = (nullptr != mExampleBase.getCustomLog()) ? *mExampleBase.getCustomLog() : ::detail::g_DefaultLog;
 		#ifdef _WIN32
-			mRhiContext = new Rhi::Context(log, ::detail::g_DefaultAssert, g_DefaultAllocator, getNativeWindowHandle());
+			mRhiContext = new Rhi::Context(log, ::detail::g_DefaultAssert, *g_Allocator, getNativeWindowHandle());
 		#elif LINUX
 			// Under Linux the OpenGL library interacts with the library from X11 so we need to load the library ourself instead letting it be loaded by the RHI instance
 			// -> See http://dri.sourceforge.net/doc/DRIuserguide.html "11.5 libGL.so and dlopen()"
 			loadRhiApiSharedLibrary = true;
-			mRhiContext = new Rhi::X11Context(log, ::detail::g_DefaultAssert, g_DefaultAllocator, getX11Display(), getNativeWindowHandle());
+			mRhiContext = new Rhi::X11Context(log, ::detail::g_DefaultAssert, *g_Allocator, getX11Display(), getNativeWindowHandle());
 		#endif
 		#if defined(RENDERER) && defined(RENDERER_GRAPHICS_DEBUGGER)
 			mGraphicsDebugger = new Renderer::RenderDocGraphicsDebugger(*mRhiContext);

@@ -31,6 +31,9 @@ if(WIN32)
 	add_definitions(-DUNICODE)
 endif()
 unrimp_add_conditional_rhi_definitions()
+if(EXAMPLES_MIMALLOC)
+	add_definitions(-DEXAMPLES_MIMALLOC)
+endif()
 
 
 ##################################################
@@ -38,13 +41,25 @@ unrimp_add_conditional_rhi_definitions()
 ##################################################
 include_directories(${CMAKE_SOURCE_DIR}/Example/Source)
 include_directories(${CMAKE_SOURCE_DIR}/Source)
+if(EXAMPLES_MIMALLOC)
+	include_directories(${CMAKE_SOURCE_DIR}/External/Rhi/mimalloc/include)
+endif()
 link_directories(${CMAKE_LIBRARY_OUTPUT_DIRECTORY})
 
 
 ##################################################
 ## Source codes
 ##################################################
+set(EXTERNAL_SOURCE_CODES)
+if(EXAMPLES_MIMALLOC)
+	set(EXTERNAL_SOURCE_CODES
+		${EXTERNAL_SOURCE_CODES}
+		# mimalloc external library
+		${CMAKE_SOURCE_DIR}/External/Rhi/mimalloc/MimallocUnityBuild.cpp
+	)
+endif()
 set(SOURCE_CODES
+	${EXTERNAL_SOURCE_CODES}
 	Private/Main.cpp
 	Private/CommandLineArguments.cpp
 )

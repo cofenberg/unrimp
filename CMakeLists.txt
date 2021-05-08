@@ -108,6 +108,7 @@ endif()
 
 # Examples
 set(EXAMPLES "1" CACHE BOOL "Build examples?")
+set(EXAMPLES_MIMALLOC "1" CACHE BOOL "Use 'mimalloc' allocator?")
 if(NOT ANDROID)
 	set(EXAMPLE_PROJECT_COMPILER "1" CACHE BOOL "Build example project compiler?")
 
@@ -205,8 +206,8 @@ if(WIN32)
 	# - Enable/disable warnings
 	add_definitions(-D "_HAS_ITERATOR_DEBUGGING=0" -D "_SECURE_SCL=0")
 	set(MSVC_DISABLED_WARNINGS_LIST
-		"C4103"	# alignment changed after including header, may be due to missing #pragma pack(pop)	TODO(co): Came in when switching from C++17 to C++20 using Visual Studio 2019 19.9.2. Pinpointed it to "unrimp\External\Renderer\glm\detail\setup.hpp" -> "constexpr std::size_t countof(T const (&)[N])" but this issue doesn't make much sense here. Very odd thing.
-		"C4201"	# nonstandard extension used: nameless struct/union	TODO(co): Came in when switching from C++17 to C++20 using Visual Studio 2019 19.9.2. Already using "GLM_FORCE_SILENT_WARNINGS" and also explicitly disabling this warning before including, didn't help at a few places. Very odd thing.
+		"C4103"	# alignment changed after including header, may be due to missing #pragma pack(pop)		TODO(co) Came in when switching from C++17 to C++20 using Visual Studio 2019 19.9.2. Pinpointed it to "unrimp\External\Renderer\glm\detail\setup.hpp" -> "constexpr std::size_t countof(T const (&)[N])" but this issue doesn't make much sense here. Very odd thing.
+		"C4201"	# nonstandard extension used: nameless struct/union		TODO(co) Came in when switching from C++17 to C++20 using Visual Studio 2019 19.9.2. Already using "GLM_FORCE_SILENT_WARNINGS" and also explicitly disabling this warning before including, didn't help at a few places. Very odd thing.
 		"C4514" # unreferenced inline/local function has been removed
 		"C4577" # 'noexcept' used with no exception handling mode specified; termination on exception is not guaranteed. Specify /EHsc
 		"C4710" # function '<x>' not inlined
@@ -215,7 +216,7 @@ if(WIN32)
 		"C4770" # partially validated enum 'blend' used as index
 		"C4820" # '<x>' : '<y>' bytes padding added after data member '<z>'
 		"C4996" # '<x>': This function or variable may be unsafe
-		"C5031"	# #pragma warning(pop): likely mismatch, popping warning state pushed in different file	TODO(co): Came in when switching from C++17 to C++20 using Visual Studio 2019 19.9.2. Very odd thing.
+		"C5031"	# #pragma warning(pop): likely mismatch, popping warning state pushed in different file		TODO(co) Came in when switching from C++17 to C++20 using Visual Studio 2019 19.9.2. Very odd thing.
 		"C5045" # Compiler will insert Spectre mitigation for memory load if /Qspectre switch specified - https://blogs.msdn.microsoft.com/vcblog/2018/04/20/spectre-diagnostic-in-visual-studio-2017-version-15-7-preview-4/
 		)
 	string(REPLACE "C" " -wd" MSVC_DISABLED_WARNINGS_STR ${MSVC_DISABLED_WARNINGS_LIST})

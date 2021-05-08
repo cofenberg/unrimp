@@ -30,7 +30,11 @@
 
 #include <Rhi/Public/DefaultLog.h>
 #include <Rhi/Public/DefaultAssert.h>
-#include <Rhi/Public/DefaultAllocator.h>
+#ifdef EXAMPLES_MIMALLOC
+	#include <Rhi/Public/MimallocAllocator.h>
+#else
+	#include <Rhi/Public/DefaultAllocator.h>
+#endif
 
 
 //[-------------------------------------------------------]
@@ -38,11 +42,15 @@
 //[-------------------------------------------------------]
 [[nodiscard]] int programEntryPoint(const CommandLineArguments& commandLineArguments)
 {
-	Rhi::DefaultLog defaultLog;
-	Rhi::DefaultAssert defaultAssert;
-	Rhi::DefaultAllocator defaultAllocator;
-	Renderer::DefaultFileManager defaultFileManager(defaultLog, defaultAssert, defaultAllocator, std_filesystem::canonical(std_filesystem::current_path() / "..").generic_string());
-	RendererToolkit::Context rendererToolkitContext(defaultLog, defaultAssert, defaultAllocator, defaultFileManager);
+	Rhi::DefaultLog log;
+	Rhi::DefaultAssert assert;
+	#ifdef EXAMPLES_MIMALLOC
+		Rhi::MimallocAllocator allocator;
+	#else
+		Rhi::DefaultAllocator allocator;
+	#endif
+	Renderer::DefaultFileManager defaultFileManager(log, assert, allocator, std_filesystem::canonical(std_filesystem::current_path() / "..").generic_string());
+	RendererToolkit::Context rendererToolkitContext(log, assert, allocator, defaultFileManager);
 	RendererToolkit::RendererToolkitInstance rendererToolkitInstance(rendererToolkitContext);
 	RendererToolkit::IRendererToolkit* rendererToolkit = rendererToolkitInstance.getRendererToolkit();
 	if (nullptr != rendererToolkit)
