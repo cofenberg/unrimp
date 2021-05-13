@@ -25,6 +25,7 @@
 	__pragma(warning(disable: 5219))	// warning C5219: implicit conversion from 'mi_msecs_t' to 'double', possible loss of data
 	__pragma(warning(disable: 4296))	// warning C4296: '>': expression is always false
 	__pragma(warning(disable: 4365))	// warning C4365: 'argument': conversion from 'long' to 'unsigned int', signed/unsigned mismatch
+	__pragma(warning(disable: 4505))	// warning C4505: 'mi_os_get_aligned_hint': unreferenced local function has been removed
 	__pragma(warning(disable: 4625))	// warning C4625: 'mi_page_s': copy constructor was implicitly defined as deleted
 	__pragma(warning(disable: 4626))	// warning C4626: 'mi_page_s': assignment operator was implicitly defined as deleted
 	__pragma(warning(disable: 4668))	// warning C4668: '__GNUC__' is not defined as a preprocessor macro, replacing with '0' for '#if/#elif'
