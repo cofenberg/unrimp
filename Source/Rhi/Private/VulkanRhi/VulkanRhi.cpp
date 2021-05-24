@@ -100,6 +100,7 @@
 #ifdef RHI_VULKAN_GLSLTOSPIRV
 	// Disable warnings in external headers, we can't fix them
 	PRAGMA_WARNING_PUSH
+		PRAGMA_WARNING_DISABLE_MSVC(4005)	// warning C4005: 'strdup': macro redefinition
 		PRAGMA_WARNING_DISABLE_MSVC(4061)	// warning C4061: enumerator '<x>' in switch of enum '<y>' is not explicitly handled by a case label
 		PRAGMA_WARNING_DISABLE_MSVC(4100)	// warning C4100: 's': unreferenced formal parameter
 		PRAGMA_WARNING_DISABLE_MSVC(4365)	// warning C4365: 'argument': conversion from '<x>' to '<y>', signed/unsigned mismatch

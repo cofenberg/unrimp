@@ -61,7 +61,7 @@ int programEntryPoint(const CommandLineArguments& commandLineArguments)
 			int main(int, char**)
 		#endif
 			{
-				// For memory leak detection
+				// For memory leak detection (see https://github.com/MicrosoftDocs/visualstudio-docs/blob/master/docs/debugger/finding-memory-leaks-using-the-crt-library.md )
 				#ifdef RHI_DEBUG
 					// "_CrtDumpMemoryLeaks()" reports false positive memory leak with static variables, so use a memory difference instead
 					_CrtMemState crtMemState = { };
@@ -87,7 +87,7 @@ int programEntryPoint(const CommandLineArguments& commandLineArguments)
 			int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 		#endif
 			{
-				// For memory leak detection
+				// For memory leak detection (see https://github.com/MicrosoftDocs/visualstudio-docs/blob/master/docs/debugger/finding-memory-leaks-using-the-crt-library.md )
 				#ifdef RHI_DEBUG
 					// "_CrtDumpMemoryLeaks()" reports false positive memory leak with static variables, so use a memory difference instead
 					_CrtMemState crtMemState = { };

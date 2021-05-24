@@ -223,6 +223,9 @@ if(WIN32)
 	set(CMAKE_C_FLAGS   "${CMAKE_C_FLAGS} -Wall -WX /MP /arch:AVX2 ${MSVC_DISABLED_WARNINGS_STR}")
 	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -WX /MP /arch:AVX2 ${MSVC_DISABLED_WARNINGS_STR}")
 	if(${CMAKE_BUILD_TYPE} MATCHES "Debug")
+		# For memory leak detection (see https://github.com/MicrosoftDocs/visualstudio-docs/blob/master/docs/debugger/finding-memory-leaks-using-the-crt-library.md )
+		add_definitions(-D "_CRTDBG_MAP_ALLOC")
+
 		# Used debug build options:
 		# - "Debug Information Format"	= "Program Database for Edit And Continue (/ZI)" ( "/Z7, /Zi, /ZI (Debug Information Format)"-documentation at https://msdn.microsoft.com/en-us/library/958x11bc.aspx )
 		# - "Basic Runtime Checks"		= "Default" instead of "/RTC1" which is causing a massive slow-down when debugging

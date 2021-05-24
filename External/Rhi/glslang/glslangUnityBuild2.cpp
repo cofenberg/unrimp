@@ -21,6 +21,7 @@
 // Amalgamated/unity build
 #ifdef _WIN32
 	// Disable warnings in external headers, we can't fix them
+	__pragma(warning(disable: 4005))	// warning C4005: 'strdup': macro redefinition
 	__pragma(warning(disable: 4061))	// warning C4061: enumerator 'EBadProfile' in switch of enum 'EProfile' is not explicitly handled by a case label
 	__pragma(warning(disable: 4100))	// warning C4100: 'typeProxy': unreferenced formal parameter
 	__pragma(warning(disable: 4189))	// warning C4189: 'isFloat': local variable is initialized but not referenced (compiling source file ..\..\..\External\glslang\glslangUnityBuild1.cpp)
