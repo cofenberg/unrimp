@@ -350,6 +350,7 @@ namespace Renderer
 
 		// Create vertex array object (VAO)
 		mMeshResource->setVertexArray(mRenderer.getRhi().getCapabilities().nativeMultithreading ? mVertexArray : createVertexArray());
+		mMeshResource->setNumberOfLods(1);
 
 		{ // Create sub-meshes
 			// Load the render model texture and setup the material asset
@@ -368,7 +369,7 @@ namespace Renderer
 			mVrRenderModel = nullptr;
 		}
 
-		// Fully loaded?
+		// Fully loaded
 		return true;
 	}
 
