@@ -72,38 +72,3 @@
 	// CApi
 	#include "code/CApi/AssimpCExport.cpp"
 	#include "code/CApi/CInterfaceIOWrapper.cpp"
-	// Common
-	#include "code/Common/AssertHandler.cpp"
-	#include "code/Common/Assimp.cpp"
-	#include "code/Common/BaseImporter.cpp"
-	#include "code/Common/BaseProcess.cpp"
-	#include "code/Common/Bitmap.cpp"
-	#include "code/Common/CreateAnimMesh.cpp"
-	#include "code/Common/DefaultIOStream.cpp"
-	#include "code/Common/DefaultIOSystem.cpp"
-	#include "code/Common/DefaultLogger.cpp"
-	#undef max	// Get rid of some nasty OS macros
-	#include "code/Common/Exporter.cpp"
-	#undef min				// Get rid of some nasty OS macros
-	#undef CreateDirectory	// Get rid of some nasty OS macros
-	#undef DeleteFile		// Get rid of some nasty OS macros
-	#include "code/Common/Importer.cpp"
-	#include "code/Common/ImporterRegistry.cpp"
-	#include "code/Common/material.cpp"
-	#include "code/Common/PostStepRegistry.cpp"
-	#include "code/Common/RemoveComments.cpp"
-	#include "code/Common/scene.cpp"
-	#include "code/Common/SceneCombiner.cpp"
-	#include "code/Common/ScenePreprocessor.cpp"
-	#include "code/Common/SGSpatialSort.cpp"
-	#include "code/Common/simd.cpp"
-	#include "code/Common/SkeletonMeshBuilder.cpp"
-	#include "code/Common/SpatialSort.cpp"
-	#include "code/Common/StandardShapes.cpp"
-	#include "code/Common/Subdivision.cpp"
-	#include "code/Common/TargetAnimation.cpp"
-	#include "code/Common/Version.cpp"
-	#include "code/Common/VertexTriangleAdjacency.cpp"
-	#include "code/Common/ZipArchiveIOSystem.cpp"
-	// Material
-	#include "code/Material/MaterialSystem.cpp"
