@@ -75,7 +75,7 @@ namespace Renderer
 	//[-------------------------------------------------------]
 	public:
 		static constexpr uint32_t TYPE_ID	  = STRING_ID("CameraSceneItem");
-		static constexpr float DEFAULT_FOV_Y  = glm::radians(45.0f);	///< Default Y field of view in radians
+		static const     float DEFAULT_FOV_Y;	///< Default Y field of view in radians
 		static constexpr float DEFAULT_NEAR_Z = 0.1f;
 		static constexpr float DEFAULT_FAR_Z  = 5000.0f;
 

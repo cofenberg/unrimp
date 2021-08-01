@@ -42,6 +42,12 @@ namespace Renderer
 
 
 	//[-------------------------------------------------------]
+	//[ Public definitions                                    ]
+	//[-------------------------------------------------------]
+	const float CameraSceneItem::DEFAULT_FOV_Y = glm::radians(45.0f);
+
+
+	//[-------------------------------------------------------]
 	//[ Public methods                                        ]
 	//[-------------------------------------------------------]
 	const glm::dvec3& CameraSceneItem::getWorldSpaceCameraPosition() const

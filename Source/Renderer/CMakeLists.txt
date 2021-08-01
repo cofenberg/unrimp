@@ -39,7 +39,7 @@ endif()
 ##################################################
 ## Preprocessor definitions
 ##################################################
-add_definitions(-DGLM_FORCE_CXX2A -DGLM_FORCE_INLINE -DGLM_FORCE_SIMD_AVX2 -DGLM_FORCE_XYZW_ONLY -DGLM_FORCE_LEFT_HANDED -DGLM_FORCE_DEPTH_ZERO_TO_ONE -DGLM_FORCE_RADIANS -DGLM_ENABLE_EXPERIMENTAL -DGLM_FORCE_SILENT_WARNINGS)
+add_definitions(-DGLM_FORCE_CXX2A -DGLM_FORCE_INLINE -DGLM_FORCE_AVX2 -DGLM_FORCE_QUAT_DATA_XYZW -DGLM_FORCE_LEFT_HANDED -DGLM_FORCE_DEPTH_ZERO_TO_ONE -DGLM_FORCE_RADIANS -DGLM_ENABLE_EXPERIMENTAL -DGLM_FORCE_SILENT_WARNINGS)
 unrimp_add_conditional_rhi_definitions()
 unrimp_add_conditional_definition(RENDERER_GRAPHICS_DEBUGGER)
 unrimp_add_conditional_definition(RENDERER_PROFILER)

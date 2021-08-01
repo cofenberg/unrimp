@@ -56,7 +56,7 @@ namespace
 		static constexpr float ROTATION_SPEED		= 0.2f;
 		static constexpr float SLOW_ROTATION_FACTOR	= 0.2f;
 		static constexpr float ZOOM_SPEED			= 4.0f;
-		static constexpr float ZOOM_FOV_Y			= glm::radians(10.0f);
+		static const     float ZOOM_FOV_Y			= glm::radians(10.0f);
 
 
 //[-------------------------------------------------------]

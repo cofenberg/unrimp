@@ -34,6 +34,49 @@ namespace Renderer
 
 
 	//[-------------------------------------------------------]
+	//[ Public definitions                                    ]
+	//[-------------------------------------------------------]
+	// "glm::vec3" constants
+	const glm::vec3 Math::VEC3_ZERO		= glm::vec3(0.0f, 0.0f, 0.0f);
+	const glm::vec3 Math::VEC3_ONE		= glm::vec3(1.0f, 1.0f, 1.0f);
+	const glm::vec3 Math::VEC3_UNIT_X	= glm::vec3(1.0f, 0.0f, 0.0f);
+	const glm::vec3 Math::VEC3_RIGHT	= glm::vec3(1.0f, 0.0f, 0.0f);
+	const glm::vec3 Math::VEC3_UNIT_Y	= glm::vec3(0.0f, 1.0f, 0.0f);
+	const glm::vec3 Math::VEC3_UP		= glm::vec3(0.0f, 1.0f, 0.0f);
+	const glm::vec3 Math::VEC3_UNIT_Z	= glm::vec3(0.0f, 0.0f, 1.0f);
+	const glm::vec3 Math::VEC3_FORWARD	= glm::vec3(0.0f, 0.0f, 1.0f);
+	// "glm::dvec3" constants
+	const glm::dvec3 Math::DVEC3_ZERO	 = glm::dvec3(0.0, 0.0, 0.0);
+	const glm::dvec3 Math::DVEC3_ONE	 = glm::dvec3(1.0, 1.0, 1.0);
+	const glm::dvec3 Math::DVEC3_UNIT_X  = glm::dvec3(1.0, 0.0, 0.0);
+	const glm::dvec3 Math::DVEC3_RIGHT	 = glm::dvec3(1.0, 0.0, 0.0);
+	const glm::dvec3 Math::DVEC3_UNIT_Y  = glm::dvec3(0.0, 1.0, 0.0);
+	const glm::dvec3 Math::DVEC3_UP		 = glm::dvec3(0.0, 1.0, 0.0);
+	const glm::dvec3 Math::DVEC3_UNIT_Z  = glm::dvec3(0.0, 0.0, 1.0);
+	const glm::dvec3 Math::DVEC3_FORWARD = glm::dvec3(0.0, 0.0, 1.0);
+	// "glm::vec4" constants
+	const glm::vec4 Math::VEC4_ZERO = glm::vec4(0.0f, 0.0f, 0.0f, 0.0f);
+	const glm::vec4 Math::VEC4_ONE  = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
+	// "glm::dvec4" constants
+	const glm::dvec4 Math::DVEC4_ZERO = glm::dvec4(0.0, 0.0, 0.0, 0.0);
+	const glm::dvec4 Math::DVEC4_ONE  = glm::dvec4(1.0, 1.0, 1.0, 1.0);
+	// "glm::mat4" constants
+	const glm::mat4 Math::MAT4_IDENTITY = glm::mat4(1.0f, 0.0f, 0.0f, 0.0f,
+													0.0f, 1.0f, 0.0f, 0.0f,
+													0.0f, 0.0f, 1.0f, 0.0f,
+													0.0f, 0.0f, 0.0f, 1.0f);
+	// "glm::dmat4" constants
+	const glm::dmat4 Math::DMAT4_IDENTITY = glm::dmat4(1.0, 0.0, 0.0, 0.0,
+													   0.0, 1.0, 0.0, 0.0,
+													   0.0, 0.0, 1.0, 0.0,
+													   0.0, 0.0, 0.0, 1.0);
+	// "glm::quat" constants
+	const glm::quat Math::QUAT_IDENTITY = glm::quat(1.0f, 0.0f, 0.0f, 0.0f);
+	// "glm::squat" constants
+	const glm::dquat Math::DQUAT_IDENTITY = glm::dquat(1.0, 0.0, 0.0, 0.0);
+
+
+	//[-------------------------------------------------------]
 	//[ Public static methods                                 ]
 	//[-------------------------------------------------------]
 	glm::quat Math::calculateTangentFrameQuaternion(glm::mat3& tangentFrameMatrix)

@@ -42,19 +42,19 @@ namespace glm
 #		if GLM_LANG & GLM_LANG_CXXMS_FLAG
 			union
 			{
-#				ifdef GLM_FORCE_QUAT_DATA_WXYZ
-					struct { T w, x, y, z; };
-#				else
+#				ifdef GLM_FORCE_QUAT_DATA_XYZW
 					struct { T x, y, z, w; };
+#				else
+					struct { T w, x, y, z; };
 #				endif
 
 				typename detail::storage<4, T, detail::is_aligned<Q>::value>::type data;
 			};
 #		else
-#			ifdef GLM_FORCE_QUAT_DATA_WXYZ
-				T w, x, y, z;
-#			else
+#			ifdef GLM_FORCE_QUAT_DATA_XYZW
 				T x, y, z, w;
+#			else
+				T w, x, y, z;
 #			endif
 #		endif
 
@@ -80,7 +80,7 @@ namespace glm
 
 		// -- Implicit basic constructors --
 
-		GLM_FUNC_DECL GLM_CONSTEXPR qua() GLM_DEFAULT;
+		GLM_FUNC_DECL GLM_CONSTEXPR qua() GLM_DEFAULT_CTOR;
 		GLM_FUNC_DECL GLM_CONSTEXPR qua(qua<T, Q> const& q) GLM_DEFAULT;
 		template<qualifier P>
 		GLM_FUNC_DECL GLM_CONSTEXPR qua(qua<T, P> const& q);

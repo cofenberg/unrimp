@@ -222,7 +222,7 @@ namespace Renderer
 				// The idea is basing on "Solar Radiance Calculation" - https://www.gamedev.net/topic/671214-simple-solar-radiance-calculation/
 				const float thetaS = std::acos(1.0f - worldSpaceSunDirection.y);
 				const float elevation = (glm::pi<float>() * 0.5f) - thetaS;
-				constexpr float sunSize = glm::radians(0.27f);	// Angular radius of the sun from Earth
+				static const float sunSize = glm::radians(0.27f);	// Angular radius of the sun from Earth
 				static constexpr int NUMBER_OF_DISC_SAMPLES = 8;
 				for (int x = 0; x < NUMBER_OF_DISC_SAMPLES; ++x)
 				{

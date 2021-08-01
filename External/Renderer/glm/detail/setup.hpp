@@ -142,6 +142,8 @@
 // Android has multiple STLs but C++11 STL detection doesn't always work #284 #564
 #if GLM_PLATFORM == GLM_PLATFORM_ANDROID && !defined(GLM_LANG_STL11_FORCED)
 #	define GLM_HAS_CXX11_STL 0
+#elif (GLM_COMPILER & GLM_COMPILER_CUDA_RTC) == GLM_COMPILER_CUDA_RTC
+#	define GLM_HAS_CXX11_STL 0
 #elif GLM_COMPILER & GLM_COMPILER_CLANG
 #	if (defined(_LIBCPP_VERSION) || (GLM_LANG & GLM_LANG_CXX11_FLAG) || defined(GLM_LANG_STL11_FORCED))
 #		define GLM_HAS_CXX11_STL 1
@@ -447,16 +449,12 @@
 #define GLM_SWIZZLE_OPERATOR		1
 #define GLM_SWIZZLE_FUNCTION		2
 
-#if defined(GLM_FORCE_XYZW_ONLY)
-#	undef GLM_FORCE_SWIZZLE
-#endif
-
 #if defined(GLM_SWIZZLE)
 #	pragma message("GLM: GLM_SWIZZLE is deprecated, use GLM_FORCE_SWIZZLE instead.")
 #	define GLM_FORCE_SWIZZLE
 #endif
 
-#if defined(GLM_FORCE_SWIZZLE) && (GLM_LANG & GLM_LANG_CXXMS_FLAG)
+#if defined(GLM_FORCE_SWIZZLE) && (GLM_LANG & GLM_LANG_CXXMS_FLAG) && !defined(GLM_FORCE_XYZW_ONLY)
 #	define GLM_CONFIG_SWIZZLE GLM_SWIZZLE_OPERATOR
 #elif defined(GLM_FORCE_SWIZZLE)
 #	define GLM_CONFIG_SWIZZLE GLM_SWIZZLE_FUNCTION
@@ -810,12 +808,20 @@ namespace detail
 ///////////////////////////////////////////////////////////////////////////////////
 // Configure the use of defaulted function
 
-#if GLM_HAS_DEFAULTED_FUNCTIONS && GLM_CONFIG_CTOR_INIT == GLM_CTOR_INIT_DISABLE
+#if GLM_HAS_DEFAULTED_FUNCTIONS
 #	define GLM_CONFIG_DEFAULTED_FUNCTIONS GLM_ENABLE
 #	define GLM_DEFAULT = default
 #else
 #	define GLM_CONFIG_DEFAULTED_FUNCTIONS GLM_DISABLE
 #	define GLM_DEFAULT
+#endif
+
+#if GLM_CONFIG_CTOR_INIT == GLM_CTOR_INIT_DISABLE && GLM_CONFIG_DEFAULTED_FUNCTIONS == GLM_ENABLE
+#	define GLM_CONFIG_DEFAULTED_DEFAULT_CTOR GLM_ENABLE
+#	define GLM_DEFAULT_CTOR GLM_DEFAULT
+#else
+#	define GLM_CONFIG_DEFAULTED_DEFAULT_CTOR GLM_DISABLE
+#	define GLM_DEFAULT_CTOR
 #endif
 
 ///////////////////////////////////////////////////////////////////////////////////

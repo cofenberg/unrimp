@@ -83,43 +83,37 @@ namespace Renderer
 		static constexpr uint32_t FNV1a_INITIAL_HASH_32 = 0xcbf29ce4u;
 		static constexpr uint64_t FNV1a_INITIAL_HASH_64 = 0xcbf29ce484222325u;
 		// "glm::vec3" constants
-		static constexpr glm::vec3 VEC3_ZERO	= glm::vec3(0.0f, 0.0f, 0.0f);	///< 0 0 0
-		static constexpr glm::vec3 VEC3_ONE		= glm::vec3(1.0f, 1.0f, 1.0f);	///< 1 1 1
-		static constexpr glm::vec3 VEC3_UNIT_X	= glm::vec3(1.0f, 0.0f, 0.0f);	///< 1 0 0
-		static constexpr glm::vec3 VEC3_RIGHT	= glm::vec3(1.0f, 0.0f, 0.0f);	///< 1 0 0; coordinate system axis terminology, don't remove
-		static constexpr glm::vec3 VEC3_UNIT_Y	= glm::vec3(0.0f, 1.0f, 0.0f);	///< 0 1 0
-		static constexpr glm::vec3 VEC3_UP		= glm::vec3(0.0f, 1.0f, 0.0f);	///< 0 1 0; coordinate system axis terminology, don't remove
-		static constexpr glm::vec3 VEC3_UNIT_Z	= glm::vec3(0.0f, 0.0f, 1.0f);	///< 0 0 1
-		static constexpr glm::vec3 VEC3_FORWARD	= glm::vec3(0.0f, 0.0f, 1.0f);	///< 0 0 1; coordinate system axis terminology, don't remove
+		RENDERER_API_EXPORT static const glm::vec3 VEC3_ZERO;		///< 0 0 0
+		RENDERER_API_EXPORT static const glm::vec3 VEC3_ONE;		///< 1 1 1
+		RENDERER_API_EXPORT static const glm::vec3 VEC3_UNIT_X;		///< 1 0 0
+		RENDERER_API_EXPORT static const glm::vec3 VEC3_RIGHT;		///< 1 0 0; coordinate system axis terminology, don't remove
+		RENDERER_API_EXPORT static const glm::vec3 VEC3_UNIT_Y;		///< 0 1 0
+		RENDERER_API_EXPORT static const glm::vec3 VEC3_UP;			///< 0 1 0; coordinate system axis terminology, don't remove
+		RENDERER_API_EXPORT static const glm::vec3 VEC3_UNIT_Z;		///< 0 0 1
+		RENDERER_API_EXPORT static const glm::vec3 VEC3_FORWARD;	///< 0 0 1; coordinate system axis terminology, don't remove
 		// "glm::dvec3" constants
-		static constexpr glm::dvec3 DVEC3_ZERO	  = glm::dvec3(0.0, 0.0, 0.0);	///< 0 0 0
-		static constexpr glm::dvec3 DVEC3_ONE	  = glm::dvec3(1.0, 1.0, 1.0);	///< 1 1 1
-		static constexpr glm::dvec3 DVEC3_UNIT_X  = glm::dvec3(1.0, 0.0, 0.0);	///< 1 0 0
-		static constexpr glm::dvec3 DVEC3_RIGHT	  = glm::dvec3(1.0, 0.0, 0.0);	///< 1 0 0; coordinate system axis terminology, don't remove
-		static constexpr glm::dvec3 DVEC3_UNIT_Y  = glm::dvec3(0.0, 1.0, 0.0);	///< 0 1 0
-		static constexpr glm::dvec3 DVEC3_UP	  = glm::dvec3(0.0, 1.0, 0.0);	///< 0 1 0; coordinate system axis terminology, don't remove
-		static constexpr glm::dvec3 DVEC3_UNIT_Z  = glm::dvec3(0.0, 0.0, 1.0);	///< 0 0 1
-		static constexpr glm::dvec3 DVEC3_FORWARD = glm::dvec3(0.0, 0.0, 1.0);	///< 0 0 1; coordinate system axis terminology, don't remove
+		RENDERER_API_EXPORT static const glm::dvec3 DVEC3_ZERO;		///< 0 0 0
+		RENDERER_API_EXPORT static const glm::dvec3 DVEC3_ONE;		///< 1 1 1
+		RENDERER_API_EXPORT static const glm::dvec3 DVEC3_UNIT_X;	///< 1 0 0
+		RENDERER_API_EXPORT static const glm::dvec3 DVEC3_RIGHT;	///< 1 0 0; coordinate system axis terminology, don't remove
+		RENDERER_API_EXPORT static const glm::dvec3 DVEC3_UNIT_Y;	///< 0 1 0
+		RENDERER_API_EXPORT static const glm::dvec3 DVEC3_UP;		///< 0 1 0; coordinate system axis terminology, don't remove
+		RENDERER_API_EXPORT static const glm::dvec3 DVEC3_UNIT_Z;	///< 0 0 1
+		RENDERER_API_EXPORT static const glm::dvec3 DVEC3_FORWARD;	///< 0 0 1; coordinate system axis terminology, don't remove
 		// "glm::vec4" constants
-		static constexpr glm::vec4 VEC4_ZERO = glm::vec4(0.0f, 0.0f, 0.0f, 0.0f);	///< 0 0 0 0
-		static constexpr glm::vec4 VEC4_ONE  = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);	///< 1 1 1 1
+		RENDERER_API_EXPORT static const glm::vec4 VEC4_ZERO;		///< 0 0 0 0
+		RENDERER_API_EXPORT static const glm::vec4 VEC4_ONE;		///< 1 1 1 1
 		// "glm::dvec4" constants
-		static constexpr glm::dvec4 DVEC4_ZERO = glm::dvec4(0.0, 0.0, 0.0, 0.0);	///< 0 0 0 0
-		static constexpr glm::dvec4 DVEC4_ONE  = glm::dvec4(1.0, 1.0, 1.0, 1.0);	///< 1 1 1 1
+		RENDERER_API_EXPORT static const glm::dvec4 DVEC4_ZERO;		///< 0 0 0 0
+		RENDERER_API_EXPORT static const glm::dvec4 DVEC4_ONE;		///< 1 1 1 1
 		// "glm::mat4" constants
-		static constexpr glm::mat4 MAT4_IDENTITY = glm::mat4(1.0f, 0.0f, 0.0f, 0.0f,
-															 0.0f, 1.0f, 0.0f, 0.0f,
-															 0.0f, 0.0f, 1.0f, 0.0f,
-															 0.0f, 0.0f, 0.0f, 1.0f);
+		RENDERER_API_EXPORT static const glm::mat4 MAT4_IDENTITY;
 		// "glm::dmat4" constants
-		static constexpr glm::dmat4 DMAT4_IDENTITY = glm::dmat4(1.0, 0.0, 0.0, 0.0,
-																0.0, 1.0, 0.0, 0.0,
-																0.0, 0.0, 1.0, 0.0,
-																0.0, 0.0, 0.0, 1.0);
+		RENDERER_API_EXPORT static const glm::dmat4 DMAT4_IDENTITY;
 		// "glm::quat" constants
-		static constexpr glm::quat QUAT_IDENTITY = glm::quat(1.0f, 0.0f, 0.0f, 0.0f);
+		RENDERER_API_EXPORT static const glm::quat QUAT_IDENTITY;
 		// "glm::squat" constants
-		static constexpr glm::dquat DQUAT_IDENTITY = glm::dquat(1.0, 0.0, 0.0, 0.0);
+		RENDERER_API_EXPORT static const glm::dquat DQUAT_IDENTITY;
 
 
 	//[-------------------------------------------------------]
