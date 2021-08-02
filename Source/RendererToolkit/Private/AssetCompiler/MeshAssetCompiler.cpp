@@ -1138,6 +1138,7 @@ namespace RendererToolkit
 				}
 
 				// Write down the vertex and index buffer (directly containing also the index data of all LODs)
+				// -> Not using "meshopt_encodeVertexBuffer()" from "meshoptimizer" since tests on 2 August 2021 showed that with the additional LZ4 compression the compression rate got worse instead of better
 				memoryFile.write(vertexBufferData, numberOfBytesPerVertex * numberOfVertices);
 				if (numberOfIndices > 0)
 				{
