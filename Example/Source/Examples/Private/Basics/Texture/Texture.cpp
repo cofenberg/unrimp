@@ -35,8 +35,7 @@ PRAGMA_WARNING_PUSH
 	#include <glm/glm.hpp>
 PRAGMA_WARNING_POP
 
-#include <float.h> // For FLT_MAX
-#include <stdlib.h> // For rand()
+#include <random>
 
 
 //[-------------------------------------------------------]
@@ -118,14 +117,16 @@ void Texture::onInitialization()
 					const uint32_t rowPitch   = TEXTURE_WIDTH * TEXEL_ELEMENTS;
 					const uint32_t cellPitch  = rowPitch >> 3;		// The width of a cell in the checkboard texture
 					const uint32_t cellHeight = TEXTURE_WIDTH >> 3;	// The height of a cell in the checkerboard texture
+					std::random_device randomDevice;
+					std::mt19937 randomGenerator(randomDevice());
+					std::uniform_int_distribution<> randomDistribution(0, 255);
 					for (uint32_t n = 0; n < NUMBER_OF_BYTES; n += TEXEL_ELEMENTS)
 					{
 						const uint32_t x = n % rowPitch;
 						const uint32_t y = n / rowPitch;
 						const uint32_t i = x / cellPitch;
 						const uint32_t j = y / cellHeight;
-
-						if (i % 2 == j % 2)
+						if ((i % 2) == (j % 2))
 						{
 							// Black
 							data[n + 0] = 0;	// R
@@ -136,10 +137,10 @@ void Texture::onInitialization()
 						else
 						{
 							// Add some color fun instead of just boring white
-							data[n + 0] = static_cast<uint8_t>(rand() % 255);	// R
-							data[n + 1] = static_cast<uint8_t>(rand() % 255);	// G
-							data[n + 2] = static_cast<uint8_t>(rand() % 255);	// B
-							data[n + 3] = static_cast<uint8_t>(rand() % 255);	// A
+							data[n + 0] = static_cast<uint8_t>(randomDistribution(randomGenerator));	// R
+							data[n + 1] = static_cast<uint8_t>(randomDistribution(randomGenerator));	// G
+							data[n + 2] = static_cast<uint8_t>(randomDistribution(randomGenerator));	// B
+							data[n + 3] = static_cast<uint8_t>(randomDistribution(randomGenerator));	// A
 						}
 					}
 				}

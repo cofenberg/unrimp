@@ -36,7 +36,7 @@ PRAGMA_WARNING_PUSH
 	#include <glm/gtx/euler_angles.hpp>
 PRAGMA_WARNING_POP
 
-#include <stdlib.h> // For rand()
+#include <random>
 
 
 //[-------------------------------------------------------]
@@ -58,6 +58,9 @@ void BatchDrawInstanced::initialize(Rhi::IBufferManager& bufferManager, Rhi::IRo
 		const uint32_t numberOfElements = mNumberOfCubeInstances * 2 * 4;
 		float* data = new float[numberOfElements];
 		float* RESTRICT dataCurrent = data;
+		std::random_device randomDevice;
+		std::mt19937 randomGenerator(randomDevice());
+		std::uniform_int_distribution<> randomDistribution(0, 65536);
 
 		// Set data
 		// -> Layout: [Position][Rotation][Position][Rotation]...
@@ -70,21 +73,21 @@ void BatchDrawInstanced::initialize(Rhi::IBufferManager& bufferManager, Rhi::IRo
 		{
 			{ // Position
 				// r=x
-				*dataCurrent = -static_cast<float>(sceneRadius) + 2.0f * static_cast<float>(sceneRadius) * static_cast<float>(rand() % 65536) / 65536.0f;
+				*dataCurrent = -static_cast<float>(sceneRadius) + 2.0f * static_cast<float>(sceneRadius) * static_cast<float>(randomDistribution(randomGenerator)) / 65536.0f;
 				++dataCurrent;
 				// g=y
-				*dataCurrent = -static_cast<float>(sceneRadius) + 2.0f * static_cast<float>(sceneRadius) * static_cast<float>(rand() % 65536) / 65536.0f;
+				*dataCurrent = -static_cast<float>(sceneRadius) + 2.0f * static_cast<float>(sceneRadius) * static_cast<float>(randomDistribution(randomGenerator)) / 65536.0f;
 				++dataCurrent;
 				// b=z
-				*dataCurrent = -static_cast<float>(sceneRadius) + 2.0f * static_cast<float>(sceneRadius) * static_cast<float>(rand() % 65536) / 65536.0f;
+				*dataCurrent = -static_cast<float>(sceneRadius) + 2.0f * static_cast<float>(sceneRadius) * static_cast<float>(randomDistribution(randomGenerator)) / 65536.0f;
 				++dataCurrent;
 				// a=Slice of the 2D texture array to use
-				*dataCurrent = static_cast<float>(rand() % numberOfTextures); // Choose a random texture
+				*dataCurrent = static_cast<float>(randomDistribution(randomGenerator) % numberOfTextures); // Choose a random texture
 				++dataCurrent;
 			}
 
 			{ // Rotation
-				rotation = glm::eulerAngleYXZ(static_cast<float>(rand() % 65536) / 65536.0f, static_cast<float>(rand() % 65536) / 65536.0f * 2.0f, static_cast<float>(rand() % 65536) / 65536.0f * 3.0f);
+				rotation = glm::eulerAngleYXZ(static_cast<float>(randomDistribution(randomGenerator)) / 65536.0f, static_cast<float>(randomDistribution(randomGenerator)) / 65536.0f * 2.0f, static_cast<float>(randomDistribution(randomGenerator)) / 65536.0f * 3.0f);
 
 				// r=x
 				*dataCurrent = rotation.x;
@@ -96,7 +99,7 @@ void BatchDrawInstanced::initialize(Rhi::IBufferManager& bufferManager, Rhi::IRo
 				*dataCurrent = rotation.z;
 				++dataCurrent;
 				// a=scale
-				*dataCurrent = 2.0f * static_cast<float>(rand() % 65536) / 65536.0f;
+				*dataCurrent = 2.0f * static_cast<float>(randomDistribution(randomGenerator)) / 65536.0f;
 				++dataCurrent;
 			}
 		}

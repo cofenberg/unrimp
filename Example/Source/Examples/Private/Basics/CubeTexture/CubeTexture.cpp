@@ -37,9 +37,6 @@ PRAGMA_WARNING_PUSH
 	#include <glm/gtc/matrix_transform.hpp>
 PRAGMA_WARNING_POP
 
-#include <float.h> // For FLT_MAX
-#include <stdlib.h> // For rand()
-
 
 //[-------------------------------------------------------]
 //[ Public virtual IApplication methods                   ]

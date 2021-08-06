@@ -36,8 +36,7 @@ PRAGMA_WARNING_PUSH
 PRAGMA_WARNING_POP
 
 #include <math.h>
-#include <float.h> // For FLT_MAX
-#include <stdlib.h> // For rand()
+#include <random>
 
 
 //[-------------------------------------------------------]
@@ -165,7 +164,6 @@ CubeRendererDrawInstanced::CubeRendererDrawInstanced(Rhi::IRhi& rhi, Rhi::IRende
 		uint8_t* data = new uint8_t[NUMBER_OF_BYTES * mNumberOfTextures];
 
 		{ // Fill the texture content
-			// TODO(co) Be a little bit more creative while filling the texture data
 			uint8_t* RESTRICT dataCurrent = data;
 			const float colors[][MAXIMUM_NUMBER_OF_TEXTURES] =
 			{
@@ -178,16 +176,19 @@ CubeRendererDrawInstanced::CubeRendererDrawInstanced(Rhi::IRhi& rhi, Rhi::IRende
 				{ 0.2f, 0.5f, 0.5f},
 				{ 0.1f, 0.8f, 0.2f}
 			};
+			std::random_device randomDevice;
+			std::mt19937 randomGenerator(randomDevice());
+			std::uniform_int_distribution<> randomDistribution(0, 255);
 			for (uint32_t j = 0; j < mNumberOfTextures; ++j)
 			{
 				// Random content
 				for (uint32_t i = 0; i < TEXTURE_WIDTH * TEXTURE_HEIGHT; ++i)
 				{
-					*dataCurrent = static_cast<uint8_t>(static_cast<float>(rand() % 255) * colors[j][0]);
+					*dataCurrent = static_cast<uint8_t>(static_cast<float>(randomDistribution(randomGenerator)) * colors[j][0]);
 					++dataCurrent;
-					*dataCurrent = static_cast<uint8_t>(static_cast<float>(rand() % 255) * colors[j][1]);
+					*dataCurrent = static_cast<uint8_t>(static_cast<float>(randomDistribution(randomGenerator)) * colors[j][1]);
 					++dataCurrent;
-					*dataCurrent = static_cast<uint8_t>(static_cast<float>(rand() % 255) * colors[j][2]);
+					*dataCurrent = static_cast<uint8_t>(static_cast<float>(randomDistribution(randomGenerator)) * colors[j][2]);
 					++dataCurrent;
 					*dataCurrent = 255;
 					++dataCurrent;
