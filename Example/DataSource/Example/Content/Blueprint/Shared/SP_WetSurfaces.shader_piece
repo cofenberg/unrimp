@@ -26,7 +26,7 @@
 // Needs 2D texture "WaterStreaksMap": r = streak pattern, g = gradient, ba = streak xy normal map
 @piece(DefineWetSurfaces)
 	// Basing on "Water drop 3b – Physically based wet surfaces" by Sébastien Lagarde ( https://seblagarde.wordpress.com/2013/04/14/water-drop-3b-physically-based-wet-surfaces/ )
-	void DoWetProcess(float wetLevel, inout float3 albedo, inout float roughness, float metallic)
+	void DoWetProcess(float wetLevel, inout float3 albedo, inout float roughness)
 	{
 		// Calculate albedo factor
 		float porosity = SATURATE((roughness - 0.5f) / 0.2f);
@@ -114,7 +114,7 @@
 		float newWetLevel = SATURATE(wetLevel + accumulatedWater);
 
 		// Type 2 : Wet region
-		DoWetProcess(newWetLevel, albedo, roughness, metallic);
+		DoWetProcess(newWetLevel, albedo, roughness);
 
 		{ // Apply accumulated water effect: When "accumulatedWater" is 1.0 we are in Type 4 so full water properties, in between we are in Type 3
 			// Water is smooth
