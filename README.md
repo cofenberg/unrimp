@@ -242,34 +242,35 @@ Terminology and Acronyms
 - General
 	- Plain old data (POD)
 - Rendering hardware interface (RHI)
-	- Vertex buffer object (VBO)
+	- Compute shader (CS)
+	- Fragment shader (FS), "pixel shader" in Direct3D terminology
+	- Geometry shader (GS)
 	- Index buffer object (IBO)
-	- Vertex array object (VAO)
-	- Uniform buffer object (UBO), "constant buffer" in Direct3D terminology
-	- Texture buffer object (TBO)
-	- Structured buffer object (SBO)
-	- Sampler state object (SO)
-	- Root signature (Direct3D terminology) = pipeline layout in Vulkan terminology
+	- Mesh shader (MS)
 	- Pipeline state object (PSO, there's a graphics PSO and a compute PSO)
-	- Vertex shader (VS)
+	- Root signature (Direct3D terminology) = pipeline layout in Vulkan terminology
+	- Sampler state object (SO)
+	- Shader resource view (SRV)
+	- Structured buffer object (SBO)
+	- Task shader (TS, "amplification shader" in Direct3D terminology)
+	- Texture buffer object (TBO)
 	- Tessellation control shader (TCS), "hull shader" in Direct3D terminology
 	- Tessellation evaluation shader (TES), "domain shader" in Direct3D terminology
-	- Geometry shader (GS)
-	- Fragment shader (FS), "pixel shader" in Direct3D terminology
-	- Task shader (TS, "amplification shader" in Direct3D terminology)
-	- Mesh shader (MS)
-	- Compute shader (CS)
+	- Uniform buffer object (UBO), "constant buffer" in Direct3D terminology
 	- Uniform buffer view (UBV)
-	- Shader resource view (SRV)
 	- Unordered access view (UAV)
+	- Vertex array object (VAO)
+	- Vertex buffer object (VBO)
+	- Vertex shader (VS)
 - Renderer
 	- Asset: Lightweight content metadata like ID, type and location (texture, mesh, shader etc. - on this abstraction level everything is an asset)
-	- Resource: A concrete asset type used during runtime in-memory (texture, mesh, shader etc.)
+	- Gamma space = Perceptual color space = sRGB = Not linear
+	- HMD: Head mounted display
+	- LOD: Level of detail
 	- Mesh: 3D-model consisting of a vertex- and index-buffer, geometry subdivided into sub-meshes
 	- Material and shader blueprint: High-level rendering description
 	- Material: Just a property-set used as shader input
-	- HMD: Head mounted display
-	- LOD: Level of detail
+	- Resource: A concrete asset type used during runtime in-memory (texture, mesh, shader etc.)
 
 
 Microsoft Windows: First Example Kickoff
