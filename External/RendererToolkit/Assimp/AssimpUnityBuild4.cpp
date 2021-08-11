@@ -21,6 +21,7 @@
 // Amalgamated/unity build
 #ifdef _WIN32
 	// Disable warnings in external headers, we can't fix them
+	__pragma(warning(disable: 4297))	// warning C4297: 'rapidjson::GenericValue<rapidjson::UTF8<char>,rapidjson::MemoryPoolAllocator<rapidjson::CrtAllocator>>::GenericValue': function assumed not to throw an exception but does
 	__pragma(warning(disable: 4355))	// warning C4355: 'this': used in base member initializer list
 	__pragma(warning(disable: 4619))	// warning C4619: #pragma warning: there is no warning number '4351'
 	__pragma(warning(disable: 4777))	// warning C4777: 'snprintf' : format string '%Iu' requires an argument of type 'unsigned int', but variadic argument 1 has type 'const size_t'

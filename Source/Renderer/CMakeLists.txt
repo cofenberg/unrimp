@@ -79,6 +79,7 @@ if(RENDERER_IMGUI)
 		${CMAKE_SOURCE_DIR}/External/Renderer/ImGui/imgui.cpp
 		${CMAKE_SOURCE_DIR}/External/Renderer/ImGui/imgui_draw.cpp
 		${CMAKE_SOURCE_DIR}/External/Renderer/ImGui/imgui_widgets.cpp
+		${CMAKE_SOURCE_DIR}/External/Renderer/ImGui/imgui_tables.cpp
 		${CMAKE_SOURCE_DIR}/External/Renderer/ImGuizmo/ImGuizmo.cpp
 	)
 endif()
@@ -95,16 +96,20 @@ endif(MSVC)
 # Disable warnings in external libraries, we can't fix them
 if(WIN32)
 	# Used options:
-	# - Disable "warning C4201: nonstandard extension used: nameless struct/union""
+	# - Disable "warning C4061: enumerator 'ImGuizmo::TRANSLATE_X' in switch of enum 'ImGuizmo::OPERATION' is not explicitly handled by a case label"
+	# - Disable "warning C4201: nonstandard extension used: nameless struct/union"
 	# - Disable "warning C4204: nonstandard extension used: non-constant aggregate initializer"
 	# - Disable "warning C4255: '__slwpcb': no function prototype given: converting '()' to '(void)'"
-	# - Disable "warning C4365: '=': conversion from 'ImGuiTabItemFlags' to 'ImGuiID', signed/unsigned mismatch""
+	# - Disable "warning C4365: '=': conversion from 'ImGuiTabItemFlags' to 'ImGuiID', signed/unsigned mismatch"
+	# - Disable "warning C4389: '==': signed/unsigned mismatch"
 	# - Disable "warning C4456: declaration of 'i' hides previous local declaration"
+	# - Disable "warning C4505: 'ImGuizmo::operator ==': unreferenced local function has been removed"
 	# - Disable "warning C4530: C++ exception handler used, but unwind semantics are not enabled. Specify /EHsc"
 	# - Disable "warning C4668: '__GNUC__' is not defined as a preprocessor macro, replacing with '0' for '#if/#elif'"
 	# - Disable "warning C4774: 'sscanf' : format string expected in argument 2 is not a string literal"
+	# - Disable "warning C4800: Implicit conversion from 'int' to bool. Possible information loss"
 	# - Disable "warning C5219: implicit conversion from 'int' to 'float', possible loss of data"
-	set_source_files_properties(${EXTERNAL_SOURCE_CODES} PROPERTIES COMPILE_FLAGS "/wd4201 /wd4204 /wd4255 /wd4365 /wd4456 /wd4530 /wd4668 /wd4774 /wd5219")
+	set_source_files_properties(${EXTERNAL_SOURCE_CODES} PROPERTIES COMPILE_FLAGS "/wd4061 /wd4201 /wd4204 /wd4255 /wd4365 /wd4389 /wd4456 /wd4505 /wd4530 /wd4530 /wd4668 /wd4774 /wd4800 /wd5219")
 endif()
 
 

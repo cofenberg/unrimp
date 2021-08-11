@@ -228,13 +228,31 @@ namespace Renderer
 			case GizmoOperation::SCALE:
 				ImGui::InputFloat("Scale Snap", &gizmoSettings.snap[0]);
 				break;
+
+			case GizmoOperation::TRANSLATE_X:
+			case GizmoOperation::TRANSLATE_Y:
+			case GizmoOperation::TRANSLATE_Z:
+			case GizmoOperation::ROTATE_X:
+			case GizmoOperation::ROTATE_Y:
+			case GizmoOperation::ROTATE_Z:
+			case GizmoOperation::ROTATE_SCREEN:
+			case GizmoOperation::SCALE_X:
+			case GizmoOperation::SCALE_Y:
+			case GizmoOperation::SCALE_Z:
+			case GizmoOperation::BOUNDS:
+			case GizmoOperation::SCALE_XU:
+			case GizmoOperation::SCALE_YU:
+			case GizmoOperation::SCALE_ZU:
+			case GizmoOperation::SCALEU:
+			case GizmoOperation::UNIVERSAL:
+				break;
 		}
 		{ // Let ImGuizmo do its thing
 			glm::mat4 matrix;
 			transform.position -= cameraSceneItem.getWorldSpaceCameraPosition();	// Camera relative rendering
 			transform.getAsMatrix(matrix);
-			ImGuizmo::OPERATION operation = static_cast<ImGuizmo::OPERATION>(gizmoSettings.currentGizmoOperation);
-			ImGuizmo::MODE mode = (operation == ImGuizmo::SCALE) ? ImGuizmo::LOCAL : static_cast<ImGuizmo::MODE>(gizmoSettings.currentGizmoMode);
+			const ImGuizmo::OPERATION operation = static_cast<ImGuizmo::OPERATION>(gizmoSettings.currentGizmoOperation);
+			const ImGuizmo::MODE mode = (ImGuizmo::SCALE == operation) ? ImGuizmo::LOCAL : static_cast<ImGuizmo::MODE>(gizmoSettings.currentGizmoMode);
 			const ImGuiIO& imGuiIO = ImGui::GetIO();
 			ImGuizmo::SetRect(0, 0, imGuiIO.DisplaySize.x, imGuiIO.DisplaySize.y);
 			ImGuizmo::Manipulate(glm::value_ptr(cameraSceneItem.getCameraRelativeWorldSpaceToViewSpaceMatrix()), glm::value_ptr(cameraSceneItem.getViewSpaceToClipSpaceMatrix(static_cast<float>(imGuiIO.DisplaySize.x) / imGuiIO.DisplaySize.y)), operation, mode, glm::value_ptr(matrix), nullptr, gizmoSettings.useSnap ? &gizmoSettings.snap[0] : nullptr);
