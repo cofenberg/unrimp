@@ -357,13 +357,21 @@ IM_MSVC_RUNTIME_CHECKS_RESTORE
 
 // Helpers: File System
 #ifdef IMGUI_DISABLE_FILE_FUNCTIONS
-#define IMGUI_DISABLE_DEFAULT_FILE_FUNCTIONS
-typedef void* ImFileHandle;
-static inline ImFileHandle  ImFileOpen(const char*, const char*)                    { return NULL; }
-static inline bool          ImFileClose(ImFileHandle)                               { return false; }
-static inline ImU64         ImFileGetSize(ImFileHandle)                             { return (ImU64)-1; }
-static inline ImU64         ImFileRead(void*, ImU64, ImU64, ImFileHandle)           { return 0; }
-static inline ImU64         ImFileWrite(const void*, ImU64, ImU64, ImFileHandle)    { return 0; }
+    typedef void* ImFileHandle;
+    #ifdef IMGUI_DISABLE_DEFAULT_FILE_FUNCTIONS
+    extern ImFileHandle  ImFileOpen(const char*, const char*);
+    extern bool          ImFileClose(ImFileHandle);
+    extern ImU64         ImFileGetSize(ImFileHandle);
+    extern ImU64         ImFileRead(void*, ImU64, ImU64, ImFileHandle);
+    extern ImU64         ImFileWrite(const void*, ImU64, ImU64, ImFileHandle);
+    #else
+    #define IMGUI_DISABLE_DEFAULT_FILE_FUNCTIONS
+    static inline ImFileHandle  ImFileOpen(const char*, const char*)                    { return NULL; }
+    static inline bool          ImFileClose(ImFileHandle)                               { return false; }
+    static inline ImU64         ImFileGetSize(ImFileHandle)                             { return (ImU64)-1; }
+    static inline ImU64         ImFileRead(void*, ImU64, ImU64, ImFileHandle)           { return 0; }
+    static inline ImU64         ImFileWrite(const void*, ImU64, ImU64, ImFileHandle)    { return 0; }
+    #endif
 #endif
 #ifndef IMGUI_DISABLE_DEFAULT_FILE_FUNCTIONS
 typedef FILE* ImFileHandle;

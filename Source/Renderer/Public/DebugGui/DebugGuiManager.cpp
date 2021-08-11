@@ -87,6 +87,12 @@ namespace
 
 
 		//[-------------------------------------------------------]
+		//[ Global variables                                      ]
+		//[-------------------------------------------------------]
+		static const Renderer::IFileManager* g_FileManager = nullptr;
+
+
+		//[-------------------------------------------------------]
 		//[ Global functions                                      ]
 		//[-------------------------------------------------------]
 		[[nodiscard]] void* AllocFunc(size_t sz, void* user_data)
@@ -105,6 +111,67 @@ namespace
 //[-------------------------------------------------------]
 	} // detail
 }
+
+
+//[-------------------------------------------------------]
+//[ Global functions                                      ]
+//[-------------------------------------------------------]
+#ifdef IMGUI_DISABLE_DEFAULT_FILE_FUNCTIONS
+	ImFileHandle ImFileOpen(const char* filename, const char* mode)
+	{
+		// Get the file mode
+		Renderer::IFileManager::FileMode fileMode = Renderer::IFileManager::FileMode::READ;
+		if (::stricmp(mode, "rb") == 0)
+		{
+			fileMode = Renderer::IFileManager::FileMode::READ;
+		}
+		else if (::stricmp(mode, "wt") == 0)
+		{
+			fileMode = Renderer::IFileManager::FileMode::WRITE;
+		}
+		else
+		{
+			// Error, unsupported file mode!
+			return static_cast<ImFileHandle>(0);
+		}
+
+		// Open the file
+		return static_cast<ImFileHandle>(::detail::g_FileManager->openFile(fileMode, filename));
+	}
+
+	bool ImFileClose(ImFileHandle file)
+	{
+		if (nullptr != file)
+		{
+			::detail::g_FileManager->closeFile(*reinterpret_cast<Renderer::IFile*>(file));
+
+			// Done
+			return true;
+		}
+		else
+		{
+			// Error!
+			return false;
+		}
+	}
+
+	ImU64 ImFileGetSize(ImFileHandle file)
+	{
+		return (nullptr != file) ? reinterpret_cast<Renderer::IFile*>(file)->getNumberOfBytes() : static_cast<ImU64>(-1);	// -1 = Value of the empty ImGui file implementation
+	}
+
+	ImU64 ImFileRead(void* data, ImU64 size, ImU64 count, ImFileHandle file)
+	{
+		reinterpret_cast<Renderer::IFile*>(file)->read(data, size * count);
+		return count;
+	}
+
+	ImU64 ImFileWrite(const void* data, ImU64 size, ImU64 count, ImFileHandle file)
+	{
+		reinterpret_cast<Renderer::IFile*>(file)->write(data, size * count);
+		return count;
+	}
+#endif
 
 
 //[-------------------------------------------------------]
@@ -367,18 +434,18 @@ namespace Renderer
 
 		// Change ImGui filenames so one is able to guess where those files come from when using Unrimp
 		const IFileManager& fileManager = renderer.getFileManager();
+		::detail::g_FileManager = &fileManager;
 		const char* localDataMountPoint = fileManager.getLocalDataMountPoint();
 		ImGuiIO& imGuiIo = ImGui::GetIO();
 		imGuiIo.IniFilename = nullptr;
 		imGuiIo.LogFilename = nullptr;
 		if (nullptr != localDataMountPoint && fileManager.createDirectories(localDataMountPoint))
 		{
-			// ImGui has no file system abstraction and needs absolute filenames
 			const std::string virtualDebugGuiDirectoryName = localDataMountPoint;
-			mAbsoluteIniFilename = fileManager.mapVirtualToAbsoluteFilename(IFileManager::FileMode::WRITE, (virtualDebugGuiDirectoryName + "/UnrimpImGuiLayout.ini").c_str());
-			mAbsoluteLogFilename = fileManager.mapVirtualToAbsoluteFilename(IFileManager::FileMode::WRITE, (virtualDebugGuiDirectoryName + "/UnrimpImGuiLog.txt").c_str());
-			imGuiIo.IniFilename = mAbsoluteIniFilename.c_str();
-			imGuiIo.LogFilename = mAbsoluteLogFilename.c_str();
+			mVirtualIniFilename = (virtualDebugGuiDirectoryName + "/UnrimpImGuiLayout.ini").c_str();
+			mVirtualLogFilename = (virtualDebugGuiDirectoryName + "/UnrimpImGuiLog.txt").c_str();
+			imGuiIo.IniFilename = mVirtualIniFilename.c_str();
+			imGuiIo.LogFilename = mVirtualLogFilename.c_str();
 		}
 
 		// Setup ImGui style

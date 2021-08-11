@@ -165,11 +165,11 @@ namespace Renderer
 	//[ Private data                                          ]
 	//[-------------------------------------------------------]
 	private:
-		IRenderer&		   mRenderer;				///< Renderer instance, do not destroy the instance
-		ImGuiContext*	   mImGuiContext;			///< ImGui context, always valid
-		std::string		   mAbsoluteIniFilename;	///< Absolute UTF-8 ImGui ini-filename, class member since ImGui just keeps a pointer to this string instance
-		std::string		   mAbsoluteLogFilename;	///< Absolute UTF-8 ImGui log-filename, class member since ImGui just keeps a pointer to this string instance
-		bool			   mIsRunning;				///< The debug GUI manager will be initialized lazy when "Renderer::DebugGuiManager::newFrame()" is called for the first time
+		IRenderer&		   mRenderer;			///< Renderer instance, do not destroy the instance
+		ImGuiContext*	   mImGuiContext;		///< ImGui context, always valid
+		std::string		   mVirtualIniFilename;	///< Virtual UTF-8 ImGui ini-filename, class member since ImGui just keeps a pointer to this string instance
+		std::string		   mVirtualLogFilename;	///< Virtual UTF-8 ImGui log-filename, class member since ImGui just keeps a pointer to this string instance
+		bool			   mIsRunning;			///< The debug GUI manager will be initialized lazy when "Renderer::DebugGuiManager::newFrame()" is called for the first time
 		Rhi::ITexture2DPtr mTexture2D;
 		// Fixed build in RHI configuration resources
 		Rhi::IRootSignaturePtr			mRootSignature;
