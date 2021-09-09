@@ -1683,7 +1683,6 @@ namespace RendererToolkit
 					{
 						char baseShaderRegisterName[Rhi::DescriptorRange::NAME_LENGTH] = {};
 						JsonHelper::mandatoryStringProperty(rapidJsonValue, "SamplerStateBaseShaderRegisterName", baseShaderRegisterName, Rhi::DescriptorRange::NAME_LENGTH);
-						const uint32_t key = Renderer::StringId::calculateFNV(baseShaderRegisterName);
 						SamplerBaseShaderRegisterNameToIndex::const_iterator iterator = samplerBaseShaderRegisterNameToIndex.find(Renderer::StringId::calculateFNV(baseShaderRegisterName));
 						if (iterator == samplerBaseShaderRegisterNameToIndex.cend())
 						{

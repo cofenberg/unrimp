@@ -293,6 +293,10 @@ namespace
 		*    - Basing on https://github.com/ValveSoftware/openvr/blob/master/samples/hellovr_vulkan/hellovr_vulkan_main.cpp
 		*    - See also https://github.com/ValveSoftware/openvr/wiki/Vulkan
 		*/
+		// TODO(co) Vulkan support: Have a look into "GetVulkanInstanceExtensionsRequired()" and "GetVulkanDeviceExtensionsRequired()",
+		//          see https://github.com/ValveSoftware/openvr/wiki/Vulkan and https://github.com/ValveSoftware/openvr/blob/master/samples/hellovr_vulkan/hellovr_vulkan_main.cpp
+		//          The stuff here is currently just for debugging to check whether or not locally extensions are needed.
+		/*
 		[[nodiscard]] bool getVulkanDeviceExtensionsRequired(VkPhysicalDevice_T* vkPhysicalDevice_T, std::vector<std::string>& outDeviceExtensionList)
 		{
 			if (!vr::VRCompositor())
@@ -318,6 +322,7 @@ namespace
 			// Done
 			return true;
 		}
+		*/
 
 
 //[-------------------------------------------------------]

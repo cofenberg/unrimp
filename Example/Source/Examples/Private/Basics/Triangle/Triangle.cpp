@@ -92,7 +92,7 @@ void Triangle::onInitialization()
 			// -> When the vertex array object (VAO) is destroyed, it automatically decreases the
 			//    reference of the used vertex buffer objects (VBO). If the reference counter of a
 			//    vertex buffer object (VBO) reaches zero, it's automatically destroyed.
-			const Rhi::VertexArrayVertexBuffer vertexArrayVertexBuffers[] = { vertexBuffer };
+			const Rhi::VertexArrayVertexBuffer vertexArrayVertexBuffers[] = { { vertexBuffer } };
 			mVertexArray = mBufferManager->createVertexArray(vertexAttributes, static_cast<uint32_t>(GLM_COUNTOF(vertexArrayVertexBuffers)), vertexArrayVertexBuffers, nullptr RHI_RESOURCE_DEBUG_NAME("Triangle"));
 		}
 

@@ -623,41 +623,47 @@ namespace Renderer
 		// Splat out the planes to be able to do plane-sphere test with SIMD
 		const ::detail::SimdPlane planes[6] =
 		{
-			// Left clipping plane
-			::detail::float4(frustum.planes[Frustum::PLANE_LEFT].normal.x),
-			::detail::float4(frustum.planes[Frustum::PLANE_LEFT].normal.y),
-			::detail::float4(frustum.planes[Frustum::PLANE_LEFT].normal.z),
-			::detail::float4(frustum.planes[Frustum::PLANE_LEFT].d),
+			{ // Left clipping plane
+				::detail::float4(frustum.planes[Frustum::PLANE_LEFT].normal.x),
+				::detail::float4(frustum.planes[Frustum::PLANE_LEFT].normal.y),
+				::detail::float4(frustum.planes[Frustum::PLANE_LEFT].normal.z),
+				::detail::float4(frustum.planes[Frustum::PLANE_LEFT].d)
+			},
 
-			// Right clipping plane
-			::detail::float4(frustum.planes[Frustum::PLANE_RIGHT].normal.x),
-			::detail::float4(frustum.planes[Frustum::PLANE_RIGHT].normal.y),
-			::detail::float4(frustum.planes[Frustum::PLANE_RIGHT].normal.z),
-			::detail::float4(frustum.planes[Frustum::PLANE_RIGHT].d),
+			{ // Right clipping plane
+				::detail::float4(frustum.planes[Frustum::PLANE_RIGHT].normal.x),
+				::detail::float4(frustum.planes[Frustum::PLANE_RIGHT].normal.y),
+				::detail::float4(frustum.planes[Frustum::PLANE_RIGHT].normal.z),
+				::detail::float4(frustum.planes[Frustum::PLANE_RIGHT].d)
+			},
 
-			// Top clipping plane
-			::detail::float4(frustum.planes[Frustum::PLANE_TOP].normal.x),
-			::detail::float4(frustum.planes[Frustum::PLANE_TOP].normal.y),
-			::detail::float4(frustum.planes[Frustum::PLANE_TOP].normal.z),
-			::detail::float4(frustum.planes[Frustum::PLANE_TOP].d),
+			{ // Top clipping plane
+				::detail::float4(frustum.planes[Frustum::PLANE_TOP].normal.x),
+				::detail::float4(frustum.planes[Frustum::PLANE_TOP].normal.y),
+				::detail::float4(frustum.planes[Frustum::PLANE_TOP].normal.z),
+				::detail::float4(frustum.planes[Frustum::PLANE_TOP].d)
+			},
 
-			// Bottom clipping plane
-			::detail::float4(frustum.planes[Frustum::PLANE_BOTTOM].normal.x),
-			::detail::float4(frustum.planes[Frustum::PLANE_BOTTOM].normal.y),
-			::detail::float4(frustum.planes[Frustum::PLANE_BOTTOM].normal.z),
-			::detail::float4(frustum.planes[Frustum::PLANE_BOTTOM].d),
+			{ // Bottom clipping plane
+				::detail::float4(frustum.planes[Frustum::PLANE_BOTTOM].normal.x),
+				::detail::float4(frustum.planes[Frustum::PLANE_BOTTOM].normal.y),
+				::detail::float4(frustum.planes[Frustum::PLANE_BOTTOM].normal.z),
+				::detail::float4(frustum.planes[Frustum::PLANE_BOTTOM].d)
+			},
 
-			// Near clipping plane
-			::detail::float4(frustum.planes[Frustum::PLANE_NEAR].normal.x),
-			::detail::float4(frustum.planes[Frustum::PLANE_NEAR].normal.y),
-			::detail::float4(frustum.planes[Frustum::PLANE_NEAR].normal.z),
-			::detail::float4(frustum.planes[Frustum::PLANE_NEAR].d),
+			{ // Near clipping plane
+				::detail::float4(frustum.planes[Frustum::PLANE_NEAR].normal.x),
+				::detail::float4(frustum.planes[Frustum::PLANE_NEAR].normal.y),
+				::detail::float4(frustum.planes[Frustum::PLANE_NEAR].normal.z),
+				::detail::float4(frustum.planes[Frustum::PLANE_NEAR].d)
+			},
 
-			// Far clipping plane
-			::detail::float4(frustum.planes[Frustum::PLANE_FAR].normal.x),
-			::detail::float4(frustum.planes[Frustum::PLANE_FAR].normal.y),
-			::detail::float4(frustum.planes[Frustum::PLANE_FAR].normal.z),
-			::detail::float4(frustum.planes[Frustum::PLANE_FAR].d),
+			{ // Far clipping plane
+				::detail::float4(frustum.planes[Frustum::PLANE_FAR].normal.x),
+				::detail::float4(frustum.planes[Frustum::PLANE_FAR].normal.y),
+				::detail::float4(frustum.planes[Frustum::PLANE_FAR].normal.z),
+				::detail::float4(frustum.planes[Frustum::PLANE_FAR].d)
+			}
 		};
 
 		// Make sure to align the size to the SIMD lane count
@@ -745,25 +751,33 @@ namespace Renderer
 		// Construct the SimdMatrix "simd_view_proj"
 		const ::detail::SimdMatrix simd_view_proj =
 		{
-			::detail::float4(viewSpaceToClipSpaceMatrix[0][0]),
-			::detail::float4(viewSpaceToClipSpaceMatrix[0][1]),
-			::detail::float4(viewSpaceToClipSpaceMatrix[0][2]),
-			::detail::float4(viewSpaceToClipSpaceMatrix[0][3]),
+			{
+				::detail::float4(viewSpaceToClipSpaceMatrix[0][0]),
+				::detail::float4(viewSpaceToClipSpaceMatrix[0][1]),
+				::detail::float4(viewSpaceToClipSpaceMatrix[0][2]),
+				::detail::float4(viewSpaceToClipSpaceMatrix[0][3])
+			},
 
-			::detail::float4(viewSpaceToClipSpaceMatrix[1][0]),
-			::detail::float4(viewSpaceToClipSpaceMatrix[1][1]),
-			::detail::float4(viewSpaceToClipSpaceMatrix[1][2]),
-			::detail::float4(viewSpaceToClipSpaceMatrix[1][3]),
+			{
+				::detail::float4(viewSpaceToClipSpaceMatrix[1][0]),
+				::detail::float4(viewSpaceToClipSpaceMatrix[1][1]),
+				::detail::float4(viewSpaceToClipSpaceMatrix[1][2]),
+				::detail::float4(viewSpaceToClipSpaceMatrix[1][3])
+			},
 
-			::detail::float4(viewSpaceToClipSpaceMatrix[2][0]),
-			::detail::float4(viewSpaceToClipSpaceMatrix[2][1]),
-			::detail::float4(viewSpaceToClipSpaceMatrix[2][2]),
-			::detail::float4(viewSpaceToClipSpaceMatrix[2][3]),
+			{
+				::detail::float4(viewSpaceToClipSpaceMatrix[2][0]),
+				::detail::float4(viewSpaceToClipSpaceMatrix[2][1]),
+				::detail::float4(viewSpaceToClipSpaceMatrix[2][2]),
+				::detail::float4(viewSpaceToClipSpaceMatrix[2][3])
+			},
 
-			::detail::float4(viewSpaceToClipSpaceMatrix[3][0]),
-			::detail::float4(viewSpaceToClipSpaceMatrix[3][1]),
-			::detail::float4(viewSpaceToClipSpaceMatrix[3][2]),
-			::detail::float4(viewSpaceToClipSpaceMatrix[3][3]),
+			{
+				::detail::float4(viewSpaceToClipSpaceMatrix[3][0]),
+				::detail::float4(viewSpaceToClipSpaceMatrix[3][1]),
+				::detail::float4(viewSpaceToClipSpaceMatrix[3][2]),
+				::detail::float4(viewSpaceToClipSpaceMatrix[3][3])
+			}
 		};
 
 		{ // Do SIMD multi-threaded frustum-OOBB culling

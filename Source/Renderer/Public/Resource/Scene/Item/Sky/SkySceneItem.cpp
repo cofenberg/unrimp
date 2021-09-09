@@ -93,7 +93,7 @@ namespace
 			Rhi::IIndexBufferPtr indexBuffer(bufferManager.createIndexBuffer(sizeof(INDICES), INDICES, 0, Rhi::BufferUsage::STATIC_DRAW, Rhi::IndexBufferFormat::UNSIGNED_SHORT RHI_RESOURCE_DEBUG_NAME("Sky")));
 
 			// Create vertex array object (VAO)
-			const Rhi::VertexArrayVertexBuffer vertexArrayVertexBuffers[] = { vertexBuffer };
+			const Rhi::VertexArrayVertexBuffer vertexArrayVertexBuffers[] = { { vertexBuffer } };
 			return bufferManager.createVertexArray(vertexAttributes, static_cast<uint32_t>(GLM_COUNTOF(vertexArrayVertexBuffers)), vertexArrayVertexBuffers, indexBuffer RHI_RESOURCE_DEBUG_NAME("Sky"));
 		}
 

@@ -133,7 +133,7 @@ namespace
 					for (int depthIndex = 0; depthIndex < 2; ++depthIndex)
 					{
 						mLineListVertexBuffer[depthIndex] = bufferManager.createVertexBuffer(sizeof(dd::DrawVertex) * DEBUG_DRAW_VERTEX_BUFFER_SIZE, nullptr, 0, Rhi::BufferUsage::DYNAMIC_DRAW RHI_RESOURCE_DEBUG_NAME("DebugDrawLineList"));
-						const Rhi::VertexArrayVertexBuffer vertexArrayVertexBuffers[] = { mLineListVertexBuffer[depthIndex] };
+						const Rhi::VertexArrayVertexBuffer vertexArrayVertexBuffers[] = { { mLineListVertexBuffer[depthIndex] } };
 						mLineListVertexArray[depthIndex] = bufferManager.createVertexArray(vertexAttributes, static_cast<uint32_t>(GLM_COUNTOF(vertexArrayVertexBuffers)), vertexArrayVertexBuffers, nullptr RHI_RESOURCE_DEBUG_NAME("DebugDrawLineList"));
 					}
 				}
@@ -171,7 +171,7 @@ namespace
 
 					// Create glyph list vertex array object (VAO)
 					mGlyphListVertexBuffer = bufferManager.createVertexBuffer(sizeof(dd::DrawVertex) * DEBUG_DRAW_VERTEX_BUFFER_SIZE, nullptr, 0, Rhi::BufferUsage::DYNAMIC_DRAW RHI_RESOURCE_DEBUG_NAME("DebugDrawGlyphList"));
-					const Rhi::VertexArrayVertexBuffer vertexArrayVertexBuffers[] = { mGlyphListVertexBuffer };
+					const Rhi::VertexArrayVertexBuffer vertexArrayVertexBuffers[] = { { mGlyphListVertexBuffer } };
 					mGlyphListVertexArray = bufferManager.createVertexArray(vertexAttributes, static_cast<uint32_t>(GLM_COUNTOF(vertexArrayVertexBuffers)), vertexArrayVertexBuffers, nullptr RHI_RESOURCE_DEBUG_NAME("DebugDrawGlyphList"));
 				}
 

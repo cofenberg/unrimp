@@ -162,13 +162,13 @@ namespace
 
 	ImU64 ImFileRead(void* data, ImU64 size, ImU64 count, ImFileHandle file)
 	{
-		reinterpret_cast<Renderer::IFile*>(file)->read(data, size * count);
+		reinterpret_cast<Renderer::IFile*>(file)->read(data, static_cast<size_t>(size * count));
 		return count;
 	}
 
 	ImU64 ImFileWrite(const void* data, ImU64 size, ImU64 count, ImFileHandle file)
 	{
-		reinterpret_cast<Renderer::IFile*>(file)->write(data, size * count);
+		reinterpret_cast<Renderer::IFile*>(file)->write(data, static_cast<size_t>(size * count));
 		return count;
 	}
 #endif
@@ -250,7 +250,7 @@ namespace Renderer
 					RHI_ASSERT(mRenderer.getContext(), nullptr != mIndexBuffer, "Invalid index buffer")
 
 					// Create vertex array object (VAO)
-					const Rhi::VertexArrayVertexBuffer vertexArrayVertexBuffers[] = { mVertexBuffer };
+					const Rhi::VertexArrayVertexBuffer vertexArrayVertexBuffers[] = { { mVertexBuffer } };
 					mVertexArray = bufferManager.createVertexArray(::detail::VertexAttributes, static_cast<uint32_t>(GLM_COUNTOF(vertexArrayVertexBuffers)), vertexArrayVertexBuffers, mIndexBuffer RHI_RESOURCE_DEBUG_NAME("Debug GUI"));
 				}
 

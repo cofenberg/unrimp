@@ -30,6 +30,7 @@
 PRAGMA_WARNING_PUSH
 	PRAGMA_WARNING_DISABLE_MSVC(4061)	// warning C4061: enumerator 'rtm::mix4::b' in switch of enum 'rtm::mix4' is not explicitly handled by a case label
 	PRAGMA_WARNING_DISABLE_MSVC(4365)	// warning C4365: 'initializing': conversion from 'int' to 'uint8_t', signed/unsigned mismatch
+	PRAGMA_WARNING_DISABLE_MSVC(5246)	// warning C5246 '<x>': the initialization of a subobject should be wrapped in braces
 	#include <acl/decompression/decompress.h>
 PRAGMA_WARNING_POP
 

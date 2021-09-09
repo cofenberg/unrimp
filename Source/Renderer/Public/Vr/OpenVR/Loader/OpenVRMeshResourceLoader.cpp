@@ -388,7 +388,7 @@ namespace Renderer
 		Rhi::IIndexBufferPtr indexBuffer(bufferManager.createIndexBuffer(static_cast<uint32_t>(mIndexBufferData.size() * sizeof(uint16_t)), mIndexBufferData.data(), 0, Rhi::BufferUsage::STATIC_DRAW, Rhi::IndexBufferFormat::UNSIGNED_SHORT RHI_RESOURCE_DEBUG_NAME(getRenderModelName().c_str())));
 
 		// Create vertex array object (VAO)
-		const Rhi::VertexArrayVertexBuffer vertexArrayVertexBuffers[] = { vertexBuffer, mRenderer.getMeshResourceManager().getDrawIdVertexBufferPtr() };
+		const Rhi::VertexArrayVertexBuffer vertexArrayVertexBuffers[] = { { vertexBuffer }, { mRenderer.getMeshResourceManager().getDrawIdVertexBufferPtr() } };
 		return bufferManager.createVertexArray(MeshResource::VERTEX_ATTRIBUTES, static_cast<uint32_t>(GLM_COUNTOF(vertexArrayVertexBuffers)), vertexArrayVertexBuffers, indexBuffer RHI_RESOURCE_DEBUG_NAME(getRenderModelName().c_str()));
 	}
 

@@ -322,7 +322,7 @@ namespace Renderer
 		}
 
 		// Create vertex array object (VAO)
-		const Rhi::VertexArrayVertexBuffer vertexArrayVertexBuffers[] = { vertexBuffer };
+		const Rhi::VertexArrayVertexBuffer vertexArrayVertexBuffers[] = { { vertexBuffer } };
 		terrainTileRing.vertexArrayPtr = bufferManager.createVertexArray(TerrainSceneItem::VERTEX_ATTRIBUTES, static_cast<uint32_t>(GLM_COUNTOF(vertexArrayVertexBuffers)), vertexArrayVertexBuffers, mIndexBufferPtr RHI_RESOURCE_DEBUG_NAME("Terrain tile ring"));
 	}
 

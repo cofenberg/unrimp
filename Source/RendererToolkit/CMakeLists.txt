@@ -175,7 +175,8 @@ if(WIN32)
 	# - Disable "warning C5038: data member 'crnlib::dxt_hc::m_has_etc_color_blocks' will be initialized after data member 'crnlib::dxt_hc::m_num_alpha_blocks'"
 	# - Disable "warning C5039: 'ReadDirectoryChangesW': pointer or reference to potentially throwing function passed to extern C function under -EHc. Undefined behavior may occur if this function throws an exception."
 	# - Disable "warning C5219: implicit conversion from 'int' to 'float', possible loss of data"
-	set_source_files_properties(${EXTERNAL_SOURCE_CODES} PROPERTIES COMPILE_FLAGS "/wd4018 /wd4100 /wd4127 /wd4131 /wd4201 /wd4204 /wd4242 /wd4244 /wd4245 /wd4255 /wd4312 /wd4365 /wd4456 /wd4457 /wd4458 /wd4464 /wd4548 /wd4554 /wd4555 /wd4701 /wd4774 /wd4571 /wd4574 /wd4061 /wd4625 /wd4626 /wd4703 /wd4668 /wd5026 /wd5027 /wd5031 /wd5032 /wd5038 /wd5039 /wd5219")
+	# - Disable "warning C5246 '<x>': the initialization of a subobject should be wrapped in braces"
+	set_source_files_properties(${EXTERNAL_SOURCE_CODES} PROPERTIES COMPILE_FLAGS "/wd4018 /wd4100 /wd4127 /wd4131 /wd4201 /wd4204 /wd4242 /wd4244 /wd4245 /wd4255 /wd4312 /wd4365 /wd4456 /wd4457 /wd4458 /wd4464 /wd4548 /wd4554 /wd4555 /wd4701 /wd4774 /wd4571 /wd4574 /wd4061 /wd4625 /wd4626 /wd4703 /wd4668 /wd5026 /wd5027 /wd5031 /wd5032 /wd5038 /wd5039 /wd5219 /wd5246")
 endif()
 
 

@@ -45,6 +45,7 @@ PRAGMA_WARNING_PUSH
 	PRAGMA_WARNING_DISABLE_MSVC(4625)	// warning C4625: 'acl::String': copy constructor was implicitly defined as deleted
 	PRAGMA_WARNING_DISABLE_MSVC(4626)	// warning C4626: 'acl::String': assignment operator was implicitly defined as deleted
 	PRAGMA_WARNING_DISABLE_MSVC(5027)	// warning C5027: 'rtm::rtm_impl::matrix_caster<rtm::matrix3x3f>': move assignment operator was implicitly defined as deleted
+	PRAGMA_WARNING_DISABLE_MSVC(5246)	// warning C5246 '<x>': the initialization of a subobject should be wrapped in braces
 	#include <acl/compression/compress.h>
 PRAGMA_WARNING_POP
 

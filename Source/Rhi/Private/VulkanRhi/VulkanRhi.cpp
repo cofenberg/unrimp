@@ -12076,9 +12076,9 @@ namespace VulkanRhi
 				RHI_ASSERT(mContext, numberOfColorAttachments < 8, "Vulkan only supports 7 render pass color attachments")
 				for (uint32_t i = 0; i < numberOfColorAttachments; ++i)
 				{
-					mVkClearValues[i] = VkClearValue{0.0f, 0.0f, 0.0f, 1.0f};
+					mVkClearValues[i] = VkClearValue{ { 0.0f, 0.0f, 0.0f, 1.0f } };
 				}
-				mVkClearValues[numberOfColorAttachments] = VkClearValue{ 1.0f, 0 };
+				mVkClearValues[numberOfColorAttachments] = VkClearValue{ { 1.0f, 0 } };
 			}
 		}
 	}

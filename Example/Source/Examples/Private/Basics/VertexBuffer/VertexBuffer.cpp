@@ -135,7 +135,7 @@ void VertexBuffer::onInitialization()
 			Rhi::IVertexBufferPtr vertexBufferPositionColor(mBufferManager->createVertexBuffer(sizeof(VERTEX_POSITION_COLOR), VERTEX_POSITION_COLOR));
 
 			// Create vertex array object (VAO)
-			const Rhi::VertexArrayVertexBuffer vertexArrayVertexBuffers[] = { vertexBufferPositionColor };
+			const Rhi::VertexArrayVertexBuffer vertexArrayVertexBuffers[] = { { vertexBufferPositionColor } };
 			mVertexArrayVbo = mBufferManager->createVertexArray(vertexAttributesVBO, static_cast<uint32_t>(GLM_COUNTOF(vertexArrayVertexBuffers)), vertexArrayVertexBuffers);
 		}
 
@@ -161,7 +161,7 @@ void VertexBuffer::onInitialization()
 			Rhi::IVertexBufferPtr vertexBufferPosition(mBufferManager->createVertexBuffer(sizeof(VERTEX_POSITION), VERTEX_POSITION));
 
 			// Create vertex array object (VAO)
-			const Rhi::VertexArrayVertexBuffer vertexArrayVertexBuffers[] = { vertexBufferPosition, vertexBufferColor };
+			const Rhi::VertexArrayVertexBuffer vertexArrayVertexBuffers[] = { { vertexBufferPosition }, { vertexBufferColor } };
 			mVertexArrayVbos = mBufferManager->createVertexArray(vertexAttributesVBOs, static_cast<uint32_t>(GLM_COUNTOF(vertexArrayVertexBuffers)), vertexArrayVertexBuffers);
 		}
 

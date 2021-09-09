@@ -4133,8 +4133,8 @@ namespace Direct3D9Rhi
 							if (nullptr != direct3DSurface9)
 							{
 								// Upload the texture data
-								const RECT sourceRect[] = { 0, 0, static_cast<LONG>(width), static_cast<LONG>(1) };
-								FAILED_DEBUG_BREAK(D3DXLoadSurfaceFromMemory(direct3DSurface9, nullptr, nullptr, data, d3dFormat, Rhi::TextureFormat::getNumberOfBytesPerRow(textureFormat, width), nullptr, sourceRect, D3DX_FILTER_NONE, 0))
+								const RECT sourceRect = { 0, 0, static_cast<LONG>(width), static_cast<LONG>(1) };
+								FAILED_DEBUG_BREAK(D3DXLoadSurfaceFromMemory(direct3DSurface9, nullptr, nullptr, data, d3dFormat, Rhi::TextureFormat::getNumberOfBytesPerRow(textureFormat, width), nullptr, &sourceRect, D3DX_FILTER_NONE, 0))
 
 								// Release the surface
 								direct3DSurface9->Release();
@@ -4155,8 +4155,8 @@ namespace Direct3D9Rhi
 						if (nullptr != direct3DSurface9)
 						{
 							// Upload the texture data
-							const RECT sourceRect[] = { 0, 0, static_cast<LONG>(width), static_cast<LONG>(1) };
-							FAILED_DEBUG_BREAK(D3DXLoadSurfaceFromMemory(direct3DSurface9, nullptr, nullptr, data, d3dFormat, Rhi::TextureFormat::getNumberOfBytesPerRow(textureFormat, width), nullptr, sourceRect, D3DX_FILTER_NONE, 0))
+							const RECT sourceRect = { 0, 0, static_cast<LONG>(width), static_cast<LONG>(1) };
+							FAILED_DEBUG_BREAK(D3DXLoadSurfaceFromMemory(direct3DSurface9, nullptr, nullptr, data, d3dFormat, Rhi::TextureFormat::getNumberOfBytesPerRow(textureFormat, width), nullptr, &sourceRect, D3DX_FILTER_NONE, 0))
 
 							// Release the surface
 							direct3DSurface9->Release();
@@ -4342,8 +4342,8 @@ namespace Direct3D9Rhi
 							if (nullptr != direct3DSurface9)
 							{
 								// Upload the texture data
-								const RECT sourceRect[] = { 0, 0, static_cast<LONG>(width), static_cast<LONG>(height) };
-								FAILED_DEBUG_BREAK(D3DXLoadSurfaceFromMemory(direct3DSurface9, nullptr, nullptr, data, d3dFormat, Rhi::TextureFormat::getNumberOfBytesPerRow(textureFormat, width), nullptr, sourceRect, D3DX_FILTER_NONE, 0))
+								const RECT sourceRect = { 0, 0, static_cast<LONG>(width), static_cast<LONG>(height) };
+								FAILED_DEBUG_BREAK(D3DXLoadSurfaceFromMemory(direct3DSurface9, nullptr, nullptr, data, d3dFormat, Rhi::TextureFormat::getNumberOfBytesPerRow(textureFormat, width), nullptr, &sourceRect, D3DX_FILTER_NONE, 0))
 
 								// Release the surface
 								direct3DSurface9->Release();
@@ -4365,8 +4365,8 @@ namespace Direct3D9Rhi
 						if (nullptr != direct3DSurface9)
 						{
 							// Upload the texture data
-							const RECT sourceRect[] = { 0, 0, static_cast<LONG>(width), static_cast<LONG>(height) };
-							FAILED_DEBUG_BREAK(D3DXLoadSurfaceFromMemory(direct3DSurface9, nullptr, nullptr, data, d3dFormat, Rhi::TextureFormat::getNumberOfBytesPerRow(textureFormat, width), nullptr, sourceRect, D3DX_FILTER_NONE, 0))
+							const RECT sourceRect = { 0, 0, static_cast<LONG>(width), static_cast<LONG>(height) };
+							FAILED_DEBUG_BREAK(D3DXLoadSurfaceFromMemory(direct3DSurface9, nullptr, nullptr, data, d3dFormat, Rhi::TextureFormat::getNumberOfBytesPerRow(textureFormat, width), nullptr, &sourceRect, D3DX_FILTER_NONE, 0))
 
 							// Release the surface
 							direct3DSurface9->Release();
@@ -4789,8 +4789,8 @@ namespace Direct3D9Rhi
 								if (nullptr != direct3DSurface9)
 								{
 									// Upload the texture data
-									const RECT sourceRect[] = { 0, 0, static_cast<LONG>(width), static_cast<LONG>(width) };
-									FAILED_DEBUG_BREAK(D3DXLoadSurfaceFromMemory(direct3DSurface9, nullptr, nullptr, data, d3dFormat, numberOfBytesPerRow, nullptr, sourceRect, D3DX_FILTER_NONE, 0))
+									const RECT sourceRect = { 0, 0, static_cast<LONG>(width), static_cast<LONG>(width) };
+									FAILED_DEBUG_BREAK(D3DXLoadSurfaceFromMemory(direct3DSurface9, nullptr, nullptr, data, d3dFormat, numberOfBytesPerRow, nullptr, &sourceRect, D3DX_FILTER_NONE, 0))
 
 									// Release the surface
 									direct3DSurface9->Release();
@@ -4818,8 +4818,8 @@ namespace Direct3D9Rhi
 							if (nullptr != direct3DSurface9)
 							{
 								// Upload the texture data
-								const RECT sourceRect[] = { 0, 0, static_cast<LONG>(width), static_cast<LONG>(width) };
-								FAILED_DEBUG_BREAK(D3DXLoadSurfaceFromMemory(direct3DSurface9, nullptr, nullptr, data, d3dFormat, numberOfBytesPerRow, nullptr, sourceRect, D3DX_FILTER_NONE, 0))
+								const RECT sourceRect = { 0, 0, static_cast<LONG>(width), static_cast<LONG>(width) };
+								FAILED_DEBUG_BREAK(D3DXLoadSurfaceFromMemory(direct3DSurface9, nullptr, nullptr, data, d3dFormat, numberOfBytesPerRow, nullptr, &sourceRect, D3DX_FILTER_NONE, 0))
 
 								// Release the surface
 								direct3DSurface9->Release();

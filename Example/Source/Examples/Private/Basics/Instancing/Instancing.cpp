@@ -138,7 +138,7 @@ void Instancing::onInitialization()
 					// -> When the vertex array object (VAO) is destroyed, it automatically decreases the
 					//    reference of the used vertex buffer objects (VBO). If the reference counter of a
 					//    vertex buffer object (VBO) reaches zero, it's automatically destroyed.
-					const Rhi::VertexArrayVertexBuffer vertexArrayVertexBuffers[] = { vertexBufferPosition, vertexBufferInstanceId, };
+					const Rhi::VertexArrayVertexBuffer vertexArrayVertexBuffers[] = { { vertexBufferPosition }, { vertexBufferInstanceId } };
 					mVertexArrayInstancedArrays = mBufferManager->createVertexArray(vertexAttributes, static_cast<uint32_t>(GLM_COUNTOF(vertexArrayVertexBuffers)), vertexArrayVertexBuffers, indexBufferInstancedArrays);
 				}
 
@@ -207,7 +207,7 @@ void Instancing::onInitialization()
 					// -> When the vertex array object (VAO) is destroyed, it automatically decreases the
 					//    reference of the used vertex buffer objects (VBO). If the reference counter of a
 					//    vertex buffer object (VBO) reaches zero, it's automatically destroyed.
-					const Rhi::VertexArrayVertexBuffer vertexArrayVertexBuffers[] = { vertexBuffer };
+					const Rhi::VertexArrayVertexBuffer vertexArrayVertexBuffers[] = { { vertexBuffer } };
 					mVertexArrayDrawInstanced = mBufferManager->createVertexArray(vertexAttributes, static_cast<uint32_t>(GLM_COUNTOF(vertexArrayVertexBuffers)), vertexArrayVertexBuffers);
 				}
 
