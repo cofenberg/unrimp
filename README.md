@@ -305,7 +305,7 @@ Useful Microsoft Windows Developer Tools
 ======
 - When profiling a product
 	- Memory
-		- [Diagnostic tools provided by Visual Studio 2019](http://blogs.microsoft.co.il/sasha/2014/12/01/native-memory-leak-diagnostics-visual-studio-2015/)
+		- [Diagnostic tools provided by Visual Studio 2019](https://devblogs.microsoft.com/cppblog/native-memory-diagnostics-in-vs2015-preview/)
 		- Free and open-source: [MTuner](https://github.com/milostosic/MTuner)
 			- As of October 14, 2019: Doesn't work with Visual Studio 2017 (v141) x86 but works with x64
 	- Graphics
