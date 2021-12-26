@@ -25,29 +25,6 @@ cmake_minimum_required(VERSION 3.14.0)
 
 
 ##################################################
-## Preprocessor definitions
-##################################################
-if(WIN32)
-	add_definitions(-DUNICODE)
-endif()
-unrimp_add_conditional_rhi_definitions()
-if(EXAMPLES_MIMALLOC)
-	add_definitions(-DEXAMPLES_MIMALLOC)
-endif()
-
-
-##################################################
-## Includes
-##################################################
-include_directories(${CMAKE_SOURCE_DIR}/Example/Source)
-include_directories(${CMAKE_SOURCE_DIR}/Source)
-if(EXAMPLES_MIMALLOC)
-	include_directories(${CMAKE_SOURCE_DIR}/External/Rhi/mimalloc/include)
-endif()
-link_directories(${CMAKE_LIBRARY_OUTPUT_DIRECTORY})
-
-
-##################################################
 ## Source codes
 ##################################################
 set(EXTERNAL_SOURCE_CODES)
@@ -111,6 +88,34 @@ if(SHARED_LIBRARY)
 	add_dependencies(ExampleProjectCompiler Renderer)
 	set_target_properties(ExampleProjectCompiler PROPERTIES COMPILE_FLAGS -DSHARED_LIBRARIES)
 endif()
+
+
+##################################################
+## Preprocessor definitions
+##################################################
+unrimp_add_conditional_definition(ExampleProjectCompiler ARCHITECTURE_X64)
+if(RHI_DEBUG)
+	target_compile_definitions(ExampleProjectCompiler PRIVATE RHI_DEBUG)
+	target_compile_definitions(ExampleProjectCompiler PRIVATE RHI_STATISTICS)
+endif()
+if(WIN32)
+	target_compile_definitions(ExampleProjectCompiler PRIVATE UNICODE)
+endif()
+unrimp_add_conditional_rhi_definitions(ExampleProjectCompiler)
+if(EXAMPLES_MIMALLOC)
+	target_compile_definitions(ExampleProjectCompiler PRIVATE EXAMPLES_MIMALLOC)
+endif()
+
+
+##################################################
+## Includes
+##################################################
+target_include_directories(ExampleProjectCompiler PRIVATE ${CMAKE_SOURCE_DIR}/Example/Source
+														  ${CMAKE_SOURCE_DIR}/Source)
+if(EXAMPLES_MIMALLOC)
+	target_include_directories(ExampleProjectCompiler PRIVATE ${CMAKE_SOURCE_DIR}/External/Rhi/mimalloc/include)
+endif()
+target_link_directories(ExampleProjectCompiler PRIVATE ${CMAKE_LIBRARY_OUTPUT_DIRECTORY})
 
 
 ##################################################

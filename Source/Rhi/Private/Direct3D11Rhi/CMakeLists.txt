@@ -35,13 +35,6 @@ unrimp_replace_cmake_cxx_flags(/GR /GR-)
 
 
 ##################################################
-## Includes
-##################################################
-include_directories(${CMAKE_SOURCE_DIR}/Source)
-link_directories(${CMAKE_SOURCE_DIR}/External/Rhi/AGS_SDK/Windows_${ARCHITECTURE}/Library)
-
-
-##################################################
 ## Source codes
 ##################################################
 set(SOURCE_CODES Direct3D11Rhi.cpp)
@@ -59,6 +52,23 @@ add_library(Direct3D11Rhi ${LIBRARY_TYPE} ${SOURCE_CODES})
 if(SHARED_LIBRARY)
 	set_target_properties(Direct3D11Rhi PROPERTIES COMPILE_FLAGS "-DSHARED_LIBRARIES -DRHI_DIRECT3D11_EXPORTS")
 endif()
+
+
+##################################################
+## Preprocessor definitions
+##################################################
+unrimp_add_conditional_definition(Direct3D11Rhi ARCHITECTURE_X64)
+if(RHI_DEBUG)
+	target_compile_definitions(Direct3D11Rhi PRIVATE RHI_DEBUG)
+	target_compile_definitions(Direct3D11Rhi PRIVATE RHI_STATISTICS)
+endif()
+
+
+##################################################
+## Includes
+##################################################
+target_include_directories(Direct3D11Rhi PRIVATE ${CMAKE_SOURCE_DIR}/Source)
+target_link_directories(Direct3D11Rhi PRIVATE ${CMAKE_SOURCE_DIR}/External/Rhi/AGS_SDK/Windows_${ARCHITECTURE}/Library)
 
 
 ##################################################

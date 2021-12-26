@@ -35,12 +35,6 @@ unrimp_replace_cmake_cxx_flags(/GR /GR-)
 
 
 ##################################################
-## Includes
-##################################################
-include_directories(${CMAKE_SOURCE_DIR}/Source)
-
-
-##################################################
 ## Source codes
 ##################################################
 set(SOURCE_CODES Direct3D9Rhi.cpp)
@@ -58,3 +52,19 @@ add_library(Direct3D9Rhi ${LIBRARY_TYPE} ${SOURCE_CODES})
 if(SHARED_LIBRARY)
 	set_target_properties(Direct3D9Rhi PROPERTIES COMPILE_FLAGS "-DSHARED_LIBRARIES -DRHI_DIRECT3D9_EXPORTS")
 endif()
+
+
+##################################################
+## Preprocessor definitions
+##################################################
+unrimp_add_conditional_definition(Direct3D9Rhi ARCHITECTURE_X64)
+if(RHI_DEBUG)
+	target_compile_definitions(Direct3D9Rhi PRIVATE RHI_DEBUG)
+	target_compile_definitions(Direct3D9Rhi PRIVATE RHI_STATISTICS)
+endif()
+
+
+##################################################
+## Includes
+##################################################
+target_include_directories(Direct3D9Rhi PRIVATE ${CMAKE_SOURCE_DIR}/Source)

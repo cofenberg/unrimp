@@ -37,23 +37,6 @@ endif()
 
 
 ##################################################
-## Preprocessor definitions
-##################################################
-unrimp_add_conditional_definition(RHI_VULKAN_GLSLTOSPIRV)
-
-
-##################################################
-## Includes
-##################################################
-include_directories(${CMAKE_SOURCE_DIR}/Source)
-include_directories(${CMAKE_SOURCE_DIR}/External/Rhi)	# For "Vulkan" and "smol-v"
-if(RHI_VULKAN_GLSLTOSPIRV)
-	set(GLSLANG_DIR ${CMAKE_SOURCE_DIR}/External/Rhi/glslang/src)
-	include_directories(${GLSLANG_DIR})
-endif()
-
-
-##################################################
 ## Source codes
 ##################################################
 set(SOURCE_CODES
@@ -61,6 +44,7 @@ set(SOURCE_CODES
 	VulkanRhi.cpp
 )
 if(RHI_VULKAN_GLSLTOSPIRV)
+	set(GLSLANG_DIR ${CMAKE_SOURCE_DIR}/External/Rhi/glslang/src)
 	set(GLSLANG_SOURCE_CODES
 		${GLSLANG_DIR}/../glslangUnityBuild1.cpp
 		${GLSLANG_DIR}/../glslangUnityBuild2.cpp
@@ -103,4 +87,25 @@ endif()
 add_library(VulkanRhi ${LIBRARY_TYPE} ${SOURCE_CODES})
 if(SHARED_LIBRARY)
 	set_target_properties(VulkanRhi PROPERTIES COMPILE_FLAGS "-DSHARED_LIBRARIES -DRHI_VULKAN_EXPORTS")
+endif()
+
+
+##################################################
+## Preprocessor definitions
+##################################################
+unrimp_add_conditional_definition(VulkanRhi ARCHITECTURE_X64)
+if(RHI_DEBUG)
+	target_compile_definitions(VulkanRhi PRIVATE RHI_DEBUG)
+	target_compile_definitions(VulkanRhi PRIVATE RHI_STATISTICS)
+endif()
+unrimp_add_conditional_definition(VulkanRhi RHI_VULKAN_GLSLTOSPIRV)
+
+
+##################################################
+## Includes
+##################################################
+target_include_directories(VulkanRhi PRIVATE ${CMAKE_SOURCE_DIR}/Source
+											 ${CMAKE_SOURCE_DIR}/External/Rhi)	# For "Vulkan" and "smol-v"
+if(RHI_VULKAN_GLSLTOSPIRV)
+	target_include_directories(VulkanRhi PRIVATE ${GLSLANG_DIR})
 endif()

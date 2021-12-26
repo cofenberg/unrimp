@@ -37,19 +37,6 @@ endif()
 
 
 ##################################################
-## Preprocessor definitions
-##################################################
-unrimp_add_conditional_definition(RHI_OPENGLES3_STATE_CLEANUP)
-
-
-##################################################
-## Includes
-##################################################
-include_directories(${CMAKE_SOURCE_DIR}/Source)
-include_directories(${CMAKE_SOURCE_DIR}/External/Rhi/OpenGLES)
-
-
-##################################################
 ## Source codes
 ##################################################
 set(SOURCE_CODES OpenGLES3Rhi.cpp)
@@ -71,3 +58,21 @@ if(SHARED_LIBRARY)
 		target_link_libraries(OpenGLES3Rhi android)
 	endif()
 endif()
+
+
+##################################################
+## Preprocessor definitions
+##################################################
+unrimp_add_conditional_definition(OpenGLES3Rhi ARCHITECTURE_X64)
+if(RHI_DEBUG)
+	target_compile_definitions(OpenGLES3Rhi PRIVATE RHI_DEBUG)
+	target_compile_definitions(OpenGLES3Rhi PRIVATE RHI_STATISTICS)
+endif()
+unrimp_add_conditional_definition(OpenGLES3Rhi RHI_OPENGLES3_STATE_CLEANUP)
+
+
+##################################################
+## Includes
+##################################################
+target_include_directories(OpenGLES3Rhi PRIVATE ${CMAKE_SOURCE_DIR}/Source
+												${CMAKE_SOURCE_DIR}/External/Rhi/OpenGLES)

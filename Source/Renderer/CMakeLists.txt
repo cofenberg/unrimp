@@ -37,30 +37,6 @@ endif()
 
 
 ##################################################
-## Preprocessor definitions
-##################################################
-add_definitions(-DGLM_FORCE_CXX2A -DGLM_FORCE_INLINE -DGLM_FORCE_AVX2 -DGLM_FORCE_QUAT_DATA_XYZW -DGLM_FORCE_LEFT_HANDED -DGLM_FORCE_DEPTH_ZERO_TO_ONE -DGLM_FORCE_RADIANS -DGLM_ENABLE_EXPERIMENTAL -DGLM_FORCE_SILENT_WARNINGS)
-unrimp_add_conditional_rhi_definitions()
-unrimp_add_conditional_definition(RENDERER_GRAPHICS_DEBUGGER)
-unrimp_add_conditional_definition(RENDERER_PROFILER)
-unrimp_add_conditional_definition(RENDERER_IMGUI)
-unrimp_add_conditional_definition(RENDERER_OPENVR)
-if(UNIX AND RENDERER_OPENVR)
-	# Needed for OpenVR
-	add_definitions(-DCOMPILER_GCC)
-endif()
-
-
-##################################################
-## Includes
-##################################################
-include_directories(${CMAKE_SOURCE_DIR}/Source)
-include_directories(${CMAKE_SOURCE_DIR}/External/Renderer)	# For "glm", "lz4", "xsimd", "MojoShader", "MikkTSpace", "acl", "ImGui", "ImGuizmo", "debug-draw" and "OpenVR"
-include_directories(${CMAKE_SOURCE_DIR}/External/Renderer/crunch/inc)
-include_directories(${CMAKE_SOURCE_DIR}/External/Renderer/acl)
-
-
-##################################################
 ## Source codes
 ##################################################
 set(EXTERNAL_SOURCE_CODES
@@ -125,6 +101,30 @@ if(SHARED_LIBRARY)
 		target_link_libraries(Renderer dl pthread)
 	endif()
 endif()
+
+
+##################################################
+## Preprocessor definitions
+##################################################
+target_compile_definitions(Renderer PRIVATE GLM_FORCE_CXX2A GLM_FORCE_INLINE GLM_FORCE_AVX2 GLM_FORCE_QUAT_DATA_XYZW GLM_FORCE_LEFT_HANDED GLM_FORCE_DEPTH_ZERO_TO_ONE GLM_FORCE_RADIANS GLM_ENABLE_EXPERIMENTAL GLM_FORCE_SILENT_WARNINGS)
+unrimp_add_conditional_rhi_definitions(Renderer)
+unrimp_add_conditional_definition(Renderer RENDERER_GRAPHICS_DEBUGGER)
+unrimp_add_conditional_definition(Renderer RENDERER_PROFILER)
+unrimp_add_conditional_definition(Renderer RENDERER_IMGUI)
+unrimp_add_conditional_definition(Renderer RENDERER_OPENVR)
+if(UNIX AND RENDERER_OPENVR)
+	# Needed for OpenVR
+	target_compile_definitions(Renderer PRIVATE COMPILER_GCC)
+endif()
+
+
+##################################################
+## Includes
+##################################################
+target_include_directories(Renderer PRIVATE ${CMAKE_SOURCE_DIR}/Source
+											${CMAKE_SOURCE_DIR}/External/Renderer	# For "glm", "lz4", "xsimd", "MojoShader", "MikkTSpace", "acl", "ImGui", "ImGuizmo", "debug-draw" and "OpenVR"
+											${CMAKE_SOURCE_DIR}/External/Renderer/crunch/inc
+											${CMAKE_SOURCE_DIR}/External/Renderer/acl)
 
 
 ##################################################

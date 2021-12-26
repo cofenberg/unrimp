@@ -25,31 +25,6 @@ cmake_minimum_required(VERSION 3.14.0)
 
 
 ##################################################
-## Preprocessor definitions
-##################################################
-add_definitions(-DGLM_FORCE_CXX2A -DGLM_FORCE_INLINE -DGLM_FORCE_AVX2 -DGLM_FORCE_QUAT_DATA_XYZW -DGLM_FORCE_LEFT_HANDED -DGLM_FORCE_DEPTH_ZERO_TO_ONE -DGLM_FORCE_RADIANS -DGLM_ENABLE_EXPERIMENTAL -DGLM_FORCE_SILENT_WARNINGS)
-unrimp_add_conditional_rhi_definitions()
-
-
-##################################################
-## Includes
-##################################################
-include_directories(${CMAKE_SOURCE_DIR}/Source)
-include_directories(${CMAKE_SOURCE_DIR}/External/Renderer)	# For "glm", "MikkTSpace" and "acl"
-include_directories(${CMAKE_SOURCE_DIR}/External/Renderer/crunch/inc)
-include_directories(${CMAKE_SOURCE_DIR}/External/Renderer/acl)
-include_directories(${CMAKE_SOURCE_DIR}/External/RendererToolkit)	# For "SimpleFileWatcher" and "ies"
-include_directories(${CMAKE_SOURCE_DIR}/External/RendererToolkit/RapidJSON/configuration)	# RapidJSON configuration and assert to exception
-include_directories(${CMAKE_SOURCE_DIR}/External/RendererToolkit/RapidJSON/include)
-include_directories(${CMAKE_SOURCE_DIR}/External/RendererToolkit/Assimp/include)
-include_directories(${CMAKE_SOURCE_DIR}/External/RendererToolkit/Assimp/code)	# We want to be able to call e.g. "Assimp::RemoveRedundantMatsProcess().Execute()"
-include_directories(${CMAKE_SOURCE_DIR}/External/RendererToolkit/Assimp/contrib/irrXML)	# Needed by "unrimp\External\RendererToolkit\Assimp\include\assimp\irrXMLWrapper.h"
-include_directories(${CMAKE_SOURCE_DIR}/External/RendererToolkit/Assimp/contrib/unzip)	# Needed by "unrimp\External\RendererToolkit\Assimp\code\Common\ZipArchiveIOSystem.cpp"
-include_directories(${CMAKE_SOURCE_DIR}/External/RendererToolkit/Assimp/contrib/zlib)	# Needed by "unrimp\External\RendererToolkit\Assimp\contrib\unzip\unzip.h"
-link_directories(${CMAKE_LIBRARY_OUTPUT_DIRECTORY})
-
-
-##################################################
 ## Source codes
 ##################################################
 set(EXTERNAL_SOURCE_CODES
@@ -200,3 +175,33 @@ else()
 	target_link_libraries(RendererToolkit ${LIBRARIES})
 	add_dependencies(RendererToolkit Renderer)
 endif()
+
+
+##################################################
+## Preprocessor definitions
+##################################################
+unrimp_add_conditional_definition(RendererToolkit ARCHITECTURE_X64)
+if(RHI_DEBUG)
+	target_compile_definitions(RendererToolkit PRIVATE RHI_DEBUG)
+	target_compile_definitions(RendererToolkit PRIVATE RHI_STATISTICS)
+endif()
+target_compile_definitions(RendererToolkit PRIVATE GLM_FORCE_CXX2A GLM_FORCE_INLINE GLM_FORCE_AVX2 GLM_FORCE_QUAT_DATA_XYZW GLM_FORCE_LEFT_HANDED GLM_FORCE_DEPTH_ZERO_TO_ONE GLM_FORCE_RADIANS GLM_ENABLE_EXPERIMENTAL GLM_FORCE_SILENT_WARNINGS)
+unrimp_add_conditional_rhi_definitions(RendererToolkit)
+
+
+##################################################
+## Includes
+##################################################
+target_include_directories(RendererToolkit PRIVATE ${CMAKE_SOURCE_DIR}/Source
+												   ${CMAKE_SOURCE_DIR}/External/Renderer								# For "glm", "MikkTSpace" and "acl"
+												   ${CMAKE_SOURCE_DIR}/External/Renderer/crunch/inc
+												   ${CMAKE_SOURCE_DIR}/External/Renderer/acl
+												   ${CMAKE_SOURCE_DIR}/External/RendererToolkit							# For "SimpleFileWatcher" and "ies"
+												   ${CMAKE_SOURCE_DIR}/External/RendererToolkit/RapidJSON/configuration	# RapidJSON configuration and assert to exception
+												   ${CMAKE_SOURCE_DIR}/External/RendererToolkit/RapidJSON/include
+												   ${CMAKE_SOURCE_DIR}/External/RendererToolkit/Assimp/include
+												   ${CMAKE_SOURCE_DIR}/External/RendererToolkit/Assimp/code				# We want to be able to call e.g. "Assimp::RemoveRedundantMatsProcess().Execute()"
+												   ${CMAKE_SOURCE_DIR}/External/RendererToolkit/Assimp/contrib/irrXML	# Needed by "unrimp\External\RendererToolkit\Assimp\include\assimp\irrXMLWrapper.h"
+												   ${CMAKE_SOURCE_DIR}/External/RendererToolkit/Assimp/contrib/unzip	# Needed by "unrimp\External\RendererToolkit\Assimp\code\Common\ZipArchiveIOSystem.cpp"
+												   ${CMAKE_SOURCE_DIR}/External/RendererToolkit/Assimp/contrib/zlib)	# Needed by "unrimp\External\RendererToolkit\Assimp\contrib\unzip\unzip.h"
+target_link_directories(RendererToolkit PRIVATE ${CMAKE_LIBRARY_OUTPUT_DIRECTORY})

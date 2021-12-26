@@ -25,24 +25,6 @@ cmake_minimum_required(VERSION 3.14.0)
 
 
 ##################################################
-## Preprocessor definitions
-##################################################
-unrimp_add_conditional_rhi_definitions()
-
-
-##################################################
-## Includes
-##################################################
-include_directories(${CMAKE_SOURCE_DIR}/Example/Source)
-include_directories(${CMAKE_SOURCE_DIR}/Source)
-include_directories(${SDL2_INCLUDE_DIR})
-link_directories(${CMAKE_LIBRARY_OUTPUT_DIRECTORY})
-if(RHI_DIRECT3D11)
-	link_directories(${CMAKE_SOURCE_DIR}/External/Rhi/AGS_SDK/Windows_${ARCHITECTURE}/Library)
-endif()
-
-
-##################################################
 ## Source codes
 ##################################################
 set(SOURCE_CODES
@@ -80,6 +62,29 @@ else()
 	target_link_libraries(ExampleSDL2 ${LIBRARIES})
 endif()
 target_link_libraries(ExampleSDL2 ${SDL2_LIBRARY} ${SDL2MAIN_LIBRARY})
+
+
+##################################################
+## Preprocessor definitions
+##################################################
+unrimp_add_conditional_definition(ExampleSDL2 ARCHITECTURE_X64)
+if(RHI_DEBUG)
+	target_compile_definitions(ExampleSDL2 PRIVATE RHI_DEBUG)
+	target_compile_definitions(ExampleSDL2 PRIVATE RHI_STATISTICS)
+endif()
+unrimp_add_conditional_rhi_definitions(ExampleSDL2)
+
+
+##################################################
+## Includes
+##################################################
+target_include_directories(ExampleSDL2 PRIVATE ${CMAKE_SOURCE_DIR}/Example/Source
+											   ${CMAKE_SOURCE_DIR}/Source
+											   ${SDL2_INCLUDE_DIR})
+target_link_directories(ExampleSDL2 PRIVATE ${CMAKE_LIBRARY_OUTPUT_DIRECTORY})
+if(RHI_DIRECT3D11)
+	target_link_directories(ExampleSDL2 PRIVATE ${CMAKE_SOURCE_DIR}/External/Rhi/AGS_SDK/Windows_${ARCHITECTURE}/Library)
+endif()
 
 
 ##################################################

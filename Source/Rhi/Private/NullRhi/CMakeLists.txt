@@ -37,12 +37,6 @@ endif()
 
 
 ##################################################
-## Includes
-##################################################
-include_directories(${CMAKE_SOURCE_DIR}/Source)
-
-
-##################################################
 ## Source codes
 ##################################################
 set(SOURCE_CODES NullRhi.cpp)
@@ -60,3 +54,19 @@ add_library(NullRhi ${LIBRARY_TYPE} ${SOURCE_CODES})
 if(SHARED_LIBRARY)
 	set_target_properties(NullRhi PROPERTIES COMPILE_FLAGS "-DSHARED_LIBRARIES -DRHI_NULL_EXPORTS")
 endif()
+
+
+##################################################
+## Preprocessor definitions
+##################################################
+unrimp_add_conditional_definition(NullRhi ARCHITECTURE_X64)
+if(RHI_DEBUG)
+	target_compile_definitions(NullRhi PRIVATE RHI_DEBUG)
+	target_compile_definitions(NullRhi PRIVATE RHI_STATISTICS)
+endif()
+
+
+##################################################
+## Includes
+##################################################
+target_include_directories(NullRhi PRIVATE ${CMAKE_SOURCE_DIR}/Source)

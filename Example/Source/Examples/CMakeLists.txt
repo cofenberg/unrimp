@@ -35,63 +35,6 @@ endif()
 
 
 ##################################################
-## Preprocessor definitions
-##################################################
-add_definitions(-DGLM_FORCE_CXX2A -DGLM_FORCE_INLINE -DGLM_FORCE_AVX2 -DGLM_FORCE_QUAT_DATA_XYZW -DGLM_FORCE_LEFT_HANDED -DGLM_FORCE_DEPTH_ZERO_TO_ONE -DGLM_FORCE_RADIANS -DGLM_ENABLE_EXPERIMENTAL -DGLM_FORCE_SILENT_WARNINGS)
-if(WIN32)
-	add_definitions(-DUNICODE)
-endif()
-unrimp_add_conditional_rhi_definitions()
-if(EXAMPLES_MIMALLOC)
-	add_definitions(-DEXAMPLES_MIMALLOC)
-endif()
-unrimp_add_conditional_definition(RENDERER)
-unrimp_add_conditional_definition(RENDERER_GRAPHICS_DEBUGGER)
-unrimp_add_conditional_definition(RENDERER_PROFILER)
-if(RENDERER_PROFILER)
-	if(RHI_DIRECT3D11)
-		add_definitions(-DRMT_USE_D3D11=1)
-	endif()
-	if(RHI_OPENGL)
-		add_definitions(-DRMT_USE_OPENGL=1)
-	endif()
-endif()
-unrimp_add_conditional_definition(RENDERER_IMGUI)
-unrimp_add_conditional_definition(RENDERER_OPENVR)
-unrimp_add_conditional_definition(SDL2_FOUND)
-
-# Static builds are usually used for shipping builds, so disable the renderer toolkit for static builds
-if(SHARED_LIBRARY)
-	unrimp_add_conditional_definition(RENDERER_TOOLKIT)
-endif()
-
-
-##################################################
-## Includes
-##################################################
-include_directories(${CMAKE_SOURCE_DIR}/Example/Source)
-include_directories(${CMAKE_SOURCE_DIR}/Source)
-include_directories(${CMAKE_SOURCE_DIR}/External/Example)	# For "DeviceInput" and "ini.h"
-if(ANDROID)
-	include_directories(${CMAKE_SOURCE_DIR}/External/Example/Android)
-endif()
-if(EXAMPLES_MIMALLOC)
-	include_directories(${CMAKE_SOURCE_DIR}/External/Rhi/mimalloc/include)
-endif()
-include_directories(${CMAKE_SOURCE_DIR}/External/Renderer)	# "glm", "PhysicsFS", "ImGui", "OpenVR", "RenderDoc" and "Remotery"
-if(RENDERER_TOOLKIT)
-	include_directories(${CMAKE_SOURCE_DIR}/Renderer/RendererToolkit/include)
-endif()
-link_directories(${CMAKE_LIBRARY_OUTPUT_DIRECTORY})
-if(RHI_DIRECT3D11)
-	link_directories(${CMAKE_SOURCE_DIR}/External/Rhi/AGS_SDK/Windows_${ARCHITECTURE}/Library)
-endif()
-if(SDL2_FOUND)
-	include_directories(${SDL2_INCLUDE_DIR})
-endif()
-
-
-##################################################
 ## Source codes
 ##################################################
 set(EXTERNAL_SOURCE_CODES
@@ -249,6 +192,68 @@ else()
 endif()
 if(SDL2_FOUND)
 	target_link_libraries(Examples ${SDL2_LIBRARY})
+endif()
+
+
+##################################################
+## Preprocessor definitions
+##################################################
+unrimp_add_conditional_definition(Examples ARCHITECTURE_X64)
+if(RHI_DEBUG)
+	target_compile_definitions(Examples PRIVATE RHI_DEBUG)
+	target_compile_definitions(Examples PRIVATE RHI_STATISTICS)
+endif()
+target_compile_definitions(Examples PRIVATE GLM_FORCE_CXX2A GLM_FORCE_INLINE GLM_FORCE_AVX2 GLM_FORCE_QUAT_DATA_XYZW GLM_FORCE_LEFT_HANDED GLM_FORCE_DEPTH_ZERO_TO_ONE GLM_FORCE_RADIANS GLM_ENABLE_EXPERIMENTAL GLM_FORCE_SILENT_WARNINGS)
+if(WIN32)
+	target_compile_definitions(Examples PRIVATE UNICODE)
+endif()
+unrimp_add_conditional_rhi_definitions(Examples)
+if(EXAMPLES_MIMALLOC)
+	target_compile_definitions(Examples PRIVATE EXAMPLES_MIMALLOC)
+endif()
+unrimp_add_conditional_definition(Examples RENDERER)
+unrimp_add_conditional_definition(Examples RENDERER_GRAPHICS_DEBUGGER)
+unrimp_add_conditional_definition(Examples RENDERER_PROFILER)
+if(RENDERER_PROFILER)
+	if(RHI_DIRECT3D11)
+		target_compile_definitions(Examples PRIVATE RMT_USE_D3D11=1)
+	endif()
+	if(RHI_OPENGL)
+		target_compile_definitions(Examples PRIVATE RMT_USE_OPENGL=1)
+	endif()
+endif()
+unrimp_add_conditional_definition(Examples RENDERER_IMGUI)
+unrimp_add_conditional_definition(Examples RENDERER_OPENVR)
+unrimp_add_conditional_definition(Examples SDL2_FOUND)
+
+# Static builds are usually used for shipping builds, so disable the renderer toolkit for static builds
+if(SHARED_LIBRARY)
+	unrimp_add_conditional_definition(Examples RENDERER_TOOLKIT)
+endif()
+
+
+##################################################
+## Includes
+##################################################
+target_include_directories(Examples PRIVATE ${CMAKE_SOURCE_DIR}/Example/Source
+											${CMAKE_SOURCE_DIR}/Source
+											${CMAKE_SOURCE_DIR}/External/Example	# For "DeviceInput" and "ini.h"
+											${CMAKE_SOURCE_DIR}/External/Renderer)	# "glm", "PhysicsFS", "ImGui", "OpenVR", "RenderDoc" and "Remotery"
+if(ANDROID)
+	target_include_directories(Examples PRIVATE ${CMAKE_SOURCE_DIR}/External/Example/Android)
+endif()
+if(EXAMPLES_MIMALLOC)
+	target_include_directories(Examples PRIVATE ${CMAKE_SOURCE_DIR}/External/Rhi/mimalloc/include)
+endif()
+if(RENDERER_TOOLKIT)
+	target_include_directories(Examples PRIVATE ${CMAKE_SOURCE_DIR}/Renderer/RendererToolkit/include)
+endif()
+if(SDL2_FOUND)
+	target_include_directories(Examples PRIVATE ${SDL2_INCLUDE_DIR})
+endif()
+target_link_directories(Examples PRIVATE ${CMAKE_LIBRARY_OUTPUT_DIRECTORY})
+if(RHI_DIRECT3D11)
+	target_link_directories(Examples PRIVATE ${CMAKE_SOURCE_DIR}/External/Rhi/AGS_SDK/Windows_${ARCHITECTURE}/Library)
 endif()
 
 

@@ -37,25 +37,6 @@ endif()
 
 
 ##################################################
-## Preprocessor definitions
-##################################################
-unrimp_add_conditional_definition(RHI_OPENGL_STATE_CLEANUP)
-unrimp_add_conditional_definition(RHI_OPENGL_GLSLTOSPIRV)
-
-
-##################################################
-## Includes
-##################################################
-include_directories(${CMAKE_SOURCE_DIR}/Source)
-include_directories(${CMAKE_SOURCE_DIR}/External/Rhi)	# For "smol-v"
-include_directories(${CMAKE_SOURCE_DIR}/External/Rhi/OpenGL)
-if(RHI_OPENGL_GLSLTOSPIRV)
-	set(GLSLANG_DIR ${CMAKE_SOURCE_DIR}/External/Rhi/glslang/src)
-	include_directories(${GLSLANG_DIR})
-endif()
-
-
-##################################################
 ## Source codes
 ##################################################
 set(SOURCE_CODES
@@ -63,6 +44,7 @@ set(SOURCE_CODES
 	OpenGLRhi.cpp
 )
 if(RHI_OPENGL_GLSLTOSPIRV)
+	set(GLSLANG_DIR ${CMAKE_SOURCE_DIR}/External/Rhi/glslang/src)
 	set(GLSLANG_SOURCE_CODES
 		${GLSLANG_DIR}/../glslangUnityBuild1.cpp
 		${GLSLANG_DIR}/../glslangUnityBuild2.cpp
@@ -105,4 +87,27 @@ endif()
 add_library(OpenGLRhi ${LIBRARY_TYPE} ${SOURCE_CODES})
 if(SHARED_LIBRARY)
 	set_target_properties(OpenGLRhi PROPERTIES COMPILE_FLAGS "-DSHARED_LIBRARIES -DRHI_OPENGL_EXPORTS")
+endif()
+
+
+##################################################
+## Preprocessor definitions
+##################################################
+unrimp_add_conditional_definition(OpenGLRhi ARCHITECTURE_X64)
+if(RHI_DEBUG)
+	target_compile_definitions(OpenGLRhi PRIVATE RHI_DEBUG)
+	target_compile_definitions(OpenGLRhi PRIVATE RHI_STATISTICS)
+endif()
+unrimp_add_conditional_definition(OpenGLRhi RHI_OPENGL_STATE_CLEANUP)
+unrimp_add_conditional_definition(OpenGLRhi RHI_OPENGL_GLSLTOSPIRV)
+
+
+##################################################
+## Includes
+##################################################
+target_include_directories(OpenGLRhi PRIVATE ${CMAKE_SOURCE_DIR}/Source
+											 ${CMAKE_SOURCE_DIR}/External/Rhi	# For "smol-v"
+											 ${CMAKE_SOURCE_DIR}/External/Rhi/OpenGL)
+if(RHI_OPENGL_GLSLTOSPIRV)
+	target_include_directories(OpenGLRhi PRIVATE ${GLSLANG_DIR})
 endif()

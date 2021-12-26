@@ -150,11 +150,11 @@ endmacro()
 ##################################################
 ## MACRO: "unrimp_add_conditional_definition()" for setting a conditional preprocessor definition
 #
-# Usage example: "unrimp_add_conditional_definition(RENDERER_PROFILER)"
+# Usage example: "unrimp_add_conditional_definition(<target name> RENDERER_PROFILER)"
 ##################################################
-macro(unrimp_add_conditional_definition definition)
+macro(unrimp_add_conditional_definition targetName definition)
 	if(${definition})
-		add_definitions(-D${definition})
+		target_compile_definitions(${targetName} PRIVATE ${definition})
 	endif()
 endmacro()
 
@@ -163,15 +163,15 @@ endmacro()
 #
 # Usage example: "unrimp_add_conditional_rhi_definitions()"
 ##################################################
-macro(unrimp_add_conditional_rhi_definitions)
-	unrimp_add_conditional_definition(RHI_NULL)
-	unrimp_add_conditional_definition(RHI_VULKAN)
-	unrimp_add_conditional_definition(RHI_OPENGL)
-	unrimp_add_conditional_definition(RHI_OPENGLES3)
-	unrimp_add_conditional_definition(RHI_DIRECT3D9)
-	unrimp_add_conditional_definition(RHI_DIRECT3D10)
-	unrimp_add_conditional_definition(RHI_DIRECT3D11)
-	unrimp_add_conditional_definition(RHI_DIRECT3D12)
+macro(unrimp_add_conditional_rhi_definitions targetName)
+	unrimp_add_conditional_definition(${targetName} RHI_NULL)
+	unrimp_add_conditional_definition(${targetName} RHI_VULKAN)
+	unrimp_add_conditional_definition(${targetName} RHI_OPENGL)
+	unrimp_add_conditional_definition(${targetName} RHI_OPENGLES3)
+	unrimp_add_conditional_definition(${targetName} RHI_DIRECT3D9)
+	unrimp_add_conditional_definition(${targetName} RHI_DIRECT3D10)
+	unrimp_add_conditional_definition(${targetName} RHI_DIRECT3D11)
+	unrimp_add_conditional_definition(${targetName} RHI_DIRECT3D12)
 endmacro()
 
 ##################################################
@@ -376,16 +376,6 @@ file(MAKE_DIRECTORY ${OUTPUT_BINARY_DIRECTORY})
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${OUTPUT_BINARY_DIRECTORY}")
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY "${OUTPUT_BINARY_DIRECTORY}")
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${OUTPUT_BINARY_DIRECTORY}")
-
-
-##################################################
-## Preprocessor definitions
-##################################################
-unrimp_add_conditional_definition(ARCHITECTURE_X64)
-if(RHI_DEBUG)
-	add_definitions(-DRHI_DEBUG)
-	add_definitions(-DRHI_STATISTICS)
-endif()
 
 
 ##################################################
