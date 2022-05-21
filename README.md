@@ -411,7 +411,7 @@ The unified RHI can't unify some RHI implementation behaviour differences. Here'
 
 [MIT License](https://opensource.org/licenses/MIT)
 ======
-Copyright (c) 2012-2021 The Unrimp Team
+Copyright (c) 2012-2022 The Unrimp Team
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
