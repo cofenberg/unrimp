@@ -4695,7 +4695,7 @@ namespace Direct3D10Rhi
 					// We don't want dynamic allocations, so we limit the maximum number of mipmaps and hence are able to use the efficient C runtime stack
 					static constexpr uint32_t MAXIMUM_NUMBER_OF_MIPMAPS = 15;	// A 16384x16384 texture has 15 mipmaps
 					RHI_ASSERT(direct3D10Rhi.getContext(), numberOfMipmaps <= MAXIMUM_NUMBER_OF_MIPMAPS, "Invalid Direct3D 10 number of mipmaps")
-					D3D10_SUBRESOURCE_DATA d3d10SubresourceData[MAXIMUM_NUMBER_OF_MIPMAPS];
+					D3D10_SUBRESOURCE_DATA d3d10SubresourceData[MAXIMUM_NUMBER_OF_MIPMAPS] = {};
 
 					// Did the user provided data containing mipmaps from 0-n down to 1x1 linearly in memory?
 					if (dataContainsMipmaps)
@@ -5923,7 +5923,7 @@ namespace Direct3D10Rhi
 					// We don't want dynamic allocations, so we limit the maximum number of mipmaps and hence are able to use the efficient C runtime stack
 					static constexpr uint32_t MAXIMUM_NUMBER_OF_MIPMAPS = 15;	// A 16384x16384 texture has 15 mipmaps
 					RHI_ASSERT(getRhi().getContext(), numberOfMipmaps <= MAXIMUM_NUMBER_OF_MIPMAPS, "Invalid Direct3D 10 number of mipmaps")
-					D3D10_SUBRESOURCE_DATA d3d10SubresourceData[MAXIMUM_NUMBER_OF_MIPMAPS];
+					D3D10_SUBRESOURCE_DATA d3d10SubresourceData[MAXIMUM_NUMBER_OF_MIPMAPS] = {};
 
 					// Did the user provided data containing mipmaps from 0-n down to 1x1 linearly in memory?
 					if (dataContainsMipmaps)
@@ -6203,7 +6203,7 @@ namespace Direct3D10Rhi
 					// We don't want dynamic allocations, so we limit the maximum number of mipmaps and hence are able to use the efficient C runtime stack
 					static constexpr uint32_t MAXIMUM_NUMBER_OF_MIPMAPS = 15;	// A 16384x16384 texture has 15 mipmaps
 					RHI_ASSERT(direct3D10Rhi.getContext(), numberOfMipmaps <= MAXIMUM_NUMBER_OF_MIPMAPS, "Invalid Direct3D 10 number of mipmaps")
-					D3D10_SUBRESOURCE_DATA d3d10SubresourceData[NUMBER_OF_SLICES * MAXIMUM_NUMBER_OF_MIPMAPS];
+					D3D10_SUBRESOURCE_DATA d3d10SubresourceData[NUMBER_OF_SLICES * MAXIMUM_NUMBER_OF_MIPMAPS] = {};
 
 					// Did the user provided data containing mipmaps from 0-n down to 1x1 linearly in memory?
 					if (dataContainsMipmaps)
