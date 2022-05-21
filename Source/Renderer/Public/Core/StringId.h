@@ -184,6 +184,8 @@ namespace Renderer
 		*  @param[in] string
 		*    Static string to calculate the hash value for, must be valid
 		*/
+		// The following no longer works with Visual Studio 2022 version 17.2 since it always triggers
+		/*
 		template <uint32_t N>
 		inline StringId(const char (&string)[N]) noexcept :
 			mId(compileTimeFNV(string))
@@ -193,6 +195,7 @@ namespace Renderer
 				static_assert(false, "Use the \"STRING_ID()\" macro to mark compile string IDs");
 			#endif
 		}
+		*/
 
 		/**
 		*  @brief
