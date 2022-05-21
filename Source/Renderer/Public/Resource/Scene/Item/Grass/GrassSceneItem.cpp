@@ -110,16 +110,16 @@ namespace Renderer
 			const GrassDataStruct grassData[3] =
 			{
 				{
-					3.0f, -1.781f, 20.0f, 0.5f,
-					1.0f,  1.0f,   1.0f, 0.4f
+					{ 3.0f, -1.781f, 20.0f, 0.5f },
+					{ 1.0f,  1.0f,   1.0f, 0.4f }
 				},
 				{
-					5.0f, -1.781f, 19.0f, 1.0f,
-					1.0f,  1.0f,   1.0f, 0.8f
+					{ 5.0f, -1.781f, 19.0f, 1.0f },
+					{ 1.0f,  1.0f,   1.0f, 0.8f }
 				},
 				{
-					4.0f, -1.781f, 21.0f, 1.5f,
-					1.0f,  1.0f,   1.0f, 1.2f
+					{ 4.0f, -1.781f, 21.0f, 1.5f },
+					{ 1.0f,  1.0f,   1.0f, 1.2f }
 				}
 			};
 			Rhi::IBufferManager& bufferManager = renderer.getBufferManager();

@@ -6866,28 +6866,32 @@ namespace Direct3D10Rhi
 			const D3D10_BLEND_DESC d3d10BlendDesc =
 			{
 				blendState.alphaToCoverageEnable,										// AlphaToCoverageEnable (BOOL)
-				blendState.renderTarget[0].blendEnable,									// BlendEnable[0] (BOOL)
-				blendState.renderTarget[1].blendEnable,									// BlendEnable[1] (BOOL)
-				blendState.renderTarget[2].blendEnable,									// BlendEnable[2] (BOOL)
-				blendState.renderTarget[3].blendEnable,									// BlendEnable[3] (BOOL)
-				blendState.renderTarget[4].blendEnable,									// BlendEnable[4] (BOOL)
-				blendState.renderTarget[5].blendEnable,									// BlendEnable[5] (BOOL)
-				blendState.renderTarget[6].blendEnable,									// BlendEnable[6] (BOOL)
-				blendState.renderTarget[7].blendEnable,									// BlendEnable[7] (BOOL)
+				{
+					blendState.renderTarget[0].blendEnable,								// BlendEnable[0] (BOOL)
+					blendState.renderTarget[1].blendEnable,								// BlendEnable[1] (BOOL)
+					blendState.renderTarget[2].blendEnable,								// BlendEnable[2] (BOOL)
+					blendState.renderTarget[3].blendEnable,								// BlendEnable[3] (BOOL)
+					blendState.renderTarget[4].blendEnable,								// BlendEnable[4] (BOOL)
+					blendState.renderTarget[5].blendEnable,								// BlendEnable[5] (BOOL)
+					blendState.renderTarget[6].blendEnable,								// BlendEnable[6] (BOOL)
+					blendState.renderTarget[7].blendEnable,								// BlendEnable[7] (BOOL)
+				},
 				static_cast<D3D10_BLEND>(blendState.renderTarget[0].srcBlend),			// SrcBlend (D3D10_BLEND)
 				static_cast<D3D10_BLEND>(blendState.renderTarget[0].destBlend),			// DestBlend (D3D10_BLEND)
 				static_cast<D3D10_BLEND_OP>(blendState.renderTarget[0].blendOp),		// BlendOp (D3D10_BLEND_OP)
 				static_cast<D3D10_BLEND>(blendState.renderTarget[0].srcBlendAlpha),		// SrcBlendAlpha (D3D10_BLEND)
 				static_cast<D3D10_BLEND>(blendState.renderTarget[0].destBlendAlpha),	// DestBlendAlpha (D3D10_BLEND)
 				static_cast<D3D10_BLEND_OP>(blendState.renderTarget[0].blendOpAlpha),	// BlendOpAlpha (D3D10_BLEND_OP)
-				blendState.renderTarget[0].renderTargetWriteMask,						// RenderTargetWriteMask[0] (UINT8)
-				blendState.renderTarget[1].renderTargetWriteMask,						// RenderTargetWriteMask[1] (UINT8)
-				blendState.renderTarget[2].renderTargetWriteMask,						// RenderTargetWriteMask[2] (UINT8)
-				blendState.renderTarget[3].renderTargetWriteMask,						// RenderTargetWriteMask[3] (UINT8)
-				blendState.renderTarget[4].renderTargetWriteMask,						// RenderTargetWriteMask[4] (UINT8)
-				blendState.renderTarget[5].renderTargetWriteMask,						// RenderTargetWriteMask[5] (UINT8)
-				blendState.renderTarget[6].renderTargetWriteMask,						// RenderTargetWriteMask[6] (UINT8)
-				blendState.renderTarget[7].renderTargetWriteMask						// RenderTargetWriteMask[7] (UINT8)
+				{
+					blendState.renderTarget[0].renderTargetWriteMask,					// RenderTargetWriteMask[0] (UINT8)
+					blendState.renderTarget[1].renderTargetWriteMask,					// RenderTargetWriteMask[1] (UINT8)
+					blendState.renderTarget[2].renderTargetWriteMask,					// RenderTargetWriteMask[2] (UINT8)
+					blendState.renderTarget[3].renderTargetWriteMask,					// RenderTargetWriteMask[3] (UINT8)
+					blendState.renderTarget[4].renderTargetWriteMask,					// RenderTargetWriteMask[4] (UINT8)
+					blendState.renderTarget[5].renderTargetWriteMask,					// RenderTargetWriteMask[5] (UINT8)
+					blendState.renderTarget[6].renderTargetWriteMask,					// RenderTargetWriteMask[6] (UINT8)
+					blendState.renderTarget[7].renderTargetWriteMask					// RenderTargetWriteMask[7] (UINT8)
+				}
 			};
 			FAILED_DEBUG_BREAK(direct3D10Rhi.getD3D10Device()->CreateBlendState(&d3d10BlendDesc, &mD3D10BlendState))
 

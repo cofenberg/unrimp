@@ -1025,8 +1025,10 @@ namespace
 					// Check device extensions
 					static constexpr std::array<const char*, 2> deviceExtensions =
 					{
-						VK_KHR_SWAPCHAIN_EXTENSION_NAME,
-						VK_KHR_MAINTENANCE1_EXTENSION_NAME	// We want to be able to specify a negative viewport height, this way we don't have to apply "<output position>.y = -<output position>.y" inside vertex shaders to compensate for the Vulkan coordinate system
+						{
+							VK_KHR_SWAPCHAIN_EXTENSION_NAME,
+							VK_KHR_MAINTENANCE1_EXTENSION_NAME	// We want to be able to specify a negative viewport height, this way we don't have to apply "<output position>.y = -<output position>.y" inside vertex shaders to compensate for the Vulkan coordinate system
+						}
 					};
 					bool rejectDevice = false;
 					for (const char* deviceExtension : deviceExtensions)
@@ -1250,7 +1252,7 @@ namespace
 					if (vkQueueFamilyProperties[graphicsQueueIndex].queueFlags & VK_QUEUE_GRAPHICS_BIT)
 					{
 						// Create logical Vulkan device instance
-						static constexpr std::array<float, 1> queuePriorities = { 0.0f };
+						static constexpr std::array<float, 1> queuePriorities = { { 0.0f } };
 						const VkDeviceQueueCreateInfo vkDeviceQueueCreateInfo =
 						{
 							VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO,	// sType (VkStructureType)
@@ -10636,8 +10638,10 @@ namespace VulkanRhi
 			};
 			static constexpr std::array<VkDynamicState, 2> vkDynamicStates =
 			{
-				VK_DYNAMIC_STATE_VIEWPORT,
-				VK_DYNAMIC_STATE_SCISSOR
+				{
+					VK_DYNAMIC_STATE_VIEWPORT,
+					VK_DYNAMIC_STATE_SCISSOR
+				}
 			};
 			static const VkPipelineDynamicStateCreateInfo vkPipelineDynamicStateCreateInfo =
 			{
@@ -12076,9 +12080,9 @@ namespace VulkanRhi
 				RHI_ASSERT(mContext, numberOfColorAttachments < 8, "Vulkan only supports 7 render pass color attachments")
 				for (uint32_t i = 0; i < numberOfColorAttachments; ++i)
 				{
-					mVkClearValues[i] = VkClearValue{ { 0.0f, 0.0f, 0.0f, 1.0f } };
+					mVkClearValues[i] = VkClearValue{ { { 0.0f, 0.0f, 0.0f, 1.0f } } };
 				}
-				mVkClearValues[numberOfColorAttachments] = VkClearValue{ { 1.0f, 0 } };
+				mVkClearValues[numberOfColorAttachments] = VkClearValue{ { { 1.0f, 0 } } };
 			}
 		}
 	}
