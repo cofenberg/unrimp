@@ -220,8 +220,8 @@ if(WIN32)
 		"C5045" # Compiler will insert Spectre mitigation for memory load if /Qspectre switch specified - https://blogs.msdn.microsoft.com/vcblog/2018/04/20/spectre-diagnostic-in-visual-studio-2017-version-15-7-preview-4/
 		)
 	string(REPLACE "C" " -wd" MSVC_DISABLED_WARNINGS_STR ${MSVC_DISABLED_WARNINGS_LIST})
-	set(CMAKE_C_FLAGS   "${CMAKE_C_FLAGS} -Wall -WX /MP /arch:AVX2 ${MSVC_DISABLED_WARNINGS_STR}")
-	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -WX /MP /arch:AVX2 ${MSVC_DISABLED_WARNINGS_STR}")
+	set(CMAKE_C_FLAGS   "${CMAKE_C_FLAGS} -WX /MP /arch:AVX2 ${MSVC_DISABLED_WARNINGS_STR}")	# "-Wall" removed since hard to maintain over the years
+	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -WX /MP /arch:AVX2 ${MSVC_DISABLED_WARNINGS_STR}")	# "-Wall" removed since hard to maintain over the years
 	if(${CMAKE_BUILD_TYPE} MATCHES "Debug")
 		# For memory leak detection (see https://github.com/MicrosoftDocs/visualstudio-docs/blob/master/docs/debugger/finding-memory-leaks-using-the-crt-library.md )
 		add_definitions(-D "_CRTDBG_MAP_ALLOC")

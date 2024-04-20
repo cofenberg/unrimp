@@ -29,7 +29,7 @@ Screenshots
 
 General
 ======
-- C++20 and above, no legacy compiler support, compiled with wall warning level
+- C++20 and above, no legacy compiler support
 - Compact user-header for the RHI
 	- A single all in one header for ease-of-use and optimized compile times
 	- No need to links against the RHI library itself, load RHI implementations dynamically during runtime
