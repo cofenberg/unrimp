@@ -1,6 +1,10 @@
 [![GitHub license](https://img.shields.io/badge/license-MIT-blue.svg)](https://raw.githubusercontent.com/cofenberg/unrimp/master/LICENSE)
 
 
+x64 Windows pre-build binary Google Drive link: [unrimp_windows_20042024.zip](https://drive.google.com/file/d/1-_a4zUrZAj2tFbegVouRDhq7EjbtC1Fu/view?usp=drive_link)
+======
+
+
 Foreword
 ======
 This is a spare time project. There's no support. API changes are done in an time efficient way, meaning without thinking about backward compatibility.
